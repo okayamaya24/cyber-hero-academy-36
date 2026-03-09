@@ -84,33 +84,7 @@ export default function ParentDashboard() {
     enabled: children.length > 0,
   });
 
-  const addChild = async () => {
-    if (!newChild.name.trim() || !newChild.age) {
-      toast.error("Please enter name and age");
-      return;
-    }
-    const age = parseInt(newChild.age);
-    if (age < 3 || age > 15) {
-      toast.error("Age must be between 3 and 15");
-      return;
-    }
-    setAdding(true);
-    const { error } = await supabase.from("child_profiles").insert({
-      parent_id: user!.id,
-      name: newChild.name.trim(),
-      age,
-      avatar: newChild.avatar,
-    });
-    setAdding(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success(`${newChild.name} added as a Cyber Hero!`);
-      setNewChild({ name: "", age: "", avatar: "🦸" });
-      setAddOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["children"] });
-    }
-  };
+  // Removed inline add-child dialog in favor of /create-child page
 
   const deleteChild = async (id: string, name: string) => {
     if (!confirm(`Remove ${name}'s profile? This will delete all their progress.`)) return;
