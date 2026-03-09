@@ -7,10 +7,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
+import AvatarRenderer from "@/components/avatar/AvatarRenderer";
+import type { AvatarConfig } from "@/components/avatar/avatarConfig";
 
 type ChildProfile = Tables<"child_profiles">;
-
-const avatarOptions = ["🦸", "🦸‍♀️", "🧙", "🤖", "🦊", "🐱‍👤", "🦄", "🐉"];
 
 export default function ChildSelectPage() {
   const { user, setActiveChildId } = useAuth();
