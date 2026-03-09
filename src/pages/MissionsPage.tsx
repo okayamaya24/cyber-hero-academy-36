@@ -8,6 +8,12 @@ import { Star, CheckCircle2, XCircle, ArrowRight, Sparkles, Mail, ExternalLink, 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import WordSearchGame from "@/components/minigames/WordSearchGame";
+import PasswordBuilderGame from "@/components/minigames/PasswordBuilderGame";
+import SortGame from "@/components/minigames/SortGame";
+import SecretKeeperGame from "@/components/minigames/SecretKeeperGame";
+import MemoryGame from "@/components/minigames/MemoryGame";
+import BossBattleGame from "@/components/minigames/BossBattleGame";
 import {
   MISSIONS,
   CAPTAIN_CYBER,
@@ -26,6 +32,10 @@ import {
   LEARNING_MODE_CONFIG,
   LEVEL_NAMES,
 } from "@/data/missions";
+
+const CUSTOM_GAME_TYPES: MiniGameType[] = [
+  "word-search", "password-builder", "sort-game", "secret-keeper", "memory", "boss-battle",
+];
 
 const ENCOURAGEMENTS_PERFECT = [
   "You're a Cyber Superstar! 🌟",
@@ -170,6 +180,12 @@ export default function MissionsPage() {
   };
 
   const beginPlay = () => setShowIntro(false);
+
+  const handleCustomGameComplete = (correct: boolean) => {
+    if (correct) setScore((s) => s + 1);
+    setShowResult(true);
+    setSelectedAnswer(correct ? 0 : -1); // track for result display
+  };
 
   const handleAnswer = (idx: number) => {
     if (showResult || !activeMission) return;
@@ -389,105 +405,172 @@ export default function MissionsPage() {
             <span className={`text-sm font-bold ${gameMeta.color}`}>{gameMeta.label}</span>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 flex items-center gap-3"
-          >
-            <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-12 w-12 object-contain" />
-            <div className="rounded-2xl rounded-bl-sm bg-muted px-4 py-2">
-              <p className={`font-semibold ${isJunior ? "text-base" : "text-sm"}`}>{q.question}</p>
-            </div>
-          </motion.div>
-
-          <motion.div key={currentQ} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            {hasMessageCard && <MessageCard q={q} isJunior={isJunior} />}
-
-            <div className={`grid gap-3 ${q.options.length === 2 ? "grid-cols-2" : q.options.length === 3 ? "grid-cols-3" : "grid-cols-1"}`}>
-              {q.options.map((opt, idx) => {
-                let baseStyle = "border-2 border-border bg-card hover:border-primary/50 hover:shadow-md";
-                if (showResult) {
-                  if (idx === q.correct) baseStyle = "border-2 border-secondary bg-secondary/10 shadow-md";
-                  else if (idx === selectedAnswer && idx !== q.correct) baseStyle = "border-2 border-destructive bg-destructive/10";
-                  else baseStyle = "border-2 border-border bg-card opacity-50";
-                }
-
-                // Dynamic emoji based on mini-game type
-                let emoji = "";
-                if (q.miniGameType === "email-detective" || q.miniGameType === "quiz") {
-                  const isSafe = opt.toLowerCase() === "safe" || opt.toLowerCase() === "yes!" || opt.toLowerCase() === "okay" || opt.toLowerCase() === "good idea!" || opt.toLowerCase() === "smart choice!";
-                  const isScam = opt.toLowerCase() === "scam" || opt.toLowerCase() === "no way!" || opt.toLowerCase() === "bad idea!" || opt.toLowerCase() === "keep it secret!" || opt.toLowerCase() === "don't share it!";
-                  emoji = isSafe ? "✅" : isScam ? "🚫" : opt.toLowerCase() === "unsure" ? "🤔" : "";
-                } else if (q.miniGameType === "password-builder") {
-                  emoji = idx === q.correct ? "🔐" : "🔓";
-                } else if (q.miniGameType === "password-fixer") {
-                  emoji = "🛠️";
-                } else if (q.miniGameType === "strength-tester") {
-                  emoji = idx === q.correct ? "💪" : "⚡";
-                } else if (q.miniGameType === "word-search") {
-                  emoji = "🔤";
-                } else if (q.miniGameType === "spot-the-difference") {
-                  emoji = "👁️";
-                } else if (q.miniGameType === "drag-sort") {
-                  emoji = "🧩";
-                } else if (q.miniGameType === "scenario") {
-                  emoji = "🎭";
-                }
-
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => handleAnswer(idx)}
-                    disabled={showResult}
-                    className={`group relative rounded-2xl p-5 text-center font-bold transition-all ${baseStyle} ${
-                      !showResult ? "cursor-pointer active:scale-95 hover:scale-[1.03]" : ""
-                    }`}
-                  >
-                    <span className={`block mb-1 ${isJunior ? "text-4xl" : "text-2xl"}`}>{emoji}</span>
-                    <span className={isJunior ? "text-lg" : "text-base"}>{opt}</span>
-                    {showResult && idx === q.correct && <CheckCircle2 className="mx-auto mt-1 h-5 w-5 text-secondary" />}
-                    {showResult && idx === selectedAnswer && idx !== q.correct && <XCircle className="mx-auto mt-1 h-5 w-5 text-destructive" />}
-                  </button>
-                );
-              })}
-            </div>
-
-            <AnimatePresence>
-              {showResult && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-5">
-                  <div className={`rounded-2xl p-5 ${
-                    selectedAnswer === q.correct
-                      ? "bg-secondary/10 border-2 border-secondary/30"
-                      : "bg-accent/10 border-2 border-accent/30"
-                  }`}>
-                    <div className="flex items-start gap-3">
-                      <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-10 w-10 object-contain shrink-0" />
-                      <div>
-                        <p className="font-bold text-base">
-                          {selectedAnswer === q.correct ? "🎉 Great job!" : "😊 Nice try!"}
-                        </p>
-                        <p className={`mt-1 text-muted-foreground leading-relaxed ${isJunior ? "text-base" : "text-sm"}`}>
-                          {q.explanation}
-                        </p>
-                        {selectedAnswer === q.correct && (
-                          <p className="mt-2 text-sm font-bold text-accent flex items-center gap-1">
-                            <Star className="h-4 w-4" /> +{pointsPerCorrect} points!
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <Button variant="hero" className="mt-4 w-full text-base py-6" onClick={nextQuestion}>
-                    {currentQ + 1 < games.length ? (
-                      <>Next Game <ArrowRight className="ml-2 h-5 w-5" /></>
-                    ) : (
-                      <>See My Results 🎉</>
-                    )}
-                  </Button>
-                </motion.div>
+          {/* Custom mini-game or standard quiz */}
+          {CUSTOM_GAME_TYPES.includes(q.miniGameType) && !showResult ? (
+            <motion.div key={`custom-${currentQ}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              {q.miniGameType === "word-search" && (
+                <WordSearchGame
+                  missionId={activeMission.id}
+                  ageTier={tier}
+                  guideImage={activeMission.guide.image}
+                  guideName={activeMission.guide.name}
+                  onComplete={handleCustomGameComplete}
+                />
               )}
-            </AnimatePresence>
-          </motion.div>
+              {q.miniGameType === "password-builder" && (
+                <PasswordBuilderGame
+                  ageTier={tier}
+                  guideImage={activeMission.guide.image}
+                  guideName={activeMission.guide.name}
+                  onComplete={handleCustomGameComplete}
+                />
+              )}
+              {q.miniGameType === "sort-game" && (
+                <SortGame
+                  missionId={activeMission.id}
+                  ageTier={tier}
+                  guideImage={activeMission.guide.image}
+                  guideName={activeMission.guide.name}
+                  onComplete={handleCustomGameComplete}
+                />
+              )}
+              {q.miniGameType === "secret-keeper" && (
+                <SecretKeeperGame
+                  ageTier={tier}
+                  guideImage={activeMission.guide.image}
+                  guideName={activeMission.guide.name}
+                  onComplete={handleCustomGameComplete}
+                />
+              )}
+              {q.miniGameType === "memory" && (
+                <MemoryGame
+                  ageTier={tier}
+                  guideImage={activeMission.guide.image}
+                  guideName={activeMission.guide.name}
+                  onComplete={handleCustomGameComplete}
+                />
+              )}
+              {q.miniGameType === "boss-battle" && (
+                <BossBattleGame
+                  missionId={activeMission.id}
+                  ageTier={tier}
+                  guideImage={activeMission.guide.image}
+                  guideName={activeMission.guide.name}
+                  onComplete={handleCustomGameComplete}
+                />
+              )}
+            </motion.div>
+          ) : (
+            <>
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 flex items-center gap-3"
+              >
+                <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-12 w-12 object-contain" />
+                <div className="rounded-2xl rounded-bl-sm bg-muted px-4 py-2">
+                  <p className={`font-semibold ${isJunior ? "text-base" : "text-sm"}`}>{q.question}</p>
+                </div>
+              </motion.div>
+
+              <motion.div key={currentQ} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                {hasMessageCard && <MessageCard q={q} isJunior={isJunior} />}
+
+                {!showResult && (
+                  <div className={`grid gap-3 ${q.options.length === 2 ? "grid-cols-2" : q.options.length === 3 ? "grid-cols-3" : "grid-cols-1"}`}>
+                    {q.options.map((opt, idx) => {
+                      let baseStyle = "border-2 border-border bg-card hover:border-primary/50 hover:shadow-md";
+                      let emoji = "";
+                      if (q.miniGameType === "email-detective" || q.miniGameType === "quiz") {
+                        const isSafe = opt.toLowerCase() === "safe" || opt.toLowerCase() === "yes!" || opt.toLowerCase() === "okay" || opt.toLowerCase() === "good idea!" || opt.toLowerCase() === "smart choice!";
+                        const isScam = opt.toLowerCase() === "scam" || opt.toLowerCase() === "no way!" || opt.toLowerCase() === "bad idea!" || opt.toLowerCase() === "keep it secret!" || opt.toLowerCase() === "don't share it!";
+                        emoji = isSafe ? "✅" : isScam ? "🚫" : opt.toLowerCase() === "unsure" ? "🤔" : "";
+                      } else if (q.miniGameType === "scenario") {
+                        emoji = "🎭";
+                      } else {
+                        emoji = MINI_GAME_META[q.miniGameType]?.emoji || "";
+                      }
+
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => handleAnswer(idx)}
+                          className={`group relative rounded-2xl p-5 text-center font-bold transition-all ${baseStyle} cursor-pointer active:scale-95 hover:scale-[1.03]`}
+                        >
+                          <span className={`block mb-1 ${isJunior ? "text-4xl" : "text-2xl"}`}>{emoji}</span>
+                          <span className={isJunior ? "text-lg" : "text-base"}>{opt}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <AnimatePresence>
+                  {showResult && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-5">
+                      <div className={`rounded-2xl p-5 ${
+                        selectedAnswer === q.correct
+                          ? "bg-secondary/10 border-2 border-secondary/30"
+                          : "bg-accent/10 border-2 border-accent/30"
+                      }`}>
+                        <div className="flex items-start gap-3">
+                          <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-10 w-10 object-contain shrink-0" />
+                          <div>
+                            <p className="font-bold text-base">
+                              {selectedAnswer === q.correct ? "🎉 Great job!" : "😊 Nice try!"}
+                            </p>
+                            <p className={`mt-1 text-muted-foreground leading-relaxed ${isJunior ? "text-base" : "text-sm"}`}>
+                              {q.explanation}
+                            </p>
+                            {selectedAnswer === q.correct && (
+                              <p className="mt-2 text-sm font-bold text-accent flex items-center gap-1">
+                                <Star className="h-4 w-4" /> +{pointsPerCorrect} points!
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <Button variant="hero" className="mt-4 w-full text-base py-6" onClick={nextQuestion}>
+                        {currentQ + 1 < games.length ? (
+                          <>Next Game <ArrowRight className="ml-2 h-5 w-5" /></>
+                        ) : (
+                          <>See My Results 🎉</>
+                        )}
+                      </Button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </>
+          )}
+
+          {/* Show next button after custom game completes */}
+          {CUSTOM_GAME_TYPES.includes(q.miniGameType) && showResult && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
+              <div className={`rounded-2xl p-4 mb-3 text-center ${
+                selectedAnswer === 0 ? "bg-secondary/10 border-2 border-secondary/30" : "bg-accent/10 border-2 border-accent/30"
+              }`}>
+                <div className="flex items-center justify-center gap-2">
+                  <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-8 w-8 object-contain" />
+                  <p className="font-bold text-sm">
+                    {selectedAnswer === 0 ? "🎉 Excellent work, hero!" : "💪 Good effort! Keep practicing!"}
+                  </p>
+                </div>
+                {selectedAnswer === 0 && (
+                  <p className="mt-1 text-sm font-bold text-accent flex items-center justify-center gap-1">
+                    <Star className="h-4 w-4" /> +{pointsPerCorrect} points!
+                  </p>
+                )}
+              </div>
+              <Button variant="hero" className="w-full text-base py-6" onClick={nextQuestion}>
+                {currentQ + 1 < games.length ? (
+                  <>Next Game <ArrowRight className="ml-2 h-5 w-5" /></>
+                ) : (
+                  <>See My Results 🎉</>
+                )}
+              </Button>
+            </motion.div>
+          )}
         </div>
       </div>
     );
