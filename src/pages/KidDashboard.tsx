@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { MISSIONS, ALL_BADGES, getMissionQuestions } from "@/data/missions";
 import robotGuide from "@/assets/robot-guide.png";
+import AvatarRenderer from "@/components/avatar/AvatarRenderer";
+import type { AvatarConfig } from "@/components/avatar/avatarConfig";
 
 const container = {
   hidden: {},
