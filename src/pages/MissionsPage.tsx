@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Star, CheckCircle2, XCircle, ArrowRight, Sparkles, Mail, ExternalLink, Trophy, Flame } from "lucide-react";
+import { Star, CheckCircle2, XCircle, ArrowRight, Sparkles, Mail, ExternalLink, Trophy, Flame, Lock as LockIcon, Gamepad2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,11 +12,16 @@ import {
   MISSIONS,
   type MissionDef,
   type Question,
-  getMissionQuestions,
+  type LearningMode,
+  getMissionGames,
+  getMissionLevels,
+  getTotalGames,
   getAgeTier,
   getTierLabel,
   getTierEmoji,
   getPointsPerCorrect,
+  LEARNING_MODE_CONFIG,
+  LEVEL_NAMES,
 } from "@/data/missions";
 
 const ENCOURAGEMENTS_PERFECT = [
@@ -25,14 +30,12 @@ const ENCOURAGEMENTS_PERFECT = [
   "Incredible! You're a true Cyber Hero! 🦸",
   "Wow! Not a single mistake! You're amazing! 🏆",
 ];
-
 const ENCOURAGEMENTS_GOOD = [
   "Great work, hero! You're learning fast! 🚀",
   "Amazing effort! Keep it up! 💪",
   "You're getting stronger every day! 🌟",
   "Nice job! Practice makes perfect! ⭐",
 ];
-
 const ENCOURAGEMENTS_TRY = [
   "Nice try! Every hero keeps practicing! 💪",
   "Don't give up! You'll do even better next time! 🌈",
@@ -46,13 +49,10 @@ function getEncouragement(score: number, total: number) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-/** Renders a "message card" for scam-detection style questions */
 function MessageCard({ q, isJunior }: { q: Question; isJunior: boolean }) {
   if (!q.sender) return null;
-
   return (
     <div className={`mb-6 overflow-hidden rounded-2xl border-2 border-border bg-background shadow-card ${isJunior ? "text-lg" : ""}`}>
-      {/* Header */}
       <div className="flex items-center gap-3 border-b border-border bg-muted/50 px-4 py-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-card text-xl shadow-sm">
           {q.senderIcon || "📧"}
@@ -66,17 +66,13 @@ function MessageCard({ q, isJunior }: { q: Question; isJunior: boolean }) {
           )}
         </div>
       </div>
-      {/* Subject */}
       {q.subject && (
         <div className="border-b border-border px-4 py-2">
           <p className={`font-bold ${isJunior ? "text-lg" : "text-sm"}`}>{q.subject}</p>
         </div>
       )}
-      {/* Body */}
       <div className="px-4 py-4">
-        <p className={`leading-relaxed text-foreground ${isJunior ? "text-base" : "text-sm"}`}>
-          {q.body}
-        </p>
+        <p className={`leading-relaxed text-foreground ${isJunior ? "text-base" : "text-sm"}`}>{q.body}</p>
         {q.fakeLink && (
           <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-dashed border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
             <ExternalLink className="h-4 w-4 shrink-0" />
@@ -136,14 +132,16 @@ export default function MissionsPage() {
   const tierLabel = getTierLabel(tier);
   const tierEmoji = getTierEmoji(tier);
   const pointsPerCorrect = getPointsPerCorrect(tier);
+  const learningMode = ((child as any)?.learning_mode as LearningMode) || "standard";
+  const modeConfig = LEARNING_MODE_CONFIG[learningMode];
 
-  const getQuestions = (mission: MissionDef) => getMissionQuestions(mission, age);
+  const getGames = (mission: MissionDef) => getMissionGames(mission, age, learningMode);
 
   const startMission = (mission: MissionDef) => {
-    const questions = getQuestions(mission);
+    const games = getGames(mission);
     const existing = missionProgress.find((m) => m.mission_id === mission.id);
     setActiveMission(mission);
-    setCurrentQ(existing?.status === "in_progress" ? Math.min(existing.current_question, questions.length - 1) : 0);
+    setCurrentQ(existing?.status === "in_progress" ? Math.min(existing.current_question, games.length - 1) : 0);
     setSelectedAnswer(null);
     setShowResult(false);
     setScore(existing?.status === "in_progress" ? existing.score : 0);
@@ -152,19 +150,19 @@ export default function MissionsPage() {
 
   const handleAnswer = (idx: number) => {
     if (showResult || !activeMission) return;
-    const questions = getQuestions(activeMission);
+    const games = getGames(activeMission);
     setSelectedAnswer(idx);
     setShowResult(true);
-    if (idx === questions[currentQ].correct) {
+    if (idx === games[currentQ].correct) {
       setScore((s) => s + 1);
     }
   };
 
   const nextQuestion = async () => {
     if (!activeMission || !activeChildId) return;
-    const questions = getQuestions(activeMission);
+    const games = getGames(activeMission);
     const nextQ = currentQ + 1;
-    const isLast = nextQ >= questions.length;
+    const isLast = nextQ >= games.length;
 
     await supabase.from("mission_progress").upsert(
       {
@@ -172,8 +170,8 @@ export default function MissionsPage() {
         mission_id: activeMission.id,
         status: isLast ? "completed" : "in_progress",
         score,
-        max_score: questions.length,
-        current_question: isLast ? questions.length : nextQ,
+        max_score: games.length,
+        current_question: isLast ? games.length : nextQ,
         completed_at: isLast ? new Date().toISOString() : null,
       },
       { onConflict: "child_id,mission_id" }
@@ -192,14 +190,13 @@ export default function MissionsPage() {
         const newStreak = childData.last_activity_date === today ? childData.streak : childData.streak + 1;
         const newPoints = childData.points + pointsEarned;
         const newLevel = Math.floor(newPoints / 200) + 1;
-
         await supabase
           .from("child_profiles")
           .update({ points: newPoints, streak: newStreak, level: newLevel, last_activity_date: today })
           .eq("id", activeChildId);
       }
 
-      if (score === questions.length) {
+      if (score === games.length) {
         await supabase.from("earned_badges").upsert(
           {
             child_id: activeChildId,
@@ -227,17 +224,31 @@ export default function MissionsPage() {
     setMissionComplete(false);
   };
 
+  // Helper to get current level info
+  const getCurrentLevel = () => {
+    if (!activeMission) return null;
+    const gamesPerLevel = modeConfig.gamesPerLevel;
+    const levelIndex = Math.floor(currentQ / gamesPerLevel);
+    const gameInLevel = (currentQ % gamesPerLevel) + 1;
+    return {
+      levelIndex,
+      levelName: LEVEL_NAMES[Math.min(levelIndex, 2)],
+      gameInLevel,
+      gamesPerLevel,
+    };
+  };
+
   // ─── Active Quiz View ─────────────────────────────────────────
   if (activeMission && !missionComplete) {
-    const questions = getQuestions(activeMission);
-    const q = questions[currentQ];
+    const games = getGames(activeMission);
+    const q = games[currentQ];
     const isJunior = tier === "junior";
     const hasMessageCard = !!q.sender;
     const runningPoints = score * pointsPerCorrect;
+    const levelInfo = getCurrentLevel();
 
     return (
       <div className="min-h-screen bg-background">
-        {/* Top Bar */}
         <div className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur">
           <div className="container mx-auto max-w-2xl px-4 py-3">
             <div className="flex items-center justify-between">
@@ -246,9 +257,16 @@ export default function MissionsPage() {
               </button>
               <div className="text-center">
                 <h2 className="text-sm font-bold">{activeMission.title}</h2>
-                <Badge variant="outline" className="mt-0.5 text-[10px] px-2 py-0">
-                  {tierEmoji} {tierLabel}
-                </Badge>
+                <div className="flex items-center gap-2 justify-center mt-0.5">
+                  <Badge variant="outline" className="text-[10px] px-2 py-0">
+                    {tierEmoji} {tierLabel}
+                  </Badge>
+                  {levelInfo && (
+                    <Badge className="bg-primary/10 text-primary border-0 text-[10px] px-2 py-0">
+                      {levelInfo.levelName}
+                    </Badge>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-1 text-sm font-bold text-accent">
                 <Star className="h-4 w-4" />
@@ -257,16 +275,15 @@ export default function MissionsPage() {
             </div>
             <div className="mt-2">
               <div className="mb-1 flex justify-between text-xs text-muted-foreground">
-                <span>Question {currentQ + 1} of {questions.length}</span>
+                <span>Game {currentQ + 1} of {games.length}</span>
                 <span>{score} correct</span>
               </div>
-              <Progress value={((currentQ + 1) / questions.length) * 100} className="h-2" />
+              <Progress value={((currentQ + 1) / games.length) * 100} className="h-2" />
             </div>
           </div>
         </div>
 
         <div className="container mx-auto max-w-2xl px-4 py-6">
-          {/* Guide */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -278,11 +295,9 @@ export default function MissionsPage() {
             </div>
           </motion.div>
 
-          {/* Message Card (for scam-detection missions) */}
           <motion.div key={currentQ} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             {hasMessageCard && <MessageCard q={q} isJunior={isJunior} />}
 
-            {/* Answer Buttons */}
             <div className={`grid gap-3 ${q.options.length === 2 ? "grid-cols-2" : q.options.length === 3 ? "grid-cols-3" : "grid-cols-1"}`}>
               {q.options.map((opt, idx) => {
                 let baseStyle = "border-2 border-border bg-card hover:border-primary/50 hover:shadow-md";
@@ -291,7 +306,6 @@ export default function MissionsPage() {
                   else if (idx === selectedAnswer && idx !== q.correct) baseStyle = "border-2 border-destructive bg-destructive/10";
                   else baseStyle = "border-2 border-border bg-card opacity-50";
                 }
-
                 const isSafe = opt.toLowerCase() === "safe";
                 const isScam = opt.toLowerCase() === "scam";
                 const isUnsure = opt.toLowerCase() === "unsure";
@@ -308,37 +322,23 @@ export default function MissionsPage() {
                   >
                     <span className={`block mb-1 ${isJunior ? "text-4xl" : "text-2xl"}`}>{emoji}</span>
                     <span className={isJunior ? "text-lg" : "text-base"}>{opt}</span>
-                    {showResult && idx === q.correct && (
-                      <CheckCircle2 className="mx-auto mt-1 h-5 w-5 text-secondary" />
-                    )}
-                    {showResult && idx === selectedAnswer && idx !== q.correct && (
-                      <XCircle className="mx-auto mt-1 h-5 w-5 text-destructive" />
-                    )}
+                    {showResult && idx === q.correct && <CheckCircle2 className="mx-auto mt-1 h-5 w-5 text-secondary" />}
+                    {showResult && idx === selectedAnswer && idx !== q.correct && <XCircle className="mx-auto mt-1 h-5 w-5 text-destructive" />}
                   </button>
                 );
               })}
             </div>
 
-            {/* Feedback */}
             <AnimatePresence>
               {showResult && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="mt-5"
-                >
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-5">
                   <div className={`rounded-2xl p-5 ${
                     selectedAnswer === q.correct
                       ? "bg-secondary/10 border-2 border-secondary/30"
                       : "bg-accent/10 border-2 border-accent/30"
                   }`}>
                     <div className="flex items-start gap-3">
-                      <img
-                        src={activeMission.guide.image}
-                        alt={activeMission.guide.name}
-                        className="h-10 w-10 object-contain shrink-0"
-                      />
+                      <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-10 w-10 object-contain shrink-0" />
                       <div>
                         <p className="font-bold text-base">
                           {selectedAnswer === q.correct ? "🎉 Great job!" : "😊 Nice try!"}
@@ -355,8 +355,8 @@ export default function MissionsPage() {
                     </div>
                   </div>
                   <Button variant="hero" className="mt-4 w-full text-base py-6" onClick={nextQuestion}>
-                    {currentQ + 1 < questions.length ? (
-                      <>Next Question <ArrowRight className="ml-2 h-5 w-5" /></>
+                    {currentQ + 1 < games.length ? (
+                      <>Next Game <ArrowRight className="ml-2 h-5 w-5" /></>
                     ) : (
                       <>See My Results 🎉</>
                     )}
@@ -372,8 +372,8 @@ export default function MissionsPage() {
 
   // ─── Mission Complete View ────────────────────────────────────
   if (missionComplete && activeMission) {
-    const questions = getQuestions(activeMission);
-    const total = questions.length;
+    const games = getGames(activeMission);
+    const total = games.length;
     const perfect = score === total;
     const totalPoints = score * pointsPerCorrect;
     const encouragement = getEncouragement(score, total);
@@ -387,27 +387,17 @@ export default function MissionsPage() {
           className="w-full max-w-md"
         >
           <div className="rounded-3xl border-2 bg-card p-8 shadow-playful text-center overflow-hidden relative">
-            {/* Confetti-like decorations */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
               {perfect && (
                 <>
-                  <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 0.6 }} transition={{ delay: 0.3 }}
-                    className="absolute top-4 left-6 text-3xl">🎊</motion.div>
-                  <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 0.6 }} transition={{ delay: 0.5 }}
-                    className="absolute top-8 right-8 text-2xl">✨</motion.div>
-                  <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 0.6 }} transition={{ delay: 0.7 }}
-                    className="absolute bottom-16 left-8 text-2xl">🌟</motion.div>
+                  <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 0.6 }} transition={{ delay: 0.3 }} className="absolute top-4 left-6 text-3xl">🎊</motion.div>
+                  <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 0.6 }} transition={{ delay: 0.5 }} className="absolute top-8 right-8 text-2xl">✨</motion.div>
+                  <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 0.6 }} transition={{ delay: 0.7 }} className="absolute bottom-16 left-8 text-2xl">🌟</motion.div>
                 </>
               )}
             </div>
 
-            {/* Trophy/Star */}
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring" }}
-              className="mb-4 text-7xl"
-            >
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring" }} className="mb-4 text-7xl">
               {perfect ? "🏆" : score >= total * 0.6 ? "⭐" : "💪"}
             </motion.div>
 
@@ -415,17 +405,11 @@ export default function MissionsPage() {
               {perfect ? "Perfect Score!" : score >= total * 0.6 ? "Mission Complete!" : "Good Try!"}
             </h2>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="mt-2 text-lg font-semibold text-primary flex items-center justify-center gap-2"
-            >
-              <Sparkles className="h-5 w-5" />
-              {encouragement}
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+              className="mt-2 text-lg font-semibold text-primary flex items-center justify-center gap-2">
+              <Sparkles className="h-5 w-5" /> {encouragement}
             </motion.p>
 
-            {/* Score breakdown */}
             <div className="mt-6 grid grid-cols-3 gap-3">
               <div className="rounded-xl bg-muted p-3">
                 <div className="text-2xl font-bold">{score}/{total}</div>
@@ -445,14 +429,9 @@ export default function MissionsPage() {
               </div>
             </div>
 
-            {/* Badge */}
             {perfect ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6, type: "spring" }}
-                className="mt-5 inline-flex items-center gap-2 rounded-full bg-accent/20 border-2 border-accent/40 px-5 py-2"
-              >
+              <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.6, type: "spring" }}
+                className="mt-5 inline-flex items-center gap-2 rounded-full bg-accent/20 border-2 border-accent/40 px-5 py-2">
                 <span className="text-2xl">{activeMission.badgeIcon}</span>
                 <div className="text-left">
                   <p className="text-xs font-bold text-accent">Badge Earned!</p>
@@ -466,12 +445,8 @@ export default function MissionsPage() {
             )}
 
             <div className="mt-6 flex gap-3">
-              <Button variant="outline" className="flex-1" onClick={resetMission}>
-                Back to Missions
-              </Button>
-              <Button variant="hero" className="flex-1" onClick={() => navigate("/dashboard")}>
-                Continue to Dashboard
-              </Button>
+              <Button variant="outline" className="flex-1" onClick={resetMission}>Back to Missions</Button>
+              <Button variant="hero" className="flex-1" onClick={() => navigate("/dashboard")}>Continue to Dashboard</Button>
             </div>
           </div>
         </motion.div>
@@ -487,18 +462,27 @@ export default function MissionsPage() {
           <h1 className="text-3xl font-bold md:text-4xl">🎮 Learning Missions</h1>
           <p className="mt-2 text-muted-foreground">Choose a mission and become a Cyber Hero!</p>
           {child && (
-            <Badge variant="outline" className="mt-3 text-sm px-4 py-1">
-              {tierEmoji} {tierLabel} · Age {age} · {pointsPerCorrect} pts per question
-            </Badge>
+            <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+              <Badge variant="outline" className="text-sm px-4 py-1">
+                {tierEmoji} {tierLabel} · Age {age} · {pointsPerCorrect} pts per question
+              </Badge>
+              <Badge className="bg-primary/10 text-primary border-0 text-sm px-4 py-1">
+                {modeConfig.emoji} {modeConfig.label}
+              </Badge>
+            </div>
           )}
         </motion.div>
+
         <motion.div className="grid gap-6 sm:grid-cols-2" initial="hidden" animate="show"
           variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1 } } }}>
           {MISSIONS.map((m) => {
-            const questions = getQuestions(m);
+            const totalGames = getTotalGames(learningMode);
             const mp = missionProgress.find((p) => p.mission_id === m.id);
+            const completedGames = mp?.status === "completed" ? totalGames : (mp?.current_question ?? 0);
             const isCompleted = mp?.status === "completed";
             const isInProgress = mp?.status === "in_progress";
+            const levels = getMissionLevels(m, age, learningMode, completedGames);
+
             return (
               <motion.div key={m.id} variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
                 className="group overflow-hidden rounded-2xl border-2 bg-card shadow-card transition-all hover:shadow-playful hover:-translate-y-1">
@@ -507,15 +491,67 @@ export default function MissionsPage() {
                     <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-card shadow">
                       <m.icon className={`h-7 w-7 ${m.color}`} />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <h3 className="text-xl font-bold">{m.title}</h3>
-                      <p className="text-sm text-muted-foreground">{questions.length} questions · {tierLabel}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {totalGames} games · 3 levels · {tierLabel}
+                      </p>
                     </div>
                     <img src={m.guide.image} alt={m.guide.name} className="ml-auto h-16 w-16 object-contain opacity-80 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </div>
                 <div className="p-6">
                   <p className="mb-4 text-sm text-muted-foreground">{m.description}</p>
+
+                  {/* Level progress indicators */}
+                  <div className="mb-4 grid grid-cols-3 gap-2">
+                    {levels.map((level) => {
+                      const levelStart = (level.level - 1) * modeConfig.gamesPerLevel;
+                      const levelEnd = levelStart + modeConfig.gamesPerLevel;
+                      const levelCompleted = Math.min(Math.max(completedGames - levelStart, 0), modeConfig.gamesPerLevel);
+                      const levelDone = levelCompleted >= modeConfig.gamesPerLevel;
+                      const levelActive = completedGames >= levelStart && completedGames < levelEnd;
+
+                      return (
+                        <div
+                          key={level.level}
+                          className={`rounded-xl border p-2 text-center text-xs transition-all ${
+                            levelDone
+                              ? "bg-secondary/10 border-secondary/40"
+                              : level.locked
+                              ? "bg-muted/50 border-border opacity-60"
+                              : levelActive
+                              ? "bg-primary/10 border-primary/40"
+                              : "bg-muted/30 border-border"
+                          }`}
+                        >
+                          <div className="flex items-center justify-center gap-1 mb-1">
+                            {level.locked ? (
+                              <LockIcon className="h-3 w-3 text-muted-foreground" />
+                            ) : levelDone ? (
+                              <CheckCircle2 className="h-3 w-3 text-secondary" />
+                            ) : (
+                              <span className="text-sm">{level.emoji}</span>
+                            )}
+                          </div>
+                          <p className="font-semibold">{level.name}</p>
+                          <p className="text-muted-foreground">
+                            {levelCompleted}/{modeConfig.gamesPerLevel}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Overall progress */}
+                  <div className="mb-3">
+                    <div className="mb-1 flex justify-between text-xs">
+                      <span className="font-semibold">Total Progress</span>
+                      <span className="font-bold text-primary">{completedGames}/{totalGames} games</span>
+                    </div>
+                    <Progress value={(completedGames / totalGames) * 100} className="h-2.5" />
+                  </div>
+
                   {isCompleted ? (
                     <div className="flex items-center gap-2">
                       <Badge className="bg-secondary text-secondary-foreground border-0">✓ Completed</Badge>
@@ -524,7 +560,11 @@ export default function MissionsPage() {
                     </div>
                   ) : (
                     <Button variant="hero" className="w-full" onClick={() => startMission(m)}>
-                      {isInProgress ? "Continue Mission →" : "Start Mission 🚀"}
+                      {isInProgress ? (
+                        <>Continue Mission → <Gamepad2 className="ml-2 h-4 w-4" /></>
+                      ) : (
+                        <>Start Mission 🚀</>
+                      )}
                     </Button>
                   )}
                 </div>
