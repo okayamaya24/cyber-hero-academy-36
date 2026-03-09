@@ -30,6 +30,7 @@ const App = () => (
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/select-child" element={<ChildSelectPage />} />
+            <Route path="/create-child" element={<CreateChildPage />} />
             <Route path="/dashboard" element={<KidDashboard />} />
             <Route path="/missions" element={<MissionsPage />} />
             <Route path="/parents" element={<ParentDashboard />} />
