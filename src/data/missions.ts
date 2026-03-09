@@ -15,7 +15,11 @@ export type MiniGameType =
   | "strength-tester"
   | "scenario"
   | "drag-sort"
-  | "spot-the-difference";
+  | "spot-the-difference"
+  | "sort-game"
+  | "memory"
+  | "boss-battle"
+  | "secret-keeper";
 
 export const MINI_GAME_META: Record<MiniGameType, { label: string; emoji: string; color: string }> = {
   "quiz": { label: "Quiz", emoji: "❓", color: "text-primary" },
@@ -24,9 +28,13 @@ export const MINI_GAME_META: Record<MiniGameType, { label: string; emoji: string
   "password-builder": { label: "Password Builder", emoji: "🔧", color: "text-primary" },
   "password-fixer": { label: "Password Fixer", emoji: "🛠️", color: "text-accent" },
   "strength-tester": { label: "Strength Tester", emoji: "💪", color: "text-secondary" },
-  "scenario": { label: "Scenario", emoji: "🎭", color: "text-cyber-purple" },
+  "scenario": { label: "Scenario", emoji: "🎭", color: "text-primary" },
   "drag-sort": { label: "Drag & Sort", emoji: "🧩", color: "text-primary" },
   "spot-the-difference": { label: "Spot the Difference", emoji: "👁️", color: "text-accent" },
+  "sort-game": { label: "Safe vs Dangerous", emoji: "⚖️", color: "text-accent" },
+  "memory": { label: "Memory Match", emoji: "🧠", color: "text-secondary" },
+  "boss-battle": { label: "Boss Battle", emoji: "⚔️", color: "text-destructive" },
+  "secret-keeper": { label: "Secret Keeper", emoji: "🤫", color: "text-primary" },
 };
 
 export interface Question {
