@@ -213,7 +213,7 @@ export default function KidDashboard() {
             <motion.div className="grid gap-4 sm:grid-cols-2" variants={container} initial="hidden" animate="show">
               {MISSIONS.map((m) => {
                 const status = getMissionStatus(m.id);
-                const progress = getMissionProgress(m.id);
+                const progress = getMissionProgressPercent(m.id);
                 return (
                   <motion.div
                     key={m.id}
