@@ -533,8 +533,6 @@ export const MISSIONS: MissionDef[] = [
       ["word-search", "memory"],
       ["sort-game", "boss-battle"],
     ],
-      ["spot-the-difference", "scenario", "quiz"],
-    ],
     badgeId: "safe-surfer",
     badgeName: "Safe Surfer",
     badgeIcon: "🏄",
