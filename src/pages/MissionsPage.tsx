@@ -181,6 +181,12 @@ export default function MissionsPage() {
 
   const beginPlay = () => setShowIntro(false);
 
+  const handleCustomGameComplete = (correct: boolean) => {
+    if (correct) setScore((s) => s + 1);
+    setShowResult(true);
+    setSelectedAnswer(correct ? 0 : -1); // track for result display
+  };
+
   const handleAnswer = (idx: number) => {
     if (showResult || !activeMission) return;
     const games = getGames(activeMission);
