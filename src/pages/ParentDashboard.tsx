@@ -10,14 +10,9 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MISSIONS } from "@/data/missions";
 import { toast } from "sonner";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
 import AvatarRenderer from "@/components/avatar/AvatarRenderer";
 import type { AvatarConfig } from "@/components/avatar/avatarConfig";
 
