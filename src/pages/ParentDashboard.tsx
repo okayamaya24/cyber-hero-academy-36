@@ -18,8 +18,8 @@ import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-
-const avatarOptions = ["🦸", "🦸‍♀️", "🧙", "🤖", "🦊", "🐱‍👤", "🦄", "🐉"];
+import AvatarRenderer from "@/components/avatar/AvatarRenderer";
+import type { AvatarConfig } from "@/components/avatar/avatarConfig";
 
 const container = {
   hidden: {},
