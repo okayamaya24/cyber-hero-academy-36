@@ -92,13 +92,15 @@ export default function KidDashboard() {
     return mp.status;
   };
 
-  const getMissionProgress = (missionId: string) => {
+  const getMissionProgressPercent = (missionId: string) => {
     const mp = missionProgress.find((m) => m.mission_id === missionId);
     if (!mp) return 0;
     const mission = MISSIONS.find((m) => m.id === missionId);
-    if (!mission || mission.questions.length === 0) return 0;
+    if (!mission) return 0;
+    const questions = getMissionQuestions(mission, child?.age ?? 7);
+    if (questions.length === 0) return 0;
     if (mp.status === "completed") return 100;
-    return Math.round((mp.current_question / mission.questions.length) * 100);
+    return Math.round((mp.current_question / questions.length) * 100);
   };
 
   return (
