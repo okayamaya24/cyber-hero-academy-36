@@ -9,7 +9,7 @@ import { Shield, Star, Trophy, Flame, Zap, Gamepad2, CheckCircle2, Lock as LockI
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { MISSIONS, ALL_BADGES, getTotalGames, getMissionLevels, LEARNING_MODE_CONFIG, type LearningMode } from "@/data/missions";
+import { MISSIONS, ALL_BADGES, getTotalGames, getMissionLevels, LEARNING_MODE_CONFIG, MINI_GAME_META, type LearningMode } from "@/data/missions";
 import robotGuide from "@/assets/robot-guide.png";
 import AvatarRenderer from "@/components/avatar/AvatarRenderer";
 import type { AvatarConfig } from "@/components/avatar/avatarConfig";
