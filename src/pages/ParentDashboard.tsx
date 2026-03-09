@@ -146,42 +146,9 @@ export default function ParentDashboard() {
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <Users className="h-5 w-5 text-primary" /> Children
               </h2>
-              <Dialog open={addOpen} onOpenChange={setAddOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="hero" size="sm"><Plus className="mr-1 h-4 w-4" /> Add Child</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add a Cyber Hero</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Name</Label>
-                      <Input placeholder="Child's name" value={newChild.name} onChange={(e) => setNewChild({ ...newChild, name: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Age</Label>
-                      <Input type="number" min={3} max={15} placeholder="5-12" value={newChild.age} onChange={(e) => setNewChild({ ...newChild, age: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Avatar</Label>
-                      <div className="mt-1 flex gap-2 flex-wrap">
-                        {avatarOptions.map((a) => (
-                          <button key={a} onClick={() => setNewChild({ ...newChild, avatar: a })}
-                            className={`flex h-12 w-12 items-center justify-center rounded-xl border-2 text-2xl transition-all ${
-                              newChild.avatar === a ? "border-primary bg-primary/10 scale-110" : "border-border hover:border-primary/50"
-                            }`}>
-                            {a}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <Button variant="hero" className="w-full" onClick={addChild} disabled={adding}>
-                      {adding ? "Adding..." : "Create Cyber Hero 🚀"}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button variant="hero" size="sm" asChild>
+                <Link to="/create-child"><Plus className="mr-1 h-4 w-4" /> Add Child</Link>
+              </Button>
             </div>
 
             {children.length === 0 ? (
