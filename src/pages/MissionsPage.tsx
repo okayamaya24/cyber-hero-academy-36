@@ -10,9 +10,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   MISSIONS,
+  CAPTAIN_CYBER,
+  MINI_GAME_META,
   type MissionDef,
   type Question,
   type LearningMode,
+  type MiniGameType,
   getMissionGames,
   getMissionLevels,
   getTotalGames,
@@ -43,10 +46,26 @@ const ENCOURAGEMENTS_TRY = [
   "You're on your way! Try again to beat your score! 🎯",
 ];
 
+const CAPTAIN_INTROS: Record<string, string> = {
+  "scam-detection": "Welcome, hero! Detective Whiskers needs your help spotting scams. Are you ready? Let's go! 🕵️",
+  "password-safety": "Hey there, champion! Robo Buddy has prepared some password challenges. Let's make your passwords unbreakable! 🤖",
+  "safe-websites": "Time to explore the web safely! Detective Whiskers will guide you through dangerous sites. Stay sharp! 🔍",
+  "personal-info": "Privacy is your superpower! Professor Hoot will teach you to guard your secrets. Let's begin! 🦉",
+};
+
 function getEncouragement(score: number, total: number) {
   const ratio = score / total;
   const pool = ratio === 1 ? ENCOURAGEMENTS_PERFECT : ratio >= 0.6 ? ENCOURAGEMENTS_GOOD : ENCOURAGEMENTS_TRY;
   return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function MiniGameTypeBadge({ type }: { type: MiniGameType }) {
+  const meta = MINI_GAME_META[type];
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[10px] font-semibold ${meta.color}`}>
+      {meta.emoji} {meta.label}
+    </span>
+  );
 }
 
 function MessageCard({ q, isJunior }: { q: Question; isJunior: boolean }) {
@@ -89,6 +108,7 @@ export default function MissionsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeMission, setActiveMission] = useState<MissionDef | null>(null);
+  const [showIntro, setShowIntro] = useState(false);
   const [currentQ, setCurrentQ] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -138,15 +158,18 @@ export default function MissionsPage() {
   const getGames = (mission: MissionDef) => getMissionGames(mission, age, learningMode);
 
   const startMission = (mission: MissionDef) => {
-    const games = getGames(mission);
-    const existing = missionProgress.find((m) => m.mission_id === mission.id);
     setActiveMission(mission);
+    setShowIntro(true);
+    const existing = missionProgress.find((m) => m.mission_id === mission.id);
+    const games = getGames(mission);
     setCurrentQ(existing?.status === "in_progress" ? Math.min(existing.current_question, games.length - 1) : 0);
     setSelectedAnswer(null);
     setShowResult(false);
     setScore(existing?.status === "in_progress" ? existing.score : 0);
     setMissionComplete(false);
   };
+
+  const beginPlay = () => setShowIntro(false);
 
   const handleAnswer = (idx: number) => {
     if (showResult || !activeMission) return;
@@ -222,9 +245,9 @@ export default function MissionsPage() {
   const resetMission = () => {
     setActiveMission(null);
     setMissionComplete(false);
+    setShowIntro(false);
   };
 
-  // Helper to get current level info
   const getCurrentLevel = () => {
     if (!activeMission) return null;
     const gamesPerLevel = modeConfig.gamesPerLevel;
@@ -238,14 +261,83 @@ export default function MissionsPage() {
     };
   };
 
+  // ─── Captain Cyber Mission Intro ─────────────────────────────
+  if (activeMission && showIntro) {
+    const levels = getMissionLevels(activeMission, age, learningMode, 0);
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", duration: 0.6 }}
+          className="w-full max-w-md"
+        >
+          <div className="rounded-3xl border-2 bg-card p-8 shadow-playful text-center">
+            {/* Captain Cyber intro */}
+            <motion.img
+              src={CAPTAIN_CYBER.image}
+              alt={CAPTAIN_CYBER.name}
+              className="mx-auto h-24 w-24 object-contain mb-4"
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            />
+            <Badge className="bg-accent/20 text-accent border-0 mb-3">
+              ⚡ {CAPTAIN_CYBER.name} · {CAPTAIN_CYBER.role}
+            </Badge>
+            <div className="rounded-2xl bg-muted/50 p-4 mb-4">
+              <p className="text-sm font-medium text-foreground">
+                {CAPTAIN_INTROS[activeMission.id] || "Let's start this mission, hero!"}
+              </p>
+            </div>
+
+            {/* Mission info */}
+            <div className="flex items-center gap-3 mb-4">
+              <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-12 w-12 object-contain" />
+              <div className="text-left">
+                <h2 className="text-xl font-bold">{activeMission.title}</h2>
+                <p className="text-xs text-muted-foreground">Guide: {activeMission.guide.name}</p>
+              </div>
+            </div>
+
+            {/* Level breakdown with mini-game types */}
+            <div className="space-y-2 mb-6">
+              {levels.map((level) => (
+                <div key={level.level} className="rounded-xl border bg-muted/30 p-3 text-left">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-lg">{level.emoji}</span>
+                    <span className="font-bold text-sm">Level {level.level}: {level.name}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {level.miniGameTypes.map((type, i) => (
+                      <MiniGameTypeBadge key={i} type={type} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={resetMission}>← Back</Button>
+              <Button variant="hero" className="flex-1 text-base" onClick={beginPlay}>
+                Let's Go! 🚀
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   // ─── Active Quiz View ─────────────────────────────────────────
-  if (activeMission && !missionComplete) {
+  if (activeMission && !missionComplete && !showIntro) {
     const games = getGames(activeMission);
     const q = games[currentQ];
     const isJunior = tier === "junior";
     const hasMessageCard = !!q.sender;
     const runningPoints = score * pointsPerCorrect;
     const levelInfo = getCurrentLevel();
+    const gameMeta = MINI_GAME_META[q.miniGameType];
 
     return (
       <div className="min-h-screen bg-background">
@@ -275,7 +367,10 @@ export default function MissionsPage() {
             </div>
             <div className="mt-2">
               <div className="mb-1 flex justify-between text-xs text-muted-foreground">
-                <span>Game {currentQ + 1} of {games.length}</span>
+                <span className="flex items-center gap-1">
+                  Game {currentQ + 1}/{games.length}
+                  <MiniGameTypeBadge type={q.miniGameType} />
+                </span>
                 <span>{score} correct</span>
               </div>
               <Progress value={((currentQ + 1) / games.length) * 100} className="h-2" />
@@ -284,6 +379,16 @@ export default function MissionsPage() {
         </div>
 
         <div className="container mx-auto max-w-2xl px-4 py-6">
+          {/* Mini-game type header */}
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="mb-2 flex items-center gap-2"
+          >
+            <span className="text-2xl">{gameMeta.emoji}</span>
+            <span className={`text-sm font-bold ${gameMeta.color}`}>{gameMeta.label}</span>
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -306,10 +411,28 @@ export default function MissionsPage() {
                   else if (idx === selectedAnswer && idx !== q.correct) baseStyle = "border-2 border-destructive bg-destructive/10";
                   else baseStyle = "border-2 border-border bg-card opacity-50";
                 }
-                const isSafe = opt.toLowerCase() === "safe";
-                const isScam = opt.toLowerCase() === "scam";
-                const isUnsure = opt.toLowerCase() === "unsure";
-                const emoji = isSafe ? "✅" : isScam ? "🚫" : isUnsure ? "🤔" : "";
+
+                // Dynamic emoji based on mini-game type
+                let emoji = "";
+                if (q.miniGameType === "email-detective" || q.miniGameType === "quiz") {
+                  const isSafe = opt.toLowerCase() === "safe" || opt.toLowerCase() === "yes!" || opt.toLowerCase() === "okay" || opt.toLowerCase() === "good idea!" || opt.toLowerCase() === "smart choice!";
+                  const isScam = opt.toLowerCase() === "scam" || opt.toLowerCase() === "no way!" || opt.toLowerCase() === "bad idea!" || opt.toLowerCase() === "keep it secret!" || opt.toLowerCase() === "don't share it!";
+                  emoji = isSafe ? "✅" : isScam ? "🚫" : opt.toLowerCase() === "unsure" ? "🤔" : "";
+                } else if (q.miniGameType === "password-builder") {
+                  emoji = idx === q.correct ? "🔐" : "🔓";
+                } else if (q.miniGameType === "password-fixer") {
+                  emoji = "🛠️";
+                } else if (q.miniGameType === "strength-tester") {
+                  emoji = idx === q.correct ? "💪" : "⚡";
+                } else if (q.miniGameType === "word-search") {
+                  emoji = "🔤";
+                } else if (q.miniGameType === "spot-the-difference") {
+                  emoji = "👁️";
+                } else if (q.miniGameType === "drag-sort") {
+                  emoji = "🧩";
+                } else if (q.miniGameType === "scenario") {
+                  emoji = "🎭";
+                }
 
                 return (
                   <button
@@ -370,7 +493,7 @@ export default function MissionsPage() {
     );
   }
 
-  // ─── Mission Complete View ────────────────────────────────────
+  // ─── Mission Complete View (with Captain Cyber) ──────────────
   if (missionComplete && activeMission) {
     const games = getGames(activeMission);
     const total = games.length;
@@ -397,6 +520,17 @@ export default function MissionsPage() {
               )}
             </div>
 
+            {/* Captain Cyber congratulates */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.1, type: "spring" }}
+              className="flex items-center justify-center gap-3 mb-4"
+            >
+              <img src={CAPTAIN_CYBER.image} alt={CAPTAIN_CYBER.name} className="h-16 w-16 object-contain" />
+              <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-14 w-14 object-contain" />
+            </motion.div>
+
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring" }} className="mb-4 text-7xl">
               {perfect ? "🏆" : score >= total * 0.6 ? "⭐" : "💪"}
             </motion.div>
@@ -405,10 +539,15 @@ export default function MissionsPage() {
               {perfect ? "Perfect Score!" : score >= total * 0.6 ? "Mission Complete!" : "Good Try!"}
             </h2>
 
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-              className="mt-2 text-lg font-semibold text-primary flex items-center justify-center gap-2">
-              <Sparkles className="h-5 w-5" /> {encouragement}
-            </motion.p>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="mt-2 rounded-xl bg-muted/50 p-3"
+            >
+              <p className="text-xs font-semibold text-muted-foreground mb-1">Captain Cyber says:</p>
+              <p className="text-sm font-bold text-primary">{encouragement}</p>
+            </motion.div>
 
             <div className="mt-6 grid grid-cols-3 gap-3">
               <div className="rounded-xl bg-muted p-3">
@@ -494,7 +633,7 @@ export default function MissionsPage() {
                     <div className="flex-1">
                       <h3 className="text-xl font-bold">{m.title}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {totalGames} games · 3 levels · {tierLabel}
+                        {totalGames} games · 3 levels · {m.guide.name}
                       </p>
                     </div>
                     <img src={m.guide.image} alt={m.guide.name} className="ml-auto h-16 w-16 object-contain opacity-80 group-hover:opacity-100 transition-opacity" />
@@ -503,7 +642,7 @@ export default function MissionsPage() {
                 <div className="p-6">
                   <p className="mb-4 text-sm text-muted-foreground">{m.description}</p>
 
-                  {/* Level progress indicators */}
+                  {/* Level progress with mini-game types */}
                   <div className="mb-4 grid grid-cols-3 gap-2">
                     {levels.map((level) => {
                       const levelStart = (level.level - 1) * modeConfig.gamesPerLevel;
@@ -538,6 +677,14 @@ export default function MissionsPage() {
                           <p className="text-muted-foreground">
                             {levelCompleted}/{modeConfig.gamesPerLevel}
                           </p>
+                          {/* Mini-game type indicators */}
+                          <div className="mt-1 flex flex-wrap gap-0.5 justify-center">
+                            {level.miniGameTypes.slice(0, 2).map((type, i) => (
+                              <span key={i} className="text-[9px]" title={MINI_GAME_META[type].label}>
+                                {MINI_GAME_META[type].emoji}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       );
                     })}
