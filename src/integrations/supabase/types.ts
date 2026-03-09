@@ -14,7 +14,157 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      child_profiles: {
+        Row: {
+          age: number
+          avatar: string
+          created_at: string
+          id: string
+          last_activity_date: string | null
+          level: number
+          name: string
+          parent_id: string
+          points: number
+          streak: number
+          updated_at: string
+        }
+        Insert: {
+          age: number
+          avatar?: string
+          created_at?: string
+          id?: string
+          last_activity_date?: string | null
+          level?: number
+          name: string
+          parent_id: string
+          points?: number
+          streak?: number
+          updated_at?: string
+        }
+        Update: {
+          age?: number
+          avatar?: string
+          created_at?: string
+          id?: string
+          last_activity_date?: string | null
+          level?: number
+          name?: string
+          parent_id?: string
+          points?: number
+          streak?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      earned_badges: {
+        Row: {
+          badge_icon: string
+          badge_id: string
+          badge_name: string
+          child_id: string
+          earned_at: string
+          id: string
+        }
+        Insert: {
+          badge_icon?: string
+          badge_id: string
+          badge_name: string
+          child_id: string
+          earned_at?: string
+          id?: string
+        }
+        Update: {
+          badge_icon?: string
+          badge_id?: string
+          badge_name?: string
+          child_id?: string
+          earned_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "earned_badges_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mission_progress: {
+        Row: {
+          child_id: string
+          completed_at: string | null
+          created_at: string
+          current_question: number
+          id: string
+          max_score: number
+          mission_id: string
+          score: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          child_id: string
+          completed_at?: string | null
+          created_at?: string
+          current_question?: number
+          id?: string
+          max_score?: number
+          mission_id: string
+          score?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          child_id?: string
+          completed_at?: string | null
+          created_at?: string
+          current_question?: number
+          id?: string
+          max_score?: number
+          mission_id?: string
+          score?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_progress_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          email: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
