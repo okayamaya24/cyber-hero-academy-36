@@ -150,6 +150,7 @@ export type Database = {
           display_name: string
           email: string | null
           id: string
+          parent_pin: string
           updated_at: string
           user_id: string
         }
@@ -158,6 +159,7 @@ export type Database = {
           display_name?: string
           email?: string | null
           id?: string
+          parent_pin?: string
           updated_at?: string
           user_id: string
         }
@@ -166,6 +168,7 @@ export type Database = {
           display_name?: string
           email?: string | null
           id?: string
+          parent_pin?: string
           updated_at?: string
           user_id?: string
         }
