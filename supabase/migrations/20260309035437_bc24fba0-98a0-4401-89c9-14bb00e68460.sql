@@ -1,0 +1,1 @@
+ALTER TABLE public.child_profiles ADD COLUMN avatar_config JSONB DEFAULT '{}' NOT NULL;
