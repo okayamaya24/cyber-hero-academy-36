@@ -88,7 +88,7 @@ function generateGrid(words: string[], size: number): { grid: string[][]; placed
 }
 
 export default function WordSearchGame({ missionId, ageTier, guideImage, guideName, onComplete }: Props) {
-  const size = ageTier === "junior" ? 6 : 8;
+  const size = ageTier === "junior" ? 6 : ageTier === "defender" ? 8 : 10;
   const wordList = WORD_LISTS[missionId]?.[ageTier] ?? WORD_LISTS["scam-detection"][ageTier];
 
   const { grid, placedWords } = useMemo(() => generateGrid(wordList, size), [missionId, ageTier]);
