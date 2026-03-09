@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import {
   type Question,
   type LearningMode,
   type MiniGameType,
+  type GuideCharacter,
   getMissionGames,
   getMissionLevels,
   getTotalGames,
@@ -33,10 +34,38 @@ import {
   LEVEL_NAMES,
 } from "@/data/missions";
 
+import detectiveCat from "@/assets/detective-cat.png";
+import wiseOwl from "@/assets/wise-owl.png";
+import robotGuide from "@/assets/robot-guide.png";
+import heroCharacter from "@/assets/hero-character.png";
+
+/* ── Guide roster for support rotation ──────────────────────── */
+const ALL_GUIDES: Record<string, GuideCharacter> = {
+  "Captain Cyber": { name: "Captain Cyber", image: heroCharacter, role: "Adventure Guide" },
+  "Detective Whiskers": { name: "Detective Whiskers", image: detectiveCat },
+  "Robo Buddy": { name: "Robo Buddy", image: robotGuide },
+  "Professor Hoot": { name: "Professor Hoot", image: wiseOwl },
+};
+
+const MISSION_SUPPORT: Record<string, string[]> = {
+  "scam-detection": ["Captain Cyber", "Professor Hoot"],
+  "password-safety": ["Captain Cyber", "Professor Hoot"],
+  "safe-websites": ["Detective Whiskers", "Robo Buddy"],
+  "personal-info": ["Captain Cyber", "Detective Whiskers"],
+};
+
+function getSupportGuide(missionId: string, gameIndex: number): GuideCharacter {
+  const supports = MISSION_SUPPORT[missionId] ?? ["Captain Cyber"];
+  const name = supports[gameIndex % supports.length];
+  return ALL_GUIDES[name] ?? ALL_GUIDES["Captain Cyber"];
+}
+
+/* ── Custom game types that render their own UI ─────────────── */
 const CUSTOM_GAME_TYPES: MiniGameType[] = [
   "word-search", "password-builder", "sort-game", "secret-keeper", "memory", "boss-battle",
 ];
 
+/* ── Encouragements ─────────────────────────────────────────── */
 const ENCOURAGEMENTS_PERFECT = [
   "You're a Cyber Superstar! 🌟",
   "PERFECT! The internet is safer because of YOU! 🛡️",
@@ -113,10 +142,15 @@ function MessageCard({ q, isJunior }: { q: Question; isJunior: boolean }) {
   );
 }
 
+/* ================================================================
+   MAIN COMPONENT
+   ================================================================ */
 export default function MissionsPage() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // ── State (single-source-of-truth) ───────────────────────────
   const [activeMission, setActiveMission] = useState<MissionDef | null>(null);
   const [showIntro, setShowIntro] = useState(false);
   const [currentQ, setCurrentQ] = useState(0);
@@ -124,6 +158,8 @@ export default function MissionsPage() {
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [missionComplete, setMissionComplete] = useState(false);
+  // Key to force-remount custom game components when advancing
+  const [gameKey, setGameKey] = useState(0);
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -167,24 +203,36 @@ export default function MissionsPage() {
 
   const getGames = (mission: MissionDef) => getMissionGames(mission, age, learningMode);
 
+  /* ── Start / reset ────────────────────────────────────────── */
   const startMission = (mission: MissionDef) => {
     setActiveMission(mission);
     setShowIntro(true);
     const existing = missionProgress.find((m) => m.mission_id === mission.id);
     const games = getGames(mission);
-    setCurrentQ(existing?.status === "in_progress" ? Math.min(existing.current_question, games.length - 1) : 0);
+    const startQ = existing?.status === "in_progress" ? Math.min(existing.current_question, games.length - 1) : 0;
+    setCurrentQ(startQ);
     setSelectedAnswer(null);
     setShowResult(false);
     setScore(existing?.status === "in_progress" ? existing.score : 0);
     setMissionComplete(false);
+    setGameKey((k) => k + 1);
   };
 
   const beginPlay = () => setShowIntro(false);
 
+  const resetMission = () => {
+    setActiveMission(null);
+    setMissionComplete(false);
+    setShowIntro(false);
+    setShowResult(false);
+    setSelectedAnswer(null);
+  };
+
+  /* ── Handlers ─────────────────────────────────────────────── */
   const handleCustomGameComplete = (correct: boolean) => {
     if (correct) setScore((s) => s + 1);
+    setSelectedAnswer(correct ? 0 : -1);
     setShowResult(true);
-    setSelectedAnswer(correct ? 0 : -1); // track for result display
   };
 
   const handleAnswer = (idx: number) => {
@@ -252,16 +300,12 @@ export default function MissionsPage() {
       queryClient.invalidateQueries({ queryKey: ["child"] });
       setMissionComplete(true);
     } else {
+      // Advance to next game — reset all per-game state
       setCurrentQ(nextQ);
       setSelectedAnswer(null);
       setShowResult(false);
+      setGameKey((k) => k + 1); // force remount custom games
     }
-  };
-
-  const resetMission = () => {
-    setActiveMission(null);
-    setMissionComplete(false);
-    setShowIntro(false);
   };
 
   const getCurrentLevel = () => {
@@ -277,9 +321,13 @@ export default function MissionsPage() {
     };
   };
 
-  // ─── Captain Cyber Mission Intro ─────────────────────────────
+  /* ================================================================
+     RENDER: Captain Cyber Mission Intro
+     ================================================================ */
   if (activeMission && showIntro) {
     const levels = getMissionLevels(activeMission, age, learningMode, 0);
+    const supportGuides = (MISSION_SUPPORT[activeMission.id] ?? []).map((n) => ALL_GUIDES[n]).filter(Boolean);
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <motion.div
@@ -307,16 +355,28 @@ export default function MissionsPage() {
               </p>
             </div>
 
-            {/* Mission info */}
-            <div className="flex items-center gap-3 mb-4">
+            {/* Mission info with main + support guides */}
+            <div className="flex items-center gap-3 mb-3">
               <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-12 w-12 object-contain" />
               <div className="text-left">
                 <h2 className="text-xl font-bold">{activeMission.title}</h2>
-                <p className="text-xs text-muted-foreground">Guide: {activeMission.guide.name}</p>
+                <p className="text-xs text-muted-foreground">Main Guide: {activeMission.guide.name}</p>
               </div>
             </div>
 
-            {/* Level breakdown with mini-game types */}
+            {supportGuides.length > 0 && (
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <span className="text-xs text-muted-foreground">Support:</span>
+                {supportGuides.map((g) => (
+                  <div key={g.name} className="flex items-center gap-1 rounded-full bg-muted px-2 py-1">
+                    <img src={g.image} alt={g.name} className="h-5 w-5 object-contain" />
+                    <span className="text-[10px] font-semibold">{g.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Level breakdown */}
             <div className="space-y-2 mb-6">
               {levels.map((level) => (
                 <div key={level.level} className="rounded-xl border bg-muted/30 p-3 text-left">
@@ -345,18 +405,28 @@ export default function MissionsPage() {
     );
   }
 
-  // ─── Active Quiz View ─────────────────────────────────────────
+  /* ================================================================
+     RENDER: Active Game (ONE panel at a time — no stacking)
+     ================================================================ */
   if (activeMission && !missionComplete && !showIntro) {
     const games = getGames(activeMission);
     const q = games[currentQ];
+    const isCustom = CUSTOM_GAME_TYPES.includes(q.miniGameType);
     const isJunior = tier === "junior";
     const hasMessageCard = !!q.sender;
     const runningPoints = score * pointsPerCorrect;
     const levelInfo = getCurrentLevel();
     const gameMeta = MINI_GAME_META[q.miniGameType];
 
+    // Pick which guide speaks in explanations: rotate support guides
+    const supportGuide = getSupportGuide(activeMission.id, currentQ);
+
+    // Determine if the current answer was correct
+    const isCorrect = isCustom ? selectedAnswer === 0 : selectedAnswer === q.correct;
+
     return (
       <div className="min-h-screen bg-background">
+        {/* ── Sticky header ──────────────────────────────────── */}
         <div className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur">
           <div className="container mx-auto max-w-2xl px-4 py-3">
             <div className="flex items-center justify-between">
@@ -394,97 +464,106 @@ export default function MissionsPage() {
           </div>
         </div>
 
+        {/* ── Single game panel ──────────────────────────────── */}
         <div className="container mx-auto max-w-2xl px-4 py-6">
-          {/* Mini-game type header */}
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="mb-2 flex items-center gap-2"
-          >
-            <span className="text-2xl">{gameMeta.emoji}</span>
-            <span className={`text-sm font-bold ${gameMeta.color}`}>{gameMeta.label}</span>
-          </motion.div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`game-${gameKey}-${currentQ}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.25 }}
+            >
+              {/* Game type header */}
+              <div className="mb-3 flex items-center gap-2">
+                <span className="text-2xl">{gameMeta.emoji}</span>
+                <span className={`text-sm font-bold ${gameMeta.color}`}>{gameMeta.label}</span>
+              </div>
 
-          {/* Custom mini-game or standard quiz */}
-          {CUSTOM_GAME_TYPES.includes(q.miniGameType) && !showResult ? (
-            <motion.div key={`custom-${currentQ}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              {q.miniGameType === "word-search" && (
-                <WordSearchGame
-                  missionId={activeMission.id}
-                  ageTier={tier}
-                  guideImage={activeMission.guide.image}
-                  guideName={activeMission.guide.name}
-                  onComplete={handleCustomGameComplete}
-                />
+              {/* ── CUSTOM GAME (not yet completed) ─────────── */}
+              {isCustom && !showResult && (
+                <>
+                  {q.miniGameType === "word-search" && (
+                    <WordSearchGame
+                      key={gameKey}
+                      missionId={activeMission.id}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
+                  {q.miniGameType === "password-builder" && (
+                    <PasswordBuilderGame
+                      key={gameKey}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
+                  {q.miniGameType === "sort-game" && (
+                    <SortGame
+                      key={gameKey}
+                      missionId={activeMission.id}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
+                  {q.miniGameType === "secret-keeper" && (
+                    <SecretKeeperGame
+                      key={gameKey}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
+                  {q.miniGameType === "memory" && (
+                    <MemoryGame
+                      key={gameKey}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
+                  {q.miniGameType === "boss-battle" && (
+                    <BossBattleGame
+                      key={gameKey}
+                      missionId={activeMission.id}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
+                </>
               )}
-              {q.miniGameType === "password-builder" && (
-                <PasswordBuilderGame
-                  ageTier={tier}
-                  guideImage={activeMission.guide.image}
-                  guideName={activeMission.guide.name}
-                  onComplete={handleCustomGameComplete}
-                />
-              )}
-              {q.miniGameType === "sort-game" && (
-                <SortGame
-                  missionId={activeMission.id}
-                  ageTier={tier}
-                  guideImage={activeMission.guide.image}
-                  guideName={activeMission.guide.name}
-                  onComplete={handleCustomGameComplete}
-                />
-              )}
-              {q.miniGameType === "secret-keeper" && (
-                <SecretKeeperGame
-                  ageTier={tier}
-                  guideImage={activeMission.guide.image}
-                  guideName={activeMission.guide.name}
-                  onComplete={handleCustomGameComplete}
-                />
-              )}
-              {q.miniGameType === "memory" && (
-                <MemoryGame
-                  ageTier={tier}
-                  guideImage={activeMission.guide.image}
-                  guideName={activeMission.guide.name}
-                  onComplete={handleCustomGameComplete}
-                />
-              )}
-              {q.miniGameType === "boss-battle" && (
-                <BossBattleGame
-                  missionId={activeMission.id}
-                  ageTier={tier}
-                  guideImage={activeMission.guide.image}
-                  guideName={activeMission.guide.name}
-                  onComplete={handleCustomGameComplete}
-                />
-              )}
-            </motion.div>
-          ) : (
-            <>
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-4 flex items-center gap-3"
-              >
-                <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-12 w-12 object-contain" />
-                <div className="rounded-2xl rounded-bl-sm bg-muted px-4 py-2">
-                  <p className={`font-semibold ${isJunior ? "text-base" : "text-sm"}`}>{q.question}</p>
-                </div>
-              </motion.div>
 
-              <motion.div key={currentQ} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                {hasMessageCard && <MessageCard q={q} isJunior={isJunior} />}
+              {/* ── STANDARD QUIZ (not yet answered) ────────── */}
+              {!isCustom && !showResult && (
+                <>
+                  {/* Guide bubble with question */}
+                  <div className="mb-4 flex items-center gap-3">
+                    <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-12 w-12 object-contain" />
+                    <div className="rounded-2xl rounded-bl-sm bg-muted px-4 py-2">
+                      <p className={`font-semibold ${isJunior ? "text-base" : "text-sm"}`}>{q.question}</p>
+                    </div>
+                  </div>
 
-                {!showResult && (
+                  {hasMessageCard && <MessageCard q={q} isJunior={isJunior} />}
+
                   <div className={`grid gap-3 ${q.options.length === 2 ? "grid-cols-2" : q.options.length === 3 ? "grid-cols-3" : "grid-cols-1"}`}>
                     {q.options.map((opt, idx) => {
-                      let baseStyle = "border-2 border-border bg-card hover:border-primary/50 hover:shadow-md";
                       let emoji = "";
                       if (q.miniGameType === "email-detective" || q.miniGameType === "quiz") {
-                        const isSafe = opt.toLowerCase() === "safe" || opt.toLowerCase() === "yes!" || opt.toLowerCase() === "okay" || opt.toLowerCase() === "good idea!" || opt.toLowerCase() === "smart choice!";
-                        const isScam = opt.toLowerCase() === "scam" || opt.toLowerCase() === "no way!" || opt.toLowerCase() === "bad idea!" || opt.toLowerCase() === "keep it secret!" || opt.toLowerCase() === "don't share it!";
-                        emoji = isSafe ? "✅" : isScam ? "🚫" : opt.toLowerCase() === "unsure" ? "🤔" : "";
+                        const lower = opt.toLowerCase();
+                        const isSafe = lower === "safe" || lower === "yes!" || lower === "okay" || lower === "good idea!" || lower === "smart choice!";
+                        const isScam = lower === "scam" || lower === "no way!" || lower === "bad idea!" || lower === "keep it secret!" || lower === "don't share it!";
+                        emoji = isSafe ? "✅" : isScam ? "🚫" : lower === "unsure" ? "🤔" : "";
                       } else if (q.miniGameType === "scenario") {
                         emoji = "🎭";
                       } else {
@@ -495,7 +574,7 @@ export default function MissionsPage() {
                         <button
                           key={idx}
                           onClick={() => handleAnswer(idx)}
-                          className={`group relative rounded-2xl p-5 text-center font-bold transition-all ${baseStyle} cursor-pointer active:scale-95 hover:scale-[1.03]`}
+                          className="group relative rounded-2xl border-2 border-border bg-card p-5 text-center font-bold transition-all hover:border-primary/50 hover:shadow-md cursor-pointer active:scale-95 hover:scale-[1.03]"
                         >
                           <span className={`block mb-1 ${isJunior ? "text-4xl" : "text-2xl"}`}>{emoji}</span>
                           <span className={isJunior ? "text-lg" : "text-base"}>{opt}</span>
@@ -503,80 +582,73 @@ export default function MissionsPage() {
                       );
                     })}
                   </div>
-                )}
+                </>
+              )}
 
-                <AnimatePresence>
-                  {showResult && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-5">
-                      <div className={`rounded-2xl p-5 ${
-                        selectedAnswer === q.correct
-                          ? "bg-secondary/10 border-2 border-secondary/30"
-                          : "bg-accent/10 border-2 border-accent/30"
-                      }`}>
-                        <div className="flex items-start gap-3">
-                          <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-10 w-10 object-contain shrink-0" />
-                          <div>
-                            <p className="font-bold text-base">
-                              {selectedAnswer === q.correct ? "🎉 Great job!" : "😊 Nice try!"}
-                            </p>
-                            <p className={`mt-1 text-muted-foreground leading-relaxed ${isJunior ? "text-base" : "text-sm"}`}>
-                              {q.explanation}
-                            </p>
-                            {selectedAnswer === q.correct && (
-                              <p className="mt-2 text-sm font-bold text-accent flex items-center gap-1">
-                                <Star className="h-4 w-4" /> +{pointsPerCorrect} points!
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <Button variant="hero" className="mt-4 w-full text-base py-6" onClick={nextQuestion}>
-                        {currentQ + 1 < games.length ? (
-                          <>Next Game <ArrowRight className="ml-2 h-5 w-5" /></>
-                        ) : (
-                          <>See My Results 🎉</>
+              {/* ── SINGLE RESULT CARD (for ALL game types) ─── */}
+              {showResult && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2"
+                >
+                  <div className={`rounded-2xl p-5 ${
+                    isCorrect
+                      ? "bg-secondary/10 border-2 border-secondary/30"
+                      : "bg-accent/10 border-2 border-accent/30"
+                  }`}>
+                    <div className="flex items-start gap-3">
+                      {/* Rotate support guide in explanations */}
+                      <img
+                        src={supportGuide.image}
+                        alt={supportGuide.name}
+                        className="h-10 w-10 object-contain shrink-0"
+                      />
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-0.5">{supportGuide.name} says:</p>
+                        <p className="font-bold text-base">
+                          {isCorrect ? "🎉 Great job!" : "😊 Nice try!"}
+                        </p>
+                        {/* Show explanation for standard quiz only */}
+                        {!isCustom && (
+                          <p className={`mt-1 text-muted-foreground leading-relaxed ${isJunior ? "text-base" : "text-sm"}`}>
+                            {q.explanation}
+                          </p>
                         )}
-                      </Button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            </>
-          )}
+                        {isCustom && (
+                          <p className={`mt-1 text-muted-foreground leading-relaxed ${isJunior ? "text-base" : "text-sm"}`}>
+                            {isCorrect ? "Excellent work, hero! Keep it up!" : "Good effort! Keep practicing and you'll get even better!"}
+                          </p>
+                        )}
+                        {isCorrect && (
+                          <p className="mt-2 text-sm font-bold text-accent flex items-center gap-1">
+                            <Star className="h-4 w-4" /> +{pointsPerCorrect} points!
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
-          {/* Show next button after custom game completes */}
-          {CUSTOM_GAME_TYPES.includes(q.miniGameType) && showResult && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
-              <div className={`rounded-2xl p-4 mb-3 text-center ${
-                selectedAnswer === 0 ? "bg-secondary/10 border-2 border-secondary/30" : "bg-accent/10 border-2 border-accent/30"
-              }`}>
-                <div className="flex items-center justify-center gap-2">
-                  <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-8 w-8 object-contain" />
-                  <p className="font-bold text-sm">
-                    {selectedAnswer === 0 ? "🎉 Excellent work, hero!" : "💪 Good effort! Keep practicing!"}
-                  </p>
-                </div>
-                {selectedAnswer === 0 && (
-                  <p className="mt-1 text-sm font-bold text-accent flex items-center justify-center gap-1">
-                    <Star className="h-4 w-4" /> +{pointsPerCorrect} points!
-                  </p>
-                )}
-              </div>
-              <Button variant="hero" className="w-full text-base py-6" onClick={nextQuestion}>
-                {currentQ + 1 < games.length ? (
-                  <>Next Game <ArrowRight className="ml-2 h-5 w-5" /></>
-                ) : (
-                  <>See My Results 🎉</>
-                )}
-              </Button>
+                  {/* SINGLE Next button */}
+                  <Button variant="hero" className="mt-4 w-full text-base py-6" onClick={nextQuestion}>
+                    {currentQ + 1 < games.length ? (
+                      <>Next Game <ArrowRight className="ml-2 h-5 w-5" /></>
+                    ) : (
+                      <>See My Results 🎉</>
+                    )}
+                  </Button>
+                </motion.div>
+              )}
             </motion.div>
-          )}
+          </AnimatePresence>
         </div>
       </div>
     );
   }
 
-  // ─── Mission Complete View (with Captain Cyber) ──────────────
+  /* ================================================================
+     RENDER: Mission Complete (Captain Cyber)
+     ================================================================ */
   if (missionComplete && activeMission) {
     const games = getGames(activeMission);
     const total = games.length;
@@ -603,7 +675,7 @@ export default function MissionsPage() {
               )}
             </div>
 
-            {/* Captain Cyber congratulates */}
+            {/* Captain Cyber + main guide congratulate */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -676,7 +748,9 @@ export default function MissionsPage() {
     );
   }
 
-  // ─── Mission List View ────────────────────────────────────────
+  /* ================================================================
+     RENDER: Mission List
+     ================================================================ */
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
@@ -725,7 +799,7 @@ export default function MissionsPage() {
                 <div className="p-6">
                   <p className="mb-4 text-sm text-muted-foreground">{m.description}</p>
 
-                  {/* Level progress with mini-game types */}
+                  {/* Level progress */}
                   <div className="mb-4 grid grid-cols-3 gap-2">
                     {levels.map((level) => {
                       const levelStart = (level.level - 1) * modeConfig.gamesPerLevel;
@@ -760,7 +834,6 @@ export default function MissionsPage() {
                           <p className="text-muted-foreground">
                             {levelCompleted}/{modeConfig.gamesPerLevel}
                           </p>
-                          {/* Mini-game type indicators */}
                           <div className="mt-1 flex flex-wrap gap-0.5 justify-center">
                             {level.miniGameTypes.slice(0, 2).map((type, i) => (
                               <span key={i} className="text-[9px]" title={MINI_GAME_META[type].label}>
