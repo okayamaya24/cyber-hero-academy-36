@@ -531,8 +531,10 @@ export const MISSIONS: MissionDef[] = [
     bgColor: "bg-secondary/10",
     guide: { name: "Detective Whiskers", image: detectiveCat },
     levelMiniGames: [
-      ["quiz", "spot-the-difference"],
-      ["scenario", "quiz"],
+      ["sort-game", "quiz"],
+      ["word-search", "memory"],
+      ["sort-game", "boss-battle"],
+    ],
       ["spot-the-difference", "scenario", "quiz"],
     ],
     badgeId: "safe-surfer",
