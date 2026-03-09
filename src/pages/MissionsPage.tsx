@@ -82,7 +82,6 @@ export default function MissionsPage() {
     if (isLast) {
       // Award points
       const pointsEarned = score * 50;
-      await supabase.rpc("", {}).catch(() => {}); // ignore
       // Update child points and streak directly
       const { data: child } = await supabase
         .from("child_profiles")
