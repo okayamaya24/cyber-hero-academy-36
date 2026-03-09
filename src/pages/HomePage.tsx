@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Shield, Star, Gamepad2, Users, Award, BookOpen } from "lucide-react";
+import heroKidsGroup from "@/assets/hero-kids-group.png";
 import heroCharacter from "@/assets/hero-character.png";
 import robotGuide from "@/assets/robot-guide.png";
 import detectiveCat from "@/assets/detective-cat.png";
@@ -97,9 +98,9 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <img
-              src={heroCharacter}
-              alt="Captain Cyber - your hero guide"
-              className="w-64 md:w-80 animate-float drop-shadow-2xl"
+              src={heroKidsGroup}
+              alt="Diverse group of kids as Cyber Heroes"
+              className="w-full max-w-md md:max-w-lg drop-shadow-2xl"
             />
           </motion.div>
         </div>
