@@ -585,8 +585,6 @@ export const MISSIONS: MissionDef[] = [
       ["word-search", "memory"],
       ["secret-keeper", "boss-battle"],
     ],
-      ["scenario", "word-search", "quiz"],
-    ],
     badgeId: "privacy-knight",
     badgeName: "Privacy Knight",
     badgeIcon: "🛡️",
