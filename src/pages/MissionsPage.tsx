@@ -1,23 +1,92 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Star, CheckCircle2, XCircle, ArrowRight, Sparkles } from "lucide-react";
+import { Star, CheckCircle2, XCircle, ArrowRight, Sparkles, Mail, ExternalLink, Trophy, Flame } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MISSIONS, type MissionDef, getMissionQuestions, getAgeTier, getTierLabel, getTierEmoji } from "@/data/missions";
-import { toast } from "sonner";
+import {
+  MISSIONS,
+  type MissionDef,
+  type Question,
+  getMissionQuestions,
+  getAgeTier,
+  getTierLabel,
+  getTierEmoji,
+  getPointsPerCorrect,
+} from "@/data/missions";
 
-const ENCOURAGEMENTS = [
+const ENCOURAGEMENTS_PERFECT = [
   "You're a Cyber Superstar! 🌟",
-  "Amazing work, hero! 🦸",
-  "The internet is safer because of YOU! 🛡️",
-  "You're leveling up fast! 🚀",
-  "Incredible job, Cyber Champion! 🏆",
+  "PERFECT! The internet is safer because of YOU! 🛡️",
+  "Incredible! You're a true Cyber Hero! 🦸",
+  "Wow! Not a single mistake! You're amazing! 🏆",
 ];
+
+const ENCOURAGEMENTS_GOOD = [
+  "Great work, hero! You're learning fast! 🚀",
+  "Amazing effort! Keep it up! 💪",
+  "You're getting stronger every day! 🌟",
+  "Nice job! Practice makes perfect! ⭐",
+];
+
+const ENCOURAGEMENTS_TRY = [
+  "Nice try! Every hero keeps practicing! 💪",
+  "Don't give up! You'll do even better next time! 🌈",
+  "Good effort! Learning is what heroes do! 📚",
+  "You're on your way! Try again to beat your score! 🎯",
+];
+
+function getEncouragement(score: number, total: number) {
+  const ratio = score / total;
+  const pool = ratio === 1 ? ENCOURAGEMENTS_PERFECT : ratio >= 0.6 ? ENCOURAGEMENTS_GOOD : ENCOURAGEMENTS_TRY;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+/** Renders a "message card" for scam-detection style questions */
+function MessageCard({ q, isJunior }: { q: Question; isJunior: boolean }) {
+  if (!q.sender) return null;
+
+  return (
+    <div className={`mb-6 overflow-hidden rounded-2xl border-2 border-border bg-background shadow-card ${isJunior ? "text-lg" : ""}`}>
+      {/* Header */}
+      <div className="flex items-center gap-3 border-b border-border bg-muted/50 px-4 py-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-card text-xl shadow-sm">
+          {q.senderIcon || "📧"}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className={`font-bold truncate ${isJunior ? "text-base" : "text-sm"}`}>{q.sender}</p>
+          {!isJunior && q.sender.includes("@") && (
+            <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+              <Mail className="h-3 w-3" /> {q.sender}
+            </p>
+          )}
+        </div>
+      </div>
+      {/* Subject */}
+      {q.subject && (
+        <div className="border-b border-border px-4 py-2">
+          <p className={`font-bold ${isJunior ? "text-lg" : "text-sm"}`}>{q.subject}</p>
+        </div>
+      )}
+      {/* Body */}
+      <div className="px-4 py-4">
+        <p className={`leading-relaxed text-foreground ${isJunior ? "text-base" : "text-sm"}`}>
+          {q.body}
+        </p>
+        {q.fakeLink && (
+          <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-dashed border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+            <ExternalLink className="h-4 w-4 shrink-0" />
+            <span className="truncate font-mono text-xs">{q.fakeLink}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function MissionsPage() {
   const { user, activeChildId } = useAuth();
@@ -66,6 +135,7 @@ export default function MissionsPage() {
   const tier = getAgeTier(age);
   const tierLabel = getTierLabel(tier);
   const tierEmoji = getTierEmoji(tier);
+  const pointsPerCorrect = getPointsPerCorrect(tier);
 
   const getQuestions = (mission: MissionDef) => getMissionQuestions(mission, age);
 
@@ -101,7 +171,7 @@ export default function MissionsPage() {
         child_id: activeChildId,
         mission_id: activeMission.id,
         status: isLast ? "completed" : "in_progress",
-        score: score,
+        score,
         max_score: questions.length,
         current_question: isLast ? questions.length : nextQ,
         completed_at: isLast ? new Date().toISOString() : null,
@@ -110,7 +180,7 @@ export default function MissionsPage() {
     );
 
     if (isLast) {
-      const pointsEarned = score * 50;
+      const pointsEarned = score * pointsPerCorrect;
       const { data: childData } = await supabase
         .from("child_profiles")
         .select("points, streak, level, last_activity_date")
@@ -157,86 +227,139 @@ export default function MissionsPage() {
     setMissionComplete(false);
   };
 
-  // Active quiz view
+  // ─── Active Quiz View ─────────────────────────────────────────
   if (activeMission && !missionComplete) {
     const questions = getQuestions(activeMission);
     const q = questions[currentQ];
     const isJunior = tier === "junior";
+    const hasMessageCard = !!q.sender;
+    const runningPoints = score * pointsPerCorrect;
 
     return (
-      <div className="min-h-screen bg-background py-8">
-        <div className="container mx-auto max-w-2xl px-4">
-          <Button variant="ghost" onClick={resetMission} className="mb-4">
-            ← Back to Missions
-          </Button>
-          <div className="mb-6 flex items-center gap-4">
-            <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-16 w-16 object-contain" />
-            <div>
-              <h2 className="text-xl font-bold">{activeMission.title}</h2>
-              <p className="text-sm text-muted-foreground">{activeMission.guide.name} is guiding you!</p>
-              <Badge variant="outline" className="mt-1 text-xs">
-                {tierEmoji} {tierLabel}
-              </Badge>
+      <div className="min-h-screen bg-background">
+        {/* Top Bar */}
+        <div className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur">
+          <div className="container mx-auto max-w-2xl px-4 py-3">
+            <div className="flex items-center justify-between">
+              <button onClick={resetMission} className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                ← Back
+              </button>
+              <div className="text-center">
+                <h2 className="text-sm font-bold">{activeMission.title}</h2>
+                <Badge variant="outline" className="mt-0.5 text-[10px] px-2 py-0">
+                  {tierEmoji} {tierLabel}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-1 text-sm font-bold text-accent">
+                <Star className="h-4 w-4" />
+                {runningPoints}
+              </div>
+            </div>
+            <div className="mt-2">
+              <div className="mb-1 flex justify-between text-xs text-muted-foreground">
+                <span>Question {currentQ + 1} of {questions.length}</span>
+                <span>{score} correct</span>
+              </div>
+              <Progress value={((currentQ + 1) / questions.length) * 100} className="h-2" />
             </div>
           </div>
-          <div className="mb-4">
-            <div className="mb-1 flex justify-between text-sm text-muted-foreground">
-              <span>Question {currentQ + 1} of {questions.length}</span>
-              <span>Score: {score}/{questions.length}</span>
+        </div>
+
+        <div className="container mx-auto max-w-2xl px-4 py-6">
+          {/* Guide */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 flex items-center gap-3"
+          >
+            <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-12 w-12 object-contain" />
+            <div className="rounded-2xl rounded-bl-sm bg-muted px-4 py-2">
+              <p className={`font-semibold ${isJunior ? "text-base" : "text-sm"}`}>{q.question}</p>
             </div>
-            <Progress value={((currentQ + 1) / questions.length) * 100} className="h-3" />
-          </div>
-          <motion.div key={currentQ} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} className="rounded-2xl border bg-card p-6 shadow-card">
-            <h3 className={`mb-6 font-bold ${isJunior ? "text-xl leading-relaxed" : "text-lg"}`}>{q.question}</h3>
-            <div className={`grid gap-3 ${q.options.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
+          </motion.div>
+
+          {/* Message Card (for scam-detection missions) */}
+          <motion.div key={currentQ} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            {hasMessageCard && <MessageCard q={q} isJunior={isJunior} />}
+
+            {/* Answer Buttons */}
+            <div className={`grid gap-3 ${q.options.length === 2 ? "grid-cols-2" : q.options.length === 3 ? "grid-cols-3" : "grid-cols-1"}`}>
               {q.options.map((opt, idx) => {
-                let style = "border-2 border-border bg-background hover:border-primary/50";
+                let baseStyle = "border-2 border-border bg-card hover:border-primary/50 hover:shadow-md";
                 if (showResult) {
-                  if (idx === q.correct) style = "border-2 border-secondary bg-secondary/10";
-                  else if (idx === selectedAnswer && idx !== q.correct) style = "border-2 border-destructive bg-destructive/10";
+                  if (idx === q.correct) baseStyle = "border-2 border-secondary bg-secondary/10 shadow-md";
+                  else if (idx === selectedAnswer && idx !== q.correct) baseStyle = "border-2 border-destructive bg-destructive/10";
+                  else baseStyle = "border-2 border-border bg-card opacity-50";
                 }
 
-                // For 2-option (Safe/Scam) layout, make buttons bigger and more visual
-                if (q.options.length === 2) {
-                  const isSafe = opt.toLowerCase() === "safe";
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => handleAnswer(idx)}
-                      disabled={showResult}
-                      className={`rounded-2xl p-6 text-center font-bold text-lg transition-all ${style} ${!showResult ? "cursor-pointer hover:scale-105" : ""}`}
-                    >
-                      <span className="block text-3xl mb-2">{isSafe ? "✅" : "🚫"}</span>
-                      {opt}
-                      {showResult && idx === q.correct && <CheckCircle2 className="mx-auto mt-2 h-5 w-5 text-secondary" />}
-                      {showResult && idx === selectedAnswer && idx !== q.correct && <XCircle className="mx-auto mt-2 h-5 w-5 text-destructive" />}
-                    </button>
-                  );
-                }
+                const isSafe = opt.toLowerCase() === "safe";
+                const isScam = opt.toLowerCase() === "scam";
+                const isUnsure = opt.toLowerCase() === "unsure";
+                const emoji = isSafe ? "✅" : isScam ? "🚫" : isUnsure ? "🤔" : "";
 
                 return (
-                  <button key={idx} onClick={() => handleAnswer(idx)} disabled={showResult}
-                    className={`w-full rounded-xl p-4 text-left font-semibold transition-all ${style} ${!showResult ? "cursor-pointer hover:scale-[1.02]" : ""}`}>
-                    <span className="flex items-center gap-3">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-bold">
-                        {String.fromCharCode(65 + idx)}
-                      </span>
-                      {opt}
-                      {showResult && idx === q.correct && <CheckCircle2 className="ml-auto h-5 w-5 text-secondary" />}
-                      {showResult && idx === selectedAnswer && idx !== q.correct && <XCircle className="ml-auto h-5 w-5 text-destructive" />}
-                    </span>
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(idx)}
+                    disabled={showResult}
+                    className={`group relative rounded-2xl p-5 text-center font-bold transition-all ${baseStyle} ${
+                      !showResult ? "cursor-pointer active:scale-95 hover:scale-[1.03]" : ""
+                    }`}
+                  >
+                    <span className={`block mb-1 ${isJunior ? "text-4xl" : "text-2xl"}`}>{emoji}</span>
+                    <span className={isJunior ? "text-lg" : "text-base"}>{opt}</span>
+                    {showResult && idx === q.correct && (
+                      <CheckCircle2 className="mx-auto mt-1 h-5 w-5 text-secondary" />
+                    )}
+                    {showResult && idx === selectedAnswer && idx !== q.correct && (
+                      <XCircle className="mx-auto mt-1 h-5 w-5 text-destructive" />
+                    )}
                   </button>
                 );
               })}
             </div>
+
+            {/* Feedback */}
             <AnimatePresence>
               {showResult && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 rounded-xl bg-muted p-4">
-                  <p className="text-sm font-semibold">{selectedAnswer === q.correct ? "🎉 Correct!" : "😅 Not quite!"}</p>
-                  <p className={`mt-1 text-muted-foreground ${isJunior ? "text-base" : "text-sm"}`}>{q.explanation}</p>
-                  <Button variant="hero" size="sm" className="mt-3" onClick={nextQuestion}>
-                    {currentQ + 1 < questions.length ? "Next Question" : "See Results"}
-                    <ArrowRight className="ml-1 h-4 w-4" />
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="mt-5"
+                >
+                  <div className={`rounded-2xl p-5 ${
+                    selectedAnswer === q.correct
+                      ? "bg-secondary/10 border-2 border-secondary/30"
+                      : "bg-accent/10 border-2 border-accent/30"
+                  }`}>
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={activeMission.guide.image}
+                        alt={activeMission.guide.name}
+                        className="h-10 w-10 object-contain shrink-0"
+                      />
+                      <div>
+                        <p className="font-bold text-base">
+                          {selectedAnswer === q.correct ? "🎉 Great job!" : "😊 Nice try!"}
+                        </p>
+                        <p className={`mt-1 text-muted-foreground leading-relaxed ${isJunior ? "text-base" : "text-sm"}`}>
+                          {q.explanation}
+                        </p>
+                        {selectedAnswer === q.correct && (
+                          <p className="mt-2 text-sm font-bold text-accent flex items-center gap-1">
+                            <Star className="h-4 w-4" /> +{pointsPerCorrect} points!
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <Button variant="hero" className="mt-4 w-full text-base py-6" onClick={nextQuestion}>
+                    {currentQ + 1 < questions.length ? (
+                      <>Next Question <ArrowRight className="ml-2 h-5 w-5" /></>
+                    ) : (
+                      <>See My Results 🎉</>
+                    )}
                   </Button>
                 </motion.div>
               )}
@@ -247,45 +370,116 @@ export default function MissionsPage() {
     );
   }
 
-  // Mission complete view
+  // ─── Mission Complete View ────────────────────────────────────
   if (missionComplete && activeMission) {
     const questions = getQuestions(activeMission);
     const total = questions.length;
     const perfect = score === total;
-    const encouragement = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
+    const totalPoints = score * pointsPerCorrect;
+    const encouragement = getEncouragement(score, total);
 
     return (
-      <div className="min-h-screen bg-background py-8">
-        <div className="container mx-auto max-w-md px-4 text-center">
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring" }} className="rounded-3xl border bg-card p-8 shadow-card">
-            <div className="mb-4 text-6xl">{perfect ? "🏆" : "⭐"}</div>
-            <h2 className="text-2xl font-bold">{perfect ? "Perfect Score!" : "Mission Complete!"}</h2>
-            <p className="mt-2 text-muted-foreground">You scored {score} out of {total}!</p>
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <motion.div
+          initial={{ scale: 0, rotate: -10 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", duration: 0.8 }}
+          className="w-full max-w-md"
+        >
+          <div className="rounded-3xl border-2 bg-card p-8 shadow-playful text-center overflow-hidden relative">
+            {/* Confetti-like decorations */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              {perfect && (
+                <>
+                  <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 0.6 }} transition={{ delay: 0.3 }}
+                    className="absolute top-4 left-6 text-3xl">🎊</motion.div>
+                  <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 0.6 }} transition={{ delay: 0.5 }}
+                    className="absolute top-8 right-8 text-2xl">✨</motion.div>
+                  <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 0.6 }} transition={{ delay: 0.7 }}
+                    className="absolute bottom-16 left-8 text-2xl">🌟</motion.div>
+                </>
+              )}
+            </div>
+
+            {/* Trophy/Star */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring" }}
+              className="mb-4 text-7xl"
+            >
+              {perfect ? "🏆" : score >= total * 0.6 ? "⭐" : "💪"}
+            </motion.div>
+
+            <h2 className="text-2xl font-bold">
+              {perfect ? "Perfect Score!" : score >= total * 0.6 ? "Mission Complete!" : "Good Try!"}
+            </h2>
+
             <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="mt-3 text-lg font-semibold text-primary flex items-center justify-center gap-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="mt-2 text-lg font-semibold text-primary flex items-center justify-center gap-2"
             >
               <Sparkles className="h-5 w-5" />
               {encouragement}
             </motion.p>
-            <div className="mt-4 flex items-center justify-center gap-2">
-              <Star className="h-5 w-5 text-accent" />
-              <span className="text-lg font-bold text-accent">+{score * 50} Points</span>
+
+            {/* Score breakdown */}
+            <div className="mt-6 grid grid-cols-3 gap-3">
+              <div className="rounded-xl bg-muted p-3">
+                <div className="text-2xl font-bold">{score}/{total}</div>
+                <div className="text-xs text-muted-foreground">Correct</div>
+              </div>
+              <div className="rounded-xl bg-accent/10 p-3">
+                <div className="text-2xl font-bold text-accent flex items-center justify-center gap-1">
+                  <Star className="h-5 w-5" />{totalPoints}
+                </div>
+                <div className="text-xs text-muted-foreground">Points</div>
+              </div>
+              <div className="rounded-xl bg-destructive/10 p-3">
+                <div className="text-2xl font-bold flex items-center justify-center gap-1">
+                  <Flame className="h-5 w-5 text-destructive" />+1
+                </div>
+                <div className="text-xs text-muted-foreground">Streak</div>
+              </div>
             </div>
-            {perfect && <Badge className="mt-3 bg-accent text-accent-foreground border-0">🏅 New Badge Earned!</Badge>}
+
+            {/* Badge */}
+            {perfect ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6, type: "spring" }}
+                className="mt-5 inline-flex items-center gap-2 rounded-full bg-accent/20 border-2 border-accent/40 px-5 py-2"
+              >
+                <span className="text-2xl">{activeMission.badgeIcon}</span>
+                <div className="text-left">
+                  <p className="text-xs font-bold text-accent">Badge Earned!</p>
+                  <p className="text-sm font-bold">{activeMission.badgeName}</p>
+                </div>
+              </motion.div>
+            ) : (
+              <p className="mt-5 text-sm text-muted-foreground">
+                Get a perfect score to earn the <strong>{activeMission.badgeName}</strong> badge! {activeMission.badgeIcon}
+              </p>
+            )}
+
             <div className="mt-6 flex gap-3">
-              <Button variant="outline" className="flex-1" onClick={resetMission}>Back to Missions</Button>
-              <Button variant="hero" className="flex-1" onClick={() => navigate("/dashboard")}>Dashboard</Button>
+              <Button variant="outline" className="flex-1" onClick={resetMission}>
+                Back to Missions
+              </Button>
+              <Button variant="hero" className="flex-1" onClick={() => navigate("/dashboard")}>
+                Continue to Dashboard
+              </Button>
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       </div>
     );
   }
 
-  // Mission list view
+  // ─── Mission List View ────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
@@ -294,7 +488,7 @@ export default function MissionsPage() {
           <p className="mt-2 text-muted-foreground">Choose a mission and become a Cyber Hero!</p>
           {child && (
             <Badge variant="outline" className="mt-3 text-sm px-4 py-1">
-              {tierEmoji} {tierLabel} · Age {age}
+              {tierEmoji} {tierLabel} · Age {age} · {pointsPerCorrect} pts per question
             </Badge>
           )}
         </motion.div>
@@ -325,6 +519,7 @@ export default function MissionsPage() {
                   {isCompleted ? (
                     <div className="flex items-center gap-2">
                       <Badge className="bg-secondary text-secondary-foreground border-0">✓ Completed</Badge>
+                      <span className="text-xs text-muted-foreground">Score: {mp?.score}/{mp?.max_score}</span>
                       <Button variant="outline" size="sm" className="ml-auto" onClick={() => startMission(m)}>Retry</Button>
                     </div>
                   ) : (

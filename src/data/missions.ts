@@ -9,6 +9,12 @@ export interface Question {
   options: string[];
   correct: number;
   explanation: string;
+  /** Optional message card fields for scam-style missions */
+  sender?: string;
+  subject?: string;
+  body?: string;
+  fakeLink?: string;
+  senderIcon?: string;
 }
 
 export interface MissionDef {
@@ -47,7 +53,14 @@ export function getTierEmoji(tier: AgeTier): string {
   }
 }
 
-/** Helper to get the questions for a mission based on age */
+export function getPointsPerCorrect(tier: AgeTier): number {
+  switch (tier) {
+    case "junior": return 10;
+    case "defender": return 15;
+    case "guardian": return 20;
+  }
+}
+
 export function getMissionQuestions(mission: MissionDef, age: number): Question[] {
   return mission.questionsByTier[getAgeTier(age)];
 }
@@ -67,98 +80,168 @@ export const MISSIONS: MissionDef[] = [
     questionsByTier: {
       junior: [
         {
-          question: "Someone sends you a message: 'You won a toy! Click here!' 🎁",
+          question: "Is this message safe or a scam?",
+          sender: "🎁 Mystery Prize Bot",
+          senderIcon: "🎁",
+          subject: "You won a FREE toy!",
+          body: "Click the big button to get your toy NOW!!! 🧸🎉",
+          fakeLink: "👉 CLICK HERE FOR TOY",
           options: ["Safe", "Scam"],
           correct: 1,
-          explanation: "That's a scam! Nobody gives free toys to strangers online.",
+          explanation: "That's a scam! Nobody gives free toys to strangers online. If it sounds too good, tell a grown-up!",
         },
         {
-          question: "Your mom texts you: 'Dinner is ready, come home!' 🍕",
+          question: "Is this message safe or a scam?",
+          sender: "Mom 💕",
+          senderIcon: "👩",
+          subject: "Dinner time!",
+          body: "Hey sweetie, dinner is ready! Come to the kitchen. Love you! 🍕",
           options: ["Safe", "Scam"],
           correct: 0,
-          explanation: "That's safe! Messages from your family that you recognize are okay.",
+          explanation: "That's safe! Messages from your family that you recognize are totally okay. 💕",
         },
         {
-          question: "A pop-up says: 'Your tablet has a virus! Call this number!' 😱",
+          question: "Is this message safe or a scam?",
+          sender: "⚠️ VIRUS ALERT",
+          senderIcon: "⚠️",
+          subject: "YOUR TABLET HAS A VIRUS!!!",
+          body: "Call this number RIGHT NOW or your tablet will BREAK! 😱📞",
+          fakeLink: "📞 CALL 1-800-FAKE",
           options: ["Safe", "Scam"],
           correct: 1,
-          explanation: "That's a scam! Real virus warnings don't ask you to call a number.",
+          explanation: "That's a scam! Real virus warnings don't yell at you or ask you to call a number. Close it and tell an adult!",
         },
         {
-          question: "Your teacher sends a message on the school app about homework. 📚",
+          question: "Is this message safe or a scam?",
+          sender: "Ms. Johnson 📚",
+          senderIcon: "👩‍🏫",
+          subject: "Homework reminder",
+          body: "Don't forget to read chapter 3 for tomorrow! Have a great evening!",
           options: ["Safe", "Scam"],
           correct: 0,
-          explanation: "That's safe! Messages from your teacher on the school app are real.",
+          explanation: "That's safe! Your teacher is just reminding you about homework on the school app. 📚",
         },
         {
-          question: "A stranger online says: 'Send me your photo and I'll make you famous!' 📸",
+          question: "Is this message safe or a scam?",
+          sender: "Cool_Stranger_99",
+          senderIcon: "🕵️",
+          subject: "I can make you FAMOUS!",
+          body: "Hey kid! Send me your photo and I'll put you on TV! You'll be a STAR! ⭐📸",
           options: ["Safe", "Scam"],
           correct: 1,
-          explanation: "That's a scam! Never send photos to strangers online.",
+          explanation: "That's a scam! Never send photos to strangers online. Real TV people don't ask random kids for photos!",
         },
       ],
       defender: [
         {
-          question: "You get an email: 'Dear user, your Roblox account will be deleted unless you click this link and enter your password.' What do you think?",
+          question: "Is this message safe or a scam?",
+          sender: "security@r0blox-alerts.com",
+          senderIcon: "🎮",
+          subject: "URGENT: Your Roblox account will be DELETED",
+          body: "Dear user, we detected suspicious activity on your account. Your account will be permanently deleted in 24 hours unless you verify your identity. Click the link below and enter your password immediately.",
+          fakeLink: "🔗 r0blox-verify.com/save-account",
           options: ["Safe", "Scam"],
           correct: 1,
-          explanation: "This is a phishing scam! Real companies never ask for your password in an email. Always go directly to the website yourself.",
+          explanation: "Phishing scam! Notice the email uses 'r0blox' (with a zero) not 'Roblox.' Real companies never ask for your password in an email. Always go to the real website directly.",
         },
         {
-          question: "Your school sends an email from school@myschool.edu about a field trip next week with details your teacher mentioned in class.",
+          question: "Is this message safe or a scam?",
+          sender: "school@myschool.edu",
+          senderIcon: "🏫",
+          subject: "Field Trip to Science Museum — Next Friday",
+          body: "Dear parents, this is a reminder that the field trip to the City Science Museum is next Friday. Please return the signed permission slip by Wednesday. Bring a packed lunch!",
           options: ["Safe", "Scam"],
           correct: 0,
-          explanation: "This looks safe! The email matches what your teacher said, and comes from the official school address.",
+          explanation: "This looks safe! The email matches what your teacher mentioned, comes from the official school address, and has realistic details.",
         },
         {
-          question: "A text message says: 'Congrats! You've been selected to win a free iPhone 15! Click here to claim: bit.ly/fr33phone'",
+          question: "Is this message safe or a scam?",
+          sender: "+1-555-WINNER",
+          senderIcon: "📱",
+          subject: "🎉 CONGRATULATIONS!!! 🎉",
+          body: "You've been randomly selected to win a FREE iPhone 15!! This is NOT a joke! Click the link below within 10 minutes or you'll lose your prize forever!",
+          fakeLink: "🔗 bit.ly/fr33-ph0ne-now",
           options: ["Safe", "Scam"],
           correct: 1,
-          explanation: "Classic scam! Suspicious shortened links and 'free' prizes are big red flags. Nobody randomly gives away expensive phones.",
+          explanation: "Classic scam! Red flags: suspicious shortened link with numbers replacing letters, urgency pressure ('10 minutes!'), and nobody randomly gives away phones.",
         },
         {
-          question: "You see a YouTube ad for a game you like that links to the official app store page.",
+          question: "Is this message safe or a scam?",
+          sender: "YouTube Ads",
+          senderIcon: "▶️",
+          subject: "New update for Dragon Quest!",
+          body: "Dragon Quest Heroes has a new expansion! Download it from the official App Store today. Rated E for Everyone.",
+          fakeLink: "🔗 apps.apple.com/dragon-quest",
           options: ["Safe", "Scam"],
           correct: 0,
-          explanation: "This is likely safe! Ads linking to official app stores are normal. Always double-check the developer name though.",
+          explanation: "This is likely safe! The link goes to the official App Store. Always double-check the developer name matches the real game company.",
         },
         {
-          question: "Someone on Discord DMs you: 'Hey, I'm a Minecraft admin. Give me your login to get free diamonds.'",
+          question: "Is this message safe or a scam?",
+          sender: "xX_MinecraftAdmin_Xx",
+          senderIcon: "💬",
+          subject: "FREE DIAMONDS — Discord DM",
+          body: "Hey bro! I'm an official Minecraft admin. If you give me your login details, I'll add 10,000 diamonds to your account. This is a limited-time offer for VIP players only!!",
           options: ["Safe", "Scam"],
           correct: 1,
-          explanation: "Scam alert! No real game admin would ask for your password. They don't need it to give you items.",
+          explanation: "Scam alert! No real game admin asks for your password through DMs. They don't need your login to give you items. This is someone trying to steal your account.",
         },
       ],
       guardian: [
         {
-          question: "You receive an email from 'noreply@amaz0n-security.com' saying there's suspicious activity on your parent's account and you need to verify payment info immediately.",
+          question: "What do you think about this email?",
+          sender: "noreply@amaz0n-security.com",
+          senderIcon: "📧",
+          subject: "URGENT: Suspicious Activity Detected on Your Account",
+          body: "We have detected an unauthorized purchase of $847.99 on your account. If you did not make this purchase, you must verify your payment information within 2 hours to prevent your account from being suspended. Click below to verify your identity.",
+          fakeLink: "🔗 amaz0n-security.com/verify-payment",
           options: ["Safe", "Scam", "Unsure"],
           correct: 1,
-          explanation: "This is a phishing email. Notice 'amaz0n' uses a zero instead of 'o', and the domain isn't amazon.com. Legitimate companies use their real domain and don't pressure you to act immediately.",
+          explanation: "Phishing email! Notice 'amaz0n' uses a zero instead of 'o', and the domain is 'amaz0n-security.com' — not amazon.com. Urgency pressure ('2 hours') is a manipulation tactic. Real Amazon emails come from @amazon.com.",
         },
         {
-          question: "Your school librarian sends a Google Classroom notification about a new reading assignment with a link to a Google Doc.",
+          question: "What do you think about this notification?",
+          sender: "Google Classroom",
+          senderIcon: "📖",
+          subject: "New Assignment: Chapter 5 Reading Response",
+          body: "Mrs. Chen posted a new assignment in English Language Arts. Read Chapter 5 and complete the response worksheet in the linked Google Doc. Due: Friday at 3pm.",
+          fakeLink: "🔗 docs.google.com/document/d/...",
           options: ["Safe", "Scam", "Unsure"],
           correct: 0,
-          explanation: "This is safe. It came through Google Classroom (a trusted platform), from a known person, linking to a Google Doc — all consistent and expected.",
+          explanation: "This is safe. It came through Google Classroom (a trusted platform), from a known teacher, linking to a Google Doc — all consistent and expected.",
         },
         {
-          question: "A social media ad offers a 'free' cybersecurity course for kids, but requires your parent's credit card 'just for verification, you won't be charged.'",
+          question: "What do you think about this ad?",
+          sender: "CyberKids Academy Pro",
+          senderIcon: "📢",
+          subject: "🎓 FREE Cybersecurity Course for Kids!",
+          body: "Enroll your child in our premium cybersecurity course — completely FREE! We just need your parent's credit card for age verification purposes. You will NOT be charged. Limited spots available, act now!",
+          fakeLink: "🔗 cyberkids-pro.net/enroll-free",
           options: ["Safe", "Scam", "Unsure"],
           correct: 1,
-          explanation: "If it's truly free, why do they need a credit card? This is a common trick to charge hidden fees later. Never enter payment info for 'free' offers.",
+          explanation: "If it's truly free, why do they need a credit card? 'Age verification' via credit card is a trick to charge hidden fees. The urgency ('limited spots!') is pressure. Never enter payment info for 'free' offers.",
         },
         {
-          question: "You find a website that looks like Google but the URL is 'gooogle.com' (three o's). It asks you to sign in.",
+          question: "What do you think about this website?",
+          sender: "gooogle.com",
+          senderIcon: "🌐",
+          subject: "Sign in to your Google Account",
+          body: "Your session has expired. Please enter your email and password to continue using Google services. This page looks exactly like the real Google login page.",
+          fakeLink: "🔗 gooogle.com/accounts/signin",
           options: ["Safe", "Scam", "Unsure"],
           correct: 1,
-          explanation: "This is called 'typosquatting' — a fake website designed to look real. Always check the URL carefully. The real Google is google.com, not gooogle.com.",
+          explanation: "This is 'typosquatting' — a fake website with a misspelled URL (three o's). The real Google is google.com. Always check the URL carefully before entering credentials. Bookmark important sites!",
         },
         {
-          question: "A friend shares a link to a news article from BBC.com about a science discovery. The URL shows https://www.bbc.com/news/science...",
+          question: "What do you think about this link?",
+          sender: "Alex (your friend)",
+          senderIcon: "👋",
+          subject: "Check out this cool science article!",
+          body: "Hey! Look at this amazing discovery about a new species of deep-sea fish. It's from BBC News. Pretty wild, right?",
+          fakeLink: "🔗 https://www.bbc.com/news/science-environment/deep-sea-fish",
           options: ["Safe", "Scam", "Unsure"],
           correct: 0,
-          explanation: "This appears safe. BBC.com is a well-known news site, the URL uses HTTPS, and it was shared by a friend you know. However, always verify surprising claims!",
+          explanation: "This appears safe. BBC.com is a well-known news site, the URL uses HTTPS, and it was shared by a friend you know personally. Still, always verify surprising claims independently!",
         },
       ],
     },
