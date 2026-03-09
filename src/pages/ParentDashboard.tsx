@@ -35,8 +35,6 @@ export default function ParentDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
-  const [newChild, setNewChild] = useState({ name: "", age: "", avatar: "🦸" });
-  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     if (!user) navigate("/login");
