@@ -22,6 +22,7 @@ export type Database = {
           created_at: string
           id: string
           last_activity_date: string | null
+          learning_mode: string
           level: number
           name: string
           parent_id: string
@@ -36,6 +37,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_activity_date?: string | null
+          learning_mode?: string
           level?: number
           name: string
           parent_id: string
@@ -50,6 +52,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_activity_date?: string | null
+          learning_mode?: string
           level?: number
           name?: string
           parent_id?: string

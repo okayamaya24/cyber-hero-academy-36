@@ -1,0 +1,1 @@
+ALTER TABLE public.child_profiles ADD COLUMN learning_mode text NOT NULL DEFAULT 'standard';
