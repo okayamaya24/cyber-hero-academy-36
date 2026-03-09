@@ -585,8 +585,10 @@ export const MISSIONS: MissionDef[] = [
     bgColor: "bg-cyber-purple/10",
     guide: { name: "Professor Hoot", image: wiseOwl },
     levelMiniGames: [
-      ["scenario", "quiz"],
-      ["quiz", "drag-sort"],
+      ["secret-keeper", "quiz"],
+      ["word-search", "memory"],
+      ["secret-keeper", "boss-battle"],
+    ],
       ["scenario", "word-search", "quiz"],
     ],
     badgeId: "privacy-knight",
