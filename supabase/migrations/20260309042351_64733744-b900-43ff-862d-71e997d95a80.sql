@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN parent_pin text NOT NULL DEFAULT '1234';

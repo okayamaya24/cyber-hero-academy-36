@@ -28,13 +28,14 @@ const fadeUp = {
 };
 
 export default function ParentDashboard() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, parentUnlocked } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!user) navigate("/login");
-  }, [user, navigate]);
+    else if (!parentUnlocked) navigate("/login");
+  }, [user, parentUnlocked, navigate]);
 
   const { data: children = [], isLoading } = useQuery({
     queryKey: ["children", user?.id],
