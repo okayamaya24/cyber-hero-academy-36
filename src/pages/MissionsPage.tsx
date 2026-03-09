@@ -4,12 +4,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Star, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { Star, CheckCircle2, XCircle, ArrowRight, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MISSIONS, type MissionDef } from "@/data/missions";
+import { MISSIONS, type MissionDef, getMissionQuestions, getAgeTier, getTierLabel, getTierEmoji } from "@/data/missions";
 import { toast } from "sonner";
+
+const ENCOURAGEMENTS = [
+  "You're a Cyber Superstar! 🌟",
+  "Amazing work, hero! 🦸",
+  "The internet is safer because of YOU! 🛡️",
+  "You're leveling up fast! 🚀",
+  "Incredible job, Cyber Champion! 🏆",
+];
 
 export default function MissionsPage() {
   const { user, activeChildId } = useAuth();
@@ -27,6 +35,20 @@ export default function MissionsPage() {
     else if (!activeChildId) navigate("/select-child");
   }, [user, activeChildId, navigate]);
 
+  const { data: child } = useQuery({
+    queryKey: ["child", activeChildId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("child_profiles")
+        .select("*")
+        .eq("id", activeChildId!)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!activeChildId,
+  });
+
   const { data: missionProgress = [] } = useQuery({
     queryKey: ["mission_progress", activeChildId],
     queryFn: async () => {
@@ -40,10 +62,18 @@ export default function MissionsPage() {
     enabled: !!activeChildId,
   });
 
+  const age = child?.age ?? 7;
+  const tier = getAgeTier(age);
+  const tierLabel = getTierLabel(tier);
+  const tierEmoji = getTierEmoji(tier);
+
+  const getQuestions = (mission: MissionDef) => getMissionQuestions(mission, age);
+
   const startMission = (mission: MissionDef) => {
+    const questions = getQuestions(mission);
     const existing = missionProgress.find((m) => m.mission_id === mission.id);
     setActiveMission(mission);
-    setCurrentQ(existing?.status === "in_progress" ? existing.current_question : 0);
+    setCurrentQ(existing?.status === "in_progress" ? Math.min(existing.current_question, questions.length - 1) : 0);
     setSelectedAnswer(null);
     setShowResult(false);
     setScore(existing?.status === "in_progress" ? existing.score : 0);
@@ -52,62 +82,54 @@ export default function MissionsPage() {
 
   const handleAnswer = (idx: number) => {
     if (showResult || !activeMission) return;
+    const questions = getQuestions(activeMission);
     setSelectedAnswer(idx);
     setShowResult(true);
-    if (idx === activeMission.questions[currentQ].correct) {
+    if (idx === questions[currentQ].correct) {
       setScore((s) => s + 1);
     }
   };
 
   const nextQuestion = async () => {
     if (!activeMission || !activeChildId) return;
+    const questions = getQuestions(activeMission);
     const nextQ = currentQ + 1;
-    const isLast = nextQ >= activeMission.questions.length;
-    const newScore = selectedAnswer === activeMission.questions[currentQ].correct ? score : score; // score already updated
+    const isLast = nextQ >= questions.length;
 
-    // Upsert progress
     await supabase.from("mission_progress").upsert(
       {
         child_id: activeChildId,
         mission_id: activeMission.id,
         status: isLast ? "completed" : "in_progress",
         score: score,
-        max_score: activeMission.questions.length,
-        current_question: isLast ? activeMission.questions.length : nextQ,
+        max_score: questions.length,
+        current_question: isLast ? questions.length : nextQ,
         completed_at: isLast ? new Date().toISOString() : null,
       },
       { onConflict: "child_id,mission_id" }
     );
 
     if (isLast) {
-      // Award points
       const pointsEarned = score * 50;
-      // Update child points and streak directly
-      const { data: child } = await supabase
+      const { data: childData } = await supabase
         .from("child_profiles")
         .select("points, streak, level, last_activity_date")
         .eq("id", activeChildId)
         .single();
 
-      if (child) {
+      if (childData) {
         const today = new Date().toISOString().split("T")[0];
-        const newStreak = child.last_activity_date === today ? child.streak : child.streak + 1;
-        const newPoints = child.points + pointsEarned;
+        const newStreak = childData.last_activity_date === today ? childData.streak : childData.streak + 1;
+        const newPoints = childData.points + pointsEarned;
         const newLevel = Math.floor(newPoints / 200) + 1;
 
         await supabase
           .from("child_profiles")
-          .update({
-            points: newPoints,
-            streak: newStreak,
-            level: newLevel,
-            last_activity_date: today,
-          })
+          .update({ points: newPoints, streak: newStreak, level: newLevel, last_activity_date: today })
           .eq("id", activeChildId);
       }
 
-      // Award badge if perfect
-      if (score === activeMission.questions.length) {
+      if (score === questions.length) {
         await supabase.from("earned_badges").upsert(
           {
             child_id: activeChildId,
@@ -137,7 +159,10 @@ export default function MissionsPage() {
 
   // Active quiz view
   if (activeMission && !missionComplete) {
-    const q = activeMission.questions[currentQ];
+    const questions = getQuestions(activeMission);
+    const q = questions[currentQ];
+    const isJunior = tier === "junior";
+
     return (
       <div className="min-h-screen bg-background py-8">
         <div className="container mx-auto max-w-2xl px-4">
@@ -149,24 +174,46 @@ export default function MissionsPage() {
             <div>
               <h2 className="text-xl font-bold">{activeMission.title}</h2>
               <p className="text-sm text-muted-foreground">{activeMission.guide.name} is guiding you!</p>
+              <Badge variant="outline" className="mt-1 text-xs">
+                {tierEmoji} {tierLabel}
+              </Badge>
             </div>
           </div>
           <div className="mb-4">
             <div className="mb-1 flex justify-between text-sm text-muted-foreground">
-              <span>Question {currentQ + 1} of {activeMission.questions.length}</span>
-              <span>Score: {score}/{activeMission.questions.length}</span>
+              <span>Question {currentQ + 1} of {questions.length}</span>
+              <span>Score: {score}/{questions.length}</span>
             </div>
-            <Progress value={((currentQ + 1) / activeMission.questions.length) * 100} className="h-3" />
+            <Progress value={((currentQ + 1) / questions.length) * 100} className="h-3" />
           </div>
           <motion.div key={currentQ} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} className="rounded-2xl border bg-card p-6 shadow-card">
-            <h3 className="mb-6 text-lg font-bold">{q.question}</h3>
-            <div className="space-y-3">
+            <h3 className={`mb-6 font-bold ${isJunior ? "text-xl leading-relaxed" : "text-lg"}`}>{q.question}</h3>
+            <div className={`grid gap-3 ${q.options.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
               {q.options.map((opt, idx) => {
                 let style = "border-2 border-border bg-background hover:border-primary/50";
                 if (showResult) {
                   if (idx === q.correct) style = "border-2 border-secondary bg-secondary/10";
                   else if (idx === selectedAnswer && idx !== q.correct) style = "border-2 border-destructive bg-destructive/10";
                 }
+
+                // For 2-option (Safe/Scam) layout, make buttons bigger and more visual
+                if (q.options.length === 2) {
+                  const isSafe = opt.toLowerCase() === "safe";
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleAnswer(idx)}
+                      disabled={showResult}
+                      className={`rounded-2xl p-6 text-center font-bold text-lg transition-all ${style} ${!showResult ? "cursor-pointer hover:scale-105" : ""}`}
+                    >
+                      <span className="block text-3xl mb-2">{isSafe ? "✅" : "🚫"}</span>
+                      {opt}
+                      {showResult && idx === q.correct && <CheckCircle2 className="mx-auto mt-2 h-5 w-5 text-secondary" />}
+                      {showResult && idx === selectedAnswer && idx !== q.correct && <XCircle className="mx-auto mt-2 h-5 w-5 text-destructive" />}
+                    </button>
+                  );
+                }
+
                 return (
                   <button key={idx} onClick={() => handleAnswer(idx)} disabled={showResult}
                     className={`w-full rounded-xl p-4 text-left font-semibold transition-all ${style} ${!showResult ? "cursor-pointer hover:scale-[1.02]" : ""}`}>
@@ -186,9 +233,9 @@ export default function MissionsPage() {
               {showResult && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 rounded-xl bg-muted p-4">
                   <p className="text-sm font-semibold">{selectedAnswer === q.correct ? "🎉 Correct!" : "😅 Not quite!"}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{q.explanation}</p>
+                  <p className={`mt-1 text-muted-foreground ${isJunior ? "text-base" : "text-sm"}`}>{q.explanation}</p>
                   <Button variant="hero" size="sm" className="mt-3" onClick={nextQuestion}>
-                    {currentQ + 1 < activeMission.questions.length ? "Next Question" : "See Results"}
+                    {currentQ + 1 < questions.length ? "Next Question" : "See Results"}
                     <ArrowRight className="ml-1 h-4 w-4" />
                   </Button>
                 </motion.div>
@@ -202,8 +249,11 @@ export default function MissionsPage() {
 
   // Mission complete view
   if (missionComplete && activeMission) {
-    const total = activeMission.questions.length;
+    const questions = getQuestions(activeMission);
+    const total = questions.length;
     const perfect = score === total;
+    const encouragement = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
+
     return (
       <div className="min-h-screen bg-background py-8">
         <div className="container mx-auto max-w-md px-4 text-center">
@@ -211,6 +261,15 @@ export default function MissionsPage() {
             <div className="mb-4 text-6xl">{perfect ? "🏆" : "⭐"}</div>
             <h2 className="text-2xl font-bold">{perfect ? "Perfect Score!" : "Mission Complete!"}</h2>
             <p className="mt-2 text-muted-foreground">You scored {score} out of {total}!</p>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-3 text-lg font-semibold text-primary flex items-center justify-center gap-2"
+            >
+              <Sparkles className="h-5 w-5" />
+              {encouragement}
+            </motion.p>
             <div className="mt-4 flex items-center justify-center gap-2">
               <Star className="h-5 w-5 text-accent" />
               <span className="text-lg font-bold text-accent">+{score * 50} Points</span>
@@ -233,10 +292,16 @@ export default function MissionsPage() {
         <motion.div className="mb-8 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl font-bold md:text-4xl">🎮 Learning Missions</h1>
           <p className="mt-2 text-muted-foreground">Choose a mission and become a Cyber Hero!</p>
+          {child && (
+            <Badge variant="outline" className="mt-3 text-sm px-4 py-1">
+              {tierEmoji} {tierLabel} · Age {age}
+            </Badge>
+          )}
         </motion.div>
         <motion.div className="grid gap-6 sm:grid-cols-2" initial="hidden" animate="show"
           variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1 } } }}>
           {MISSIONS.map((m) => {
+            const questions = getQuestions(m);
             const mp = missionProgress.find((p) => p.mission_id === m.id);
             const isCompleted = mp?.status === "completed";
             const isInProgress = mp?.status === "in_progress";
@@ -250,7 +315,7 @@ export default function MissionsPage() {
                     </div>
                     <div>
                       <h3 className="text-xl font-bold">{m.title}</h3>
-                      <p className="text-sm text-muted-foreground">{m.questions.length} questions</p>
+                      <p className="text-sm text-muted-foreground">{questions.length} questions · {tierLabel}</p>
                     </div>
                     <img src={m.guide.image} alt={m.guide.name} className="ml-auto h-16 w-16 object-contain opacity-80 group-hover:opacity-100 transition-opacity" />
                   </div>

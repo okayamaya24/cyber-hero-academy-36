@@ -9,7 +9,7 @@ import { Shield, Star, Trophy, Flame, Zap, Gamepad2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { MISSIONS, ALL_BADGES } from "@/data/missions";
+import { MISSIONS, ALL_BADGES, getMissionQuestions } from "@/data/missions";
 import robotGuide from "@/assets/robot-guide.png";
 
 const container = {
@@ -92,13 +92,15 @@ export default function KidDashboard() {
     return mp.status;
   };
 
-  const getMissionProgress = (missionId: string) => {
+  const getMissionProgressPercent = (missionId: string) => {
     const mp = missionProgress.find((m) => m.mission_id === missionId);
     if (!mp) return 0;
     const mission = MISSIONS.find((m) => m.id === missionId);
-    if (!mission || mission.questions.length === 0) return 0;
+    if (!mission) return 0;
+    const questions = getMissionQuestions(mission, child?.age ?? 7);
+    if (questions.length === 0) return 0;
     if (mp.status === "completed") return 100;
-    return Math.round((mp.current_question / mission.questions.length) * 100);
+    return Math.round((mp.current_question / questions.length) * 100);
   };
 
   return (
@@ -211,7 +213,7 @@ export default function KidDashboard() {
             <motion.div className="grid gap-4 sm:grid-cols-2" variants={container} initial="hidden" animate="show">
               {MISSIONS.map((m) => {
                 const status = getMissionStatus(m.id);
-                const progress = getMissionProgress(m.id);
+                const progress = getMissionProgressPercent(m.id);
                 return (
                   <motion.div
                     key={m.id}
