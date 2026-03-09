@@ -481,8 +481,6 @@ export const MISSIONS: MissionDef[] = [
       ["memory", "sort-game"],
       ["password-builder", "boss-battle"],
     ],
-      ["password-builder", "scenario", "strength-tester"],
-    ],
     badgeId: "password-pro",
     badgeName: "Password Pro",
     badgeIcon: "🔐",
