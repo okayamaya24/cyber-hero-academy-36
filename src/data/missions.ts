@@ -478,7 +478,9 @@ export const MISSIONS: MissionDef[] = [
     guide: { name: "Robo Buddy", image: robotGuide },
     levelMiniGames: [
       ["password-builder", "quiz"],
-      ["password-fixer", "strength-tester"],
+      ["memory", "sort-game"],
+      ["password-builder", "boss-battle"],
+    ],
       ["password-builder", "scenario", "strength-tester"],
     ],
     badgeId: "password-pro",
