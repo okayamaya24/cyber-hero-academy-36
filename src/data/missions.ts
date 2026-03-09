@@ -193,9 +193,9 @@ export const MISSIONS: MissionDef[] = [
     bgColor: "bg-accent/10",
     guide: { name: "Detective Whiskers", image: detectiveCat },
     levelMiniGames: [
-      ["quiz", "email-detective"],
-      ["email-detective", "word-search"],
-      ["quiz", "spot-the-difference", "email-detective"],
+      ["quiz", "sort-game"],
+      ["email-detective", "word-search", "memory"],
+      ["sort-game", "boss-battle"],
     ],
     badgeId: "scam-spotter",
     badgeName: "Scam Spotter",
