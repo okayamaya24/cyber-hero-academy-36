@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,11 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MISSIONS } from "@/data/missions";
 import { toast } from "sonner";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
-
-const avatarOptions = ["🦸", "🦸‍♀️", "🧙", "🤖", "🦊", "🐱‍👤", "🦄", "🐉"];
+import AvatarRenderer from "@/components/avatar/AvatarRenderer";
+import type { AvatarConfig } from "@/components/avatar/avatarConfig";
 
 const container = {
   hidden: {},
@@ -35,8 +30,6 @@ export default function ParentDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
-  const [newChild, setNewChild] = useState({ name: "", age: "", avatar: "🦸" });
-  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -86,33 +79,7 @@ export default function ParentDashboard() {
     enabled: children.length > 0,
   });
 
-  const addChild = async () => {
-    if (!newChild.name.trim() || !newChild.age) {
-      toast.error("Please enter name and age");
-      return;
-    }
-    const age = parseInt(newChild.age);
-    if (age < 3 || age > 15) {
-      toast.error("Age must be between 3 and 15");
-      return;
-    }
-    setAdding(true);
-    const { error } = await supabase.from("child_profiles").insert({
-      parent_id: user!.id,
-      name: newChild.name.trim(),
-      age,
-      avatar: newChild.avatar,
-    });
-    setAdding(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success(`${newChild.name} added as a Cyber Hero!`);
-      setNewChild({ name: "", age: "", avatar: "🦸" });
-      setAddOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["children"] });
-    }
-  };
+  // Removed inline add-child dialog in favor of /create-child page
 
   const deleteChild = async (id: string, name: string) => {
     if (!confirm(`Remove ${name}'s profile? This will delete all their progress.`)) return;
@@ -174,42 +141,9 @@ export default function ParentDashboard() {
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <Users className="h-5 w-5 text-primary" /> Children
               </h2>
-              <Dialog open={addOpen} onOpenChange={setAddOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="hero" size="sm"><Plus className="mr-1 h-4 w-4" /> Add Child</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add a Cyber Hero</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Name</Label>
-                      <Input placeholder="Child's name" value={newChild.name} onChange={(e) => setNewChild({ ...newChild, name: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Age</Label>
-                      <Input type="number" min={3} max={15} placeholder="5-12" value={newChild.age} onChange={(e) => setNewChild({ ...newChild, age: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Avatar</Label>
-                      <div className="mt-1 flex gap-2 flex-wrap">
-                        {avatarOptions.map((a) => (
-                          <button key={a} onClick={() => setNewChild({ ...newChild, avatar: a })}
-                            className={`flex h-12 w-12 items-center justify-center rounded-xl border-2 text-2xl transition-all ${
-                              newChild.avatar === a ? "border-primary bg-primary/10 scale-110" : "border-border hover:border-primary/50"
-                            }`}>
-                            {a}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <Button variant="hero" className="w-full" onClick={addChild} disabled={adding}>
-                      {adding ? "Adding..." : "Create Cyber Hero 🚀"}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button variant="hero" size="sm" asChild>
+                <Link to="/create-child"><Plus className="mr-1 h-4 w-4" /> Add Child</Link>
+              </Button>
             </div>
 
             {children.length === 0 ? (
@@ -230,9 +164,11 @@ export default function ParentDashboard() {
                   return (
                     <motion.div key={child.id} variants={fadeUp} className="rounded-2xl border bg-card p-5 shadow-card">
                       <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-2xl">
-                          {child.avatar}
-                        </div>
+                        <AvatarRenderer
+                          config={(child as any).avatar_config as AvatarConfig | null}
+                          size={48}
+                          fallbackEmoji={child.avatar}
+                        />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-bold">{child.name}</h3>

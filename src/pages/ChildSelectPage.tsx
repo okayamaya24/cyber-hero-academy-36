@@ -7,10 +7,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
+import AvatarRenderer from "@/components/avatar/AvatarRenderer";
+import type { AvatarConfig } from "@/components/avatar/avatarConfig";
 
 type ChildProfile = Tables<"child_profiles">;
-
-const avatarOptions = ["🦸", "🦸‍♀️", "🧙", "🤖", "🦊", "🐱‍👤", "🦄", "🐉"];
 
 export default function ChildSelectPage() {
   const { user, setActiveChildId } = useAuth();
@@ -86,7 +86,11 @@ export default function ChildSelectPage() {
               onClick={() => selectChild(child)}
               className="flex flex-col items-center gap-2 rounded-2xl border-2 bg-card p-6 shadow-card transition-colors hover:border-primary hover:shadow-playful"
             >
-              <span className="text-5xl">{child.avatar}</span>
+              <AvatarRenderer
+                config={(child as any).avatar_config as AvatarConfig | null}
+                size={80}
+                fallbackEmoji={child.avatar}
+              />
               <span className="text-lg font-bold">{child.name}</span>
               <span className="text-xs text-muted-foreground">
                 Level {child.level} · {child.points} pts
