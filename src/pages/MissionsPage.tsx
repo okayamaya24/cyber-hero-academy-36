@@ -8,6 +8,12 @@ import { Star, CheckCircle2, XCircle, ArrowRight, Sparkles, Mail, ExternalLink, 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import WordSearchGame from "@/components/minigames/WordSearchGame";
+import PasswordBuilderGame from "@/components/minigames/PasswordBuilderGame";
+import SortGame from "@/components/minigames/SortGame";
+import SecretKeeperGame from "@/components/minigames/SecretKeeperGame";
+import MemoryGame from "@/components/minigames/MemoryGame";
+import BossBattleGame from "@/components/minigames/BossBattleGame";
 import {
   MISSIONS,
   CAPTAIN_CYBER,
@@ -26,6 +32,10 @@ import {
   LEARNING_MODE_CONFIG,
   LEVEL_NAMES,
 } from "@/data/missions";
+
+const CUSTOM_GAME_TYPES: MiniGameType[] = [
+  "word-search", "password-builder", "sort-game", "secret-keeper", "memory", "boss-battle",
+];
 
 const ENCOURAGEMENTS_PERFECT = [
   "You're a Cyber Superstar! 🌟",
