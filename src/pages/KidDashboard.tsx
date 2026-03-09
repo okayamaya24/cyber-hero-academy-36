@@ -9,7 +9,7 @@ import { Shield, Star, Trophy, Flame, Zap, Gamepad2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { MISSIONS, ALL_BADGES } from "@/data/missions";
+import { MISSIONS, ALL_BADGES, getMissionQuestions } from "@/data/missions";
 import robotGuide from "@/assets/robot-guide.png";
 
 const container = {
