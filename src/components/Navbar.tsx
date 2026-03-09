@@ -1,9 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, Gamepad2, BarChart3, Home } from "lucide-react";
+import { Shield, Gamepad2, BarChart3, Home, LogIn, UserPlus } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
-const navItems = [
+const publicItems = [
   { label: "Home", to: "/", icon: Home },
+];
+
+const authItems = [
   { label: "Dashboard", to: "/dashboard", icon: Gamepad2 },
   { label: "Missions", to: "/missions", icon: Shield },
   { label: "Parents", to: "/parents", icon: BarChart3 },
@@ -11,6 +15,11 @@ const navItems = [
 
 export function Navbar() {
   const location = useLocation();
+  const { user } = useAuth();
+
+  const navItems = user
+    ? [...publicItems, ...authItems]
+    : publicItems;
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
@@ -47,6 +56,25 @@ export function Navbar() {
               </Link>
             );
           })}
+
+          {!user && (
+            <>
+              <Link
+                to="/login"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <LogIn className="h-4 w-4" />
+                <span className="hidden sm:inline">Log In</span>
+              </Link>
+              <Link
+                to="/signup"
+                className="flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                <UserPlus className="h-4 w-4" />
+                <span className="hidden sm:inline">Sign Up</span>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>
