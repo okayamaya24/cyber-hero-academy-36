@@ -12,6 +12,7 @@ import ParentDashboard from "./pages/ParentDashboard";
 import SignupPage from "./pages/SignupPage";
 import LoginPage from "./pages/LoginPage";
 import ChildSelectPage from "./pages/ChildSelectPage";
+import CreateChildPage from "./pages/CreateChildPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
