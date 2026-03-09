@@ -230,9 +230,11 @@ export default function ParentDashboard() {
                   return (
                     <motion.div key={child.id} variants={fadeUp} className="rounded-2xl border bg-card p-5 shadow-card">
                       <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-2xl">
-                          {child.avatar}
-                        </div>
+                        <AvatarRenderer
+                          config={(child as any).avatar_config as AvatarConfig | null}
+                          size={48}
+                          fallbackEmoji={child.avatar}
+                        />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-bold">{child.name}</h3>

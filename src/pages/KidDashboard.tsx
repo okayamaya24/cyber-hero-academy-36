@@ -115,9 +115,12 @@ export default function KidDashboard() {
             animate={{ scale: 1 }}
             transition={{ type: "spring", duration: 0.6 }}
           >
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-card text-5xl shadow-lg">
-              {child.avatar}
-            </div>
+            <AvatarRenderer
+              config={(child as any).avatar_config as AvatarConfig | null}
+              size={96}
+              fallbackEmoji={child.avatar}
+              className="rounded-full shadow-lg"
+            />
             <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground shadow">
               {child.level}
             </div>
