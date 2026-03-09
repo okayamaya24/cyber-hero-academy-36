@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Shield, Star, Gamepad2, Users, Award, BookOpen } from "lucide-react";
-import heroCharacter from "@/assets/hero-character.png";
+import heroKidsGroup from "@/assets/hero-kids-group.png";
 import robotGuide from "@/assets/robot-guide.png";
 import detectiveCat from "@/assets/detective-cat.png";
 import wiseOwl from "@/assets/wise-owl.png";
