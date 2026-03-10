@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Shield, Star, Gamepad2, Users, Award, BookOpen } from "lucide-react";
 import heroKidsGroup from "@/assets/hero-kids-group.png";
