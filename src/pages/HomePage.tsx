@@ -2,6 +2,14 @@ import { motion } from "framer-motion";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Shield, Star, Gamepad2, Users, Award, BookOpen } from "lucide-react";
 import heroKidsGroup from "@/assets/hero-kids-group.png";
 import heroCharacter from "@/assets/hero-character.png";
@@ -75,31 +83,96 @@ export default function HomePage() {
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
               <Star className="h-4 w-4" /> For Kids Ages 5–12
             </div>
+
             <h1 className="text-4xl font-bold leading-tight md:text-6xl">
               Become a{" "}
               <span className="bg-gradient-to-r from-primary via-cyber-purple to-cyber-pink bg-clip-text text-transparent">
                 Cyber Hero!
               </span>
             </h1>
+
             <p className="max-w-lg text-lg text-muted-foreground">
-              Learn to stay safe online through fun missions, games, and
-              awesome cartoon guides. Start your cybersecurity adventure today!
+              Learn to stay safe online through fun missions, games, and awesome cartoon guides. Start your
+              cybersecurity adventure today!
             </p>
+
             <div className="flex flex-wrap justify-center gap-4 md:justify-start">
               <Button variant="hero" size="xl" asChild>
                 <Link to="/dashboard">Start Adventure</Link>
               </Button>
-              <Button variant="outline" size="xl" asChild>
-                <Link to="/parents">
-                  <BookOpen className="mr-2 h-5 w-5" />
-                  For Parents
-                </Link>
-              </Button>
+
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="xl">
+                    <BookOpen className="mr-2 h-5 w-5" />
+                    For Parents
+                  </Button>
+                </DialogTrigger>
+
+                <DialogContent className="max-w-2xl rounded-3xl">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold">For Parents</DialogTitle>
+                    <DialogDescription className="text-base text-muted-foreground">
+                      Cyber Hero Academy is an interactive cybersecurity learning platform designed for kids ages 5–12.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="mt-4 space-y-6">
+                    <div>
+                      <h3 className="mb-2 text-lg font-bold">What kids learn</h3>
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li>🛡 How to spot phishing scams and suspicious messages</li>
+                        <li>🔐 How to create strong passwords</li>
+                        <li>🌐 How to identify safe websites</li>
+                        <li>🔒 How to protect personal information online</li>
+                        <li>💻 How to avoid unsafe downloads and malware</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h3 className="mb-2 text-lg font-bold">How it works</h3>
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li>1. Parents create a secure account</li>
+                        <li>2. Add one or more child profiles</li>
+                        <li>3. Kids complete missions and mini-games</li>
+                        <li>4. Parents track progress, points, and badges</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h3 className="mb-2 text-lg font-bold">Parent dashboard features</h3>
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li>📊 Track child progress and completed missions</li>
+                        <li>🎯 Adjust learning modes and challenge levels</li>
+                        <li>🏅 View badges, rewards, and achievements</li>
+                        <li>👨‍👩‍👧 Manage child profiles in one place</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h3 className="mb-2 text-lg font-bold">Safe and child-friendly</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Cyber Hero Academy is designed to be parent-controlled, age-appropriate, and educational. It
+                        helps children build strong digital safety habits through guided play.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3 pt-2">
+                      <Button variant="hero" asChild>
+                        <Link to="/signup">Create Parent Account</Link>
+                      </Button>
+                      <Button variant="outline" asChild>
+                        <Link to="/login">Parent Login</Link>
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </motion.div>
 
           <motion.div
-            className="flex-1 flex justify-center"
+            className="flex flex-1 justify-center"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -107,7 +180,7 @@ export default function HomePage() {
             <img
               src={heroKidsGroup}
               alt="Diverse group of kids as Cyber Heroes"
-              className="w-full max-w-md md:max-w-lg drop-shadow-2xl"
+              className="w-full max-w-md drop-shadow-2xl md:max-w-lg"
             />
           </motion.div>
         </div>
@@ -122,12 +195,8 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-bold md:text-4xl">
-              What You'll Learn
-            </h2>
-            <p className="mt-3 text-muted-foreground">
-              Super cool skills to keep you safe in the digital world!
-            </p>
+            <h2 className="text-3xl font-bold md:text-4xl">What You'll Learn</h2>
+            <p className="mt-3 text-muted-foreground">Super cool skills to keep you safe in the digital world!</p>
           </motion.div>
 
           <motion.div
@@ -141,17 +210,13 @@ export default function HomePage() {
               <motion.div
                 key={f.title}
                 variants={fadeUp}
-                className="group rounded-2xl border bg-card p-6 shadow-card transition-all hover:shadow-playful hover:-translate-y-1"
+                className="group rounded-2xl border bg-card p-6 shadow-card transition-all hover:-translate-y-1 hover:shadow-playful"
               >
-                <div
-                  className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl ${f.color}`}
-                >
+                <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl ${f.color}`}>
                   <f.icon className="h-6 w-6" />
                 </div>
                 <h3 className="mb-2 text-lg font-bold">{f.title}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {f.description}
-                </p>
+                <p className="text-sm text-muted-foreground">{f.description}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -159,7 +224,7 @@ export default function HomePage() {
       </section>
 
       {/* Meet Your Guides */}
-      <section className="py-20 bg-muted/50">
+      <section className="bg-muted/50 py-20">
         <div className="container mx-auto px-4">
           <motion.div
             className="mb-12 text-center"
@@ -167,12 +232,8 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-bold md:text-4xl">
-              Meet Your Guides
-            </h2>
-            <p className="mt-3 text-muted-foreground">
-              Friendly characters who'll help you on your journey!
-            </p>
+            <h2 className="text-3xl font-bold md:text-4xl">Meet Your Guides</h2>
+            <p className="mt-3 text-muted-foreground">Friendly characters who'll help you on your journey!</p>
           </motion.div>
 
           <motion.div
@@ -186,13 +247,9 @@ export default function HomePage() {
               <motion.div
                 key={g.name}
                 variants={fadeUp}
-                className="flex flex-col items-center rounded-2xl border bg-card p-6 shadow-card text-center hover:shadow-playful transition-all hover:-translate-y-1"
+                className="flex flex-col items-center rounded-2xl border bg-card p-6 text-center shadow-card transition-all hover:-translate-y-1 hover:shadow-playful"
               >
-                <img
-                  src={g.image}
-                  alt={g.name}
-                  className="mb-4 h-32 w-32 object-contain animate-bounce-gentle"
-                />
+                <img src={g.image} alt={g.name} className="mb-4 h-32 w-32 animate-bounce-gentle object-contain" />
                 <h3 className="text-lg font-bold">{g.name}</h3>
                 <p className="text-sm text-muted-foreground">{g.role}</p>
               </motion.div>
@@ -205,20 +262,16 @@ export default function HomePage() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <motion.div
-            className="rounded-3xl gradient-hero p-12 text-center text-primary-foreground"
+            className="gradient-hero rounded-3xl p-12 text-center text-primary-foreground"
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
           >
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-              Ready to Start Your Mission?
-            </h2>
-            <p className="mb-8 text-lg opacity-90">
-              Join thousands of kids learning to be safe online!
-            </p>
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">Ready to Start Your Mission?</h2>
+            <p className="mb-8 text-lg opacity-90">Join thousands of kids learning to be safe online!</p>
             <Button
               size="xl"
-              className="bg-card text-foreground hover:bg-card/90 font-bold shadow-lg hover:scale-105 transition-transform"
+              className="bg-card font-bold text-foreground shadow-lg transition-transform hover:scale-105 hover:bg-card/90"
               asChild
             >
               <Link to="/dashboard">Begin Your Journey 🚀</Link>
