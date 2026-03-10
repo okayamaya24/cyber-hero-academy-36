@@ -44,9 +44,11 @@ export default function ParentDashboard() {
 
   useEffect(() => {
     if (!user) {
-      navigate("/login");
-    } else if (!parentUnlocked) {
-      navigate("/login");
+      navigate("/");
+      return;
+    }
+    if (!parentUnlocked) {
+      navigate("/");
     }
   }, [user, parentUnlocked, navigate]);
 
