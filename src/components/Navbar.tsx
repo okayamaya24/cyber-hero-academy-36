@@ -18,13 +18,13 @@ export function Navbar() {
   const { user } = useAuth();
 
   const navItems = user
-    ? [...publicItems, ...authItems]
+    ? authItems
     : publicItems;
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2">
           <Shield className="h-8 w-8 text-primary" />
           <span className="text-xl font-display font-bold text-foreground">
             Cyber Hero Academy

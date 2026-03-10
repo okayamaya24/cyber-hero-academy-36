@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Shield, Star, Gamepad2, Users, Award, BookOpen } from "lucide-react";
 import heroKidsGroup from "@/assets/hero-kids-group.png";
@@ -53,6 +54,12 @@ const fadeUp = {
 };
 
 export default function HomePage() {
+  const { user, loading } = useAuth();
+
+  if (!loading && user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
