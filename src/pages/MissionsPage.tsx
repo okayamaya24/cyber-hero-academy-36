@@ -33,6 +33,7 @@ import {
   LEARNING_MODE_CONFIG,
   LEVEL_NAMES,
 } from "@/data/missions";
+import { checkAndAwardBadges } from "@/lib/badges";
 
 import detectiveCat from "@/assets/detective-cat.png";
 import wiseOwl from "@/assets/wise-owl.png";
