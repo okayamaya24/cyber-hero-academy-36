@@ -119,6 +119,9 @@ export default function KidDashboard() {
           ))}
         </motion.div>
 
+        {/* Daily Challenge */}
+        <DailyChallenge childId={child.id} childAge={child.age} />
+
         {/* Missions */}
         <div>
           <div className="mb-4 flex items-center justify-between">
