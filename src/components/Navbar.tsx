@@ -1,50 +1,30 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, Gamepad2, BarChart3, Home, LogIn, UserPlus, Award, Zap, Settings, Users, LogOut } from "lucide-react";
+import { Shield, Gamepad2, BarChart3, Home, LogIn, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
 
 const publicItems = [
   { label: "Home", to: "/", icon: Home },
 ];
 
-const childItems = [
+const authItems = [
   { label: "Dashboard", to: "/dashboard", icon: Gamepad2 },
   { label: "Missions", to: "/missions", icon: Shield },
-  { label: "Badges", to: "/dashboard", icon: Award },
-];
-
-const parentItems = [
-  { label: "Parent Dashboard", to: "/parents", icon: BarChart3 },
-  { label: "Children", to: "/select-child", icon: Users },
+  { label: "Parents", to: "/parents", icon: BarChart3 },
 ];
 
 export function Navbar() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, activeChildId, parentUnlocked, signOut } = useAuth();
+  const { user } = useAuth();
 
-  const isLoggedIn = !!user;
-  const isParent = isLoggedIn && parentUnlocked;
-  const isChild = isLoggedIn && !parentUnlocked && !!activeChildId;
-
-  const navItems = isParent
-    ? parentItems
-    : isChild
-      ? childItems
-      : !isLoggedIn
-        ? publicItems
-        : []; // logged in but no role selected yet
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
-  };
+  const navItems = user
+    ? [...publicItems, ...authItems]
+    : publicItems;
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to={isLoggedIn ? "/dashboard" : "/"} className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <Shield className="h-8 w-8 text-primary" />
           <span className="text-xl font-display font-bold text-foreground">
             Cyber Hero Academy
@@ -56,7 +36,7 @@ export function Navbar() {
             const isActive = location.pathname === item.to;
             return (
               <Link
-                key={item.label}
+                key={item.to}
                 to={item.to}
                 className={`relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
                   isActive
@@ -77,7 +57,7 @@ export function Navbar() {
             );
           })}
 
-          {!isLoggedIn && (
+          {!user && (
             <>
               <Link
                 to="/login"
@@ -94,18 +74,6 @@ export function Navbar() {
                 <span className="hidden sm:inline">Sign Up</span>
               </Link>
             </>
-          )}
-
-          {isLoggedIn && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignOut}
-              className="flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </Button>
           )}
         </div>
       </div>
