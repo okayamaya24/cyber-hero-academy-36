@@ -45,12 +45,8 @@ export default function ParentDashboard() {
   useEffect(() => {
     if (!user) {
       navigate("/");
-      return;
     }
-    if (!parentUnlocked) {
-      navigate("/");
-    }
-  }, [user, parentUnlocked, navigate]);
+  }, [user, navigate]);
 
   const { data: children = [] } = useQuery({
     queryKey: ["children", user?.id],
