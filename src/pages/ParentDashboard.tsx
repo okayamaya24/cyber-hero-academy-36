@@ -48,6 +48,8 @@ export default function ParentDashboard() {
     enabled: !!user,
   });
 
+  const [resettingMode, setResettingMode] = useState<string | null>(null);
+
   const { data: allProgress = [] } = useQuery({
     queryKey: ["all_mission_progress", user?.id],
     queryFn: async () => {
