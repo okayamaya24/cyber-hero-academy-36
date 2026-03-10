@@ -54,6 +54,12 @@ const fadeUp = {
 };
 
 export default function HomePage() {
+  const { user, loading } = useAuth();
+
+  if (!loading && user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
