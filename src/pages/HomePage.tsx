@@ -157,10 +157,15 @@ export default function HomePage() {
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap gap-3 pt-2">
+                    <div className="flex flex-wrap gap-3 pt-4">
+                      <Button variant="outline" asChild>
+                        <Link to="/parents">Learn More</Link>
+                      </Button>
+
                       <Button variant="hero" asChild>
                         <Link to="/signup">Create Parent Account</Link>
                       </Button>
+
                       <Button variant="outline" asChild>
                         <Link to="/login">Parent Login</Link>
                       </Button>
