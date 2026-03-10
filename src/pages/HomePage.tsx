@@ -109,7 +109,7 @@ export default function HomePage() {
                   </Button>
                 </DialogTrigger>
 
-                <DialogContent className="w-[92vw] max-w-4xl max-h-[85vh] rounded-3xl overflow-hidden p-0">
+                <DialogContent className="w-[92vw] max-w-4xl h-[85vh] max-h-[85vh] rounded-3xl overflow-hidden p-0 flex flex-col">
                   <div className="flex h-full min-h-0 flex-col">
                     <DialogHeader className="shrink-0 border-b px-6 py-5 text-left">
                       <DialogTitle className="text-2xl font-bold">For Parents</DialogTitle>
