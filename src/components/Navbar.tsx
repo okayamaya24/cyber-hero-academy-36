@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const publicItems = [
   { label: "Home", to: "/", icon: Home },
+  { label: "For Parents", to: "/for-parents", icon: BookOpen },
 ];
 
 const authItems = [
