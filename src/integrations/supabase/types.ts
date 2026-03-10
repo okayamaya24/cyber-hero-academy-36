@@ -62,6 +62,44 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_challenges: {
+        Row: {
+          challenge_date: string
+          child_id: string
+          completed: boolean
+          created_at: string
+          game_type: string
+          id: string
+          points_awarded: number
+        }
+        Insert: {
+          challenge_date?: string
+          child_id: string
+          completed?: boolean
+          created_at?: string
+          game_type: string
+          id?: string
+          points_awarded?: number
+        }
+        Update: {
+          challenge_date?: string
+          child_id?: string
+          completed?: boolean
+          created_at?: string
+          game_type?: string
+          id?: string
+          points_awarded?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_challenges_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       earned_badges: {
         Row: {
           badge_icon: string
