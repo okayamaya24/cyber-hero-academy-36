@@ -13,6 +13,7 @@ import { MISSIONS, ALL_BADGES, getTotalGames, getMissionLevels, LEARNING_MODE_CO
 import robotGuide from "@/assets/robot-guide.png";
 import AvatarRenderer from "@/components/avatar/AvatarRenderer";
 import type { AvatarConfig } from "@/components/avatar/avatarConfig";
+import DailyChallenge from "@/components/DailyChallenge";
 
 const container = {
   hidden: {},
