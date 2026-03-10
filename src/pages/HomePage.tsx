@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Shield, Star, Gamepad2, Users, Award, BookOpen } from "lucide-react";
 import heroKidsGroup from "@/assets/hero-kids-group.png";
@@ -164,9 +165,11 @@ export default function HomePage() {
 
                     <div className="shrink-0 border-t px-6 py-4">
                       <div className="flex flex-wrap gap-3">
-                        <Button variant="outline" asChild>
-                          <Link to="/parents">Learn More</Link>
-                        </Button>
+                        <DialogClose asChild>
+                          <Button variant="outline" asChild>
+                            <Link to="/parents">Learn More</Link>
+                          </Button>
+                        </DialogClose>
 
                         <Button variant="hero" asChild>
                           <Link to="/signup">Create Parent Account</Link>
