@@ -48,6 +48,8 @@ export default function ParentDashboard() {
     enabled: !!user,
   });
 
+  const [resettingMode, setResettingMode] = useState<string | null>(null);
+
   const { data: allProgress = [] } = useQuery({
     queryKey: ["all_mission_progress", user?.id],
     queryFn: async () => {
@@ -80,16 +82,29 @@ export default function ParentDashboard() {
   };
 
   const updateLearningMode = async (childId: string, mode: LearningMode) => {
-    const { error } = await supabase
-      .from("child_profiles")
-      .update({ learning_mode: mode } as any)
-      .eq("id", childId);
-    if (error) {
-      toast.error("Failed to update learning mode");
-      return;
+    const currentChild = children.find((c) => c.id === childId);
+    const currentMode = ((currentChild as any)?.learning_mode as LearningMode) || "standard";
+    if (currentMode === mode) return;
+
+    setResettingMode(childId);
+    try {
+      // Update learning mode
+      const { error } = await supabase
+        .from("child_profiles")
+        .update({ learning_mode: mode } as any)
+        .eq("id", childId);
+      if (error) { toast.error("Failed to update learning mode"); return; }
+
+      // Reset all mission progress for this child
+      await supabase.from("mission_progress").delete().eq("child_id", childId);
+
+      queryClient.invalidateQueries({ queryKey: ["children"] });
+      queryClient.invalidateQueries({ queryKey: ["all_mission_progress"] });
+      queryClient.invalidateQueries({ queryKey: ["mission_progress"] });
+      toast.success(`Learning mode changed to ${LEARNING_MODE_CONFIG[mode].label}. Mission progress has been reset for the new mode.`);
+    } finally {
+      setResettingMode(null);
     }
-    queryClient.invalidateQueries({ queryKey: ["children"] });
-    toast.success("Learning mode updated!");
   };
 
   const getChildMissions = (childId: string) => allProgress.filter((p) => p.child_id === childId);
@@ -213,6 +228,11 @@ export default function ParentDashboard() {
                           <AvatarRenderer config={(child as any).avatar_config as AvatarConfig | null} size={32} fallbackEmoji={child.avatar} />
                           <h3 className="font-bold">{child.name}'s Learning Mode</h3>
                         </div>
+                        {resettingMode === child.id && (
+                          <div className="mb-3 rounded-lg bg-accent/10 border border-accent/30 p-3 text-sm text-accent">
+                            ⚡ Switching mode and resetting mission progress...
+                          </div>
+                        )}
                         <RadioGroup
                           value={childMode}
                           onValueChange={(value) => updateLearningMode(child.id, value as LearningMode)}

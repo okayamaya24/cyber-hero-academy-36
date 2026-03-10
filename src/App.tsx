@@ -13,6 +13,7 @@ import SignupPage from "./pages/SignupPage";
 import LoginPage from "./pages/LoginPage";
 import ChildSelectPage from "./pages/ChildSelectPage";
 import CreateChildPage from "./pages/CreateChildPage";
+import CertificatePage from "./pages/CertificatePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/dashboard" element={<KidDashboard />} />
             <Route path="/missions" element={<MissionsPage />} />
             <Route path="/parents" element={<ParentDashboard />} />
+            <Route path="/certificate" element={<CertificatePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

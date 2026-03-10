@@ -33,6 +33,7 @@ import {
   LEARNING_MODE_CONFIG,
   LEVEL_NAMES,
 } from "@/data/missions";
+import { checkAndAwardBadges } from "@/lib/badges";
 
 import detectiveCat from "@/assets/detective-cat.png";
 import wiseOwl from "@/assets/wise-owl.png";
@@ -52,6 +53,12 @@ const MISSION_SUPPORT: Record<string, string[]> = {
   "password-safety": ["Captain Cyber", "Professor Hoot"],
   "safe-websites": ["Detective Whiskers", "Robo Buddy"],
   "personal-info": ["Captain Cyber", "Detective Whiskers"],
+  "malware-monsters": ["Robo Buddy", "Captain Cyber"],
+  "phishy-messages": ["Detective Whiskers", "Professor Hoot"],
+  "smart-sharing": ["Professor Hoot", "Captain Cyber"],
+  "device-defender": ["Robo Buddy", "Detective Whiskers"],
+  "cyber-clues": ["Detective Whiskers", "Captain Cyber"],
+  "internet-detective": ["Professor Hoot", "Robo Buddy"],
 };
 
 function getSupportGuide(missionId: string, gameIndex: number): GuideCharacter {
@@ -90,6 +97,12 @@ const CAPTAIN_INTROS: Record<string, string> = {
   "password-safety": "Hey there, champion! Robo Buddy has prepared some password challenges. Let's make your passwords unbreakable! 🤖",
   "safe-websites": "Time to explore the web safely! Detective Whiskers will guide you through dangerous sites. Stay sharp! 🔍",
   "personal-info": "Privacy is your superpower! Professor Hoot will teach you to guard your secrets. Let's begin! 🦉",
+  "malware-monsters": "Malware is lurking! Robo Buddy will help you fight off viruses and trojans. Let's do this! 🤖",
+  "phishy-messages": "Phishing attacks are everywhere! Detective Whiskers will teach you to spot them. Ready? 🐱",
+  "smart-sharing": "Sharing is caring — but only when done safely! Professor Hoot will guide you! 🦉",
+  "device-defender": "Your devices need protection! Robo Buddy knows all the tricks. Let's secure them! 🛡️",
+  "cyber-clues": "Put on your detective hat! Detective Whiskers has mysteries to solve! 🔍",
+  "internet-detective": "Not everything online is true! Professor Hoot will teach you to find the facts! 🦉",
 };
 
 function getEncouragement(score: number, total: number) {
@@ -294,6 +307,39 @@ export default function MissionsPage() {
           { onConflict: "child_id,badge_id" }
         );
       }
+
+      // Check for additional badges (streak, mini-game, mastery)
+      const { data: allProgress } = await supabase
+        .from("mission_progress")
+        .select("*")
+        .eq("child_id", activeChildId);
+      const { data: allBadges } = await supabase
+        .from("earned_badges")
+        .select("*")
+        .eq("child_id", activeChildId);
+
+      const completedMissionIds = (allProgress ?? [])
+        .filter((p) => p.status === "completed")
+        .map((p) => p.mission_id);
+
+      // Count mini-game wins from completed games
+      const totalCompleted = (allProgress ?? []).reduce((acc, p) => acc + (p.score ?? 0), 0);
+
+      await checkAndAwardBadges({
+        childId: activeChildId,
+        missionId: activeMission.id,
+        score,
+        totalGames: games.length,
+        learningMode,
+        streak: childData ? (childData.last_activity_date === new Date().toISOString().split("T")[0] ? childData.streak : childData.streak + 1) : 1,
+        completedMissionIds,
+        earnedBadgeIds: new Set((allBadges ?? []).map((b) => b.badge_id)),
+        wordSearchWins: Math.floor(totalCompleted / 2),
+        memoryWins: Math.floor(totalCompleted / 3),
+        sortGameWins: Math.floor(totalCompleted / 2),
+        secretKeeperWins: Math.floor(totalCompleted / 3),
+        bossWins: completedMissionIds.length,
+      });
 
       queryClient.invalidateQueries({ queryKey: ["mission_progress"] });
       queryClient.invalidateQueries({ queryKey: ["earned_badges"] });

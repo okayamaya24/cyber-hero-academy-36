@@ -1,11 +1,11 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Star, Trophy, Flame, Zap, Gamepad2, CheckCircle2, Lock as LockIcon } from "lucide-react";
+import { Shield, Star, Trophy, Flame, Zap, Gamepad2, CheckCircle2, Lock as LockIcon, Award, Printer } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -200,7 +200,29 @@ export default function KidDashboard() {
         {/* Badges */}
         <div>
           <h2 className="mb-4 text-2xl font-bold">Your Badges</h2>
-          {earnedBadges.length === 0 ? (
+             {earnedBadges.length === ALL_BADGES.length && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mb-6 rounded-2xl border-2 border-accent bg-accent/10 p-6 text-center shadow-card"
+              >
+                <div className="text-5xl mb-3">🏆🎉</div>
+                <h3 className="text-xl font-bold mb-2">All Badges Earned!</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  You're a true Cyber Hero! Your certificate is ready!
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Button variant="hero" asChild>
+                    <Link to="/certificate"><Award className="mr-2 h-4 w-4" /> View Certificate</Link>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link to="/certificate"><Printer className="mr-2 h-4 w-4" /> Print Certificate</Link>
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+
+            {earnedBadges.length === 0 ? (
             <div className="rounded-2xl border-2 border-dashed bg-card p-8 text-center">
               <Trophy className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
               <h3 className="font-bold text-lg">No badges earned yet!</h3>
