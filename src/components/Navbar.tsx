@@ -18,7 +18,7 @@ export function Navbar() {
   const { user } = useAuth();
 
   const navItems = user
-    ? [...publicItems, ...authItems]
+    ? authItems
     : publicItems;
 
   return (
