@@ -52,6 +52,12 @@ const MISSION_SUPPORT: Record<string, string[]> = {
   "password-safety": ["Captain Cyber", "Professor Hoot"],
   "safe-websites": ["Detective Whiskers", "Robo Buddy"],
   "personal-info": ["Captain Cyber", "Detective Whiskers"],
+  "malware-monsters": ["Robo Buddy", "Captain Cyber"],
+  "phishy-messages": ["Detective Whiskers", "Professor Hoot"],
+  "smart-sharing": ["Professor Hoot", "Captain Cyber"],
+  "device-defender": ["Robo Buddy", "Detective Whiskers"],
+  "cyber-clues": ["Detective Whiskers", "Captain Cyber"],
+  "internet-detective": ["Professor Hoot", "Robo Buddy"],
 };
 
 function getSupportGuide(missionId: string, gameIndex: number): GuideCharacter {
