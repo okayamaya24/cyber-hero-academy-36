@@ -14,6 +14,7 @@ import LoginPage from "./pages/LoginPage";
 import ChildSelectPage from "./pages/ChildSelectPage";
 import CreateChildPage from "./pages/CreateChildPage";
 import CertificatePage from "./pages/CertificatePage";
+import ForParentsPage from "./pages/ForParentsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
