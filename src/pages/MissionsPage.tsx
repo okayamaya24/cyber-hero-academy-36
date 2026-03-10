@@ -308,6 +308,39 @@ export default function MissionsPage() {
         );
       }
 
+      // Check for additional badges (streak, mini-game, mastery)
+      const { data: allProgress } = await supabase
+        .from("mission_progress")
+        .select("*")
+        .eq("child_id", activeChildId);
+      const { data: allBadges } = await supabase
+        .from("earned_badges")
+        .select("*")
+        .eq("child_id", activeChildId);
+
+      const completedMissionIds = (allProgress ?? [])
+        .filter((p) => p.status === "completed")
+        .map((p) => p.mission_id);
+
+      // Count mini-game wins from completed games
+      const totalCompleted = (allProgress ?? []).reduce((acc, p) => acc + (p.score ?? 0), 0);
+
+      await checkAndAwardBadges({
+        childId: activeChildId,
+        missionId: activeMission.id,
+        score,
+        totalGames: games.length,
+        learningMode,
+        streak: childData ? (childData.last_activity_date === new Date().toISOString().split("T")[0] ? childData.streak : childData.streak + 1) : 1,
+        completedMissionIds,
+        earnedBadgeIds: new Set((allBadges ?? []).map((b) => b.badge_id)),
+        wordSearchWins: Math.floor(totalCompleted / 2),
+        memoryWins: Math.floor(totalCompleted / 3),
+        sortGameWins: Math.floor(totalCompleted / 2),
+        secretKeeperWins: Math.floor(totalCompleted / 3),
+        bossWins: completedMissionIds.length,
+      });
+
       queryClient.invalidateQueries({ queryKey: ["mission_progress"] });
       queryClient.invalidateQueries({ queryKey: ["earned_badges"] });
       queryClient.invalidateQueries({ queryKey: ["child"] });
