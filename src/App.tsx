@@ -35,6 +35,7 @@ const App = () => (
             <Route path="/dashboard" element={<KidDashboard />} />
             <Route path="/missions" element={<MissionsPage />} />
             <Route path="/parents" element={<ParentDashboard />} />
+            <Route path="/certificate" element={<CertificatePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

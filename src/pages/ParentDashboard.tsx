@@ -228,6 +228,11 @@ export default function ParentDashboard() {
                           <AvatarRenderer config={(child as any).avatar_config as AvatarConfig | null} size={32} fallbackEmoji={child.avatar} />
                           <h3 className="font-bold">{child.name}'s Learning Mode</h3>
                         </div>
+                        {resettingMode === child.id && (
+                          <div className="mb-3 rounded-lg bg-accent/10 border border-accent/30 p-3 text-sm text-accent">
+                            ⚡ Switching mode and resetting mission progress...
+                          </div>
+                        )}
                         <RadioGroup
                           value={childMode}
                           onValueChange={(value) => updateLearningMode(child.id, value as LearningMode)}
