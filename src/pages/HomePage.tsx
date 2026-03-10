@@ -109,9 +109,9 @@ export default function HomePage() {
                   </Button>
                 </DialogTrigger>
 
-                <DialogContent className="w-[92vw] max-w-4xl h-[80vh] rounded-3xl overflow-hidden p-0">
-                  <div className="flex h-full flex-col">
-                    <DialogHeader className="shrink-0 border-b px-6 py-5">
+                <DialogContent className="w-[92vw] max-w-4xl max-h-[85vh] rounded-3xl overflow-hidden p-0">
+                  <div className="flex h-full min-h-0 flex-col">
+                    <DialogHeader className="shrink-0 border-b px-6 py-5 text-left">
                       <DialogTitle className="text-2xl font-bold">For Parents</DialogTitle>
                       <DialogDescription className="text-base text-muted-foreground">
                         Cyber Hero Academy is an interactive cybersecurity learning platform designed for kids ages
@@ -119,7 +119,7 @@ export default function HomePage() {
                       </DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                    <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
                       <div className="space-y-6">
                         <div>
                           <h3 className="mb-2 text-lg font-bold">What kids learn</h3>
