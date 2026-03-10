@@ -4,7 +4,7 @@ import { Sparkles, CheckCircle2, Star, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MINI_GAME_META, type MiniGameType } from "@/data/missions";
+import { MINI_GAME_META, type MiniGameType, type AgeTier } from "@/data/missions";
 
 import WordSearchGame from "@/components/minigames/WordSearchGame";
 import PasswordBuilderGame from "@/components/minigames/PasswordBuilderGame";
@@ -12,6 +12,8 @@ import SortGame from "@/components/minigames/SortGame";
 import SecretKeeperGame from "@/components/minigames/SecretKeeperGame";
 import MemoryGame from "@/components/minigames/MemoryGame";
 import BossBattleGame from "@/components/minigames/BossBattleGame";
+
+import robotGuide from "@/assets/robot-guide.png";
 
 const DAILY_GAME_POOL: MiniGameType[] = [
   "word-search",
@@ -45,6 +47,7 @@ export default function DailyChallenge({ childId, childAge }: DailyChallengeProp
   const today = new Date().toISOString().slice(0, 10);
   const gameType = useMemo(() => getDailyGameType(childId), [childId]);
   const gameMeta = MINI_GAME_META[gameType];
+  const ageTier: AgeTier = childAge <= 7 ? "junior" : childAge <= 10 ? "defender" : "guardian";
 
   const { data: challenge, isLoading } = useQuery({
     queryKey: ["daily_challenge", childId, today],
@@ -56,7 +59,7 @@ export default function DailyChallenge({ childId, childAge }: DailyChallengeProp
         .eq("challenge_date", today)
         .maybeSingle();
       if (error) throw error;
-      return data as { id: string; completed: boolean; points_awarded: number } | null;
+      return data as unknown as { id: string; completed: boolean; points_awarded: number } | null;
     },
   });
 
@@ -83,12 +86,6 @@ export default function DailyChallenge({ childId, childAge }: DailyChallengeProp
       } as any);
     }
 
-    await supabase
-      .from("child_profiles")
-      .update({ points: undefined } as any)
-      .eq("id", childId);
-
-    // Increment points via RPC or direct update
     const { data: currentChild } = await supabase
       .from("child_profiles")
       .select("points")
@@ -107,23 +104,24 @@ export default function DailyChallenge({ childId, childAge }: DailyChallengeProp
     queryClient.invalidateQueries({ queryKey: ["child", childId] });
   };
 
-  const renderGame = () => {
-    const ageTier = childAge <= 7 ? "junior" : childAge <= 10 ? "defender" : "guardian";
-    const commonProps = { onComplete: handleComplete };
+  const defaultMissionId = "scam-detection";
+  const guideImage = robotGuide;
+  const guideName = "Robo Buddy";
 
+  const renderGame = () => {
     switch (gameType) {
       case "word-search":
-        return <WordSearchGame {...commonProps} difficulty={ageTier} />;
+        return <WordSearchGame missionId={defaultMissionId} ageTier={ageTier} guideImage={guideImage} guideName={guideName} onComplete={handleComplete} />;
       case "password-builder":
-        return <PasswordBuilderGame {...commonProps} difficulty={ageTier} />;
+        return <PasswordBuilderGame ageTier={ageTier} guideImage={guideImage} guideName={guideName} onComplete={handleComplete} />;
       case "sort-game":
-        return <SortGame {...commonProps} difficulty={ageTier} />;
+        return <SortGame missionId={defaultMissionId} ageTier={ageTier} guideImage={guideImage} guideName={guideName} onComplete={handleComplete} />;
       case "secret-keeper":
-        return <SecretKeeperGame {...commonProps} difficulty={ageTier} />;
+        return <SecretKeeperGame ageTier={ageTier} guideImage={guideImage} guideName={guideName} onComplete={handleComplete} />;
       case "memory":
-        return <MemoryGame {...commonProps} difficulty={ageTier} />;
+        return <MemoryGame ageTier={ageTier} guideImage={guideImage} guideName={guideName} onComplete={handleComplete} />;
       case "boss-battle":
-        return <BossBattleGame {...commonProps} difficulty={ageTier} />;
+        return <BossBattleGame missionId={defaultMissionId} ageTier={ageTier} guideImage={guideImage} guideName={guideName} onComplete={handleComplete} />;
       default:
         return null;
     }
