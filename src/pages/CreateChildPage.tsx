@@ -50,7 +50,7 @@ export default function CreateChildPage() {
       parent_id: user!.id,
       name: form.name.trim(),
       age,
-      avatar: config.characterType === "robot" ? "🤖" : config.characterType === "girl" ? "🦸‍♀️" : "🦸",
+      avatar: config.characterType === "girl" ? "🦸‍♀️" : "🦸",
       avatar_config: config as any,
     });
 
