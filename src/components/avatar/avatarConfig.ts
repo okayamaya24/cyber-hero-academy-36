@@ -1,10 +1,10 @@
 export interface AvatarConfig {
-  characterType: "boy" | "girl" | "neutral" | "robot";
+  characterType: "boy" | "girl" | "hero";
   skinTone: string;
   hairStyle: "short" | "curly" | "long" | "braids" | "ponytail" | "afro" | "none";
   hairColor: string;
   suitColor: string;
-  accessory: "none" | "glasses" | "goggles" | "headset" | "visor" | "cape";
+  accessory: "none" | "mask" | "goggles" | "magnifying-glass" | "tablet";
 }
 
 export const DEFAULT_AVATAR: AvatarConfig = {
@@ -33,23 +33,20 @@ export const HAIR_COLORS = [
   { color: "#9B59B6", label: "Purple" },
   { color: "#2ECC71", label: "Green" },
   { color: "#3498DB", label: "Blue" },
-  { color: "#F39C12", label: "Orange" },
 ];
 
 export const SUIT_COLORS = [
   { color: "#3B82F6", label: "Blue" },
-  { color: "#8B5CF6", label: "Purple" },
   { color: "#10B981", label: "Green" },
-  { color: "#EF4444", label: "Red" },
-  { color: "#14B8A6", label: "Teal" },
+  { color: "#8B5CF6", label: "Purple" },
   { color: "#EC4899", label: "Pink" },
+  { color: "#14B8A6", label: "Teal" },
 ];
 
 export const CHARACTER_TYPES = [
   { type: "boy" as const, label: "Boy", emoji: "👦" },
   { type: "girl" as const, label: "Girl", emoji: "👧" },
-  { type: "neutral" as const, label: "Hero", emoji: "⭐" },
-  { type: "robot" as const, label: "Robot", emoji: "🤖" },
+  { type: "hero" as const, label: "Hero", emoji: "⭐" },
 ];
 
 export const HAIR_STYLES = [
@@ -63,9 +60,8 @@ export const HAIR_STYLES = [
 
 export const ACCESSORIES = [
   { type: "none" as const, label: "None", emoji: "❌" },
-  { type: "glasses" as const, label: "Glasses", emoji: "👓" },
+  { type: "mask" as const, label: "Hero Mask", emoji: "🦸" },
   { type: "goggles" as const, label: "Goggles", emoji: "🥽" },
-  { type: "headset" as const, label: "Headset", emoji: "🎧" },
-  { type: "visor" as const, label: "Visor", emoji: "🕶️" },
-  { type: "cape" as const, label: "Cape", emoji: "🦸" },
+  { type: "magnifying-glass" as const, label: "Magnifier", emoji: "🔍" },
+  { type: "tablet" as const, label: "Tablet", emoji: "📱" },
 ];
