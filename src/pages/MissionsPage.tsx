@@ -522,7 +522,26 @@ export default function MissionsPage() {
     const isCorrect = isCustom ? selectedAnswer === 0 : selectedAnswer === q.correct;
 
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background relative">
+        {/* Floating mascot guide */}
+        <motion.div
+          className="fixed bottom-4 right-4 z-20 flex flex-col items-center gap-1 pointer-events-none md:bottom-8 md:right-8"
+          initial={{ x: 80, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ type: "spring", delay: 0.3 }}
+        >
+          <motion.img
+            src={activeMission.guide.image}
+            alt={activeMission.guide.name}
+            className="h-20 w-20 md:h-28 md:w-28 object-contain drop-shadow-xl"
+            animate={{ y: [0, -6, 0] }}
+            transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+          />
+          <div className="rounded-xl bg-card/90 backdrop-blur px-2.5 py-1 shadow-md border border-border text-center">
+            <p className="text-[10px] font-bold">{activeMission.guide.name}</p>
+          </div>
+        </motion.div>
+
         <div className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur">
           <div className="container mx-auto max-w-2xl px-4 py-3">
             <div className="flex items-center justify-between">
