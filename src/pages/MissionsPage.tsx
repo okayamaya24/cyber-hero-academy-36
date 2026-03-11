@@ -40,7 +40,6 @@ import wiseOwl from "@/assets/wise-owl.png";
 import robotGuide from "@/assets/robot-guide.png";
 import heroCharacter from "@/assets/hero-character.png";
 
-/* ── Guide roster for support rotation ──────────────────────── */
 const ALL_GUIDES: Record<string, GuideCharacter> = {
   "Captain Cyber": {
     name: "Captain Cyber",
@@ -71,7 +70,6 @@ function getSupportGuide(missionId: string, gameIndex: number): GuideCharacter {
   return ALL_GUIDES[name] ?? ALL_GUIDES["Captain Cyber"];
 }
 
-/* ── Custom game types that render their own UI ─────────────── */
 const CUSTOM_GAME_TYPES: MiniGameType[] = [
   "word-search",
   "password-builder",
@@ -81,7 +79,6 @@ const CUSTOM_GAME_TYPES: MiniGameType[] = [
   "boss-battle",
 ];
 
-/* ── Encouragements ─────────────────────────────────────────── */
 const ENCOURAGEMENTS_PERFECT = [
   "You're a Cyber Superstar! 🌟",
   "PERFECT! The internet is safer because of YOU! 🛡️",
@@ -176,13 +173,10 @@ function MessageCard({ q, isJunior }: { q: Question; isJunior: boolean }) {
   );
 }
 
-/* ── IMPORTANT: ignore stale progress from old learning modes ───────── */
 function getModeAwareMissionProgress(progressRows: any[], missionId: string, expectedTotalGames: number) {
   const row = progressRows.find((p) => p.mission_id === missionId);
   if (!row) return null;
 
-  // If this progress row was created under a different learning mode,
-  // its max_score won't match the current total games. Treat it as stale.
   if ((row.max_score ?? expectedTotalGames) !== expectedTotalGames) {
     return null;
   }
@@ -190,9 +184,6 @@ function getModeAwareMissionProgress(progressRows: any[], missionId: string, exp
   return row;
 }
 
-/* ================================================================
-   MAIN COMPONENT
-   ================================================================ */
 export default function MissionsPage() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
@@ -336,7 +327,6 @@ export default function MissionsPage() {
           .eq("id", activeChildId);
       }
 
-      // Award mission badge on completion
       await supabase.from("earned_badges").upsert(
         {
           child_id: activeChildId,
@@ -375,9 +365,15 @@ export default function MissionsPage() {
         bossWins: completedMissionIds.length,
       });
 
-      await queryClient.invalidateQueries({ queryKey: ["mission_progress", activeChildId] });
-      await queryClient.invalidateQueries({ queryKey: ["earned_badges", activeChildId] });
-      await queryClient.invalidateQueries({ queryKey: ["child", activeChildId] });
+      await queryClient.invalidateQueries({
+        queryKey: ["mission_progress", activeChildId],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["earned_badges", activeChildId],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["child", activeChildId],
+      });
       await queryClient.invalidateQueries({ queryKey: ["mission_progress"] });
       await queryClient.invalidateQueries({ queryKey: ["earned_badges"] });
       await queryClient.invalidateQueries({ queryKey: ["child"] });
@@ -896,7 +892,7 @@ export default function MissionsPage() {
       <div className="container mx-auto px-4">
         <motion.div className="mb-8 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl font-bold md:text-4xl">🎮 Learning Missions</h1>
-          <p className="mt-2 text-muted-foreground">Choose a mission and become a Cyber Hero!</p>
+          <p className="mt-2 text-muted-foreground">Explore all missions and become a Cyber Hero!</p>
 
           {child && (
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
@@ -918,11 +914,8 @@ export default function MissionsPage() {
         >
           {MISSIONS.map((m) => {
             const totalGames = getTotalGames(learningMode);
-
             const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
-
             const completedGames = mp?.status === "completed" ? totalGames : (mp?.current_question ?? 0);
-
             const isCompleted = mp?.status === "completed";
             const isInProgress = mp?.status === "in_progress";
             const levels = getMissionLevels(m, age, learningMode, completedGames);
