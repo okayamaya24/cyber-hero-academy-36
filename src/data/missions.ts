@@ -529,9 +529,9 @@ export const MISSIONS: MissionDef[] = [
     bgColor: "bg-secondary/10",
     guide: { name: "Detective Whiskers", image: detectiveCat },
     levelMiniGames: [
-      ["sort-game", "quiz"],
-      ["word-search", "memory"],
-      ["sort-game", "boss-battle"],
+      ["sort-game", "scenario", "quiz"],
+      ["quiz", "sort-game", "memory"],
+      ["scenario", "boss-battle"],
     ],
     badgeId: "safe-surfer",
     badgeName: "Safe Surfer",
