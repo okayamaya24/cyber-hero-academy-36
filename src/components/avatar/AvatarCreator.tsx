@@ -65,6 +65,13 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
 
   const update = (partial: Partial<AvatarConfig>) => setConfig((c) => ({ ...c, ...partial }));
 
+  // Build mini preview configs for hair style selection
+  const hairPreviewConfig = (style: AvatarConfig["hairStyle"]): AvatarConfig => ({
+    ...config,
+    hairStyle: style,
+    accessory: "none",
+  });
+
   return (
     <div className="space-y-6">
       {/* Large Avatar Preview */}
@@ -84,53 +91,59 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
         {/* Character Type */}
         <div>
           <SectionTitle>Character Type</SectionTitle>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-3 gap-3">
             {CHARACTER_TYPES.map((ct) => (
-              <OptionButton key={ct.type} selected={config.characterType === ct.type} onClick={() => update({ characterType: ct.type, hairStyle: ct.type === "robot" ? "none" : config.hairStyle === "none" ? "short" : config.hairStyle })}>
-                <span className="text-2xl">{ct.emoji}</span>
-                <span className="text-[11px] font-semibold">{ct.label}</span>
+              <OptionButton
+                key={ct.type}
+                selected={config.characterType === ct.type}
+                onClick={() => update({ characterType: ct.type })}
+              >
+                <div className="w-12 h-12 flex items-center justify-center">
+                  <AvatarRenderer
+                    config={{ ...config, characterType: ct.type, accessory: "none" }}
+                    size={48}
+                  />
+                </div>
+                <span className="text-xs font-bold">{ct.label}</span>
               </OptionButton>
             ))}
           </div>
         </div>
 
-        {/* Skin Tone (hide for robot) */}
-        {config.characterType !== "robot" && (
-          <div>
-            <SectionTitle>Skin Tone</SectionTitle>
-            <div className="flex flex-wrap gap-2">
-              {SKIN_TONES.map((s) => (
-                <ColorButton key={s.color} color={s.color} label={s.label} selected={config.skinTone === s.color} onClick={() => update({ skinTone: s.color })} />
-              ))}
-            </div>
+        {/* Skin Tone */}
+        <div>
+          <SectionTitle>Skin Tone</SectionTitle>
+          <div className="flex flex-wrap gap-2">
+            {SKIN_TONES.map((s) => (
+              <ColorButton key={s.color} color={s.color} label={s.label} selected={config.skinTone === s.color} onClick={() => update({ skinTone: s.color })} />
+            ))}
           </div>
-        )}
+        </div>
 
-        {/* Hair Style (hide for robot) */}
-        {config.characterType !== "robot" && (
-          <div>
-            <SectionTitle>Hair Style</SectionTitle>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-              {HAIR_STYLES.map((h) => (
-                <OptionButton key={h.style} selected={config.hairStyle === h.style} onClick={() => update({ hairStyle: h.style })}>
-                  <span className="text-[11px] font-semibold">{h.label}</span>
-                </OptionButton>
-              ))}
-            </div>
+        {/* Hair Style with mini previews */}
+        <div>
+          <SectionTitle>Hair Style</SectionTitle>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {HAIR_STYLES.map((h) => (
+              <OptionButton key={h.style} selected={config.hairStyle === h.style} onClick={() => update({ hairStyle: h.style })}>
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <AvatarRenderer config={hairPreviewConfig(h.style)} size={32} />
+                </div>
+                <span className="text-[10px] font-semibold">{h.label}</span>
+              </OptionButton>
+            ))}
           </div>
-        )}
+        </div>
 
-        {/* Hair Color (hide for robot) */}
-        {config.characterType !== "robot" && (
-          <div>
-            <SectionTitle>Hair Color</SectionTitle>
-            <div className="flex flex-wrap gap-2">
-              {HAIR_COLORS.map((h) => (
-                <ColorButton key={h.color} color={h.color} label={h.label} selected={config.hairColor === h.color} onClick={() => update({ hairColor: h.color })} />
-              ))}
-            </div>
+        {/* Hair Color */}
+        <div>
+          <SectionTitle>Hair Color</SectionTitle>
+          <div className="flex flex-wrap gap-2">
+            {HAIR_COLORS.map((h) => (
+              <ColorButton key={h.color} color={h.color} label={h.label} selected={config.hairColor === h.color} onClick={() => update({ hairColor: h.color })} />
+            ))}
           </div>
-        )}
+        </div>
 
         {/* Hero Suit Color */}
         <div>
@@ -145,7 +158,7 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
         {/* Accessories */}
         <div>
           <SectionTitle>Accessory</SectionTitle>
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
             {ACCESSORIES.map((a) => (
               <OptionButton key={a.type} selected={config.accessory === a.type} onClick={() => update({ accessory: a.type })}>
                 <span className="text-xl">{a.emoji}</span>
