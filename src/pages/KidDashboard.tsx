@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Star, Trophy, Flame, Zap, Gamepad2, CheckCircle2, Lock as LockIcon, Award, Printer } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,29 +57,46 @@ const BADGE_CATEGORIES = [
 ];
 
 function BadgeCard({ badge, earned }: { badge: (typeof ALL_BADGES)[number]; earned: boolean }) {
+  const description =
+    (badge as any).description ||
+    (earned
+      ? "You earned this badge. Great job, Cyber Hero!"
+      : "Keep playing missions and challenges to unlock this badge.");
+
   return (
-    <motion.div
-      variants={fadeUp}
-      className={`group rounded-2xl border p-4 text-center transition-all ${
-        earned ? "bg-card shadow-card hover:-translate-y-1 hover:shadow-playful" : "bg-muted/40 opacity-70 grayscale"
-      }`}
-    >
-      <div
-        className={`mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl text-3xl ${
-          earned ? "bg-primary/10" : "bg-muted"
-        }`}
-      >
-        {badge.icon}
-      </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <motion.div
+          variants={fadeUp}
+          className={`group cursor-help rounded-2xl border p-4 text-center transition-all ${
+            earned
+              ? "bg-card shadow-card hover:-translate-y-1 hover:shadow-playful"
+              : "bg-muted/40 opacity-70 grayscale"
+          }`}
+        >
+          <div
+            className={`mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl text-3xl ${
+              earned ? "bg-primary/10" : "bg-muted"
+            }`}
+          >
+            {badge.icon}
+          </div>
 
-      <h3 className="text-sm font-bold leading-tight">{badge.name}</h3>
+          <h3 className="text-sm font-bold leading-tight">{badge.name}</h3>
 
-      {earned ? (
-        <p className="mt-2 text-[11px] font-bold text-secondary">EARNED ✓</p>
-      ) : (
-        <p className="mt-2 text-[11px] font-medium text-muted-foreground">LOCKED</p>
-      )}
-    </motion.div>
+          {earned ? (
+            <p className="mt-2 text-[11px] font-bold text-secondary">EARNED ✓</p>
+          ) : (
+            <p className="mt-2 text-[11px] font-medium text-muted-foreground">LOCKED</p>
+          )}
+        </motion.div>
+      </TooltipTrigger>
+
+      <TooltipContent className="max-w-xs rounded-xl text-center">
+        <p className="font-semibold">{badge.name}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
