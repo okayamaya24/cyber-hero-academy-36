@@ -763,8 +763,8 @@ export const MISSIONS: MissionDef[] = [
     guide: { name: "Robo Buddy", image: robotGuide },
     levelMiniGames: [
       ["quiz", "sort-game"],
-      ["memory", "word-search"],
-      ["quiz", "boss-battle"],
+      ["memory", "scenario", "word-search"],
+      ["sort-game", "boss-battle"],
     ],
     badgeId: "device-guardian",
     badgeName: "Device Guardian",
