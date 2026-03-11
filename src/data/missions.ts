@@ -719,9 +719,9 @@ export const MISSIONS: MissionDef[] = [
     bgColor: "bg-secondary/10",
     guide: { name: "Professor Hoot", image: wiseOwl },
     levelMiniGames: [
-      ["secret-keeper", "quiz"],
-      ["sort-game", "memory"],
-      ["secret-keeper", "boss-battle"],
+      ["secret-keeper", "scenario"],
+      ["sort-game", "secret-keeper", "memory"],
+      ["quiz", "boss-battle"],
     ],
     badgeId: "smart-sharer",
     badgeName: "Smart Sharer",
