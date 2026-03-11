@@ -175,6 +175,30 @@ export default function KidDashboard() {
     badges: category.ids.map((id) => ALL_BADGES.find((b) => b.id === id)).filter(Boolean) as typeof ALL_BADGES,
   })).filter((category) => category.badges.length > 0);
 
+  const inProgressMissions = MISSIONS.filter((m) => {
+    const mp = missionProgress.find((p) => p.mission_id === m.id);
+    return mp?.status === "in_progress";
+  });
+
+  const completedMissionCards = MISSIONS.filter((m) => {
+    const mp = missionProgress.find((p) => p.mission_id === m.id);
+    return mp?.status === "completed";
+  });
+
+  const notStartedMissions = MISSIONS.filter((m) => {
+    const mp = missionProgress.find((p) => p.mission_id === m.id);
+    return !mp || mp.status === "not_started";
+  });
+
+  const recommendedMission = notStartedMissions.length > 0 ? notStartedMissions[0] : null;
+
+  const dashboardMissions =
+    inProgressMissions.length > 0
+      ? inProgressMissions
+      : recommendedMission
+        ? [recommendedMission]
+        : completedMissionCards.slice(0, 2);
+
   return (
     <div className="min-h-screen bg-background pb-12">
       <div className="gradient-hero py-8">
@@ -282,10 +306,10 @@ export default function KidDashboard() {
         {/* Daily Challenge */}
         <DailyChallenge childId={child.id} childAge={child.age} />
 
-        {/* Missions */}
+        {/* Continue Learning */}
         <div>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Your Missions</h2>
+            <h2 className="text-2xl font-bold">Continue Learning</h2>
             <div className="flex items-center gap-2">
               <Badge className="border-0 bg-primary/10 text-xs text-primary">
                 {modeConfig.emoji} {modeConfig.label}
@@ -296,7 +320,7 @@ export default function KidDashboard() {
             </div>
           </div>
 
-          {MISSIONS.length > 0 && completedMissions === 0 && missionProgress.length === 0 ? (
+          {dashboardMissions.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -304,16 +328,19 @@ export default function KidDashboard() {
             >
               <Gamepad2 className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
               <h3 className="text-lg font-bold">No missions started yet!</h3>
-              <p className="mt-1 text-sm text-muted-foreground">Start your first mission to earn points and badges.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Start your first mission to begin your cyber adventure.
+              </p>
               <Button variant="hero" className="mt-4" asChild>
                 <Link to="/missions">Start First Mission 🚀</Link>
               </Button>
             </motion.div>
           ) : (
             <motion.div className="grid gap-4 sm:grid-cols-2" variants={container} initial="hidden" animate="show">
-              {MISSIONS.map((m) => {
+              {dashboardMissions.map((m) => {
                 const mp = missionProgress.find((p) => p.mission_id === m.id);
                 const status = mp?.status ?? "not_started";
+                const isRecommended = status === "not_started" && recommendedMission?.id === m.id;
                 const completedGames = mp?.status === "completed" ? totalGamesPerMission : (mp?.current_question ?? 0);
                 const levels = getMissionLevels(m, child.age, learningMode, completedGames);
                 const progress = totalGamesPerMission > 0 ? (completedGames / totalGamesPerMission) * 100 : 0;
@@ -323,7 +350,7 @@ export default function KidDashboard() {
                     key={m.id}
                     variants={fadeUp}
                     className={`group relative overflow-hidden rounded-2xl border-2 bg-card p-5 shadow-card transition-all hover:-translate-y-1 hover:shadow-playful ${
-                      status === "not_started" ? "opacity-70" : ""
+                      status === "not_started" ? "opacity-90" : ""
                     }`}
                   >
                     <div className="flex items-start gap-4">
@@ -334,7 +361,7 @@ export default function KidDashboard() {
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-bold">{m.title}</h3>
                           {status === "completed" && (
                             <Badge className="border-0 bg-secondary text-secondary-foreground">✓ Done</Badge>
@@ -342,6 +369,7 @@ export default function KidDashboard() {
                           {status === "in_progress" && (
                             <Badge className="border-0 bg-accent text-accent-foreground">In Progress</Badge>
                           )}
+                          {isRecommended && <Badge className="border-0 bg-primary/10 text-primary">Recommended</Badge>}
                         </div>
 
                         <p className="text-sm text-muted-foreground">{m.description}</p>
