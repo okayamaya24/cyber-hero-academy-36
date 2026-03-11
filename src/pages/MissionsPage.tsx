@@ -543,7 +543,7 @@ export default function MissionsPage() {
         </motion.div>
 
         <div className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur">
-          <div className="container mx-auto max-w-2xl px-4 py-3">
+          <div className="container mx-auto max-w-3xl px-4 py-3">
             <div className="flex items-center justify-between">
               <button
                 onClick={resetMission}
