@@ -11,25 +11,21 @@ const publicItems = [
 const authItems = [
   { label: "Dashboard", to: "/dashboard", icon: Gamepad2 },
   { label: "Missions", to: "/missions", icon: Shield },
-  { label: "Parents", to: "/parents", icon: BarChart3 },
+  { label: "Parents", to: "/parent-dashboard", icon: BarChart3 },
 ];
 
 export function Navbar() {
   const location = useLocation();
   const { user } = useAuth();
 
-  const navItems = user
-    ? authItems
-    : publicItems;
+  const navItems = user ? authItems : publicItems;
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2">
           <Shield className="h-8 w-8 text-primary" />
-          <span className="text-xl font-display font-bold text-foreground">
-            Cyber Hero Academy
-          </span>
+          <span className="text-xl font-display font-bold text-foreground">Cyber Hero Academy</span>
         </Link>
 
         <div className="flex items-center gap-1">
@@ -40,9 +36,7 @@ export function Navbar() {
                 key={item.to}
                 to={item.to}
                 className={`relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                  isActive
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
+                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <item.icon className="h-4 w-4" />
