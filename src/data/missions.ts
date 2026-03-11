@@ -633,9 +633,9 @@ export const MISSIONS: MissionDef[] = [
     bgColor: "bg-destructive/10",
     guide: { name: "Robo Buddy", image: robotGuide },
     levelMiniGames: [
-      ["quiz", "sort-game"],
-      ["word-search", "memory"],
-      ["sort-game", "boss-battle"],
+      ["scenario", "sort-game"],
+      ["sort-game", "scenario", "memory"],
+      ["scenario", "boss-battle"],
     ],
     badgeId: "malware-fighter",
     badgeName: "Malware Fighter",
