@@ -722,9 +722,9 @@ export default function MissionsPage() {
               )}
 
               {showResult && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-2">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-3">
                   <div
-                    className={`rounded-2xl p-5 ${
+                    className={`rounded-2xl p-6 md:p-7 ${
                       isCorrect
                         ? "border-2 border-secondary/30 bg-secondary/10"
                         : "border-2 border-accent/30 bg-accent/10"
