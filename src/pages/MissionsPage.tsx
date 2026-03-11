@@ -416,17 +416,36 @@ export default function MissionsPage() {
 
   if (activeMission && showIntro) {
     const levels = getMissionLevels(activeMission, age, learningMode, 0);
-    const supportGuides = (MISSION_SUPPORT[activeMission.id] ?? []).map((n) => ALL_GUIDES[n]).filter(Boolean);
 
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4 relative">
+        {/* Mascot guide — large animated companion in corner */}
+        <motion.div
+          className="fixed bottom-4 left-4 z-20 flex flex-col items-center gap-1 pointer-events-none md:bottom-8 md:left-8"
+          initial={{ x: -80, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ type: "spring", delay: 0.4, duration: 0.8 }}
+        >
+          <motion.img
+            src={activeMission.guide.image}
+            alt={activeMission.guide.name}
+            className="h-28 w-28 md:h-36 md:w-36 object-contain drop-shadow-xl"
+            animate={{ y: [0, -8, 0] }}
+            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+          />
+          <div className="rounded-2xl bg-card/90 backdrop-blur px-3 py-1.5 shadow-lg border border-border text-center">
+            <p className="text-xs font-bold">{activeMission.guide.name}</p>
+            <p className="text-[10px] text-muted-foreground">Your Guide</p>
+          </div>
+        </motion.div>
+
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", duration: 0.6 }}
-          className="w-full max-w-md"
+          className="w-full max-w-lg"
         >
-          <div className="rounded-3xl border-2 bg-card p-8 text-center shadow-playful">
+          <div className="rounded-3xl border-2 bg-card p-8 md:p-10 text-center shadow-playful">
             <motion.img
               src={CAPTAIN_CYBER.image}
               alt={CAPTAIN_CYBER.name}
@@ -440,35 +459,23 @@ export default function MissionsPage() {
               ⚡ {CAPTAIN_CYBER.name} · {CAPTAIN_CYBER.role}
             </Badge>
 
-            <div className="mb-4 rounded-2xl bg-muted/50 p-4">
-              <p className="text-sm font-medium text-foreground">
+            <div className="mb-5 rounded-2xl bg-muted/50 p-5">
+              <p className="text-base font-medium text-foreground">
                 {CAPTAIN_INTROS[activeMission.id] || "Let's start this mission, hero!"}
               </p>
             </div>
 
-            <div className="mb-3 flex items-center gap-3">
+            <div className="mb-4 flex items-center gap-3">
               <img
                 src={activeMission.guide.image}
                 alt={activeMission.guide.name}
-                className="h-12 w-12 object-contain"
+                className="h-14 w-14 object-contain"
               />
               <div className="text-left">
-                <h2 className="text-xl font-bold">{activeMission.title}</h2>
-                <p className="text-xs text-muted-foreground">Main Guide: {activeMission.guide.name}</p>
+                <h2 className="text-2xl font-bold">{activeMission.title}</h2>
+                <p className="text-sm text-muted-foreground">Main Guide: {activeMission.guide.name}</p>
               </div>
             </div>
-
-            {supportGuides.length > 0 && (
-              <div className="mb-4 flex items-center justify-center gap-2">
-                <span className="text-xs text-muted-foreground">Support:</span>
-                {supportGuides.map((g) => (
-                  <div key={g.name} className="flex items-center gap-1 rounded-full bg-muted px-2 py-1">
-                    <img src={g.image} alt={g.name} className="h-5 w-5 object-contain" />
-                    <span className="text-[10px] font-semibold">{g.name}</span>
-                  </div>
-                ))}
-              </div>
-            )}
 
             <div className="mb-6 space-y-2">
               {levels.map((level) => (
@@ -515,9 +522,28 @@ export default function MissionsPage() {
     const isCorrect = isCustom ? selectedAnswer === 0 : selectedAnswer === q.correct;
 
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background relative">
+        {/* Floating mascot guide */}
+        <motion.div
+          className="fixed bottom-4 right-4 z-20 flex flex-col items-center gap-1 pointer-events-none md:bottom-8 md:right-8"
+          initial={{ x: 80, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ type: "spring", delay: 0.3 }}
+        >
+          <motion.img
+            src={activeMission.guide.image}
+            alt={activeMission.guide.name}
+            className="h-20 w-20 md:h-28 md:w-28 object-contain drop-shadow-xl"
+            animate={{ y: [0, -6, 0] }}
+            transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+          />
+          <div className="rounded-xl bg-card/90 backdrop-blur px-2.5 py-1 shadow-md border border-border text-center">
+            <p className="text-[10px] font-bold">{activeMission.guide.name}</p>
+          </div>
+        </motion.div>
+
         <div className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur">
-          <div className="container mx-auto max-w-2xl px-4 py-3">
+          <div className="container mx-auto max-w-3xl px-4 py-3">
             <div className="flex items-center justify-between">
               <button
                 onClick={resetMission}
@@ -559,7 +585,7 @@ export default function MissionsPage() {
           </div>
         </div>
 
-        <div className="container mx-auto max-w-2xl px-4 py-6">
+        <div className="container mx-auto max-w-3xl px-4 py-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={`game-${gameKey}-${currentQ}`}
@@ -637,14 +663,14 @@ export default function MissionsPage() {
 
               {!isCustom && !showResult && (
                 <>
-                  <div className="mb-4 flex items-center gap-3">
+                  <div className="mb-5 flex items-start gap-4">
                     <img
                       src={activeMission.guide.image}
                       alt={activeMission.guide.name}
-                      className="h-12 w-12 object-contain"
+                      className="h-14 w-14 object-contain"
                     />
-                    <div className="rounded-2xl rounded-bl-sm bg-muted px-4 py-2">
-                      <p className={`font-semibold ${isJunior ? "text-base" : "text-sm"}`}>{q.question}</p>
+                    <div className="rounded-2xl rounded-bl-sm bg-muted px-5 py-3">
+                      <p className={`font-semibold ${isJunior ? "text-lg" : "text-base"}`}>{q.question}</p>
                     </div>
                   </div>
 
@@ -684,10 +710,10 @@ export default function MissionsPage() {
                         <button
                           key={idx}
                           onClick={() => handleAnswer(idx)}
-                          className="group relative cursor-pointer rounded-2xl border-2 border-border bg-card p-5 text-center font-bold transition-all hover:scale-[1.03] hover:border-primary/50 hover:shadow-md active:scale-95"
+                          className="group relative cursor-pointer rounded-2xl border-2 border-border bg-card p-6 md:p-7 text-center font-bold transition-all hover:scale-[1.03] hover:border-primary/50 hover:shadow-md active:scale-95"
                         >
-                          <span className={`mb-1 block ${isJunior ? "text-4xl" : "text-2xl"}`}>{emoji}</span>
-                          <span className={isJunior ? "text-lg" : "text-base"}>{opt}</span>
+                          <span className={`mb-1 block ${isJunior ? "text-4xl" : "text-3xl"}`}>{emoji}</span>
+                          <span className={isJunior ? "text-xl" : "text-lg"}>{opt}</span>
                         </button>
                       );
                     })}
@@ -696,9 +722,9 @@ export default function MissionsPage() {
               )}
 
               {showResult && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-2">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-3">
                   <div
-                    className={`rounded-2xl p-5 ${
+                    className={`rounded-2xl p-6 md:p-7 ${
                       isCorrect
                         ? "border-2 border-secondary/30 bg-secondary/10"
                         : "border-2 border-accent/30 bg-accent/10"
