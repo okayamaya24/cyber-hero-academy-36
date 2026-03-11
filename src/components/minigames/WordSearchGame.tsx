@@ -34,6 +34,14 @@ const WORD_LISTS: Record<string, Record<AgeTier, string[]>> = {
   },
 };
 
+const HIGHLIGHT_COLORS = [
+  { bg: "bg-green-400/50", border: "border-green-500", text: "text-green-900", chip: "bg-green-400/30 text-green-800 border-green-400" },
+  { bg: "bg-blue-400/50", border: "border-blue-500", text: "text-blue-900", chip: "bg-blue-400/30 text-blue-800 border-blue-400" },
+  { bg: "bg-purple-400/50", border: "border-purple-500", text: "text-purple-900", chip: "bg-purple-400/30 text-purple-800 border-purple-400" },
+  { bg: "bg-orange-400/50", border: "border-orange-500", text: "text-orange-900", chip: "bg-orange-400/30 text-orange-800 border-orange-400" },
+  { bg: "bg-pink-400/50", border: "border-pink-500", text: "text-pink-900", chip: "bg-pink-400/30 text-pink-800 border-pink-400" },
+];
+
 type Coord = { r: number; c: number };
 
 function coordKey(r: number, c: number) {
@@ -47,8 +55,6 @@ function getCellsOnLine(start: Coord, end: Coord): Coord[] | null {
 
   const absDr = Math.abs(dr);
   const absDc = Math.abs(dc);
-
-  // Must be horizontal, vertical, or 45° diagonal
   if (absDr !== 0 && absDc !== 0 && absDr !== absDc) return null;
 
   const steps = Math.max(absDr, absDc);
@@ -71,14 +77,7 @@ function generateGrid(words: string[], size: number): { grid: string[][]; placem
   const grid: string[][] = Array.from({ length: size }, () => Array(size).fill(""));
   const placements: WordPlacement[] = [];
   const directions = [
-    [0, 1],   // right
-    [1, 0],   // down
-    [1, 1],   // diagonal down-right
-    [0, -1],  // left
-    [-1, 0],  // up
-    [-1, -1], // diagonal up-left
-    [1, -1],  // diagonal down-left
-    [-1, 1],  // diagonal up-right
+    [0, 1], [1, 0], [1, 1], [0, -1], [-1, 0], [-1, -1], [1, -1], [-1, 1],
   ];
 
   for (const word of words) {
@@ -133,20 +132,21 @@ function generateGrid(words: string[], size: number): { grid: string[][]; placem
 }
 
 export default function WordSearchGame({ missionId, ageTier, guideImage, guideName, onComplete }: Props) {
-  const size = ageTier === "junior" ? 6 : ageTier === "defender" ? 8 : 10;
+  const size = ageTier === "junior" ? 7 : ageTier === "defender" ? 9 : 11;
   const wordList = WORD_LISTS[missionId]?.[ageTier] ?? WORD_LISTS["scam-detection"][ageTier];
 
   const { grid, placements } = useMemo(() => generateGrid(wordList, size), [missionId, ageTier]);
 
-  const [foundWords, setFoundWords] = useState<Set<string>>(new Set());
-  const [foundCells, setFoundCells] = useState<Set<string>>(new Set());
+  const [foundWords, setFoundWords] = useState<string[]>([]);
+  const [foundCellColors, setFoundCellColors] = useState<Map<string, number>>(new Map());
   const [dragStart, setDragStart] = useState<Coord | null>(null);
   const [dragEnd, setDragEnd] = useState<Coord | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [flashWrong, setFlashWrong] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
 
-  // Compute live drag path
+  const foundWordsSet = useMemo(() => new Set(foundWords), [foundWords]);
+
   const dragPath = useMemo<Set<string>>(() => {
     if (!dragStart || !dragEnd) return new Set();
     const cells = getCellsOnLine(dragStart, dragEnd);
@@ -181,12 +181,13 @@ export default function WordSearchGame({ missionId, ageTier, guideImage, guideNa
 
       let matched = false;
       for (const placement of placements) {
-        if (foundWords.has(placement.word)) continue;
+        if (foundWordsSet.has(placement.word)) continue;
         if (selectedLetters === placement.word || reversed === placement.word) {
-          setFoundWords((prev) => new Set([...prev, placement.word]));
-          setFoundCells((prev) => {
-            const next = new Set(prev);
-            placement.cells.forEach((c) => next.add(coordKey(c.r, c.c)));
+          const colorIndex = foundWords.length % HIGHLIGHT_COLORS.length;
+          setFoundWords((prev) => [...prev, placement.word]);
+          setFoundCellColors((prev) => {
+            const next = new Map(prev);
+            placement.cells.forEach((c) => next.set(coordKey(c.r, c.c), colorIndex));
             return next;
           });
           matched = true;
@@ -203,9 +204,8 @@ export default function WordSearchGame({ missionId, ageTier, guideImage, guideNa
     setIsDragging(false);
     setDragStart(null);
     setDragEnd(null);
-  }, [isDragging, dragStart, dragEnd, grid, placements, foundWords]);
+  }, [isDragging, dragStart, dragEnd, grid, placements, foundWordsSet, foundWords.length]);
 
-  // Touch support: resolve grid cell from touch point
   const getCellFromTouch = useCallback((e: React.TouchEvent) => {
     const touch = e.touches[0];
     if (!touch || !gridRef.current) return null;
@@ -224,64 +224,73 @@ export default function WordSearchGame({ missionId, ageTier, guideImage, guideNa
     if (cell) setDragEnd(cell);
   }, [isDragging, getCellFromTouch]);
 
-  const allFound = foundWords.size >= placements.length && placements.length > 0;
+  const allFound = foundWords.length >= placements.length && placements.length > 0;
 
+  // Larger tiles
   const tileSize = ageTier === "junior"
-    ? "h-12 w-12 text-xl md:h-14 md:w-14"
+    ? "h-14 w-14 text-xl md:h-16 md:w-16 md:text-2xl"
     : ageTier === "defender"
-      ? "h-10 w-10 text-lg md:h-12 md:w-12"
-      : "h-9 w-9 text-base md:h-10 md:w-10";
+      ? "h-12 w-12 text-lg md:h-14 md:w-14 md:text-xl"
+      : "h-11 w-11 text-base md:h-12 md:w-12 md:text-lg";
 
   return (
     <div className="text-center select-none" onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
-      {/* Guide */}
-      <div className="flex items-center gap-3 mb-4">
+      {/* Guide bubble */}
+      <div className="flex items-center gap-3 mb-5">
         <img src={guideImage} alt={guideName} className="h-14 w-14 object-contain drop-shadow-md" />
-        <div className="rounded-2xl rounded-bl-sm bg-muted px-4 py-2 text-left">
-          <p className="font-semibold text-sm">
+        <div className="rounded-2xl rounded-bl-sm bg-muted px-5 py-3 text-left">
+          <p className="font-semibold text-base">
             🔤 Drag across letters to find the hidden words!
           </p>
         </div>
       </div>
 
-      {/* Word chips */}
-      <div className="flex flex-wrap gap-2 justify-center mb-4">
-        {placements.map(({ word }) => (
-          <span
-            key={word}
-            className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-300 ${
-              foundWords.has(word)
-                ? "bg-secondary text-secondary-foreground line-through opacity-70 scale-95"
-                : "bg-accent/20 text-accent-foreground border-2 border-accent/40"
-            }`}
-          >
-            {foundWords.has(word) ? "✅ " : ""}{word}
-          </span>
-        ))}
+      {/* Word chips — larger */}
+      <div className="flex flex-wrap gap-2.5 justify-center mb-5">
+        {placements.map(({ word }) => {
+          const foundIndex = foundWords.indexOf(word);
+          const isFound = foundIndex !== -1;
+          const colorStyle = isFound ? HIGHLIGHT_COLORS[foundIndex % HIGHLIGHT_COLORS.length] : null;
+
+          return (
+            <span
+              key={word}
+              className={`rounded-full px-5 py-2 text-sm font-bold transition-all duration-300 border-2 ${
+                isFound
+                  ? `${colorStyle!.chip} line-through scale-95`
+                  : "bg-accent/20 text-accent-foreground border-accent/40"
+              }`}
+            >
+              {isFound ? "✅ " : ""}{word}
+            </span>
+          );
+        })}
       </div>
 
       {/* Progress */}
-      <p className="text-sm font-bold text-muted-foreground mb-3">
-        Found {foundWords.size}/{placements.length} words
+      <p className="text-base font-bold text-muted-foreground mb-4">
+        Found {foundWords.length}/{placements.length} words
       </p>
 
-      {/* Grid */}
+      {/* Grid — larger */}
       <div
         ref={gridRef}
-        className="inline-grid gap-1 mx-auto mb-4 touch-none"
+        className="inline-grid gap-1.5 mx-auto mb-5 touch-none"
         style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
         onTouchMove={handleTouchMove}
       >
         {grid.map((row, r) =>
           row.map((letter, c) => {
             const key = coordKey(r, c);
-            const isFound = foundCells.has(key);
+            const colorIndex = foundCellColors.get(key);
+            const isFound = colorIndex !== undefined;
             const isDragSelected = dragPath.has(key);
             const isWrongFlash = flashWrong && isDragSelected;
 
             let cellClass = "bg-card border-2 border-border";
             if (isFound) {
-              cellClass = "bg-secondary text-secondary-foreground border-2 border-secondary shadow-md";
+              const color = HIGHLIGHT_COLORS[colorIndex % HIGHLIGHT_COLORS.length];
+              cellClass = `${color.bg} ${color.text} ${color.border} border-2 shadow-md font-black`;
             } else if (isWrongFlash) {
               cellClass = "bg-destructive/30 border-2 border-destructive";
             } else if (isDragSelected) {
@@ -313,13 +322,13 @@ export default function WordSearchGame({ missionId, ageTier, guideImage, guideNa
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="space-y-3 mt-2"
+            className="space-y-3 mt-3"
           >
             <div className="flex items-center justify-center gap-2">
-              <img src={guideImage} alt={guideName} className="h-10 w-10 object-contain" />
-              <p className="text-lg font-bold text-secondary">🎉 All words found! Great job!</p>
+              <img src={guideImage} alt={guideName} className="h-12 w-12 object-contain" />
+              <p className="text-xl font-bold text-secondary">🎉 All words found! Great job!</p>
             </div>
-            <Button variant="hero" className="w-full py-5 text-base" onClick={() => onComplete(true)}>
+            <Button variant="hero" className="w-full py-6 text-lg" onClick={() => onComplete(true)}>
               Continue ✨
             </Button>
           </motion.div>
