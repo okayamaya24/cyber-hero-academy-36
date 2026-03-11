@@ -806,8 +806,8 @@ export const MISSIONS: MissionDef[] = [
     guide: { name: "Detective Whiskers", image: detectiveCat },
     levelMiniGames: [
       ["quiz", "word-search"],
-      ["memory", "sort-game"],
-      ["quiz", "boss-battle"],
+      ["memory", "quiz", "sort-game"],
+      ["scenario", "boss-battle"],
     ],
     badgeId: "cyber-detective",
     badgeName: "Cyber Detective",
