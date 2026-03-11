@@ -676,8 +676,8 @@ export const MISSIONS: MissionDef[] = [
     bgColor: "bg-accent/10",
     guide: { name: "Detective Whiskers", image: detectiveCat },
     levelMiniGames: [
-      ["email-detective", "quiz"],
-      ["word-search", "sort-game"],
+      ["email-detective", "scenario"],
+      ["word-search", "email-detective", "quiz"],
       ["email-detective", "boss-battle"],
     ],
     badgeId: "phish-catcher",
