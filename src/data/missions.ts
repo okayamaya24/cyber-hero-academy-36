@@ -849,8 +849,8 @@ export const MISSIONS: MissionDef[] = [
     guide: { name: "Professor Hoot", image: wiseOwl },
     levelMiniGames: [
       ["quiz", "sort-game"],
-      ["word-search", "memory"],
-      ["quiz", "boss-battle"],
+      ["word-search", "quiz", "memory"],
+      ["sort-game", "boss-battle"],
     ],
     badgeId: "truth-seeker",
     badgeName: "Truth Seeker",
