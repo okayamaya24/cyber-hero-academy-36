@@ -416,17 +416,36 @@ export default function MissionsPage() {
 
   if (activeMission && showIntro) {
     const levels = getMissionLevels(activeMission, age, learningMode, 0);
-    const supportGuides = (MISSION_SUPPORT[activeMission.id] ?? []).map((n) => ALL_GUIDES[n]).filter(Boolean);
 
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4 relative">
+        {/* Mascot guide — large animated companion in corner */}
+        <motion.div
+          className="fixed bottom-4 left-4 z-20 flex flex-col items-center gap-1 pointer-events-none md:bottom-8 md:left-8"
+          initial={{ x: -80, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ type: "spring", delay: 0.4, duration: 0.8 }}
+        >
+          <motion.img
+            src={activeMission.guide.image}
+            alt={activeMission.guide.name}
+            className="h-28 w-28 md:h-36 md:w-36 object-contain drop-shadow-xl"
+            animate={{ y: [0, -8, 0] }}
+            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+          />
+          <div className="rounded-2xl bg-card/90 backdrop-blur px-3 py-1.5 shadow-lg border border-border text-center">
+            <p className="text-xs font-bold">{activeMission.guide.name}</p>
+            <p className="text-[10px] text-muted-foreground">Your Guide</p>
+          </div>
+        </motion.div>
+
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", duration: 0.6 }}
-          className="w-full max-w-md"
+          className="w-full max-w-lg"
         >
-          <div className="rounded-3xl border-2 bg-card p-8 text-center shadow-playful">
+          <div className="rounded-3xl border-2 bg-card p-8 md:p-10 text-center shadow-playful">
             <motion.img
               src={CAPTAIN_CYBER.image}
               alt={CAPTAIN_CYBER.name}
@@ -440,35 +459,23 @@ export default function MissionsPage() {
               ⚡ {CAPTAIN_CYBER.name} · {CAPTAIN_CYBER.role}
             </Badge>
 
-            <div className="mb-4 rounded-2xl bg-muted/50 p-4">
-              <p className="text-sm font-medium text-foreground">
+            <div className="mb-5 rounded-2xl bg-muted/50 p-5">
+              <p className="text-base font-medium text-foreground">
                 {CAPTAIN_INTROS[activeMission.id] || "Let's start this mission, hero!"}
               </p>
             </div>
 
-            <div className="mb-3 flex items-center gap-3">
+            <div className="mb-4 flex items-center gap-3">
               <img
                 src={activeMission.guide.image}
                 alt={activeMission.guide.name}
-                className="h-12 w-12 object-contain"
+                className="h-14 w-14 object-contain"
               />
               <div className="text-left">
-                <h2 className="text-xl font-bold">{activeMission.title}</h2>
-                <p className="text-xs text-muted-foreground">Main Guide: {activeMission.guide.name}</p>
+                <h2 className="text-2xl font-bold">{activeMission.title}</h2>
+                <p className="text-sm text-muted-foreground">Main Guide: {activeMission.guide.name}</p>
               </div>
             </div>
-
-            {supportGuides.length > 0 && (
-              <div className="mb-4 flex items-center justify-center gap-2">
-                <span className="text-xs text-muted-foreground">Support:</span>
-                {supportGuides.map((g) => (
-                  <div key={g.name} className="flex items-center gap-1 rounded-full bg-muted px-2 py-1">
-                    <img src={g.image} alt={g.name} className="h-5 w-5 object-contain" />
-                    <span className="text-[10px] font-semibold">{g.name}</span>
-                  </div>
-                ))}
-              </div>
-            )}
 
             <div className="mb-6 space-y-2">
               {levels.map((level) => (
