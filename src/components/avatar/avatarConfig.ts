@@ -46,9 +46,9 @@ export const SUIT_COLORS = [
 ];
 
 export const CHARACTER_TYPES = [
-  { type: "boy" as const, label: "Boy", emoji: "🦸‍♂️" },
-  { type: "girl" as const, label: "Girl", emoji: "🦸‍♀️" },
-  { type: "neutral" as const, label: "Hero", emoji: "🦸" },
+  { type: "boy" as const, label: "Boy", emoji: "👦" },
+  { type: "girl" as const, label: "Girl", emoji: "👧" },
+  { type: "neutral" as const, label: "Hero", emoji: "⭐" },
   { type: "robot" as const, label: "Robot", emoji: "🤖" },
 ];
 
