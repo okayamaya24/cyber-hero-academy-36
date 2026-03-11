@@ -194,64 +194,88 @@ function renderHair(style: AvatarConfig["hairStyle"], color: string) {
     case "curly":
       return (
         <>
-          <path d="M58 80 Q55 40 100 35 Q145 40 142 80" fill={color} />
-          <circle cx="62" cy="55" r="8" fill={color} />
-          <circle cx="75" cy="43" r="9" fill={color} />
-          <circle cx="93" cy="37" r="9" fill={color} />
-          <circle cx="110" cy="37" r="9" fill={color} />
-          <circle cx="125" cy="43" r="9" fill={color} />
-          <circle cx="138" cy="55" r="8" fill={color} />
-          <circle cx="58" cy="72" r="7" fill={color} />
-          <circle cx="142" cy="72" r="7" fill={color} />
+          {/* Base hair cap */}
+          <path d="M60 78 Q58 42 100 36 Q142 42 140 78" fill={color} />
+          {/* Curly bumps along the top and sides */}
+          <circle cx="68" cy="52" r="10" fill={color} />
+          <circle cx="82" cy="40" r="11" fill={color} />
+          <circle cx="100" cy="36" r="11" fill={color} />
+          <circle cx="118" cy="40" r="11" fill={color} />
+          <circle cx="132" cy="52" r="10" fill={color} />
+          {/* Side curls */}
+          <circle cx="58" cy="68" r="9" fill={color} />
+          <circle cx="142" cy="68" r="9" fill={color} />
+          <circle cx="56" cy="82" r="7" fill={color} />
+          <circle cx="144" cy="82" r="7" fill={color} />
+          {/* Subtle texture */}
+          <circle cx="75" cy="44" r="3" fill={darker} fillOpacity="0.08" />
+          <circle cx="125" cy="44" r="3" fill={darker} fillOpacity="0.08" />
         </>
       );
     case "long":
       return (
         <>
-          <path d="M60 75 Q60 40 100 35 Q140 40 140 75" fill={color} />
-          <path d="M60 75 Q58 120 65 145" fill={color} stroke={darker} strokeWidth="0.5" />
-          <path d="M140 75 Q142 120 135 145" fill={color} stroke={darker} strokeWidth="0.5" />
-          <path d="M63 80 L58 140" fill="none" stroke={darker} strokeWidth="1" strokeOpacity="0.2" />
-          <path d="M137 80 L142 140" fill="none" stroke={darker} strokeWidth="1" strokeOpacity="0.2" />
+          {/* Hair cap on top of head */}
+          <path d="M60 78 Q58 40 100 34 Q142 40 140 78" fill={color} />
+          {/* Left side flowing down */}
+          <path d="M60 78 Q55 95 54 115 Q53 135 58 150 L64 150 Q60 135 60 115 Q60 95 63 80 Z" fill={color} />
+          {/* Right side flowing down */}
+          <path d="M140 78 Q145 95 146 115 Q147 135 142 150 L136 150 Q140 135 140 115 Q140 95 137 80 Z" fill={color} />
+          {/* Strand highlights */}
+          <path d="M58 90 Q56 110 57 130" fill="none" stroke={darker} strokeWidth="0.8" strokeOpacity="0.15" />
+          <path d="M142 90 Q144 110 143 130" fill="none" stroke={darker} strokeWidth="0.8" strokeOpacity="0.15" />
         </>
       );
     case "braids":
       return (
         <>
-          <path d="M60 75 Q60 40 100 35 Q140 40 140 75" fill={color} />
-          {/* Left braid */}
-          <path d="M65 80 Q60 100 63 120 Q66 135 60 155" fill="none" stroke={color} strokeWidth="8" strokeLinecap="round" />
-          <path d="M65 80 Q70 100 67 120 Q64 135 70 155" fill="none" stroke={darker} strokeWidth="4" strokeLinecap="round" strokeOpacity="0.3" />
-          <circle cx="60" cy="158" r="4" fill={color} />
-          {/* Right braid */}
-          <path d="M135 80 Q140 100 137 120 Q134 135 140 155" fill="none" stroke={color} strokeWidth="8" strokeLinecap="round" />
-          <path d="M135 80 Q130 100 133 120 Q136 135 130 155" fill="none" stroke={darker} strokeWidth="4" strokeLinecap="round" strokeOpacity="0.3" />
-          <circle cx="140" cy="158" r="4" fill={color} />
+          {/* Hair cap */}
+          <path d="M60 78 Q58 40 100 34 Q142 40 140 78" fill={color} />
+          {/* Left braid - zigzag pattern */}
+          <path d="M66 82 L62 94 L68 106 L62 118 L68 130 L62 142 L66 150" fill="none" stroke={color} strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M66 82 L70 94 L64 106 L70 118 L64 130 L70 142 L66 150" fill="none" stroke={darker} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.2" />
+          {/* Left braid tip */}
+          <circle cx="66" cy="153" r="5" fill={color} />
+          <circle cx="66" cy="153" r="3" fill={darker} fillOpacity="0.15" />
+          {/* Right braid - zigzag pattern */}
+          <path d="M134 82 L138 94 L132 106 L138 118 L132 130 L138 142 L134 150" fill="none" stroke={color} strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M134 82 L130 94 L136 106 L130 118 L136 130 L130 142 L134 150" fill="none" stroke={darker} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.2" />
+          {/* Right braid tip */}
+          <circle cx="134" cy="153" r="5" fill={color} />
+          <circle cx="134" cy="153" r="3" fill={darker} fillOpacity="0.15" />
         </>
       );
     case "ponytail":
       return (
         <>
-          <path d="M60 75 Q60 40 100 35 Q140 40 140 75" fill={color} />
-          {/* Ponytail */}
-          <path d="M115 45 Q140 35 145 55 Q150 80 140 115 Q135 130 130 140" fill={color} />
-          <path d="M120 50 Q140 45 143 60" fill="none" stroke={darker} strokeWidth="1" strokeOpacity="0.2" />
-          {/* Hair tie */}
-          <circle cx="118" cy="47" r="4" fill={darker} fillOpacity="0.4" />
+          {/* Hair cap */}
+          <path d="M60 78 Q58 40 100 34 Q142 40 140 78" fill={color} />
+          {/* Hair tie bump */}
+          <ellipse cx="130" cy="50" rx="6" ry="5" fill={darker} fillOpacity="0.35" />
+          {/* Ponytail flowing from back-right */}
+          <path d="M130 50 Q148 48 150 65 Q152 85 145 110 Q140 130 135 142" fill={color} />
+          <path d="M130 50 Q145 52 148 68 Q150 85 144 108" fill="none" stroke={darker} strokeWidth="0.8" strokeOpacity="0.15" />
+          {/* Ponytail tip */}
+          <path d="M135 142 Q132 148 136 150 Q140 148 138 142" fill={color} />
         </>
       );
     case "afro":
       return (
         <>
-          <ellipse cx="100" cy="65" rx="52" ry="45" fill={color} />
-          <ellipse cx="100" cy="65" rx="48" ry="41" fill={darker} fillOpacity="0.1" />
-          {/* Texture dots */}
-          <circle cx="70" cy="48" r="2" fill={darker} fillOpacity="0.15" />
-          <circle cx="85" cy="35" r="2" fill={darker} fillOpacity="0.15" />
-          <circle cx="115" cy="35" r="2" fill={darker} fillOpacity="0.15" />
-          <circle cx="130" cy="48" r="2" fill={darker} fillOpacity="0.15" />
-          <circle cx="58" cy="65" r="2" fill={darker} fillOpacity="0.15" />
-          <circle cx="142" cy="65" r="2" fill={darker} fillOpacity="0.15" />
+          {/* Large rounded afro shape, centered on head */}
+          <ellipse cx="100" cy="62" rx="55" ry="48" fill={color} />
+          {/* Inner volume shadow */}
+          <ellipse cx="100" cy="64" rx="50" ry="44" fill={darker} fillOpacity="0.06" />
+          {/* Texture details */}
+          <circle cx="65" cy="45" r="2.5" fill={darker} fillOpacity="0.1" />
+          <circle cx="80" cy="30" r="2.5" fill={darker} fillOpacity="0.1" />
+          <circle cx="100" cy="25" r="2.5" fill={darker} fillOpacity="0.1" />
+          <circle cx="120" cy="30" r="2.5" fill={darker} fillOpacity="0.1" />
+          <circle cx="135" cy="45" r="2.5" fill={darker} fillOpacity="0.1" />
+          <circle cx="55" cy="65" r="2" fill={darker} fillOpacity="0.1" />
+          <circle cx="145" cy="65" r="2" fill={darker} fillOpacity="0.1" />
+          <circle cx="60" cy="80" r="2" fill={darker} fillOpacity="0.1" />
+          <circle cx="140" cy="80" r="2" fill={darker} fillOpacity="0.1" />
         </>
       );
     default:
