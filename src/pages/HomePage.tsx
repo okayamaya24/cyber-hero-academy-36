@@ -99,7 +99,7 @@ export default function HomePage() {
 
             <div className="flex flex-wrap justify-center gap-4 md:justify-start">
               <Button variant="hero" size="xl" asChild>
-                <Link to="/dashboard">Start Adventure</Link>
+                <Link to="/signup">Start Adventure</Link>
               </Button>
 
               <Dialog>
@@ -167,7 +167,7 @@ export default function HomePage() {
                       <div className="flex flex-wrap gap-3">
                         <DialogClose asChild>
                           <Button variant="outline" asChild>
-                            <Link to="/parents">Learn More</Link>
+                            <Link to="/for-parents">Learn More</Link>
                           </Button>
                         </DialogClose>
 
