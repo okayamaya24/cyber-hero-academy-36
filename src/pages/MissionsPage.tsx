@@ -663,14 +663,14 @@ export default function MissionsPage() {
 
               {!isCustom && !showResult && (
                 <>
-                  <div className="mb-4 flex items-center gap-3">
+                  <div className="mb-5 flex items-start gap-4">
                     <img
                       src={activeMission.guide.image}
                       alt={activeMission.guide.name}
-                      className="h-12 w-12 object-contain"
+                      className="h-14 w-14 object-contain"
                     />
-                    <div className="rounded-2xl rounded-bl-sm bg-muted px-4 py-2">
-                      <p className={`font-semibold ${isJunior ? "text-base" : "text-sm"}`}>{q.question}</p>
+                    <div className="rounded-2xl rounded-bl-sm bg-muted px-5 py-3">
+                      <p className={`font-semibold ${isJunior ? "text-lg" : "text-base"}`}>{q.question}</p>
                     </div>
                   </div>
 
