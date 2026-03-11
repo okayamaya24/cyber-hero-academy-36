@@ -710,10 +710,10 @@ export default function MissionsPage() {
                         <button
                           key={idx}
                           onClick={() => handleAnswer(idx)}
-                          className="group relative cursor-pointer rounded-2xl border-2 border-border bg-card p-5 text-center font-bold transition-all hover:scale-[1.03] hover:border-primary/50 hover:shadow-md active:scale-95"
+                          className="group relative cursor-pointer rounded-2xl border-2 border-border bg-card p-6 md:p-7 text-center font-bold transition-all hover:scale-[1.03] hover:border-primary/50 hover:shadow-md active:scale-95"
                         >
-                          <span className={`mb-1 block ${isJunior ? "text-4xl" : "text-2xl"}`}>{emoji}</span>
-                          <span className={isJunior ? "text-lg" : "text-base"}>{opt}</span>
+                          <span className={`mb-1 block ${isJunior ? "text-4xl" : "text-3xl"}`}>{emoji}</span>
+                          <span className={isJunior ? "text-xl" : "text-lg"}>{opt}</span>
                         </button>
                       );
                     })}
