@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -187,6 +187,7 @@ function getModeAwareMissionProgress(progressRows: any[], missionId: string, exp
 export default function MissionsPage() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
   const [activeMission, setActiveMission] = useState<MissionDef | null>(null);
@@ -252,6 +253,17 @@ export default function MissionsPage() {
     setMissionComplete(false);
     setGameKey((k) => k + 1);
   };
+
+  useEffect(() => {
+    const missionIdFromUrl = searchParams.get("mission");
+    if (!missionIdFromUrl || !child || activeMission) return;
+
+    const missionToOpen = MISSIONS.find((m) => m.id === missionIdFromUrl);
+    if (!missionToOpen) return;
+
+    startMission(missionToOpen);
+    setSearchParams({}, { replace: true });
+  }, [child, activeMission, searchParams, setSearchParams]);
 
   const beginPlay = () => setShowIntro(false);
 
@@ -747,142 +759,6 @@ export default function MissionsPage() {
             </motion.div>
           </AnimatePresence>
         </div>
-      </div>
-    );
-  }
-
-  if (missionComplete && activeMission) {
-    const games = getGames(activeMission);
-    const total = games.length;
-    const perfect = score === total;
-    const totalPoints = score * pointsPerCorrect;
-    const encouragement = getEncouragement(score, total);
-
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <motion.div
-          initial={{ scale: 0, rotate: -10 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: "spring", duration: 0.8 }}
-          className="w-full max-w-md"
-        >
-          <div className="relative overflow-hidden rounded-3xl border-2 bg-card p-8 text-center shadow-playful">
-            <div className="pointer-events-none absolute inset-0 overflow-hidden">
-              {perfect && (
-                <>
-                  <motion.div
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 0.6 }}
-                    transition={{ delay: 0.3 }}
-                    className="absolute left-6 top-4 text-3xl"
-                  >
-                    🎊
-                  </motion.div>
-                  <motion.div
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 0.6 }}
-                    transition={{ delay: 0.5 }}
-                    className="absolute right-8 top-8 text-2xl"
-                  >
-                    ✨
-                  </motion.div>
-                  <motion.div
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 0.6 }}
-                    transition={{ delay: 0.7 }}
-                    className="absolute bottom-16 left-8 text-2xl"
-                  >
-                    🌟
-                  </motion.div>
-                </>
-              )}
-            </div>
-
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.1, type: "spring" }}
-              className="mb-4 flex items-center justify-center gap-3"
-            >
-              <img src={CAPTAIN_CYBER.image} alt={CAPTAIN_CYBER.name} className="h-16 w-16 object-contain" />
-              <img
-                src={activeMission.guide.image}
-                alt={activeMission.guide.name}
-                className="h-14 w-14 object-contain"
-              />
-            </motion.div>
-
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring" }}
-              className="mb-4 text-7xl"
-            >
-              {perfect ? "🏆" : score >= total * 0.6 ? "⭐" : "💪"}
-            </motion.div>
-
-            <h2 className="text-2xl font-bold">
-              {perfect ? "Perfect Score!" : score >= total * 0.6 ? "Mission Complete!" : "Good Try!"}
-            </h2>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="mt-2 rounded-xl bg-muted/50 p-3"
-            >
-              <p className="mb-1 text-xs font-semibold text-muted-foreground">Captain Cyber says:</p>
-              <p className="text-sm font-bold text-primary">{encouragement}</p>
-            </motion.div>
-
-            <div className="mt-6 grid grid-cols-3 gap-3">
-              <div className="rounded-xl bg-muted p-3">
-                <div className="text-2xl font-bold">
-                  {score}/{total}
-                </div>
-                <div className="text-xs text-muted-foreground">Correct</div>
-              </div>
-
-              <div className="rounded-xl bg-accent/10 p-3">
-                <div className="flex items-center justify-center gap-1 text-2xl font-bold text-accent">
-                  <Star className="h-5 w-5" />
-                  {totalPoints}
-                </div>
-                <div className="text-xs text-muted-foreground">Points</div>
-              </div>
-
-              <div className="rounded-xl bg-destructive/10 p-3">
-                <div className="flex items-center justify-center gap-1 text-2xl font-bold">
-                  <Flame className="h-5 w-5 text-destructive" />
-                  +1
-                </div>
-                <div className="text-xs text-muted-foreground">Streak</div>
-              </div>
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6, type: "spring" }}
-              className="mt-5 inline-flex items-center gap-2 rounded-full border-2 border-accent/40 bg-accent/20 px-5 py-2"
-            >
-              <span className="text-2xl">{activeMission.badgeIcon}</span>
-              <div className="text-left">
-                <p className="text-xs font-bold text-accent">Badge Earned!</p>
-                <p className="text-sm font-bold">{activeMission.badgeName}</p>
-              </div>
-            </motion.div>
-
-            <div className="mt-6 flex gap-3">
-              <Button variant="outline" className="flex-1" onClick={resetMission}>
-                Back to Missions
-              </Button>
-              <Button variant="hero" className="flex-1" onClick={() => navigate("/dashboard")}>
-                Continue to Dashboard
-              </Button>
-            </div>
-          </div>
-        </motion.div>
       </div>
     );
   }

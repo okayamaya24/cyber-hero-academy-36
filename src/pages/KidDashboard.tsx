@@ -421,8 +421,12 @@ export default function KidDashboard() {
 
                     {status !== "completed" && (
                       <Button variant="hero" size="sm" className="mt-4 w-full" asChild>
-                        <Link to="/missions">
-                          {status === "in_progress" ? "Continue Mission →" : "Start Mission 🚀"}
+                        <Link to={`/missions?mission=${m.id}`}>
+                          {status === "in_progress"
+                            ? "Continue Mission →"
+                            : isRecommended
+                              ? "Start Recommended Mission 🚀"
+                              : "Start Mission 🚀"}
                         </Link>
                       </Button>
                     )}
