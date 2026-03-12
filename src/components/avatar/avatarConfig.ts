@@ -1,5 +1,5 @@
 export interface AvatarConfig {
-  characterType: "boy" | "girl" | "hero";
+  characterType: "boy" | "girl";
   skinTone: string;
   hairStyle: "short" | "curly" | "long" | "braids" | "ponytail" | "afro" | "none";
   hairColor: string;
@@ -46,16 +46,15 @@ export const SUIT_COLORS = [
 export const CHARACTER_TYPES = [
   { type: "boy" as const, label: "Boy", emoji: "👦" },
   { type: "girl" as const, label: "Girl", emoji: "👧" },
-  { type: "hero" as const, label: "Hero", emoji: "⭐" },
 ];
 
 export const HAIR_STYLES = [
   { style: "short" as const, label: "Short" },
   { style: "curly" as const, label: "Curly" },
-  { style: "long" as const, label: "Long" },
-  { style: "braids" as const, label: "Braids" },
-  { style: "ponytail" as const, label: "Ponytail" },
+  { style: "bob" as const, label: "Bob" },
   { style: "afro" as const, label: "Afro" },
+  { style: "puffs" as const, label: "Puffs" },
+  { style: "side-ponytail" as const, label: "Side Ponytail" },
 ];
 
 export const ACCESSORIES = [
