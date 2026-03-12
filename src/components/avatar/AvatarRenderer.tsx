@@ -23,6 +23,20 @@ function lighten(hex: string, amount: number): string {
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
 }
 
+// Anchor points for consistent positioning
+const ANCHORS = {
+  headCx: 100,
+  headCy: 78,
+  headRx: 38,
+  headRy: 40,
+  scalpTop: 38,   // top of head
+  scalpLeft: 62,   // left edge of head
+  scalpRight: 138, // right edge of head
+  eyeY: 76,
+  eyeLeftX: 84,
+  eyeRightX: 116,
+};
+
 export default function AvatarRenderer({ config, size = 120, className = "", fallbackEmoji }: AvatarRendererProps) {
   if (!config || !config.characterType) {
     return (
@@ -66,41 +80,26 @@ export default function AvatarRenderer({ config, size = 120, className = "", fal
       </defs>
 
       <g clipPath={`url(#clip-${uid})`}>
-        {/* Background circle */}
+        {/* Background */}
         <circle cx="100" cy="100" r="96" fill={`url(#bg-${uid})`} />
         <circle cx="100" cy="100" r="96" fill="none" stroke={suitColor} strokeWidth="3" strokeOpacity="0.25" />
 
-        {/* Cape - behind everything */}
+        {/* LAYER 1: Cape */}
         <path
           d="M52 138 Q38 170 50 200 L100 195 L150 200 Q162 170 148 138 Z"
-          fill={suitColor}
-          fillOpacity="0.55"
-        />
-        <path
-          d="M52 138 Q45 165 50 200"
-          fill="none" stroke={suitDarker} strokeWidth="1.5" strokeOpacity="0.3"
-        />
-        <path
-          d="M148 138 Q155 165 150 200"
-          fill="none" stroke={suitDarker} strokeWidth="1.5" strokeOpacity="0.3"
+          fill={suitColor} fillOpacity="0.55"
         />
 
-        {/* Body / Hero Suit */}
+        {/* LAYER 2: Body / Suit */}
         <path
           d="M58 155 Q58 132 76 126 L88 122 Q100 118 112 122 L124 126 Q142 132 142 155 L142 200 L58 200 Z"
           fill={`url(#suit-grad-${uid})`}
         />
-        {/* Suit collar V */}
         <path d="M84 122 L100 140 L116 122" fill="none" stroke={suitDarker} strokeWidth="2.5" strokeLinecap="round" />
-        {/* Chest emblem - star/diamond */}
         <polygon points="100,143 105,149 103,156 97,156 95,149" fill="white" fillOpacity="0.85" />
         <polygon points="100,145 103,149 101,154 99,154 97,149" fill={suitLighter} fillOpacity="0.6" />
-        {/* Tech lines on suit */}
         <path d="M76 140 L82 155" fill="none" stroke={suitLighter} strokeWidth="1.2" strokeOpacity="0.4" />
         <path d="M124 140 L118 155" fill="none" stroke={suitLighter} strokeWidth="1.2" strokeOpacity="0.4" />
-        <path d="M70 160 L75 175" fill="none" stroke={suitLighter} strokeWidth="1" strokeOpacity="0.3" />
-        <path d="M130 160 L125 175" fill="none" stroke={suitLighter} strokeWidth="1" strokeOpacity="0.3" />
-        {/* Shoulder pads */}
         <ellipse cx="70" cy="133" rx="12" ry="6" fill={suitDarker} fillOpacity="0.35" />
         <ellipse cx="130" cy="133" rx="12" ry="6" fill={suitDarker} fillOpacity="0.35" />
 
@@ -119,11 +118,14 @@ export default function AvatarRenderer({ config, size = 120, className = "", fal
         <rect x="94" y="163" width="12" height="10" rx="3" fill={suitDarker} fillOpacity="0.7" />
         <rect x="97" y="165" width="6" height="6" rx="2" fill="white" fillOpacity="0.5" />
 
-        {/* Neck */}
+        {/* LAYER 3: Neck */}
         <rect x="90" y="112" width="20" height="14" rx="5" fill={faceColor} />
 
-        {/* Head */}
-        <ellipse cx="100" cy="78" rx="38" ry="40" fill={faceColor} />
+        {/* LAYER 4: Hair back layer (behind head for long/braids/ponytail) */}
+        {renderHairBack(hairStyle, hairColor)}
+
+        {/* LAYER 5: Head */}
+        <ellipse cx={ANCHORS.headCx} cy={ANCHORS.headCy} rx={ANCHORS.headRx} ry={ANCHORS.headRy} fill={faceColor} />
 
         {/* Ears */}
         <ellipse cx="63" cy="80" rx="7" ry="9" fill={faceColor} />
@@ -131,35 +133,25 @@ export default function AvatarRenderer({ config, size = 120, className = "", fal
         <ellipse cx="137" cy="80" rx="7" ry="9" fill={faceColor} />
         <ellipse cx="137" cy="80" rx="4" ry="5.5" fill={faceDarker} fillOpacity="0.25" />
 
-        {/* Hair - rendered behind face features */}
-        {renderHair(hairStyle, hairColor)}
-
-        {/* Eyes - big and expressive */}
-        <>
-          {/* Eye whites */}
-          <ellipse cx="84" cy="76" rx="11" ry="10" fill="white" />
-          <ellipse cx="116" cy="76" rx="11" ry="10" fill="white" />
-          {/* Irises */}
-          <circle cx="86" cy="77" r="6.5" fill="#2C1810" />
-          <circle cx="118" cy="77" r="6.5" fill="#2C1810" />
-          {/* Pupils */}
-          <circle cx="87.5" cy="75.5" r="2.5" fill="white" />
-          <circle cx="119.5" cy="75.5" r="2.5" fill="white" />
-          {/* Smaller glint */}
-          <circle cx="84" cy="79" r="1.2" fill="white" fillOpacity="0.6" />
-          <circle cx="116" cy="79" r="1.2" fill="white" fillOpacity="0.6" />
-          {/* Eyelashes for girl */}
-          {hasLashes && (
-            <>
-              <line x1="74" y1="70" x2="76.5" y2="67.5" stroke="#2C1810" strokeWidth="1.8" strokeLinecap="round" />
-              <line x1="78" y1="68" x2="79" y2="65" stroke="#2C1810" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="94" y1="70" x2="91.5" y2="67.5" stroke="#2C1810" strokeWidth="1.8" strokeLinecap="round" />
-              <line x1="106" y1="70" x2="108.5" y2="67.5" stroke="#2C1810" strokeWidth="1.8" strokeLinecap="round" />
-              <line x1="122" y1="68" x2="121" y2="65" stroke="#2C1810" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="126" y1="70" x2="123.5" y2="67.5" stroke="#2C1810" strokeWidth="1.8" strokeLinecap="round" />
-            </>
-          )}
-        </>
+        {/* LAYER 6: Eyes */}
+        <ellipse cx={ANCHORS.eyeLeftX} cy={ANCHORS.eyeY} rx="11" ry="10" fill="white" />
+        <ellipse cx={ANCHORS.eyeRightX} cy={ANCHORS.eyeY} rx="11" ry="10" fill="white" />
+        <circle cx="86" cy="77" r="6.5" fill="#2C1810" />
+        <circle cx="118" cy="77" r="6.5" fill="#2C1810" />
+        <circle cx="87.5" cy="75.5" r="2.5" fill="white" />
+        <circle cx="119.5" cy="75.5" r="2.5" fill="white" />
+        <circle cx="84" cy="79" r="1.2" fill="white" fillOpacity="0.6" />
+        <circle cx="116" cy="79" r="1.2" fill="white" fillOpacity="0.6" />
+        {hasLashes && (
+          <>
+            <line x1="74" y1="70" x2="76.5" y2="67.5" stroke="#2C1810" strokeWidth="1.8" strokeLinecap="round" />
+            <line x1="78" y1="68" x2="79" y2="65" stroke="#2C1810" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="94" y1="70" x2="91.5" y2="67.5" stroke="#2C1810" strokeWidth="1.8" strokeLinecap="round" />
+            <line x1="106" y1="70" x2="108.5" y2="67.5" stroke="#2C1810" strokeWidth="1.8" strokeLinecap="round" />
+            <line x1="122" y1="68" x2="121" y2="65" stroke="#2C1810" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="126" y1="70" x2="123.5" y2="67.5" stroke="#2C1810" strokeWidth="1.8" strokeLinecap="round" />
+          </>
+        )}
 
         {/* Eyebrows */}
         <path d="M76 65 Q84 60 92 65" fill="none" stroke={darken(hairColor, 20)} strokeWidth="2.8" strokeLinecap="round" />
@@ -168,9 +160,8 @@ export default function AvatarRenderer({ config, size = 120, className = "", fal
         {/* Nose */}
         <ellipse cx="100" cy="88" rx="3.5" ry="2.5" fill={faceDarker} fillOpacity="0.35" />
 
-        {/* Mouth - big friendly smile */}
+        {/* Mouth */}
         <path d="M88 98 Q100 110 112 98" fill="none" stroke={faceDarker} strokeWidth="2.8" strokeLinecap="round" />
-        {/* Tooth for extra cuteness on hero type */}
         {characterType === "hero" && (
           <rect x="97" y="98" width="6" height="4" rx="1" fill="white" fillOpacity="0.9" />
         )}
@@ -179,105 +170,186 @@ export default function AvatarRenderer({ config, size = 120, className = "", fal
         <circle cx="70" cy="92" r="8" fill="#FF9999" fillOpacity="0.2" />
         <circle cx="130" cy="92" r="8" fill="#FF9999" fillOpacity="0.2" />
 
-        {/* Accessories */}
-        {renderAccessory(accessory, suitColor, suitDarker)}
+        {/* LAYER 7: Mask (above face, below hair front) */}
+        {accessory === "mask" && renderMask(suitColor, suitDarker)}
+
+        {/* LAYER 8: Hair front layer (on top of face/mask) */}
+        {renderHairFront(hairStyle, hairColor)}
+
+        {/* LAYER 9: Non-mask accessories */}
+        {accessory !== "mask" && renderAccessory(accessory, suitColor, suitDarker)}
       </g>
     </svg>
   );
 }
 
-function renderHair(style: AvatarConfig["hairStyle"], color: string) {
+/**
+ * Hair that renders BEHIND the head (side strands, back hair, braids, ponytail tail).
+ */
+function renderHairBack(style: AvatarConfig["hairStyle"], color: string) {
   const darker = darken(color, 15);
 
   switch (style) {
-    case "short":
-      return (
-        <>
-          <path d="M62 73 Q62 40 100 35 Q138 40 138 73 L136 63 Q132 46 100 42 Q68 46 64 63 Z" fill={color} />
-          <path d="M66 62 Q72 48 100 44 Q128 48 134 62" fill="none" stroke={darker} strokeWidth="1" strokeOpacity="0.25" />
-        </>
-      );
-    case "curly":
-      return (
-        <>
-          <path d="M60 76 Q58 40 100 34 Q142 40 140 76" fill={color} />
-          <circle cx="66" cy="48" r="11" fill={color} />
-          <circle cx="82" cy="37" r="12" fill={color} />
-          <circle cx="100" cy="33" r="12" fill={color} />
-          <circle cx="118" cy="37" r="12" fill={color} />
-          <circle cx="134" cy="48" r="11" fill={color} />
-          <circle cx="57" cy="64" r="10" fill={color} />
-          <circle cx="143" cy="64" r="10" fill={color} />
-          <circle cx="54" cy="80" r="8" fill={color} />
-          <circle cx="146" cy="80" r="8" fill={color} />
-          {/* Subtle highlights */}
-          <circle cx="75" cy="38" r="3" fill="white" fillOpacity="0.08" />
-          <circle cx="125" cy="38" r="3" fill="white" fillOpacity="0.08" />
-        </>
-      );
     case "long":
       return (
         <>
-          <path d="M60 76 Q58 38 100 32 Q142 38 140 76" fill={color} />
-          {/* Left side flowing */}
-          <path d="M60 76 Q54 95 53 118 Q52 140 57 155 L63 155 Q59 140 59 118 Q59 95 62 78 Z" fill={color} />
-          {/* Right side flowing */}
-          <path d="M140 76 Q146 95 147 118 Q148 140 143 155 L137 155 Q141 140 141 118 Q141 95 138 78 Z" fill={color} />
-          {/* Hair strand lines */}
-          <path d="M57 95 Q55 115 56 135" fill="none" stroke={darker} strokeWidth="0.8" strokeOpacity="0.15" />
-          <path d="M143 95 Q145 115 144 135" fill="none" stroke={darker} strokeWidth="0.8" strokeOpacity="0.15" />
-          <path d="M60 90 Q58 110 59 130" fill="none" stroke={darker} strokeWidth="0.6" strokeOpacity="0.1" />
-          <path d="M140 90 Q142 110 141 130" fill="none" stroke={darker} strokeWidth="0.6" strokeOpacity="0.1" />
+          {/* Side strands behind head */}
+          <path d="M60 60 Q54 85 53 110 Q52 135 57 155 L63 155 Q59 135 59 110 Q59 85 62 62 Z" fill={color} />
+          <path d="M140 60 Q146 85 147 110 Q148 135 143 155 L137 155 Q141 135 141 110 Q141 85 138 62 Z" fill={color} />
+          <path d="M57 90 Q55 115 56 140" fill="none" stroke={darker} strokeWidth="0.8" strokeOpacity="0.15" />
+          <path d="M143 90 Q145 115 144 140" fill="none" stroke={darker} strokeWidth="0.8" strokeOpacity="0.15" />
         </>
       );
     case "braids":
       return (
         <>
-          <path d="M60 76 Q58 38 100 32 Q142 38 140 76" fill={color} />
-          {/* Left braid */}
-          <path d="M65 80 Q60 85 62 95 Q64 105 60 115 Q58 125 62 135 Q64 142 62 150"
+          {/* Left braid behind head */}
+          <path d="M68 65 Q63 80 62 95 Q61 110 63 125 Q65 135 62 148"
             fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" />
-          <path d="M65 80 Q70 88 66 98 Q62 108 66 118 Q70 128 66 138 Q62 145 66 152"
-            fill="none" stroke={darker} strokeWidth="4" strokeLinecap="round" strokeOpacity="0.2" />
-          <circle cx="62" cy="153" r="5.5" fill={color} />
-          <circle cx="62" cy="153" r="3" fill={darker} fillOpacity="0.15" />
-          {/* Right braid */}
-          <path d="M135 80 Q140 85 138 95 Q136 105 140 115 Q142 125 138 135 Q136 142 138 150"
+          {/* Braid texture */}
+          <path d="M68 70 L64 80 L68 90 L64 100 L68 110 L64 120 L68 130 L64 140 L66 148"
+            fill="none" stroke={darker} strokeWidth="2" strokeOpacity="0.2" strokeLinecap="round" />
+          <circle cx="63" cy="151" r="5" fill={color} />
+          <circle cx="63" cy="151" r="2.5" fill={darker} fillOpacity="0.15" />
+
+          {/* Right braid behind head */}
+          <path d="M132 65 Q137 80 138 95 Q139 110 137 125 Q135 135 138 148"
             fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" />
-          <path d="M135 80 Q130 88 134 98 Q138 108 134 118 Q130 128 134 138 Q138 145 134 152"
-            fill="none" stroke={darker} strokeWidth="4" strokeLinecap="round" strokeOpacity="0.2" />
-          <circle cx="138" cy="153" r="5.5" fill={color} />
-          <circle cx="138" cy="153" r="3" fill={darker} fillOpacity="0.15" />
+          <path d="M132 70 L136 80 L132 90 L136 100 L132 110 L136 120 L132 130 L136 140 L134 148"
+            fill="none" stroke={darker} strokeWidth="2" strokeOpacity="0.2" strokeLinecap="round" />
+          <circle cx="137" cy="151" r="5" fill={color} />
+          <circle cx="137" cy="151" r="2.5" fill={darker} fillOpacity="0.15" />
         </>
       );
     case "ponytail":
       return (
         <>
-          <path d="M60 76 Q58 38 100 32 Q142 38 140 76" fill={color} />
+          {/* Ponytail flowing from back of head */}
+          <path d="M130 50 Q148 55 150 75 Q152 100 146 125 Q142 140 138 150"
+            fill={color} />
+          <path d="M130 52 Q145 58 148 76 Q150 98 145 122"
+            fill="none" stroke={darker} strokeWidth="0.8" strokeOpacity="0.15" />
           {/* Hair tie */}
-          <ellipse cx="132" cy="48" rx="6" ry="5" fill={darker} fillOpacity="0.4" />
-          {/* Ponytail flowing back */}
-          <path d="M132 48 Q152 50 153 70 Q154 95 148 118 Q143 135 138 148" fill={color} />
-          <path d="M132 48 Q148 54 150 72 Q152 92 147 115" fill="none" stroke={darker} strokeWidth="0.8" strokeOpacity="0.15" />
+          <ellipse cx="131" cy="50" rx="5" ry="4" fill={darker} fillOpacity="0.45" />
           {/* Ponytail tip */}
-          <path d="M138 148 Q134 155 139 158 Q144 155 141 148" fill={color} />
+          <path d="M138 148 Q135 156 140 158 Q145 154 141 148" fill={color} />
         </>
       );
     case "afro":
       return (
         <>
-          <ellipse cx="100" cy="60" rx="56" ry="50" fill={color} />
-          <ellipse cx="100" cy="62" rx="52" ry="46" fill={darker} fillOpacity="0.05" />
+          {/* Large afro silhouette behind head */}
+          <ellipse cx={ANCHORS.headCx} cy="65" rx="54" ry="52" fill={color} />
+          <ellipse cx={ANCHORS.headCx} cy="67" rx="50" ry="48" fill={darker} fillOpacity="0.04" />
+        </>
+      );
+    default:
+      return null;
+  }
+}
+
+/**
+ * Hair that renders ON TOP of the head (scalp cap, bangs, front volume).
+ * Anchored to ANCHORS.scalpTop so it sits naturally.
+ */
+function renderHairFront(style: AvatarConfig["hairStyle"], color: string) {
+  const darker = darken(color, 15);
+  const { scalpTop, scalpLeft, scalpRight, headCx } = ANCHORS;
+
+  switch (style) {
+    case "short":
+      return (
+        <>
+          {/* Scalp cap - anchored to top of head ellipse */}
+          <path
+            d={`M${scalpLeft} 70 Q${scalpLeft} ${scalpTop + 2} ${headCx} ${scalpTop - 3} Q${scalpRight} ${scalpTop + 2} ${scalpRight} 70 L${scalpRight - 2} 62 Q${scalpRight - 6} ${scalpTop + 8} ${headCx} ${scalpTop + 4} Q${scalpLeft + 6} ${scalpTop + 8} ${scalpLeft + 2} 62 Z`}
+            fill={color}
+          />
+          <path
+            d={`M${scalpLeft + 4} 62 Q${scalpLeft + 10} ${scalpTop + 10} ${headCx} ${scalpTop + 6} Q${scalpRight - 10} ${scalpTop + 10} ${scalpRight - 4} 62`}
+            fill="none" stroke={darker} strokeWidth="1" strokeOpacity="0.2"
+          />
+        </>
+      );
+    case "curly":
+      return (
+        <>
+          {/* Curly volume on top - clusters anchored to scalp */}
+          <path d={`M${scalpLeft - 2} 72 Q${scalpLeft - 4} ${scalpTop} ${headCx} ${scalpTop - 6} Q${scalpRight + 4} ${scalpTop} ${scalpRight + 2} 72`} fill={color} />
+          {/* Curly puffs along the scalp line */}
+          <circle cx={scalpLeft + 4} cy={scalpTop + 10} r="10" fill={color} />
+          <circle cx={scalpLeft + 18} cy={scalpTop} r="11" fill={color} />
+          <circle cx={headCx} cy={scalpTop - 5} r="12" fill={color} />
+          <circle cx={scalpRight - 18} cy={scalpTop} r="11" fill={color} />
+          <circle cx={scalpRight - 4} cy={scalpTop + 10} r="10" fill={color} />
+          {/* Side puffs */}
+          <circle cx={scalpLeft - 5} cy="62" r="9" fill={color} />
+          <circle cx={scalpRight + 5} cy="62" r="9" fill={color} />
+          <circle cx={scalpLeft - 7} cy="78" r="7" fill={color} />
+          <circle cx={scalpRight + 7} cy="78" r="7" fill={color} />
+          {/* Highlights */}
+          <circle cx={headCx - 15} cy={scalpTop} r="2.5" fill="white" fillOpacity="0.08" />
+          <circle cx={headCx + 15} cy={scalpTop} r="2.5" fill="white" fillOpacity="0.08" />
+        </>
+      );
+    case "long":
+      return (
+        <>
+          {/* Scalp cap on top */}
+          <path
+            d={`M${scalpLeft - 2} 72 Q${scalpLeft - 2} ${scalpTop - 2} ${headCx} ${scalpTop - 8} Q${scalpRight + 2} ${scalpTop - 2} ${scalpRight + 2} 72`}
+            fill={color}
+          />
+          {/* Bangs */}
+          <path d={`M${scalpLeft + 2} 68 Q${scalpLeft + 12} 58 ${headCx - 6} 62 Q${headCx + 6} 66 ${headCx + 12} 60 Q${scalpRight - 8} 56 ${scalpRight - 2} 68`}
+            fill={color} />
+          <path d={`M${scalpLeft + 6} 65 Q${headCx} 56 ${scalpRight - 6} 65`}
+            fill="none" stroke={darker} strokeWidth="0.7" strokeOpacity="0.12" />
+        </>
+      );
+    case "braids":
+      return (
+        <>
+          {/* Scalp cap */}
+          <path
+            d={`M${scalpLeft} 72 Q${scalpLeft} ${scalpTop} ${headCx} ${scalpTop - 6} Q${scalpRight} ${scalpTop} ${scalpRight} 72`}
+            fill={color}
+          />
+          {/* Center part line */}
+          <line x1={headCx} y1={scalpTop - 4} x2={headCx} y2="65" stroke={darker} strokeWidth="1.2" strokeOpacity="0.2" />
+        </>
+      );
+    case "ponytail":
+      return (
+        <>
+          {/* Scalp cap with swept-back look */}
+          <path
+            d={`M${scalpLeft} 72 Q${scalpLeft - 2} ${scalpTop} ${headCx} ${scalpTop - 6} Q${scalpRight + 2} ${scalpTop - 2} ${scalpRight + 2} 68`}
+            fill={color}
+          />
+          {/* Swept lines */}
+          <path d={`M${scalpLeft + 8} 58 Q${headCx} ${scalpTop + 2} ${scalpRight - 2} 52`}
+            fill="none" stroke={darker} strokeWidth="0.8" strokeOpacity="0.15" />
+          <path d={`M${scalpLeft + 12} 54 Q${headCx} ${scalpTop} ${scalpRight - 6} 48`}
+            fill="none" stroke={darker} strokeWidth="0.6" strokeOpacity="0.1" />
+        </>
+      );
+    case "afro":
+      return (
+        <>
+          {/* Front volume above forehead - sits on top of head */}
+          <path
+            d={`M${scalpLeft - 14} 80 Q${scalpLeft - 16} 30 ${headCx} 15 Q${scalpRight + 16} 30 ${scalpRight + 14} 80`}
+            fill={color}
+          />
           {/* Texture bumps */}
-          <circle cx="62" cy="42" r="3" fill={darker} fillOpacity="0.08" />
-          <circle cx="78" cy="28" r="3" fill={darker} fillOpacity="0.08" />
-          <circle cx="100" cy="22" r="3" fill={darker} fillOpacity="0.08" />
-          <circle cx="122" cy="28" r="3" fill={darker} fillOpacity="0.08" />
-          <circle cx="138" cy="42" r="3" fill={darker} fillOpacity="0.08" />
-          <circle cx="52" cy="62" r="2.5" fill={darker} fillOpacity="0.08" />
-          <circle cx="148" cy="62" r="2.5" fill={darker} fillOpacity="0.08" />
-          <circle cx="56" cy="80" r="2" fill={darker} fillOpacity="0.06" />
-          <circle cx="144" cy="80" r="2" fill={darker} fillOpacity="0.06" />
+          <circle cx={scalpLeft} cy="28" r="3" fill={darker} fillOpacity="0.08" />
+          <circle cx={headCx - 15} cy="18" r="3" fill={darker} fillOpacity="0.08" />
+          <circle cx={headCx} cy="14" r="3" fill={darker} fillOpacity="0.08" />
+          <circle cx={headCx + 15} cy="18" r="3" fill={darker} fillOpacity="0.08" />
+          <circle cx={scalpRight} cy="28" r="3" fill={darker} fillOpacity="0.08" />
+          <circle cx={scalpLeft - 10} cy="55" r="2.5" fill={darker} fillOpacity="0.06" />
+          <circle cx={scalpRight + 10} cy="55" r="2.5" fill={darker} fillOpacity="0.06" />
         </>
       );
     case "none":
@@ -287,21 +359,30 @@ function renderHair(style: AvatarConfig["hairStyle"], color: string) {
   }
 }
 
+/**
+ * Mask rendered relative to eye anchor points.
+ */
+function renderMask(suitColor: string, suitDarker: string) {
+  const { eyeY, eyeLeftX, eyeRightX, headCx } = ANCHORS;
+  const maskTop = eyeY - 8;
+  const maskBot = eyeY + 6;
+
+  return (
+    <>
+      <path
+        d={`M${eyeLeftX - 16} ${maskTop} Q${eyeLeftX - 6} ${maskTop - 6} ${eyeLeftX} ${maskTop - 2} L${eyeLeftX + 6} ${eyeY - 4} Q${headCx - 4} ${maskTop - 2} ${headCx} ${maskTop - 2} Q${headCx + 4} ${maskTop - 2} ${eyeRightX - 6} ${eyeY - 4} L${eyeRightX} ${maskTop - 2} Q${eyeRightX + 6} ${maskTop - 6} ${eyeRightX + 16} ${maskTop} L${eyeRightX + 14} ${maskBot} Q${eyeRightX + 6} ${maskBot + 2} ${eyeRightX} ${maskBot} Q${headCx + 6} ${maskBot - 2} ${headCx} ${maskBot - 2} Q${headCx - 6} ${maskBot - 2} ${eyeLeftX} ${maskBot} Q${eyeLeftX - 6} ${maskBot + 2} ${eyeLeftX - 14} ${maskBot} Z`}
+        fill={suitColor}
+      />
+      <path
+        d={`M${eyeLeftX - 16} ${maskTop} Q${eyeLeftX - 6} ${maskTop - 6} ${eyeLeftX} ${maskTop - 2} L${eyeLeftX + 6} ${eyeY - 4} Q${headCx - 4} ${maskTop - 2} ${headCx} ${maskTop - 2} Q${headCx + 4} ${maskTop - 2} ${eyeRightX - 6} ${eyeY - 4} L${eyeRightX} ${maskTop - 2} Q${eyeRightX + 6} ${maskTop - 6} ${eyeRightX + 16} ${maskTop} L${eyeRightX + 14} ${maskBot} Q${eyeRightX + 6} ${maskBot + 2} ${eyeRightX} ${maskBot} Q${headCx + 6} ${maskBot - 2} ${headCx} ${maskBot - 2} Q${headCx - 6} ${maskBot - 2} ${eyeLeftX} ${maskBot} Q${eyeLeftX - 6} ${maskBot + 2} ${eyeLeftX - 14} ${maskBot} Z`}
+        fill="none" stroke={suitDarker} strokeWidth="1.5"
+      />
+    </>
+  );
+}
+
 function renderAccessory(accessory: AvatarConfig["accessory"], suitColor: string, suitDarker: string) {
   switch (accessory) {
-    case "mask":
-      return (
-        <>
-          {/* Superhero domino mask */}
-          <path d="M68 72 Q76 66 84 70 L88 72 Q94 68 100 68 Q106 68 112 72 L116 70 Q124 66 132 72 L130 80 Q124 84 116 80 Q112 78 100 78 Q88 78 84 80 Q76 84 70 80 Z"
-            fill={suitColor} />
-          <path d="M68 72 Q76 66 84 70 L88 72 Q94 68 100 68 Q106 68 112 72 L116 70 Q124 66 132 72 L130 80 Q124 84 116 80 Q112 78 100 78 Q88 78 84 80 Q76 84 70 80 Z"
-            fill="none" stroke={suitDarker} strokeWidth="1.5" />
-          {/* Eye cutouts */}
-          <ellipse cx="82" cy="76" rx="8" ry="5.5" fill="white" fillOpacity="0" />
-          <ellipse cx="118" cy="76" rx="8" ry="5.5" fill="white" fillOpacity="0" />
-        </>
-      );
     case "goggles":
       return (
         <>
@@ -310,7 +391,6 @@ function renderAccessory(accessory: AvatarConfig["accessory"], suitColor: string
           <line x1="98" y1="77" x2="102" y2="77" stroke={suitColor} strokeWidth="3" />
           <path d="M66 74 Q52 70 52 77 Q52 84 66 80" fill="none" stroke={suitColor} strokeWidth="2.5" />
           <path d="M134 74 Q148 70 148 77 Q148 84 134 80" fill="none" stroke={suitColor} strokeWidth="2.5" />
-          {/* Lens glare */}
           <ellipse cx="76" cy="73" rx="4" ry="2.5" fill="white" fillOpacity="0.2" transform="rotate(-15 76 73)" />
           <ellipse cx="112" cy="73" rx="4" ry="2.5" fill="white" fillOpacity="0.2" transform="rotate(-15 112 73)" />
         </>
@@ -318,25 +398,20 @@ function renderAccessory(accessory: AvatarConfig["accessory"], suitColor: string
     case "magnifying-glass":
       return (
         <>
-          {/* Held in right hand area */}
           <circle cx="155" cy="155" r="14" fill="none" stroke={suitDarker} strokeWidth="3.5" />
           <circle cx="155" cy="155" r="12" fill="white" fillOpacity="0.15" />
           <line x1="165" y1="165" x2="175" y2="178" stroke={suitDarker} strokeWidth="4" strokeLinecap="round" />
-          {/* Lens glare */}
           <ellipse cx="151" cy="151" rx="4" ry="2.5" fill="white" fillOpacity="0.3" transform="rotate(-30 151 151)" />
         </>
       );
     case "tablet":
       return (
         <>
-          {/* Held tablet in left hand area */}
           <rect x="28" y="148" width="24" height="32" rx="4" fill="#263238" />
           <rect x="30" y="151" width="20" height="25" rx="2" fill={suitColor} fillOpacity="0.4" />
-          {/* Screen content lines */}
           <line x1="33" y1="156" x2="47" y2="156" stroke="white" strokeWidth="1.5" strokeOpacity="0.5" />
           <line x1="33" y1="161" x2="44" y2="161" stroke="white" strokeWidth="1.2" strokeOpacity="0.35" />
           <line x1="33" y1="166" x2="41" y2="166" stroke="white" strokeWidth="1" strokeOpacity="0.25" />
-          {/* Home button */}
           <circle cx="40" cy="178" r="1.5" fill="white" fillOpacity="0.3" />
         </>
       );
