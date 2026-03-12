@@ -320,56 +320,41 @@ function hairFrontLayer(
           <circle cx={right + 6} cy={scalpTop + 38} r="7" fill={color} />
         </>
       );
-    case "long":
+    case "bob":
       return (
         <>
-          {/* Scalp cap */}
           <path d={`M${left} ${bangBase} Q${left} ${scalpTop} ${cx} ${scalpTop - 6} Q${right} ${scalpTop} ${right} ${bangBase}`} fill={color} />
-          {/* Soft side-swept bangs */}
           <path d={`M${left + 4} ${bangBase} Q${left + 14} ${bangBase - 10} ${cx - 8} ${bangBase - 4} Q${cx + 4} ${bangBase + 2} ${cx + 12} ${bangBase - 6} Q${right - 10} ${bangBase - 14} ${right - 4} ${bangBase}`} fill={color} />
           <path d={`M${left + 10} ${bangBase - 4} Q${cx} ${scalpTop + 10} ${right - 10} ${bangBase - 4}`} fill="none" stroke={dk} strokeWidth="0.5" strokeOpacity="0.08" />
         </>
       );
-    case "braids":
+    case "puffs":
       return (
         <>
-          {/* Scalp cap */}
           <path d={`M${left + 2} ${bangBase} Q${left + 2} ${scalpTop + 2} ${cx} ${scalpTop - 4} Q${right - 2} ${scalpTop + 2} ${right - 2} ${bangBase}`} fill={color} />
-          {/* Centre part */}
           <line x1={cx} y1={scalpTop - 2} x2={cx} y2={bangBase - 2} stroke={dk} strokeWidth="1.2" strokeOpacity="0.15" />
-          {/* Side parts */}
-          <path d={`M${cx - 18} ${scalpTop + 4} Q${cx - 14} ${scalpTop + 18} ${cx - 16} ${bangBase}`} fill="none" stroke={dk} strokeWidth="0.5" strokeOpacity="0.08" />
-          <path d={`M${cx + 18} ${scalpTop + 4} Q${cx + 14} ${scalpTop + 18} ${cx + 16} ${bangBase}`} fill="none" stroke={dk} strokeWidth="0.5" strokeOpacity="0.08" />
         </>
       );
-    case "ponytail":
+    case "side-ponytail":
       return (
         <>
-          {/* Swept-back scalp cap */}
           <path d={`M${left + 2} ${bangBase} Q${left} ${scalpTop + 2} ${cx} ${scalpTop - 4} Q${right} ${scalpTop} ${right} ${bangBase - 6}`} fill={color} />
-          {/* Swept lines */}
           <path d={`M${left + 12} ${scalpTop + 14} Q${cx} ${scalpTop + 2} ${right - 8} ${scalpTop + 10}`} fill="none" stroke={dk} strokeWidth="0.7" strokeOpacity="0.1" />
-          <path d={`M${left + 16} ${scalpTop + 10} Q${cx} ${scalpTop - 2} ${right - 12} ${scalpTop + 6}`} fill="none" stroke={dk} strokeWidth="0.5" strokeOpacity="0.06" />
         </>
       );
     case "afro":
       return (
         <>
-          {/* Front volume — large arc above forehead */}
           <path d={`M${left - 16} ${bangBase + 4} Q${left - 20} ${scalpTop - 18} ${cx} ${scalpTop - 28} Q${right + 20} ${scalpTop - 18} ${right + 16} ${bangBase + 4}`} fill={color} />
-          {/* Texture bumps */}
           <circle cx={left + 2} cy={scalpTop - 12} r="3" fill={dk} fillOpacity="0.05" />
           <circle cx={cx - 14} cy={scalpTop - 20} r="3" fill={dk} fillOpacity="0.05" />
           <circle cx={cx} cy={scalpTop - 24} r="3" fill={dk} fillOpacity="0.05" />
           <circle cx={cx + 14} cy={scalpTop - 20} r="3" fill={dk} fillOpacity="0.05" />
           <circle cx={right - 2} cy={scalpTop - 12} r="3" fill={dk} fillOpacity="0.05" />
-          {/* Side volume circles */}
           <circle cx={left - 12} cy={scalpTop + 16} r="3" fill={dk} fillOpacity="0.04" />
           <circle cx={right + 12} cy={scalpTop + 16} r="3" fill={dk} fillOpacity="0.04" />
         </>
       );
-    case "none":
-      return null;
     default:
       return null;
   }
