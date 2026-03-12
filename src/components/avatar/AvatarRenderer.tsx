@@ -232,50 +232,41 @@ function hairBackLayer(
   const right = cx + rx;
 
   switch (style) {
-    case "long":
+    case "bob":
       return (
         <>
-          {/* Two curtains falling behind */}
-          <path d={`M${left} ${cy - 14} Q${left - 6} ${cy + 20} ${left - 4} ${cy + 60} Q${left - 4} ${cy + 80} ${left + 4} ${cy + 85} L${left + 10} ${cy + 85} Q${left + 4} ${cy + 75} ${left + 4} ${cy + 55} Q${left + 4} ${cy + 15} ${left + 2} ${cy - 10} Z`} fill={color} />
-          <path d={`M${right} ${cy - 14} Q${right + 6} ${cy + 20} ${right + 4} ${cy + 60} Q${right + 4} ${cy + 80} ${right - 4} ${cy + 85} L${right - 10} ${cy + 85} Q${right - 4} ${cy + 75} ${right - 4} ${cy + 55} Q${right - 4} ${cy + 15} ${right - 2} ${cy - 10} Z`} fill={color} />
-          {/* Strand highlights */}
-          <path d={`M${left - 1} ${cy + 10} Q${left - 3} ${cy + 40} ${left} ${cy + 65}`} fill="none" stroke={dk} strokeWidth="0.7" strokeOpacity="0.1" />
-          <path d={`M${right + 1} ${cy + 10} Q${right + 3} ${cy + 40} ${right} ${cy + 65}`} fill="none" stroke={dk} strokeWidth="0.7" strokeOpacity="0.1" />
+          <path d={`M${left} ${cy - 14} Q${left - 6} ${cy + 20} ${left - 4} ${cy + 60} Q${left - 4} ${cy + 70} ${left + 4} ${cy + 72} L${left + 10} ${cy + 72} Q${left + 4} ${cy + 65} ${left + 4} ${cy + 55} Q${left + 4} ${cy + 15} ${left + 2} ${cy - 10} Z`} fill={color} />
+          <path d={`M${right} ${cy - 14} Q${right + 6} ${cy + 20} ${right + 4} ${cy + 60} Q${right + 4} ${cy + 70} ${right - 4} ${cy + 72} L${right - 10} ${cy + 72} Q${right - 4} ${cy + 65} ${right - 4} ${cy + 55} Q${right - 4} ${cy + 15} ${right - 2} ${cy - 10} Z`} fill={color} />
+          <path d={`M${left - 1} ${cy + 10} Q${left - 3} ${cy + 40} ${left} ${cy + 55}`} fill="none" stroke={dk} strokeWidth="0.7" strokeOpacity="0.1" />
+          <path d={`M${right + 1} ${cy + 10} Q${right + 3} ${cy + 40} ${right} ${cy + 55}`} fill="none" stroke={dk} strokeWidth="0.7" strokeOpacity="0.1" />
         </>
       );
-    case "braids":
+    case "puffs":
       return (
         <>
-          {/* Left braid */}
-          <path d={`M${left + 4} ${cy - 10} Q${left - 2} ${cy + 10} ${left - 2} ${cy + 30} Q${left - 2} ${cy + 50} ${left} ${cy + 70} Q${left + 1} ${cy + 80} ${left - 2} ${cy + 88}`}
-            fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" />
-          <path d={`M${left + 4} ${cy - 5} L${left} ${cy + 5} L${left + 4} ${cy + 15} L${left} ${cy + 25} L${left + 4} ${cy + 35} L${left} ${cy + 45} L${left + 4} ${cy + 55} L${left} ${cy + 65}`}
-            fill="none" stroke={dk} strokeWidth="1.5" strokeOpacity="0.12" strokeLinecap="round" />
-          <circle cx={left - 1} cy={cy + 90} r="5" fill={color} />
-          {/* Right braid */}
-          <path d={`M${right - 4} ${cy - 10} Q${right + 2} ${cy + 10} ${right + 2} ${cy + 30} Q${right + 2} ${cy + 50} ${right} ${cy + 70} Q${right - 1} ${cy + 80} ${right + 2} ${cy + 88}`}
-            fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" />
-          <path d={`M${right - 4} ${cy - 5} L${right} ${cy + 5} L${right - 4} ${cy + 15} L${right} ${cy + 25} L${right - 4} ${cy + 35} L${right} ${cy + 45} L${right - 4} ${cy + 55} L${right} ${cy + 65}`}
-            fill="none" stroke={dk} strokeWidth="1.5" strokeOpacity="0.12" strokeLinecap="round" />
-          <circle cx={right + 1} cy={cy + 90} r="5" fill={color} />
+          {/* Left puff */}
+          <circle cx={left - 6} cy={cy - 4} r="18" fill={color} />
+          <circle cx={left - 6} cy={cy - 4} r="14" fill={dk} fillOpacity="0.03" />
+          {/* Right puff */}
+          <circle cx={right + 6} cy={cy - 4} r="18" fill={color} />
+          <circle cx={right + 6} cy={cy - 4} r="14" fill={dk} fillOpacity="0.03" />
+          {/* Hair ties */}
+          <ellipse cx={left + 2} cy={cy - 10} rx="4" ry="3" fill={dk} fillOpacity="0.3" />
+          <ellipse cx={right - 2} cy={cy - 10} rx="4" ry="3" fill={dk} fillOpacity="0.3" />
         </>
       );
-    case "ponytail":
+    case "side-ponytail":
       return (
         <>
-          {/* Ponytail flowing from upper-back */}
           <path d={`M${right - 12} ${scalpTop + 8} Q${right + 14} ${scalpTop + 16} ${right + 16} ${cy + 4} Q${right + 18} ${cy + 30} ${right + 12} ${cy + 60} Q${right + 8} ${cy + 78} ${right + 4} ${cy + 88}`} fill={color} />
           <path d={`M${right - 10} ${scalpTop + 10} Q${right + 10} ${scalpTop + 20} ${right + 12} ${cy}`} fill="none" stroke={dk} strokeWidth="0.7" strokeOpacity="0.1" />
-          {/* Hair tie */}
           <ellipse cx={right - 10} cy={scalpTop + 8} rx="4.5" ry="3.5" fill={dk} fillOpacity="0.35" />
-          {/* Tip curl */}
           <path d={`M${right + 4} ${cy + 86} Q${right + 1} ${cy + 94} ${right + 6} ${cy + 96}`} fill={color} />
         </>
       );
     case "afro":
       return (
         <>
-          {/* Large afro silhouette behind head */}
           <ellipse cx={cx} cy={cy - 10} rx={rx + 18} ry={ry + 14} fill={color} />
           <ellipse cx={cx} cy={cy - 8} rx={rx + 14} ry={ry + 10} fill={dk} fillOpacity="0.03" />
         </>
