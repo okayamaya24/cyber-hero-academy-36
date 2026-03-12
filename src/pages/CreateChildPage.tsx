@@ -18,6 +18,7 @@ export default function CreateChildPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
   const [step, setStep] = useState<"info" | "avatar">("info");
   const [form, setForm] = useState({ name: "", age: "" });
   const [avatarConfig, setAvatarConfig] = useState<AvatarConfig>(DEFAULT_AVATAR);
@@ -29,39 +30,47 @@ export default function CreateChildPage() {
 
   const handleInfoNext = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!form.name.trim()) {
       toast.error("Please enter your child's name.");
       return;
     }
-    const age = parseInt(form.age);
-    if (!form.age || isNaN(age) || age < 3 || age > 15) {
+
+    const age = parseInt(form.age, 10);
+    if (!form.age || Number.isNaN(age) || age < 3 || age > 15) {
       toast.error("Please enter a valid age (3–15).");
       return;
     }
+
     setStep("avatar");
   };
 
   const handleSaveAvatar = async (config: AvatarConfig) => {
     setAvatarConfig(config);
     setCreating(true);
-    const age = parseInt(form.age);
+
+    const age = parseInt(form.age, 10);
+
+    const fallbackAvatar = config.characterType === "girl" ? "👧" : "👦";
 
     const { error } = await supabase.from("child_profiles").insert({
       parent_id: user!.id,
       name: form.name.trim(),
       age,
-      avatar: config.characterType === "girl" ? "🦸‍♀️" : "🦸",
+      avatar: fallbackAvatar,
       avatar_config: config as any,
     });
 
     setCreating(false);
+
     if (error) {
       toast.error(error.message);
-    } else {
-      toast.success(`${form.name}'s Cyber Hero is ready! 🎉`);
-      queryClient.invalidateQueries({ queryKey: ["children"] });
-      navigate("/parents");
+      return;
     }
+
+    toast.success(`${form.name}'s Cyber Hero is ready! 🎉`);
+    queryClient.invalidateQueries({ queryKey: ["children"] });
+    navigate("/parent-dashboard");
   };
 
   if (step === "avatar") {
@@ -74,15 +83,11 @@ export default function CreateChildPage() {
             </Button>
 
             <div className="mb-6 text-center">
-              <h1 className="text-2xl font-bold">Create {form.name}'s Hero!</h1>
+              <h1 className="text-2xl font-bold">Create {form.name}&apos;s Hero!</h1>
               <p className="mt-1 text-muted-foreground">Customize your Cyber Hero avatar</p>
             </div>
 
-            <AvatarCreator
-              initialConfig={avatarConfig}
-              onSave={handleSaveAvatar}
-              saving={creating}
-            />
+            <AvatarCreator initialConfig={avatarConfig} onSave={handleSaveAvatar} saving={creating} />
           </motion.div>
         </div>
       </div>
@@ -94,17 +99,32 @@ export default function CreateChildPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg">
         <div className="mb-8 text-center">
           <div className="relative mx-auto mb-4 flex justify-center">
-            <motion.img src={heroCharacter} alt="Cyber Hero" className="h-24 w-24 object-contain" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 }} />
-            <motion.img src={wiseOwl} alt="Professor Hoot" className="h-24 w-24 object-contain -ml-4" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }} />
+            <motion.img
+              src={heroCharacter}
+              alt="Cyber Hero"
+              className="h-24 w-24 object-contain"
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            />
+            <motion.img
+              src={wiseOwl}
+              alt="Professor Hoot"
+              className="-ml-4 h-24 w-24 object-contain"
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            />
           </div>
+
           <h1 className="text-3xl font-bold">Create Your Cyber Hero!</h1>
-          <p className="mt-2 text-muted-foreground">Set up your child's hero profile to start learning</p>
+          <p className="mt-2 text-muted-foreground">Set up your child&apos;s hero profile to start learning</p>
         </div>
 
         <form onSubmit={handleInfoNext} className="space-y-6 rounded-2xl border bg-card p-6 shadow-card">
           <div>
             <Label htmlFor="childName" className="flex items-center gap-2 text-sm font-semibold">
-              <User className="h-4 w-4 text-primary" /> Child's Name
+              <User className="h-4 w-4 text-primary" /> Child&apos;s Name
             </Label>
             <Input
               id="childName"
