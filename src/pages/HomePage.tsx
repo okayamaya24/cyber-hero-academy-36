@@ -41,7 +41,7 @@ const features = [
     icon: Users,
     title: "Parent Dashboard",
     description: "Parents and teachers can track learning progress.",
-    color: "bg-cyber-purple/10 text-cyber-purple",
+    color: "bg-cyber-teal/10 text-cyber-teal",
   },
 ];
 
