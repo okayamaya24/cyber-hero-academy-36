@@ -203,10 +203,7 @@ export default function AvatarRenderer({
         <ellipse cx={headCx} cy={eyeY + 12} rx="3.2" ry="2.2" fill={skinShade} fillOpacity="0.25" />
         {/* Mouth — friendly open smile */}
         <path d={`M${headCx - 11} ${eyeY + 20} Q${headCx} ${eyeY + 32} ${headCx + 11} ${eyeY + 20}`} fill="none" stroke={skinShade} strokeWidth="2.5" strokeLinecap="round" />
-        {/* Teeth for hero */}
-        {characterType === "hero" && (
-          <rect x={headCx - 4} y={eyeY + 20} width="8" height="4" rx="1.5" fill="white" fillOpacity="0.88" />
-        )}
+        {/* Teeth */}
         {/* Cheek blush */}
         <circle cx={headCx - 28} cy={eyeY + 14} r="8" fill="#FF9999" fillOpacity="0.15" />
         <circle cx={headCx + 28} cy={eyeY + 14} r="8" fill="#FF9999" fillOpacity="0.15" />
