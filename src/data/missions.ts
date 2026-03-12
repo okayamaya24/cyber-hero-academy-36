@@ -844,8 +844,8 @@ export const MISSIONS: MissionDef[] = [
     title: "Internet Detective",
     description: "Investigate the web and separate facts from fiction! Professor Hoot guides you!",
     icon: Eye,
-    color: "text-cyber-purple",
-    bgColor: "bg-cyber-purple/10",
+    color: "text-cyber-aqua",
+    bgColor: "bg-cyber-aqua/10",
     guide: { name: "Professor Hoot", image: wiseOwl },
     levelMiniGames: [
       ["quiz", "sort-game"],

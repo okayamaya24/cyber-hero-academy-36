@@ -218,7 +218,7 @@ export default function ParentDashboard() {
               label: "Badges Earned",
               value: totalBadges,
               icon: Award,
-              color: "text-cyber-purple",
+              color: "text-cyber-teal",
             },
           ].map((s) => (
             <motion.div key={s.label} variants={fadeUp} className="rounded-2xl border bg-card p-5 shadow-card">

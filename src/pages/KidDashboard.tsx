@@ -288,7 +288,7 @@ export default function KidDashboard() {
               label: "Streak",
               value: `${child.streak}🔥`,
               icon: Zap,
-              color: "text-cyber-pink",
+              color: "text-cyber-orange",
             },
           ].map((s) => (
             <motion.div

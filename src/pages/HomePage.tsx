@@ -87,7 +87,7 @@ export default function HomePage() {
 
             <h1 className="text-4xl font-bold leading-tight md:text-6xl">
               Become a{" "}
-              <span className="bg-gradient-to-r from-primary via-cyber-purple to-cyber-pink bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary via-cyber-teal to-cyber-green bg-clip-text text-transparent">
                 Cyber Hero!
               </span>
             </h1>
