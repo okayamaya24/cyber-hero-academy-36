@@ -577,8 +577,8 @@ export const MISSIONS: MissionDef[] = [
     title: "Secret Keeper",
     description: "Protect your personal information like a true Cyber Hero! Professor Hoot guides you!",
     icon: Shield,
-    color: "text-cyber-purple",
-    bgColor: "bg-cyber-purple/10",
+    color: "text-cyber-teal",
+    bgColor: "bg-cyber-teal/10",
     guide: { name: "Professor Hoot", image: wiseOwl },
     levelMiniGames: [
       ["secret-keeper", "quiz", "scenario"],
@@ -844,8 +844,8 @@ export const MISSIONS: MissionDef[] = [
     title: "Internet Detective",
     description: "Investigate the web and separate facts from fiction! Professor Hoot guides you!",
     icon: Eye,
-    color: "text-cyber-purple",
-    bgColor: "bg-cyber-purple/10",
+    color: "text-cyber-aqua",
+    bgColor: "bg-cyber-aqua/10",
     guide: { name: "Professor Hoot", image: wiseOwl },
     levelMiniGames: [
       ["quiz", "sort-game"],

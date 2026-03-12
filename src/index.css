@@ -6,62 +6,63 @@
 
 @layer base {
   :root {
-    --background: 210 50% 98%;
-    --foreground: 230 25% 18%;
+    --background: 195 60% 97%;
+    --foreground: 210 25% 18%;
 
     --card: 0 0% 100%;
-    --card-foreground: 230 25% 18%;
+    --card-foreground: 210 25% 18%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 230 25% 18%;
+    --popover-foreground: 210 25% 18%;
 
-    --primary: 220 80% 55%;
+    --primary: 195 85% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 160 60% 45%;
+    --secondary: 160 65% 48%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 30% 94%;
-    --muted-foreground: 220 15% 45%;
+    --muted: 195 30% 93%;
+    --muted-foreground: 200 15% 42%;
 
-    --accent: 35 95% 55%;
+    --accent: 30 95% 55%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 88%;
-    --input: 220 20% 88%;
-    --ring: 220 80% 55%;
+    --border: 195 22% 88%;
+    --input: 195 22% 88%;
+    --ring: 195 85% 50%;
 
     --radius: 1rem;
 
     /* Custom Cyber Hero tokens */
-    --cyber-purple: 270 70% 60%;
-    --cyber-pink: 330 80% 60%;
-    --cyber-teal: 180 65% 45%;
-    --cyber-yellow: 45 100% 55%;
+    --cyber-sky: 195 85% 55%;
+    --cyber-teal: 175 70% 42%;
+    --cyber-green: 145 70% 50%;
+    --cyber-orange: 30 95% 55%;
+    --cyber-aqua: 185 80% 48%;
 
-    --gradient-hero: linear-gradient(135deg, hsl(220 80% 55%), hsl(270 70% 60%), hsl(330 80% 60%));
-    --gradient-mission: linear-gradient(135deg, hsl(160 60% 45%), hsl(180 65% 45%));
-    --gradient-badge: linear-gradient(135deg, hsl(35 95% 55%), hsl(45 100% 55%));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 30% 97%));
+    --gradient-hero: linear-gradient(135deg, hsl(195 85% 50%), hsl(175 70% 42%), hsl(145 70% 50%));
+    --gradient-mission: linear-gradient(135deg, hsl(175 70% 42%), hsl(185 80% 48%));
+    --gradient-badge: linear-gradient(135deg, hsl(30 95% 55%), hsl(45 100% 55%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(195 30% 97%));
 
-    --shadow-playful: 0 8px 30px -8px hsl(220 80% 55% / 0.25);
-    --shadow-card: 0 4px 20px -4px hsl(220 20% 50% / 0.15);
-    --shadow-glow: 0 0 20px hsl(220 80% 55% / 0.3);
+    --shadow-playful: 0 8px 30px -8px hsl(195 85% 50% / 0.25);
+    --shadow-card: 0 4px 20px -4px hsl(195 22% 50% / 0.15);
+    --shadow-glow: 0 0 20px hsl(195 85% 50% / 0.3);
 
     --font-display: 'Fredoka', sans-serif;
     --font-body: 'Nunito', sans-serif;
 
-    --sidebar-background: 220 80% 55%;
+    --sidebar-background: 195 85% 50%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 220 80% 55%;
-    --sidebar-accent: 220 80% 48%;
+    --sidebar-primary-foreground: 195 85% 50%;
+    --sidebar-accent: 195 85% 43%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 220 80% 48%;
-    --sidebar-ring: 220 80% 55%;
+    --sidebar-border: 195 85% 43%;
+    --sidebar-ring: 195 85% 50%;
   }
 }
 
