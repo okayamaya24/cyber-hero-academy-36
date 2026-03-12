@@ -48,10 +48,11 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         cyber: {
-          purple: "hsl(var(--cyber-purple))",
-          pink: "hsl(var(--cyber-pink))",
+          sky: "hsl(var(--cyber-sky))",
           teal: "hsl(var(--cyber-teal))",
-          yellow: "hsl(var(--cyber-yellow))",
+          green: "hsl(var(--cyber-green))",
+          orange: "hsl(var(--cyber-orange))",
+          aqua: "hsl(var(--cyber-aqua))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
