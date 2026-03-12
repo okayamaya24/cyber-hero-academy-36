@@ -136,7 +136,7 @@ export default function AvatarRenderer({ config, size = 120, className = "", fal
         <rect x="90" y="115" width="20" height="15" rx="6" fill={skin} />
 
         {/* Hair back */}
-        {hairBackLayer(hairStyle, hairColor, hairDk, headCx, headCy, headRx, headRy)}
+        {hairBackLayer(characterType, hairStyle, hairColor, hairDk, headCx, headCy, headRx, headRy)}
 
         {/* Head */}
         <ellipse cx={headCx} cy={headCy} rx={headRx} ry={headRy} fill={skin} />
@@ -214,13 +214,14 @@ export default function AvatarRenderer({ config, size = 120, className = "", fal
         {renderAccessory(accessory, suitColor, suitDk, suitLt, eyeY, eyeLx, eyeRx, headCx)}
 
         {/* Hair front */}
-        {hairFrontLayer(hairStyle, hairColor, hairDk, isGirl, headCx, scalpTop, headRx)}
+        {hairFrontLayer(characterType, hairStyle, hairColor, hairDk, headCx, scalpTop, headRx)}
       </g>
     </svg>
   );
 }
 
 function hairBackLayer(
+  characterType: AvatarConfig["characterType"],
   style: AvatarConfig["hairStyle"],
   color: string,
   dk: string,
@@ -238,11 +239,21 @@ function hairBackLayer(
       return (
         <>
           <path
-            d={`M${left + 4} ${cy - 4} Q${left - 2} ${cy + 18} ${left + 2} ${cy + 44} Q${left + 8} ${cy + 60} ${left + 20} ${cy + 62} L${left + 28} ${cy + 62} Q${left + 16} ${cy + 44} ${left + 16} ${cy + 18} Q${left + 16} ${cy + 2} ${left + 18} ${cy - 10} Z`}
+            d={`M${left + 8} ${cy - 2}
+               Q${left + 2} ${cy + 14} ${left + 10} ${cy + 40}
+               Q${left + 16} ${cy + 54} ${left + 28} ${cy + 56}
+               L${left + 34} ${cy + 56}
+               Q${left + 24} ${cy + 38} ${left + 24} ${cy + 14}
+               Q${left + 24} ${cy + 2} ${left + 22} ${cy - 8} Z`}
             fill={color}
           />
           <path
-            d={`M${right - 4} ${cy - 4} Q${right + 2} ${cy + 18} ${right - 2} ${cy + 44} Q${right - 8} ${cy + 60} ${right - 20} ${cy + 62} L${right - 28} ${cy + 62} Q${right - 16} ${cy + 44} ${right - 16} ${cy + 18} Q${right - 16} ${cy + 2} ${right - 18} ${cy - 10} Z`}
+            d={`M${right - 8} ${cy - 2}
+               Q${right - 2} ${cy + 14} ${right - 10} ${cy + 40}
+               Q${right - 16} ${cy + 54} ${right - 28} ${cy + 56}
+               L${right - 34} ${cy + 56}
+               Q${right - 24} ${cy + 38} ${right - 24} ${cy + 14}
+               Q${right - 24} ${cy + 2} ${right - 22} ${cy - 8} Z`}
             fill={color}
           />
         </>
@@ -252,10 +263,13 @@ function hairBackLayer(
       return (
         <>
           <path
-            d={`M${right - 12} ${scalpTop + 8} Q${right + 14} ${scalpTop + 16} ${right + 16} ${cy + 4} Q${right + 18} ${cy + 28} ${right + 10} ${cy + 52} Q${right + 6} ${cy + 68} ${right + 2} ${cy + 78}`}
+            d={`M${right - 10} ${scalpTop + 10}
+               Q${right + 16} ${scalpTop + 18} ${right + 18} ${cy + 4}
+               Q${right + 20} ${cy + 24} ${right + 12} ${cy + 50}
+               Q${right + 8} ${cy + 66} ${right + 4} ${cy + 76}`}
             fill={color}
           />
-          <ellipse cx={right - 10} cy={scalpTop + 8} rx="4.5" ry="3.5" fill={dk} fillOpacity="0.35" />
+          <ellipse cx={right - 8} cy={scalpTop + 10} rx="4.5" ry="3.5" fill={dk} fillOpacity="0.35" />
         </>
       );
 
@@ -263,17 +277,21 @@ function hairBackLayer(
       return (
         <>
           <path
-            d={`M${left + 4} ${cy - 8} Q${left - 4} ${cy + 16} ${left - 2} ${cy + 40} Q${left} ${cy + 60} ${left - 2} ${cy + 80}`}
+            d={`M${left + 6} ${cy - 8}
+               Q${left - 2} ${cy + 14} ${left} ${cy + 36}
+               Q${left + 2} ${cy + 56} ${left} ${cy + 76}`}
             fill="none"
             stroke={color}
-            strokeWidth="10"
+            strokeWidth="9"
             strokeLinecap="round"
           />
           <path
-            d={`M${right - 4} ${cy - 8} Q${right + 4} ${cy + 16} ${right + 2} ${cy + 40} Q${right} ${cy + 60} ${right + 2} ${cy + 80}`}
+            d={`M${right - 6} ${cy - 8}
+               Q${right + 2} ${cy + 14} ${right} ${cy + 36}
+               Q${right - 2} ${cy + 56} ${right} ${cy + 76}`}
             fill="none"
             stroke={color}
-            strokeWidth="10"
+            strokeWidth="9"
             strokeLinecap="round"
           />
         </>
@@ -282,8 +300,8 @@ function hairBackLayer(
     case "puffs":
       return (
         <>
-          <circle cx={left - 6} cy={scalpTop + 14} r="15" fill={color} />
-          <circle cx={right + 6} cy={scalpTop + 14} r="15" fill={color} />
+          <circle cx={left + 6} cy={scalpTop + 14} r="13" fill={color} />
+          <circle cx={right - 6} cy={scalpTop + 14} r="13" fill={color} />
         </>
       );
 
@@ -293,23 +311,28 @@ function hairBackLayer(
 }
 
 function hairFrontLayer(
+  characterType: AvatarConfig["characterType"],
   style: AvatarConfig["hairStyle"],
   color: string,
   dk: string,
-  isGirl: boolean,
   cx: number,
   scalpTop: number,
   rx: number,
 ) {
   const left = cx - rx;
   const right = cx + rx;
-  const bangBase = scalpTop + 34;
+
+  const hairlineY = scalpTop + 18;
+  const bangY = scalpTop + 26;
 
   switch (style) {
     case "short":
       return (
         <path
-          d={`M${left + 2} ${bangBase} Q${left + 2} ${scalpTop + 2} ${cx} ${scalpTop - 2} Q${right - 2} ${scalpTop + 2} ${right - 2} ${bangBase} L${right - 4} ${bangBase - 6} Q${right - 8} ${scalpTop + 8} ${cx} ${scalpTop + 4} Q${left + 8} ${scalpTop + 8} ${left + 4} ${bangBase - 6} Z`}
+          d={`M${left + 8} ${bangY}
+             Q${left + 8} ${scalpTop + 6} ${cx} ${scalpTop + 2}
+             Q${right - 8} ${scalpTop + 6} ${right - 8} ${bangY}
+             Q${cx} ${bangY - 6} ${left + 8} ${bangY} Z`}
           fill={color}
         />
       );
@@ -318,50 +341,73 @@ function hairFrontLayer(
       return (
         <>
           <path
-            d={`M${left + 10} ${bangBase - 2} Q${left + 10} ${scalpTop + 8} ${cx} ${scalpTop - 2} Q${right - 10} ${scalpTop + 8} ${right - 10} ${bangBase - 2} L${right - 12} ${bangBase - 6} Q${cx} ${scalpTop + 6} ${left + 12} ${bangBase - 6} Z`}
+            d={`M${left + 14} ${bangY - 2}
+               Q${left + 16} ${scalpTop + 8} ${cx} ${scalpTop + 2}
+               Q${right - 16} ${scalpTop + 8} ${right - 14} ${bangY - 2}
+               Q${cx} ${bangY - 8} ${left + 14} ${bangY - 2} Z`}
             fill={color}
           />
           <path
-            d={`M${left + 4} ${bangBase + 4} Q${cx} ${bangBase - 4} ${right - 4} ${bangBase + 4}`}
+            d={`M${left + 18} ${bangY} Q${cx} ${bangY - 5} ${right - 18} ${bangY}`}
             fill="none"
             stroke={dk}
             strokeWidth="1"
-            strokeOpacity="0.12"
+            strokeOpacity="0.1"
           />
         </>
       );
 
     case "spiky":
       return (
-        <>
-          <path
-            d={`M${left + 6} ${bangBase + 2}
-               L${left + 16} ${scalpTop + 8}
-               L${left + 24} ${scalpTop - 4}
-               L${cx - 10} ${scalpTop + 6}
-               L${cx} ${scalpTop - 10}
-               L${cx + 10} ${scalpTop + 4}
-               L${right - 20} ${scalpTop - 4}
-               L${right - 12} ${scalpTop + 10}
-               L${right - 4} ${bangBase + 2}
-               Q${cx} ${bangBase - 4} ${left + 6} ${bangBase + 2} Z`}
-            fill={color}
-          />
-        </>
+        <path
+          d={`M${left + 12} ${bangY + 2}
+             L${left + 22} ${scalpTop + 12}
+             L${left + 30} ${scalpTop - 2}
+             L${cx - 8} ${scalpTop + 10}
+             L${cx} ${scalpTop - 6}
+             L${cx + 10} ${scalpTop + 8}
+             L${right - 28} ${scalpTop - 2}
+             L${right - 20} ${scalpTop + 12}
+             L${right - 10} ${bangY + 2}
+             Q${cx} ${bangY - 4} ${left + 12} ${bangY + 2} Z`}
+          fill={color}
+        />
       );
 
     case "curly":
+      if (characterType === "boy") {
+        return (
+          <>
+            <path
+              d={`M${left + 10} ${hairlineY + 6}
+                 Q${left + 10} ${scalpTop + 10} ${cx} ${scalpTop + 2}
+                 Q${right - 10} ${scalpTop + 10} ${right - 10} ${hairlineY + 6}
+                 Q${cx} ${hairlineY + 2} ${left + 10} ${hairlineY + 6} Z`}
+              fill={color}
+            />
+            <circle cx={left + 18} cy={scalpTop + 10} r="7" fill={color} />
+            <circle cx={cx - 10} cy={scalpTop + 2} r="8" fill={color} />
+            <circle cx={cx + 2} cy={scalpTop} r="9" fill={color} />
+            <circle cx={cx + 15} cy={scalpTop + 4} r="8" fill={color} />
+            <circle cx={right - 18} cy={scalpTop + 12} r="7" fill={color} />
+          </>
+        );
+      }
+
       return (
         <>
           <path
-            d={`M${left - 4} ${bangBase + 2} Q${left - 8} ${scalpTop - 2} ${cx} ${scalpTop - 10} Q${right + 8} ${scalpTop - 2} ${right + 4} ${bangBase + 2}`}
+            d={`M${left + 8} ${hairlineY + 8}
+               Q${left + 6} ${scalpTop + 10} ${cx} ${scalpTop + 4}
+               Q${right - 6} ${scalpTop + 10} ${right - 8} ${hairlineY + 8}
+               Q${cx} ${hairlineY + 2} ${left + 8} ${hairlineY + 8} Z`}
             fill={color}
           />
-          <circle cx={left + 6} cy={scalpTop + 8} r="10" fill={color} />
-          <circle cx={cx - 14} cy={scalpTop - 2} r="11" fill={color} />
-          <circle cx={cx} cy={scalpTop - 6} r="12" fill={color} />
-          <circle cx={cx + 14} cy={scalpTop - 2} r="11" fill={color} />
-          <circle cx={right - 6} cy={scalpTop + 8} r="10" fill={color} />
+          <circle cx={left + 16} cy={scalpTop + 10} r="7" fill={color} />
+          <circle cx={cx - 14} cy={scalpTop + 2} r="8" fill={color} />
+          <circle cx={cx} cy={scalpTop - 1} r="9" fill={color} />
+          <circle cx={cx + 14} cy={scalpTop + 2} r="8" fill={color} />
+          <circle cx={right - 16} cy={scalpTop + 10} r="7" fill={color} />
         </>
       );
 
@@ -369,14 +415,16 @@ function hairFrontLayer(
       return (
         <>
           <path
-            d={`M${left - 16} ${bangBase + 4} Q${left - 20} ${scalpTop - 18} ${cx} ${scalpTop - 28} Q${right + 20} ${scalpTop - 18} ${right + 16} ${bangBase + 4}`}
+            d={`M${left - 8} ${hairlineY + 8}
+               Q${left - 10} ${scalpTop - 6} ${cx} ${scalpTop - 14}
+               Q${right + 10} ${scalpTop - 6} ${right + 8} ${hairlineY + 8}`}
             fill={color}
           />
-          <circle cx={left + 2} cy={scalpTop - 12} r="8" fill={color} />
-          <circle cx={cx - 14} cy={scalpTop - 20} r="9" fill={color} />
-          <circle cx={cx} cy={scalpTop - 24} r="10" fill={color} />
-          <circle cx={cx + 14} cy={scalpTop - 20} r="9" fill={color} />
-          <circle cx={right - 2} cy={scalpTop - 12} r="8" fill={color} />
+          <circle cx={left + 6} cy={scalpTop - 2} r="8" fill={color} />
+          <circle cx={cx - 14} cy={scalpTop - 10} r="9" fill={color} />
+          <circle cx={cx} cy={scalpTop - 14} r="10" fill={color} />
+          <circle cx={cx + 14} cy={scalpTop - 10} r="9" fill={color} />
+          <circle cx={right - 6} cy={scalpTop - 2} r="8" fill={color} />
         </>
       );
 
@@ -384,11 +432,14 @@ function hairFrontLayer(
       return (
         <>
           <path
-            d={`M${left + 2} ${bangBase} Q${left + 2} ${scalpTop + 4} ${cx} ${scalpTop - 2} Q${right - 2} ${scalpTop + 4} ${right - 2} ${bangBase} Q${cx} ${bangBase - 8} ${left + 2} ${bangBase} Z`}
+            d={`M${left + 8} ${bangY}
+               Q${left + 8} ${scalpTop + 6} ${cx} ${scalpTop + 1}
+               Q${right - 8} ${scalpTop + 6} ${right - 8} ${bangY}
+               Q${cx} ${bangY - 8} ${left + 8} ${bangY} Z`}
             fill={color}
           />
           <path
-            d={`M${left + 8} ${bangBase - 2} Q${cx} ${bangBase + 6} ${right - 8} ${bangBase - 2}`}
+            d={`M${left + 14} ${bangY - 2} Q${cx} ${bangY + 4} ${right - 14} ${bangY - 2}`}
             fill="none"
             stroke={dk}
             strokeWidth="0.8"
@@ -401,11 +452,14 @@ function hairFrontLayer(
       return (
         <>
           <path
-            d={`M${left + 2} ${bangBase} Q${left} ${scalpTop + 2} ${cx} ${scalpTop - 4} Q${right} ${scalpTop} ${right} ${bangBase - 6}`}
+            d={`M${left + 8} ${hairlineY + 8}
+               Q${left + 6} ${scalpTop + 8} ${cx} ${scalpTop + 2}
+               Q${right - 4} ${scalpTop + 4} ${right - 6} ${hairlineY + 2}
+               Q${cx} ${hairlineY - 2} ${left + 8} ${hairlineY + 8} Z`}
             fill={color}
           />
           <path
-            d={`M${left + 16} ${scalpTop + 12} Q${cx} ${scalpTop - 2} ${right - 12} ${scalpTop + 8}`}
+            d={`M${left + 18} ${scalpTop + 14} Q${cx} ${scalpTop + 2} ${right - 14} ${scalpTop + 10}`}
             fill="none"
             stroke={dk}
             strokeWidth="0.8"
@@ -418,14 +472,16 @@ function hairFrontLayer(
       return (
         <>
           <path
-            d={`M${left + 2} ${bangBase} Q${left + 2} ${scalpTop + 2} ${cx} ${scalpTop - 4} Q${right - 2} ${scalpTop + 2} ${right - 2} ${bangBase}`}
+            d={`M${left + 8} ${hairlineY + 8}
+               Q${left + 8} ${scalpTop + 6} ${cx} ${scalpTop + 2}
+               Q${right - 8} ${scalpTop + 6} ${right - 8} ${hairlineY + 8}`}
             fill={color}
           />
           <line
             x1={cx}
-            y1={scalpTop - 2}
+            y1={scalpTop + 2}
             x2={cx}
-            y2={bangBase - 2}
+            y2={hairlineY + 4}
             stroke={dk}
             strokeWidth="1.2"
             strokeOpacity="0.15"
@@ -437,7 +493,10 @@ function hairFrontLayer(
       return (
         <>
           <path
-            d={`M${left + 8} ${bangBase} Q${left + 8} ${scalpTop + 6} ${cx} ${scalpTop + 2} Q${right - 8} ${scalpTop + 6} ${right - 8} ${bangBase}`}
+            d={`M${left + 14} ${hairlineY + 8}
+               Q${left + 14} ${scalpTop + 8} ${cx} ${scalpTop + 4}
+               Q${right - 14} ${scalpTop + 8} ${right - 14} ${hairlineY + 8}
+               Q${cx} ${hairlineY + 2} ${left + 14} ${hairlineY + 8} Z`}
             fill={color}
           />
         </>
