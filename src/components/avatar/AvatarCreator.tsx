@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Save, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import AvatarRenderer from "./AvatarRenderer";
 import {
   type AvatarConfig,
@@ -10,7 +10,8 @@ import {
   HAIR_COLORS,
   SUIT_COLORS,
   CHARACTER_TYPES,
-  HAIR_STYLES,
+  BOY_HAIR_STYLES,
+  GIRL_HAIR_STYLES,
   ACCESSORIES,
 } from "./avatarConfig";
 
@@ -22,7 +23,7 @@ interface AvatarCreatorProps {
 
 function SectionTitle({ children, emoji }: { children: React.ReactNode; emoji?: string }) {
   return (
-    <h3 className="text-sm font-bold text-foreground mb-2.5 flex items-center gap-1.5">
+    <h3 className="mb-2.5 flex items-center gap-1.5 text-sm font-bold text-foreground">
       {emoji && <span className="text-base">{emoji}</span>}
       {children}
     </h3>
@@ -46,16 +47,17 @@ function ColorButton({
       whileHover={{ scale: 1.15 }}
       whileTap={{ scale: 0.9 }}
       onClick={onClick}
-      className={`relative h-11 w-11 rounded-full transition-all border-2 ${
+      className={`relative h-11 w-11 rounded-full border-2 transition-all ${
         selected
           ? "border-primary ring-2 ring-primary/30 ring-offset-2 ring-offset-background shadow-playful"
           : "border-transparent hover:border-primary/30"
       }`}
       style={{ backgroundColor: color }}
       title={label}
+      aria-label={label}
     >
       {selected && (
-        <span className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold drop-shadow-md">
+        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-md">
           ✓
         </span>
       )}
@@ -80,7 +82,7 @@ function OptionButton({
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
-      className={`flex flex-col items-center gap-1.5 rounded-2xl border-2 p-3 transition-all text-center ${
+      className={`flex flex-col items-center gap-1.5 rounded-2xl border-2 p-3 text-center transition-all ${
         selected
           ? "border-primary bg-primary/10 shadow-playful"
           : "border-border bg-card hover:border-primary/30 hover:bg-muted/50"
@@ -94,7 +96,24 @@ function OptionButton({
 export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarCreatorProps) {
   const [config, setConfig] = useState<AvatarConfig>(initialConfig || DEFAULT_AVATAR);
 
-  const update = (partial: Partial<AvatarConfig>) => setConfig((c) => ({ ...c, ...partial }));
+  const activeHairStyles = useMemo(() => {
+    return config.characterType === "girl" ? GIRL_HAIR_STYLES : BOY_HAIR_STYLES;
+  }, [config.characterType]);
+
+  const update = (partial: Partial<AvatarConfig>) => {
+    setConfig((current) => ({ ...current, ...partial }));
+  };
+
+  const handleCharacterTypeChange = (type: AvatarConfig["characterType"]) => {
+    const defaultHairStyle = type === "girl" ? "bob" : "short";
+
+    setConfig((current) => ({
+      ...current,
+      characterType: type,
+      hairStyle: defaultHairStyle,
+      accessory: current.accessory === "headband" && type === "boy" ? "none" : current.accessory,
+    }));
+  };
 
   const hairPreviewConfig = (style: AvatarConfig["hairStyle"]): AvatarConfig => ({
     ...config,
@@ -104,21 +123,19 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
 
   return (
     <div className="space-y-6">
-      {/* Large Avatar Preview */}
       <div className="flex justify-center">
         <motion.div
           key={JSON.stringify(config)}
           initial={{ scale: 0.9, opacity: 0.4 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.25, type: "spring", stiffness: 200 }}
-          className="rounded-full shadow-playful bg-card p-2 border-4 border-primary/20"
+          className="rounded-full border-4 border-primary/20 bg-card p-2 shadow-playful"
         >
           <AvatarRenderer config={config} size={180} />
         </motion.div>
       </div>
 
       <div className="space-y-5 rounded-3xl border-2 border-border bg-card p-5 shadow-card">
-        {/* Character Type */}
         <div>
           <SectionTitle emoji="🦸">Choose Your Hero</SectionTitle>
           <div className="grid grid-cols-2 gap-3">
@@ -126,10 +143,18 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
               <OptionButton
                 key={ct.type}
                 selected={config.characterType === ct.type}
-                onClick={() => update({ characterType: ct.type })}
+                onClick={() => handleCharacterTypeChange(ct.type)}
               >
-                <div className="w-14 h-14 flex items-center justify-center">
-                  <AvatarRenderer config={{ ...config, characterType: ct.type, accessory: "none" }} size={56} />
+                <div className="flex h-14 w-14 items-center justify-center">
+                  <AvatarRenderer
+                    config={{
+                      ...config,
+                      characterType: ct.type,
+                      hairStyle: ct.type === "girl" ? "bob" : "short",
+                      accessory: "none",
+                    }}
+                    size={56}
+                  />
                 </div>
                 <span className="text-xs font-bold">{ct.label}</span>
               </OptionButton>
@@ -137,7 +162,6 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
           </div>
         </div>
 
-        {/* Skin Tone */}
         <div>
           <SectionTitle emoji="🎨">Skin Tone</SectionTitle>
           <div className="flex flex-wrap gap-2.5">
@@ -153,17 +177,18 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
           </div>
         </div>
 
-        {/* Hair Style */}
         <div>
-          <SectionTitle emoji="💇">Hair Style</SectionTitle>
-          <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-6">
-            {HAIR_STYLES.map((h) => (
+          <SectionTitle emoji="💇">
+            {config.characterType === "girl" ? "Girl Hair Style" : "Boy Hair Style"}
+          </SectionTitle>
+          <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-5">
+            {activeHairStyles.map((h) => (
               <OptionButton
                 key={h.style}
                 selected={config.hairStyle === h.style}
                 onClick={() => update({ hairStyle: h.style })}
               >
-                <div className="w-9 h-9 flex items-center justify-center">
+                <div className="flex h-9 w-9 items-center justify-center">
                   <AvatarRenderer config={hairPreviewConfig(h.style)} size={36} />
                 </div>
                 <span className="text-[10px] font-bold">{h.label}</span>
@@ -172,7 +197,6 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
           </div>
         </div>
 
-        {/* Hair Color */}
         <div>
           <SectionTitle emoji="🖌️">Hair Color</SectionTitle>
           <div className="flex flex-wrap gap-2.5">
@@ -188,7 +212,6 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
           </div>
         </div>
 
-        {/* Hero Suit Color */}
         <div>
           <SectionTitle emoji="🛡️">Suit Color</SectionTitle>
           <div className="flex flex-wrap gap-2.5">
@@ -204,7 +227,6 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
           </div>
         </div>
 
-        {/* Accessories */}
         <div>
           <SectionTitle emoji="⚡">Accessory</SectionTitle>
           <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-5">
@@ -225,7 +247,7 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
       <Button
         variant="hero"
         size="lg"
-        className="w-full text-base gap-2"
+        className="w-full gap-2 text-base"
         disabled={saving}
         onClick={() => onSave(config)}
       >

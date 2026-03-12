@@ -1,7 +1,7 @@
 export interface AvatarConfig {
   characterType: "boy" | "girl";
   skinTone: string;
-  hairStyle: "short" | "curly" | "bob" | "afro" | "puffs" | "side-ponytail";
+  hairStyle: "short" | "curly" | "fade" | "afro" | "spiky" | "bob" | "ponytail" | "puffs" | "braids" | "none";
   hairColor: string;
   suitColor: string;
   accessory: "none" | "headband" | "goggles" | "magnifying-glass" | "tablet";
@@ -48,13 +48,20 @@ export const CHARACTER_TYPES = [
   { type: "girl" as const, label: "Girl", emoji: "👧" },
 ];
 
-export const HAIR_STYLES = [
+export const BOY_HAIR_STYLES = [
   { style: "short" as const, label: "Short" },
   { style: "curly" as const, label: "Curly" },
-  { style: "bob" as const, label: "Bob" },
+  { style: "fade" as const, label: "Fade" },
   { style: "afro" as const, label: "Afro" },
+  { style: "spiky" as const, label: "Spiky" },
+];
+
+export const GIRL_HAIR_STYLES = [
+  { style: "bob" as const, label: "Bob" },
+  { style: "curly" as const, label: "Curly" },
+  { style: "ponytail" as const, label: "Ponytail" },
   { style: "puffs" as const, label: "Puffs" },
-  { style: "side-ponytail" as const, label: "Side Ponytail" },
+  { style: "braids" as const, label: "Braids" },
 ];
 
 export const ACCESSORIES = [
