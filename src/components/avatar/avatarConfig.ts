@@ -4,7 +4,7 @@ export interface AvatarConfig {
   hairStyle: "short" | "curly" | "long" | "braids" | "ponytail" | "afro" | "none";
   hairColor: string;
   suitColor: string;
-  accessory: "none" | "mask" | "goggles" | "magnifying-glass" | "tablet";
+  accessory: "none" | "headband" | "goggles" | "magnifying-glass" | "tablet";
 }
 
 export const DEFAULT_AVATAR: AvatarConfig = {
@@ -60,7 +60,7 @@ export const HAIR_STYLES = [
 
 export const ACCESSORIES = [
   { type: "none" as const, label: "None", emoji: "❌" },
-  { type: "mask" as const, label: "Hero Mask", emoji: "🦸" },
+  { type: "headband" as const, label: "Headband", emoji: "🎀" },
   { type: "goggles" as const, label: "Goggles", emoji: "🥽" },
   { type: "magnifying-glass" as const, label: "Magnifier", emoji: "🔍" },
   { type: "tablet" as const, label: "Tablet", emoji: "📱" },
