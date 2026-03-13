@@ -56,7 +56,7 @@ export default function ChildSelectPage() {
           <p className="mt-2 text-muted-foreground">
             Ask your parent to create your hero profile from the Parent Dashboard.
           </p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate("/parents")}>
+          <Button variant="outline" className="mt-4" onClick={() => navigate("/parent-dashboard")}>
             Go to Parent Dashboard
           </Button>
         </motion.div>

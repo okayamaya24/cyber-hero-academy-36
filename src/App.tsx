@@ -15,6 +15,7 @@ import ChildSelectPage from "./pages/ChildSelectPage";
 import CreateChildPage from "./pages/CreateChildPage";
 import CertificatePage from "./pages/CertificatePage";
 import ForParentsPage from "./pages/ForParentsPage";
+import ProtectedParentRoute from "./components/ProtectedParentRoute";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,7 +37,7 @@ const App = () => (
             <Route path="/dashboard" element={<KidDashboard />} />
             <Route path="/missions" element={<MissionsPage />} />
             <Route path="/for-parents" element={<ForParentsPage />} />
-            <Route path="/parent-dashboard" element={<ParentDashboard />} />
+            <Route path="/parent-dashboard" element={<ProtectedParentRoute><ParentDashboard /></ProtectedParentRoute>} />
             <Route path="/certificate" element={<CertificatePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -44,7 +44,7 @@ export default function ParentDashboard() {
 
   useEffect(() => {
     if (!user) {
-      navigate("/");
+      navigate("/login");
     }
   }, [user, navigate]);
 

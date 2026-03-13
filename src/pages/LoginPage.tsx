@@ -83,7 +83,7 @@ export default function LoginPage() {
       setParentUnlocked(true);
       setModalStep("none");
       setJustLoggedIn(false);
-      navigate("/parents");
+      navigate("/parent-dashboard");
     } else {
       setPinError("Incorrect PIN. Please try again.");
     }
