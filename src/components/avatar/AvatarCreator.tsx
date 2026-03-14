@@ -129,9 +129,9 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
           initial={{ scale: 0.9, opacity: 0.4 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.25, type: "spring", stiffness: 200 }}
-          className="rounded-3xl border-4 border-primary/20 bg-gradient-to-b from-card to-muted/50 p-4 shadow-playful"
+          className="rounded-3xl border-4 border-primary/20 bg-gradient-to-b from-card to-muted/50 p-6 shadow-playful"
         >
-          <AvatarRenderer config={config} size={140} />
+          <AvatarRenderer config={config} size={160} />
         </motion.div>
       </div>
 
