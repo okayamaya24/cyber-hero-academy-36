@@ -129,9 +129,9 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
           initial={{ scale: 0.9, opacity: 0.4 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.25, type: "spring", stiffness: 200 }}
-          className="rounded-full border-4 border-primary/20 bg-card p-2 shadow-playful"
+          className="rounded-3xl border-4 border-primary/20 bg-gradient-to-b from-card to-muted/50 p-4 shadow-playful"
         >
-          <AvatarRenderer config={config} size={180} />
+          <AvatarRenderer config={config} size={140} />
         </motion.div>
       </div>
 
@@ -145,7 +145,7 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
                 selected={config.characterType === ct.type}
                 onClick={() => handleCharacterTypeChange(ct.type)}
               >
-                <div className="flex h-14 w-14 items-center justify-center">
+                <div className="flex h-16 w-12 items-center justify-center overflow-hidden">
                   <AvatarRenderer
                     config={{
                       ...config,
@@ -153,7 +153,7 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
                       hairStyle: ct.type === "girl" ? "bob" : "short",
                       accessory: "none",
                     }}
-                    size={56}
+                    size={48}
                   />
                 </div>
                 <span className="text-xs font-bold">{ct.label}</span>
@@ -188,8 +188,8 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
                 selected={config.hairStyle === h.style}
                 onClick={() => update({ hairStyle: h.style })}
               >
-                <div className="flex h-9 w-9 items-center justify-center">
-                  <AvatarRenderer config={hairPreviewConfig(h.style)} size={36} />
+                <div className="flex h-12 w-9 items-center justify-center overflow-hidden">
+                  <AvatarRenderer config={hairPreviewConfig(h.style)} size={32} />
                 </div>
                 <span className="text-[10px] font-bold">{h.label}</span>
               </OptionButton>
