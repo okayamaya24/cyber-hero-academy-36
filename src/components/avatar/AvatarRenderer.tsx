@@ -70,7 +70,6 @@ const GIRL_HAIR_IMAGES: Record<string, string> = {
 
 const BOY_HAIR_IMAGES: Record<string, string> = {
   short: boyHairShort,
-  curly: boyHairCurly,
   fade: boyHairFade,
   afro: boyHairAfro,
   spiky: boyHairSpiky,
