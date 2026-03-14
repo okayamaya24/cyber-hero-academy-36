@@ -13,6 +13,13 @@ import girlMexican from "@/assets/avatar/base/girl-mexican.png";
 import girlAsian from "@/assets/avatar/base/girl-asian.png";
 import girlIndian from "@/assets/avatar/base/girl-indian.png";
 
+// Girl hair imports
+import girlHairBob from "@/assets/avatar/hair/girl-hair-bob.png";
+import girlHairPuffs from "@/assets/avatar/hair/girl-hair-puffs.png";
+import girlHairPonytail from "@/assets/avatar/hair/girl-hair-ponytail.png";
+import girlHairBraids from "@/assets/avatar/hair/girl-hair-braids.png";
+import girlHairLong from "@/assets/avatar/hair/girl-hair-long.png";
+
 interface AvatarRendererProps {
   config?: AvatarConfig | null;
   size?: number;
@@ -20,7 +27,6 @@ interface AvatarRendererProps {
   fallbackEmoji?: string;
 }
 
-// Map skin tone hex → character variant
 const SKIN_TO_VARIANT: Record<string, string> = {
   "#FDDCB5": "white",
   "#F5C6A0": "white",
@@ -31,20 +37,16 @@ const SKIN_TO_VARIANT: Record<string, string> = {
 };
 
 const BASE_IMAGES: Record<string, Record<string, string>> = {
-  boy: {
-    white: boyWhite,
-    black: boyBlack,
-    mexican: boyMexican,
-    asian: boyAsian,
-    indian: boyIndian,
-  },
-  girl: {
-    white: girlWhite,
-    black: girlBlack,
-    mexican: girlMexican,
-    asian: girlAsian,
-    indian: girlIndian,
-  },
+  boy: { white: boyWhite, black: boyBlack, mexican: boyMexican, asian: boyAsian, indian: boyIndian },
+  girl: { white: girlWhite, black: girlBlack, mexican: girlMexican, asian: girlAsian, indian: girlIndian },
+};
+
+const GIRL_HAIR_IMAGES: Record<string, string> = {
+  bob: girlHairBob,
+  puffs: girlHairPuffs,
+  ponytail: girlHairPonytail,
+  braids: girlHairBraids,
+  long: girlHairLong,
 };
 
 export default function AvatarRenderer({
@@ -53,11 +55,21 @@ export default function AvatarRenderer({
   className = "",
   fallbackEmoji = "🦸",
 }: AvatarRendererProps) {
-  const baseImage = useMemo(() => {
-    if (!config) return null;
+  const { baseImage, hairImage } = useMemo(() => {
+    if (!config) return { baseImage: null, hairImage: null };
     const variant = SKIN_TO_VARIANT[config.skinTone] ?? "white";
     const gender = config.characterType === "girl" ? "girl" : "boy";
-    return BASE_IMAGES[gender][variant] ?? BASE_IMAGES[gender].white;
+    const base = BASE_IMAGES[gender][variant] ?? BASE_IMAGES[gender].white;
+
+    let hair: string | null = null;
+    if (config.hairStyle && config.hairStyle !== "none") {
+      if (gender === "girl") {
+        hair = GIRL_HAIR_IMAGES[config.hairStyle] ?? null;
+      }
+      // Boy hair assets can be added later
+    }
+
+    return { baseImage: base, hairImage: hair };
   }, [config]);
 
   if (!config || !baseImage) {
@@ -71,11 +83,14 @@ export default function AvatarRenderer({
     );
   }
 
+  const containerHeight = size * 1.3;
+
   return (
     <div
       className={`relative ${className}`}
-      style={{ width: size, height: size * 1.3 }}
+      style={{ width: size, height: containerHeight }}
     >
+      {/* Layer 1: Base character */}
       <img
         src={baseImage}
         alt="Hero avatar"
@@ -83,6 +98,24 @@ export default function AvatarRenderer({
         style={{ zIndex: 1 }}
         draggable={false}
       />
+
+      {/* Layer 2: Hairstyle */}
+      {hairImage && (
+        <img
+          src={hairImage}
+          alt="Hair"
+          className="absolute object-contain"
+          style={{
+            zIndex: 2,
+            width: "60%",
+            left: "20%",
+            top: "0%",
+          }}
+          draggable={false}
+        />
+      )}
+
+      {/* Layer 3: Accessory - placeholder for future assets */}
     </div>
   );
 }
