@@ -1,7 +1,7 @@
 export interface AvatarConfig {
   characterType: "boy" | "girl";
   skinTone: string;
-  hairStyle: "short" | "curly" | "fade" | "afro" | "spiky" | "bob" | "ponytail" | "puffs" | "braids" | "none";
+  hairStyle: "short" | "curly" | "fade" | "afro" | "spiky" | "bob" | "ponytail" | "puffs" | "braids" | "long" | "none";
   hairColor: string;
   suitColor: string;
   accessory: "none" | "headband" | "goggles" | "magnifying-glass" | "tablet";
