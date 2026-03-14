@@ -1,7 +1,7 @@
 export interface AvatarConfig {
   characterType: "boy" | "girl";
   skinTone: string;
-  hairStyle: "short" | "curly" | "fade" | "afro" | "spiky" | "bob" | "ponytail" | "puffs" | "braids" | "long" | "none";
+  hairStyle: "short" | "fade" | "afro" | "spiky" | "bob" | "ponytail" | "puffs" | "braids" | "long" | "none";
   hairColor: string;
   suitColor: string;
   accessory: "none" | "headband" | "goggles" | "magnifying-glass" | "tablet" | "laptop";
@@ -50,7 +50,6 @@ export const CHARACTER_TYPES = [
 
 export const BOY_HAIR_STYLES = [
   { style: "short" as const, label: "Short" },
-  { style: "curly" as const, label: "Curly" },
   { style: "fade" as const, label: "Fade" },
   { style: "afro" as const, label: "Afro" },
   { style: "spiky" as const, label: "Spiky" },

@@ -22,7 +22,7 @@ import girlHairLong from "@/assets/avatar/hair/girl-hair-long.png";
 
 // Boy hair imports
 import boyHairShort from "@/assets/avatar/hair/boy-hair-short.png";
-import boyHairCurly from "@/assets/avatar/hair/boy-hair-curly.png";
+
 import boyHairFade from "@/assets/avatar/hair/boy-hair-fade.png";
 import boyHairAfro from "@/assets/avatar/hair/boy-hair-afro.png";
 import boyHairSpiky from "@/assets/avatar/hair/boy-hair-spiky.png";
@@ -70,7 +70,6 @@ const GIRL_HAIR_IMAGES: Record<string, string> = {
 
 const BOY_HAIR_IMAGES: Record<string, string> = {
   short: boyHairShort,
-  curly: boyHairCurly,
   fade: boyHairFade,
   afro: boyHairAfro,
   spiky: boyHairSpiky,
@@ -115,11 +114,6 @@ const BOY_HAIR_PLACEMENT: Record<string, HairPlacement> = {
     width: "58%",
     left: "21%",
     top: "2%",
-  },
-  curly: {
-    width: "62%",
-    left: "19%",
-    top: "0%",
   },
   fade: {
     width: "58%",
