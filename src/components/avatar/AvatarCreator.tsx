@@ -188,8 +188,8 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
                 selected={config.hairStyle === h.style}
                 onClick={() => update({ hairStyle: h.style })}
               >
-                <div className="flex h-9 w-9 items-center justify-center">
-                  <AvatarRenderer config={hairPreviewConfig(h.style)} size={36} />
+                <div className="flex h-12 w-9 items-center justify-center overflow-hidden">
+                  <AvatarRenderer config={hairPreviewConfig(h.style)} size={32} />
                 </div>
                 <span className="text-[10px] font-bold">{h.label}</span>
               </OptionButton>
