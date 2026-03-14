@@ -4,7 +4,7 @@ export interface AvatarConfig {
   hairStyle: "short" | "curly" | "fade" | "afro" | "spiky" | "bob" | "ponytail" | "puffs" | "braids" | "long" | "none";
   hairColor: string;
   suitColor: string;
-  accessory: "none" | "headband" | "goggles" | "magnifying-glass" | "tablet";
+  accessory: "none" | "headband" | "goggles" | "magnifying-glass" | "tablet" | "laptop";
 }
 
 export const DEFAULT_AVATAR: AvatarConfig = {
