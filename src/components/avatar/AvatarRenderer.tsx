@@ -1,24 +1,20 @@
 import { useMemo } from "react";
 import { type AvatarConfig } from "./avatarConfig";
 
-// Base hero imports
-import boyWhite from "@/assets/avatar/base/boy-white.png";
-import boyBlack from "@/assets/avatar/base/boy-black.png";
-import boyMexican from "@/assets/avatar/base/boy-mexican.png";
-import boyAsian from "@/assets/avatar/base/boy-asian.png";
-import boyIndian from "@/assets/avatar/base/boy-indian.png";
-import girlWhite from "@/assets/avatar/base/girl-white.png";
-import girlBlack from "@/assets/avatar/base/girl-black.png";
-import girlMexican from "@/assets/avatar/base/girl-mexican.png";
-import girlAsian from "@/assets/avatar/base/girl-asian.png";
-import girlIndian from "@/assets/avatar/base/girl-indian.png";
+// Body base imports
+import boyBase from "@/assets/avatar/body/boy-base.png";
+import girlBase from "@/assets/avatar/body/girl-base.png";
+
+// Boy hair imports
+import boyHairShort from "@/assets/avatar/hair/boy-hair-short.png";
+import boyHairSpiky from "@/assets/avatar/hair/boy-hair-spiky.png";
+import boyHairAfro from "@/assets/avatar/hair/boy-hair-afro.png";
+import boyHairFade from "@/assets/avatar/hair/boy-hair-fade.png";
 
 // Girl hair imports
 import girlHairBob from "@/assets/avatar/hair/girl-hair-bob.png";
 import girlHairPuffs from "@/assets/avatar/hair/girl-hair-puffs.png";
 import girlHairPonytail from "@/assets/avatar/hair/girl-hair-ponytail.png";
-import girlHairBraids from "@/assets/avatar/hair/girl-hair-braids.png";
-import girlHairLong from "@/assets/avatar/hair/girl-hair-long.png";
 
 interface AvatarRendererProps {
   config?: AvatarConfig | null;
@@ -27,26 +23,22 @@ interface AvatarRendererProps {
   fallbackEmoji?: string;
 }
 
-const SKIN_TO_VARIANT: Record<string, string> = {
-  "#FDDCB5": "white",
-  "#F5C6A0": "white",
-  "#E8A978": "mexican",
-  "#C68642": "indian",
-  "#8D5524": "black",
-  "#5C3317": "black",
+const BODY_IMAGES: Record<string, string> = {
+  boy: boyBase,
+  girl: girlBase,
 };
 
-const BASE_IMAGES: Record<string, Record<string, string>> = {
-  boy: { white: boyWhite, black: boyBlack, mexican: boyMexican, asian: boyAsian, indian: boyIndian },
-  girl: { white: girlWhite, black: girlBlack, mexican: girlMexican, asian: girlAsian, indian: girlIndian },
+const BOY_HAIR_IMAGES: Record<string, string> = {
+  short: boyHairShort,
+  spiky: boyHairSpiky,
+  afro: boyHairAfro,
+  fade: boyHairFade,
 };
 
 const GIRL_HAIR_IMAGES: Record<string, string> = {
   bob: girlHairBob,
   puffs: girlHairPuffs,
   ponytail: girlHairPonytail,
-  braids: girlHairBraids,
-  long: girlHairLong,
 };
 
 export default function AvatarRenderer({
@@ -55,24 +47,22 @@ export default function AvatarRenderer({
   className = "",
   fallbackEmoji = "🦸",
 }: AvatarRendererProps) {
-  const { baseImage, hairImage } = useMemo(() => {
-    if (!config) return { baseImage: null, hairImage: null };
-    const variant = SKIN_TO_VARIANT[config.skinTone] ?? "white";
+  const { bodyImage, hairImage } = useMemo(() => {
+    if (!config) return { bodyImage: null, hairImage: null };
+
     const gender = config.characterType === "girl" ? "girl" : "boy";
-    const base = BASE_IMAGES[gender][variant] ?? BASE_IMAGES[gender].white;
+    const body = BODY_IMAGES[gender];
 
     let hair: string | null = null;
     if (config.hairStyle && config.hairStyle !== "none") {
-      if (gender === "girl") {
-        hair = GIRL_HAIR_IMAGES[config.hairStyle] ?? null;
-      }
-      // Boy hair assets can be added later
+      const hairMap = gender === "girl" ? GIRL_HAIR_IMAGES : BOY_HAIR_IMAGES;
+      hair = hairMap[config.hairStyle] ?? null;
     }
 
-    return { baseImage: base, hairImage: hair };
+    return { bodyImage: body, hairImage: hair };
   }, [config]);
 
-  if (!config || !baseImage) {
+  if (!config || !bodyImage) {
     return (
       <div
         className={`flex items-center justify-center rounded-full bg-muted ${className}`}
@@ -90,9 +80,9 @@ export default function AvatarRenderer({
       className={`relative ${className}`}
       style={{ width: size, height: containerHeight }}
     >
-      {/* Layer 1: Base character */}
+      {/* Layer 1: Base body */}
       <img
-        src={baseImage}
+        src={bodyImage}
         alt="Hero avatar"
         className="absolute inset-0 h-full w-full object-contain"
         style={{ zIndex: 1 }}
@@ -107,15 +97,13 @@ export default function AvatarRenderer({
           className="absolute object-contain"
           style={{
             zIndex: 2,
-            width: "60%",
-            left: "20%",
-            top: "0%",
+            width: "50%",
+            left: "25%",
+            top: "-5%",
           }}
           draggable={false}
         />
       )}
-
-      {/* Layer 3: Accessory - placeholder for future assets */}
     </div>
   );
 }
