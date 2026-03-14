@@ -50,7 +50,6 @@ export const CHARACTER_TYPES = [
 
 export const BOY_HAIR_STYLES = [
   { style: "short" as const, label: "Short" },
-  { style: "curly" as const, label: "Curly" },
   { style: "fade" as const, label: "Fade" },
   { style: "afro" as const, label: "Afro" },
   { style: "spiky" as const, label: "Spiky" },

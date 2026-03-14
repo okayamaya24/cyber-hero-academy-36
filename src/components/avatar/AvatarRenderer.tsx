@@ -115,11 +115,6 @@ const BOY_HAIR_PLACEMENT: Record<string, HairPlacement> = {
     left: "21%",
     top: "2%",
   },
-  curly: {
-    width: "62%",
-    left: "19%",
-    top: "0%",
-  },
   fade: {
     width: "58%",
     left: "21%",
