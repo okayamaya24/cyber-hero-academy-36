@@ -22,7 +22,7 @@ import girlHairLong from "@/assets/avatar/hair/girl-hair-long.png";
 
 // Boy hair imports
 import boyHairShort from "@/assets/avatar/hair/boy-hair-short.png";
-import boyHairCurly from "@/assets/avatar/hair/boy-hair-curly.png";
+
 import boyHairFade from "@/assets/avatar/hair/boy-hair-fade.png";
 import boyHairAfro from "@/assets/avatar/hair/boy-hair-afro.png";
 import boyHairSpiky from "@/assets/avatar/hair/boy-hair-spiky.png";
