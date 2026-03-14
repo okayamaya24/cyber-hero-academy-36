@@ -1,11 +1,6 @@
 import { useMemo } from "react";
 import { type AvatarConfig } from "./avatarConfig";
-
-import row1Base from "@/assets/sprites/row1-base-heroes.png";
-import row2Suits from "@/assets/sprites/row2-suit-overlays.png";
-import row3HairBoys from "@/assets/sprites/row3-hair-boys.png";
-import row4HairGirls from "@/assets/sprites/row4-hair-girls.png";
-import row5Accessories from "@/assets/sprites/row5-accessories.png";
+import spriteSheet from "@/assets/avatar/avatar-sprite-sheet.png";
 
 interface AvatarRendererProps {
   config?: AvatarConfig | null;
@@ -14,81 +9,107 @@ interface AvatarRendererProps {
   fallbackEmoji?: string;
 }
 
-/* ── Sprite index maps ─────────────────────────── */
+/*
+  Sprite sheet layout (8 columns × 4 rows):
+  
+  Row 0: Full characters, lighter skin
+    cols 0-3: boys  (green, blue, red, purple suits)
+    cols 4-7: girls (pink+headband, teal+puffs, purple+long, purple+braids)
+  
+  Row 1: Full characters, darker skin (same column layout)
+  
+  Row 2: Hair pieces
+    0: headband, 1: short, 2: curly, 3: fade, 4: afro, 5: straight-long, 6: wavy, 7: cyber-shield
+  
+  Row 3: Hair + accessories
+    0: short, 1: curly, 2: fade, 3: braids/ponytail, 4: goggles, 5: laptop, 6: cyber-shield
+*/
 
-// Row 1: 10 columns — boys 0-4, girls 5-9
-// Order per gender: white, black, mexican, asian, indian
-const SKIN_TO_INDEX: Record<string, number> = {
-  "#FDDCB5": 0, // Light  → white
-  "#F5C6A0": 0, // Fair   → white
-  "#E8A978": 2, // Medium → mexican
-  "#C68642": 3, // Tan    → asian
-  "#8D5524": 4, // Brown  → indian
-  "#5C3317": 1, // Dark   → black
+// Map suit color → column within gender group (0-3)
+const SUIT_COL: Record<string, number> = {
+  "#10B981": 0, // Green
+  "#3B82F6": 1, // Blue
+  "#8B5CF6": 3, // Purple
+  "#EC4899": 0, // Pink → green col for boys, will be overridden for girls
+  "#14B8A6": 1, // Teal → blue col for boys, will be overridden for girls
 };
 
-// Row 2: 5 columns — blue, green, purple, pink, teal
-const SUIT_TO_INDEX: Record<string, number> = {
-  "#3B82F6": 0,
-  "#10B981": 1,
-  "#8B5CF6": 2,
-  "#EC4899": 3,
-  "#14B8A6": 4,
+// Girls have different suit mapping (cols 4-7)
+const GIRL_SUIT_COL: Record<string, number> = {
+  "#EC4899": 4, // Pink
+  "#14B8A6": 5, // Teal
+  "#8B5CF6": 6, // Purple
+  "#3B82F6": 7, // Blue → dark purple col
+  "#10B981": 5, // Green → teal col
 };
 
-// Row 3: 5 columns — short, curly, fade, afro, spiky
-const BOY_HAIR_TO_INDEX: Record<string, number> = {
-  short: 0,
-  curly: 1,
-  fade: 2,
-  afro: 3,
-  spiky: 4,
-};
-
-// Row 4: 5 columns — bob, puffs, ponytail, braids, long
-const GIRL_HAIR_TO_INDEX: Record<string, number> = {
-  bob: 0,
-  puffs: 1,
-  ponytail: 2,
-  braids: 3,
-  long: 4,
-  curly: 1, // fallback curly → puffs sprite
-};
-
-// Row 5: 5 columns — goggles, tablet, magnifier, shield, laptop
-const ACCESSORY_TO_INDEX: Record<string, number> = {
-  goggles: 0,
-  tablet: 1,
-  "magnifying-glass": 2,
-  headband: 3, // maps to shield sprite
-  laptop: 4,
-};
-
-/* ── Sprite layer component ────────────────────── */
-
-interface SpriteLayerProps {
-  src: string;
-  columns: number;
-  index: number;
-  size: number;
+// Skin tone → row (0 = lighter, 1 = darker)
+function skinRow(skinTone: string): number {
+  const darkTones = ["#8D5524", "#5C3317", "#C68642"];
+  return darkTones.includes(skinTone) ? 1 : 0;
 }
 
-function SpriteLayer({ src, columns, index, size }: SpriteLayerProps) {
-  // We show one "cell" of the sprite sheet by scaling the background
-  // so each cell fills `size` px, then offset to the correct column.
-  const bgSize = `${columns * 100}% 100%`;
-  const xPercent = columns <= 1 ? 0 : (index / (columns - 1)) * 100;
-  const bgPos = `${xPercent}% 0%`;
+// Hair style → sprite position [row, col] in the bottom half of sheet
+const HAIR_SPRITE: Record<string, [number, number] | null> = {
+  none: null,
+  // Boy hairs (row 3, cols 0-4 roughly)
+  short: [3, 0],
+  curly: [3, 1],
+  fade: [3, 2],
+  afro: [2, 4],
+  spiky: [2, 3],
+  // Girl hairs (row 2-3)
+  bob: [2, 5],
+  puffs: [2, 2],
+  ponytail: [3, 3],
+  braids: [2, 6],
+  long: [2, 5],
+};
+
+// Accessory → sprite position [row, col]
+const ACCESSORY_SPRITE: Record<string, [number, number] | null> = {
+  none: null,
+  goggles: [3, 4],
+  laptop: [3, 5],
+  "magnifying-glass": [3, 6],
+  headband: [2, 0],
+  tablet: [3, 5], // same as laptop
+};
+
+/* ── Sprite layer using CSS background-position ── */
+
+function SpriteLayer({
+  row,
+  col,
+  totalCols,
+  totalRows,
+  size,
+  zIndex,
+  offsetY = 0,
+}: {
+  row: number;
+  col: number;
+  totalCols: number;
+  totalRows: number;
+  size: number;
+  zIndex: number;
+  offsetY?: number;
+}) {
+  const xPct = totalCols <= 1 ? 0 : (col / (totalCols - 1)) * 100;
+  const yPct = totalRows <= 1 ? 0 : (row / (totalRows - 1)) * 100;
 
   return (
     <div
-      className="absolute inset-0"
+      className="absolute left-0 right-0"
       style={{
-        backgroundImage: `url(${src})`,
-        backgroundSize: bgSize,
-        backgroundPosition: bgPos,
+        top: offsetY,
+        width: size,
+        height: size * 1.1,
+        backgroundImage: `url(${spriteSheet})`,
+        backgroundSize: `${totalCols * 100}% ${totalRows * 100}%`,
+        backgroundPosition: `${xPct}% ${yPct}%`,
         backgroundRepeat: "no-repeat",
-        imageRendering: "auto",
+        zIndex,
       }}
     />
   );
@@ -104,25 +125,22 @@ export default function AvatarRenderer({
 }: AvatarRendererProps) {
   const layers = useMemo(() => {
     if (!config) return null;
+    const { characterType, skinTone, suitColor, hairStyle, accessory } = config;
 
-    const { characterType, skinTone, hairStyle, suitColor, accessory } = config;
+    // Base character: row from skin, col from gender+suit
+    const row = skinRow(skinTone);
+    const col =
+      characterType === "girl"
+        ? (GIRL_SUIT_COL[suitColor] ?? 4)
+        : (SUIT_COL[suitColor] ?? 1);
 
-    // Base character index (row 1 has 10 columns: 0-4 boys, 5-9 girls)
-    const skinIndex = SKIN_TO_INDEX[skinTone] ?? 0;
-    const baseIndex = characterType === "girl" ? skinIndex + 5 : skinIndex;
+    // Hair overlay
+    const hair = HAIR_SPRITE[hairStyle] ?? null;
 
-    // Suit index (row 2 has 5 columns)
-    const suitIndex = SUIT_TO_INDEX[suitColor] ?? 0;
+    // Accessory overlay
+    const acc = accessory !== "none" ? (ACCESSORY_SPRITE[accessory] ?? null) : null;
 
-    // Hair index
-    const hairSrc = characterType === "girl" ? row4HairGirls : row3HairBoys;
-    const hairMap = characterType === "girl" ? GIRL_HAIR_TO_INDEX : BOY_HAIR_TO_INDEX;
-    const hairIndex = hairMap[hairStyle] ?? 0;
-
-    // Accessory index (row 5 has 5 columns)
-    const accIndex = accessory !== "none" ? ACCESSORY_TO_INDEX[accessory] : null;
-
-    return { baseIndex, suitIndex, hairSrc, hairIndex, accIndex };
+    return { row, col, hair, acc };
   }, [config]);
 
   if (!config || !layers) {
@@ -137,22 +155,34 @@ export default function AvatarRenderer({
   }
 
   return (
-    <div
-      className={`relative ${className}`}
-      style={{ width: size, height: size * 1.2 }}
-    >
-      {/* Layer 1: Base hero character */}
-      <SpriteLayer src={row1Base} columns={10} index={layers.baseIndex} size={size} />
+    <div className={`relative overflow-hidden ${className}`} style={{ width: size, height: size * 1.1 }}>
+      {/* Base character (includes suit + skin + default hair) */}
+      <SpriteLayer row={layers.row} col={layers.col} totalCols={8} totalRows={4} size={size} zIndex={1} />
 
-      {/* Layer 2: Suit color overlay */}
-      <SpriteLayer src={row2Suits} columns={5} index={layers.suitIndex} size={size} />
+      {/* Hair overlay */}
+      {layers.hair && (
+        <SpriteLayer
+          row={layers.hair[0]}
+          col={layers.hair[1]}
+          totalCols={8}
+          totalRows={4}
+          size={size * 0.7}
+          zIndex={2}
+          offsetY={-size * 0.05}
+        />
+      )}
 
-      {/* Layer 3: Hair */}
-      <SpriteLayer src={layers.hairSrc} columns={5} index={layers.hairIndex} size={size} />
-
-      {/* Layer 4: Accessory */}
-      {layers.accIndex !== null && (
-        <SpriteLayer src={row5Accessories} columns={5} index={layers.accIndex} size={size} />
+      {/* Accessory overlay */}
+      {layers.acc && (
+        <SpriteLayer
+          row={layers.acc[0]}
+          col={layers.acc[1]}
+          totalCols={8}
+          totalRows={4}
+          size={size * 0.5}
+          zIndex={3}
+          offsetY={size * 0.1}
+        />
       )}
     </div>
   );
