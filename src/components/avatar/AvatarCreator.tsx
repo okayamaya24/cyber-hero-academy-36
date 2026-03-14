@@ -145,7 +145,7 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
                 selected={config.characterType === ct.type}
                 onClick={() => handleCharacterTypeChange(ct.type)}
               >
-                <div className="flex h-14 w-14 items-center justify-center">
+                <div className="flex h-16 w-12 items-center justify-center overflow-hidden">
                   <AvatarRenderer
                     config={{
                       ...config,
@@ -153,7 +153,7 @@ export default function AvatarCreator({ initialConfig, onSave, saving }: AvatarC
                       hairStyle: ct.type === "girl" ? "bob" : "short",
                       accessory: "none",
                     }}
-                    size={56}
+                    size={48}
                   />
                 </div>
                 <span className="text-xs font-bold">{ct.label}</span>
