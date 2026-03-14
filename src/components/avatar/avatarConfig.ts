@@ -66,8 +66,9 @@ export const GIRL_HAIR_STYLES = [
 
 export const ACCESSORIES = [
   { type: "none" as const, label: "None", emoji: "❌" },
-  { type: "headband" as const, label: "Headband", emoji: "🎀" },
   { type: "goggles" as const, label: "Goggles", emoji: "🥽" },
-  { type: "magnifying-glass" as const, label: "Magnifier", emoji: "🔍" },
   { type: "tablet" as const, label: "Tablet", emoji: "📱" },
+  { type: "magnifying-glass" as const, label: "Magnifier", emoji: "🔍" },
+  { type: "headband" as const, label: "Shield", emoji: "🛡️" },
+  { type: "laptop" as const, label: "Laptop", emoji: "💻" },
 ];
