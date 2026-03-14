@@ -58,10 +58,10 @@ export const BOY_HAIR_STYLES = [
 
 export const GIRL_HAIR_STYLES = [
   { style: "bob" as const, label: "Bob" },
-  { style: "curly" as const, label: "Curly" },
-  { style: "ponytail" as const, label: "Ponytail" },
   { style: "puffs" as const, label: "Puffs" },
+  { style: "ponytail" as const, label: "Ponytail" },
   { style: "braids" as const, label: "Braids" },
+  { style: "long" as const, label: "Long" },
 ];
 
 export const ACCESSORIES = [
