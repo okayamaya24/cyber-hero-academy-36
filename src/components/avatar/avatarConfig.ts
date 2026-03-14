@@ -1,10 +1,10 @@
 export interface AvatarConfig {
   characterType: "boy" | "girl";
   skinTone: string;
-  hairStyle: "short" | "curly" | "fade" | "afro" | "spiky" | "bob" | "ponytail" | "puffs" | "braids" | "none";
+  hairStyle: "short" | "curly" | "fade" | "afro" | "spiky" | "bob" | "ponytail" | "puffs" | "braids" | "long" | "none";
   hairColor: string;
   suitColor: string;
-  accessory: "none" | "headband" | "goggles" | "magnifying-glass" | "tablet";
+  accessory: "none" | "headband" | "goggles" | "magnifying-glass" | "tablet" | "laptop";
 }
 
 export const DEFAULT_AVATAR: AvatarConfig = {
@@ -58,16 +58,17 @@ export const BOY_HAIR_STYLES = [
 
 export const GIRL_HAIR_STYLES = [
   { style: "bob" as const, label: "Bob" },
-  { style: "curly" as const, label: "Curly" },
-  { style: "ponytail" as const, label: "Ponytail" },
   { style: "puffs" as const, label: "Puffs" },
+  { style: "ponytail" as const, label: "Ponytail" },
   { style: "braids" as const, label: "Braids" },
+  { style: "long" as const, label: "Long" },
 ];
 
 export const ACCESSORIES = [
   { type: "none" as const, label: "None", emoji: "❌" },
-  { type: "headband" as const, label: "Headband", emoji: "🎀" },
   { type: "goggles" as const, label: "Goggles", emoji: "🥽" },
-  { type: "magnifying-glass" as const, label: "Magnifier", emoji: "🔍" },
   { type: "tablet" as const, label: "Tablet", emoji: "📱" },
+  { type: "magnifying-glass" as const, label: "Magnifier", emoji: "🔍" },
+  { type: "headband" as const, label: "Shield", emoji: "🛡️" },
+  { type: "laptop" as const, label: "Laptop", emoji: "💻" },
 ];
