@@ -111,7 +111,8 @@ export default function ParentDashboard() {
 
   const updateLearningMode = async (childId: string, mode: LearningMode) => {
     const currentChild = children.find((c) => c.id === childId);
-    const currentMode = ((currentChild as any)?.learning_mode as LearningMode) || "standard";
+    const rawMode = ((currentChild as any)?.learning_mode as string) || "standard";
+    const currentMode: LearningMode = (rawMode in LEARNING_MODE_CONFIG ? rawMode : "standard") as LearningMode;
 
     if (currentMode === mode) return;
 
@@ -260,7 +261,8 @@ export default function ParentDashboard() {
                   {children.map((child) => {
                     const childMissions = getChildMissions(child.id);
                     const childBadges = getChildBadges(child.id);
-                    const childMode = ((child as any).learning_mode as LearningMode) || "standard";
+                    const rawMode = ((child as any).learning_mode as string) || "standard";
+                    const childMode: LearningMode = (rawMode in LEARNING_MODE_CONFIG ? rawMode : "standard") as LearningMode;
                     const totalGames = getTotalGames(childMode);
 
                     const completedGamesTotal = childMissions.reduce((acc, mp) => {
@@ -353,7 +355,8 @@ export default function ParentDashboard() {
 
                 <motion.div className="space-y-4" variants={container} initial="hidden" animate="show">
                   {children.map((child) => {
-                    const childMode = ((child as any).learning_mode as LearningMode) || "standard";
+                    const rawMode2 = ((child as any).learning_mode as string) || "standard";
+                    const childMode: LearningMode = (rawMode2 in LEARNING_MODE_CONFIG ? rawMode2 : "standard") as LearningMode;
 
                     return (
                       <motion.div
