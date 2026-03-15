@@ -23,8 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MISSIONS, getTotalGames, LEARNING_MODE_CONFIG, type LearningMode } from "@/data/missions";
 import { toast } from "sonner";
-import AvatarRenderer from "@/components/avatar/AvatarRenderer";
-import type { AvatarConfig } from "@/components/avatar/avatarConfig";
+import HeroAvatar from "@/components/avatar/HeroAvatar";
 
 const container = {
   hidden: {},
@@ -279,19 +278,11 @@ export default function ParentDashboard() {
                         className="rounded-2xl border bg-card p-5 shadow-card"
                       >
                         <div className="flex items-center gap-4">
-                          {(() => {
-                            const cfg = (child as any).avatar_config as Record<string, any> | null;
-                            const heroSrc = cfg?.heroSrc;
-                            return heroSrc ? (
-                              <img src={heroSrc} alt={`${child.name}'s hero`} className="h-12 w-12 object-contain" />
-                            ) : (
-                              <AvatarRenderer
-                                config={cfg as AvatarConfig | null}
-                                size={48}
-                                fallbackEmoji={child.avatar}
-                              />
-                            );
-                          })()}
+                          <HeroAvatar
+                            avatarConfig={(child as any).avatar_config as Record<string, any> | null}
+                            size={48}
+                            fallbackEmoji={child.avatar}
+                          />
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <h3 className="font-bold">{child.name}</h3>
@@ -365,19 +356,11 @@ export default function ParentDashboard() {
                         className="rounded-2xl border bg-card p-5 shadow-card"
                       >
                         <div className="mb-4 flex items-center gap-3">
-                          {(() => {
-                            const cfg = (child as any).avatar_config as Record<string, any> | null;
-                            const heroSrc = cfg?.heroSrc;
-                            return heroSrc ? (
-                              <img src={heroSrc} alt={`${child.name}'s hero`} className="h-8 w-8 object-contain" />
-                            ) : (
-                              <AvatarRenderer
-                                config={cfg as AvatarConfig | null}
-                                size={32}
-                                fallbackEmoji={child.avatar}
-                              />
-                            );
-                          })()}
+                          <HeroAvatar
+                            avatarConfig={(child as any).avatar_config as Record<string, any> | null}
+                            size={32}
+                            fallbackEmoji={child.avatar}
+                          />
                           <h3 className="font-bold">{child.name}'s Learning Mode</h3>
                         </div>
 

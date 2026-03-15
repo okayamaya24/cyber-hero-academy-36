@@ -19,8 +19,7 @@ import {
   type LearningMode,
 } from "@/data/missions";
 import robotGuide from "@/assets/robot-guide.png";
-import AvatarRenderer from "@/components/avatar/AvatarRenderer";
-import type { AvatarConfig } from "@/components/avatar/avatarConfig";
+import HeroAvatar from "@/components/avatar/HeroAvatar";
 import DailyChallenge from "@/components/DailyChallenge";
 
 const container = {
@@ -209,8 +208,8 @@ export default function KidDashboard() {
             animate={{ scale: 1 }}
             transition={{ type: "spring", duration: 0.6 }}
           >
-            <AvatarRenderer
-              config={(child as any).avatar_config as AvatarConfig | null}
+            <HeroAvatar
+              avatarConfig={(child as any).avatar_config as Record<string, any> | null}
               size={96}
               fallbackEmoji={child.avatar}
               className="rounded-full shadow-lg"
