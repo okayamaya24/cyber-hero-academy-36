@@ -111,7 +111,8 @@ export default function ParentDashboard() {
 
   const updateLearningMode = async (childId: string, mode: LearningMode) => {
     const currentChild = children.find((c) => c.id === childId);
-    const currentMode = ((currentChild as any)?.learning_mode as LearningMode) || "standard";
+    const rawMode = ((currentChild as any)?.learning_mode as string) || "standard";
+    const currentMode: LearningMode = (rawMode in LEARNING_MODE_CONFIG ? rawMode : "standard") as LearningMode;
 
     if (currentMode === mode) return;
 
