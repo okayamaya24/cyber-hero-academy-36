@@ -355,7 +355,8 @@ export default function ParentDashboard() {
 
                 <motion.div className="space-y-4" variants={container} initial="hidden" animate="show">
                   {children.map((child) => {
-                    const childMode = ((child as any).learning_mode as LearningMode) || "standard";
+                    const rawMode2 = ((child as any).learning_mode as string) || "standard";
+                    const childMode: LearningMode = (rawMode2 in LEARNING_MODE_CONFIG ? rawMode2 : "standard") as LearningMode;
 
                     return (
                       <motion.div
