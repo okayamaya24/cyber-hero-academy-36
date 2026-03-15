@@ -59,7 +59,7 @@ export default function CreateChildPage() {
       parent_id: user.id,
       name: childName.trim(),
       age,
-      learning_mode: difficulty,
+      learning_mode: "standard",
       avatar: config.gender === "girl" ? "👧" : "👦",
       avatar_config: {
         gender: config.gender,
