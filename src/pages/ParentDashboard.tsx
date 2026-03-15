@@ -362,11 +362,19 @@ export default function ParentDashboard() {
                         className="rounded-2xl border bg-card p-5 shadow-card"
                       >
                         <div className="mb-4 flex items-center gap-3">
-                          <AvatarRenderer
-                            config={(child as any).avatar_config as AvatarConfig | null}
-                            size={32}
-                            fallbackEmoji={child.avatar}
-                          />
+                          {(() => {
+                            const cfg = (child as any).avatar_config as Record<string, any> | null;
+                            const heroSrc = cfg?.heroSrc;
+                            return heroSrc ? (
+                              <img src={heroSrc} alt={`${child.name}'s hero`} className="h-8 w-8 object-contain" />
+                            ) : (
+                              <AvatarRenderer
+                                config={cfg as AvatarConfig | null}
+                                size={32}
+                                fallbackEmoji={child.avatar}
+                              />
+                            );
+                          })()}
                           <h3 className="font-bold">{child.name}'s Learning Mode</h3>
                         </div>
 
