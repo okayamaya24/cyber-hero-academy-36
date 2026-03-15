@@ -7,8 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
-import AvatarRenderer from "@/components/avatar/AvatarRenderer";
-import type { AvatarConfig } from "@/components/avatar/avatarConfig";
+import HeroAvatar from "@/components/avatar/HeroAvatar";
 
 type ChildProfile = Tables<"child_profiles">;
 
