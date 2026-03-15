@@ -129,7 +129,8 @@ export function getMissionQuestions(mission: MissionDef, age: number): Question[
 }
 
 export function getTotalGames(mode: LearningMode): number {
-  return LEARNING_MODE_CONFIG[mode].totalGames;
+  const config = LEARNING_MODE_CONFIG[mode] ?? LEARNING_MODE_CONFIG.standard;
+  return config.totalGames;
 }
 
 export interface MissionLevel {
