@@ -261,7 +261,8 @@ export default function ParentDashboard() {
                   {children.map((child) => {
                     const childMissions = getChildMissions(child.id);
                     const childBadges = getChildBadges(child.id);
-                    const childMode = ((child as any).learning_mode as LearningMode) || "standard";
+                    const rawMode = ((child as any).learning_mode as string) || "standard";
+                    const childMode: LearningMode = (rawMode in LEARNING_MODE_CONFIG ? rawMode : "standard") as LearningMode;
                     const totalGames = getTotalGames(childMode);
 
                     const completedGamesTotal = childMissions.reduce((acc, mp) => {
