@@ -208,8 +208,8 @@ export default function KidDashboard() {
             animate={{ scale: 1 }}
             transition={{ type: "spring", duration: 0.6 }}
           >
-            <AvatarRenderer
-              config={(child as any).avatar_config as AvatarConfig | null}
+            <HeroAvatar
+              avatarConfig={(child as any).avatar_config as Record<string, any> | null}
               size={96}
               fallbackEmoji={child.avatar}
               className="rounded-full shadow-lg"

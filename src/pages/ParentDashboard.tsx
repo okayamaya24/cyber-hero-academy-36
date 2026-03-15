@@ -23,8 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MISSIONS, getTotalGames, LEARNING_MODE_CONFIG, type LearningMode } from "@/data/missions";
 import { toast } from "sonner";
-import AvatarRenderer from "@/components/avatar/AvatarRenderer";
-import type { AvatarConfig } from "@/components/avatar/avatarConfig";
+import HeroAvatar from "@/components/avatar/HeroAvatar";
 
 const container = {
   hidden: {},

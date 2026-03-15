@@ -85,8 +85,8 @@ export default function ChildSelectPage() {
               onClick={() => selectChild(child)}
               className="flex flex-col items-center gap-2 rounded-2xl border-2 bg-card p-6 shadow-card transition-colors hover:border-primary hover:shadow-playful"
             >
-              <AvatarRenderer
-                config={(child as any).avatar_config as AvatarConfig | null}
+              <HeroAvatar
+                avatarConfig={(child as any).avatar_config as Record<string, any> | null}
                 size={80}
                 fallbackEmoji={child.avatar}
               />
