@@ -277,11 +277,19 @@ export default function ParentDashboard() {
                         className="rounded-2xl border bg-card p-5 shadow-card"
                       >
                         <div className="flex items-center gap-4">
-                          <AvatarRenderer
-                            config={(child as any).avatar_config as AvatarConfig | null}
-                            size={48}
-                            fallbackEmoji={child.avatar}
-                          />
+                          {(() => {
+                            const cfg = (child as any).avatar_config as Record<string, any> | null;
+                            const heroSrc = cfg?.heroSrc;
+                            return heroSrc ? (
+                              <img src={heroSrc} alt={`${child.name}'s hero`} className="h-12 w-12 object-contain" />
+                            ) : (
+                              <AvatarRenderer
+                                config={cfg as AvatarConfig | null}
+                                size={48}
+                                fallbackEmoji={child.avatar}
+                              />
+                            );
+                          })()}
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <h3 className="font-bold">{child.name}</h3>
