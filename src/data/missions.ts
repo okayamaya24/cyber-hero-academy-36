@@ -149,7 +149,7 @@ export function getMissionLevels(
   completedGames: number
 ): MissionLevel[] {
   const allQuestions = getMissionQuestions(mission, age);
-  const config = LEARNING_MODE_CONFIG[mode];
+  const config = LEARNING_MODE_CONFIG[mode] ?? LEARNING_MODE_CONFIG.standard;
   const gamesPerLevel = config.gamesPerLevel;
 
   return LEVEL_NAMES.map((name, i) => {
