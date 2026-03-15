@@ -19,8 +19,7 @@ import {
   type LearningMode,
 } from "@/data/missions";
 import robotGuide from "@/assets/robot-guide.png";
-import AvatarRenderer from "@/components/avatar/AvatarRenderer";
-import type { AvatarConfig } from "@/components/avatar/avatarConfig";
+import HeroAvatar from "@/components/avatar/HeroAvatar";
 import DailyChallenge from "@/components/DailyChallenge";
 
 const container = {
