@@ -4,13 +4,12 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Calendar, ArrowRight, ArrowLeft } from "lucide-react";
+import { User, Calendar, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import AvatarCreator from "@/components/avatar/AvatarCreator";
-import { type AvatarConfig, DEFAULT_AVATAR } from "@/components/avatar/avatarConfig";
+import CyberHeroCreator, { type CyberHeroConfig } from "@/components/avatar/CyberHeroCreator";
 import heroCharacter from "@/assets/hero-character.png";
 import wiseOwl from "@/assets/wise-owl.png";
 
@@ -21,7 +20,6 @@ export default function CreateChildPage() {
 
   const [step, setStep] = useState<"info" | "avatar">("info");
   const [form, setForm] = useState({ name: "", age: "" });
-  const [avatarConfig, setAvatarConfig] = useState<AvatarConfig>(DEFAULT_AVATAR);
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
@@ -45,20 +43,25 @@ export default function CreateChildPage() {
     setStep("avatar");
   };
 
-  const handleSaveAvatar = async (config: AvatarConfig) => {
-    setAvatarConfig(config);
+  const handleSaveHero = async (config: CyberHeroConfig) => {
     setCreating(true);
 
     const age = parseInt(form.age, 10);
-
-    const fallbackAvatar = config.characterType === "girl" ? "👧" : "👦";
+    const fallbackAvatar = config.gender === "girl" ? "👧" : "👦";
 
     const { error } = await supabase.from("child_profiles").insert({
       parent_id: user!.id,
       name: form.name.trim(),
       age,
       avatar: fallbackAvatar,
-      avatar_config: config as any,
+      avatar_config: {
+        gender: config.gender,
+        skin: config.skin,
+        suitKey: config.suitKey,
+        accessory: config.accessory,
+        heroName: config.name,
+        heroSrc: config.heroSrc,
+      } as any,
     });
 
     setCreating(false);
@@ -76,19 +79,12 @@ export default function CreateChildPage() {
   if (step === "avatar") {
     return (
       <div className="min-h-screen bg-background px-4 py-8">
-        <div className="mx-auto max-w-lg">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Button variant="ghost" className="mb-4" onClick={() => setStep("info")}>
-              <ArrowLeft className="mr-1 h-4 w-4" /> Back
-            </Button>
-
-            <div className="mb-6 text-center">
-              <h1 className="text-2xl font-bold">Create {form.name}&apos;s Hero!</h1>
-              <p className="mt-1 text-muted-foreground">Customize your Cyber Hero avatar</p>
-            </div>
-
-            <AvatarCreator initialConfig={avatarConfig} onSave={handleSaveAvatar} saving={creating} />
-          </motion.div>
+        <div className="mx-auto max-w-[1020px]">
+          <CyberHeroCreator
+            onSave={handleSaveHero}
+            saving={creating}
+            childName={form.name.trim()}
+          />
         </div>
       </div>
     );
