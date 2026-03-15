@@ -69,7 +69,9 @@ const ACCESSORIES = [
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function getHeroSrc(gender: string, skin: string, suitIdx: number, acc: string): string {
-  const char = SKINS.find(s => s.key === skin)!.chars[gender as "girl" | "boy"];
+  const skinObj = SKINS.find(s => s.key === skin);
+  if (!skinObj) return "";
+  const char = skinObj.chars[gender as "girl" | "boy"];
   const suit = SUITS[suitIdx].key;
   const key  = acc === "none" ? `${char}-${suit}` : `${char}-${acc}-${suit}`;
   return HEROES[key] ?? HEROES[`${char}-${suit}`] ?? "";
@@ -78,22 +80,25 @@ function getHeroSrc(gender: string, skin: string, suitIdx: number, acc: string):
 // ── Component ──────────────────────────────────────────────────────────────
 
 export default function CyberHeroCreator({ onSave, saving, childName }: CyberHeroCreatorProps) {
-  const [gender, setGender] = useState<"girl" | "boy">("girl");
-  const [skin,   setSkin]   = useState("light");
-  const [suit,   setSuit]   = useState(0);
-  const [acc,    setAcc]    = useState("none");
+  // null = not yet chosen
+  const [gender, setGender] = useState<"girl" | "boy" | null>(null);
+  const [skin,   setSkin]   = useState<string | null>(null);
+  const [suit,   setSuit]   = useState<number | null>(null);
+  const [acc,    setAcc]    = useState<string | null>(null);
   const [name,   setName]   = useState(childName ?? "");
   const [swapping, setSwapping] = useState(false);
   const [showDone, setShowDone] = useState(false);
   const swapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const heroSrc = getHeroSrc(gender, skin, suit, acc);
-  const char    = SKINS.find(s => s.key === skin)!.chars[gender];
-  const doneSrc = HEROES[acc === "none" ? `${char}-${SUITS[suit].key}` : `${char}-${acc}-${SUITS[suit].key}`]
-                  ?? HEROES[`${char}-${SUITS[suit].key}`] ?? "";
+  // Hero is ready to preview only when all 4 selections have been made
+  const heroReady = gender !== null && skin !== null && suit !== null && acc !== null;
+
+  const heroSrc = heroReady ? getHeroSrc(gender, skin, suit, acc) : "";
 
   const badge   = name.trim() ? name.trim().toUpperCase() : "CYBER HERO";
-  const tagline = `${TITLES[gender][acc]} · ${SUITS[suit].label} Squad`;
+  const tagline = heroReady
+    ? `${TITLES[gender][acc]} · ${SUITS[suit].label} Squad`
+    : "Make your selections to begin";
 
   const triggerSwap = useCallback(() => {
     if (swapTimer.current) clearTimeout(swapTimer.current);
@@ -107,9 +112,14 @@ export default function CyberHeroCreator({ onSave, saving, childName }: CyberHer
   const handleAcc    = (k: string)         => { triggerSwap(); setAcc(k);    };
 
   const heroTitle = `${name.trim() || "Cyber Hero"} — ACTIVATED!`;
-  const heroText  = `You are now a certified ${TITLES[gender][acc]}! ${SUITS[suit].label} Squad is counting on you. Protect the internet, defeat cyber villains, and keep everyone safe online!`;
+  const heroText  = heroReady
+    ? `You are now a certified ${TITLES[gender][acc]}! ${SUITS[suit].label} Squad is counting on you. Protect the internet, defeat cyber villains, and keep everyone safe online!`
+    : "";
+
+  const doneSrc = heroReady ? heroSrc : "";
 
   const handleSaveClick = () => {
+    if (!heroReady) return;
     if (onSave) {
       onSave({
         gender,
@@ -178,8 +188,8 @@ export default function CyberHeroCreator({ onSave, saving, childName }: CyberHer
         .chy-ni:focus{border-color:#00e5ff}
         .chy-ni::placeholder{color:rgba(255,255,255,.28)}
         .chy-save{width:100%;padding:13px;background:linear-gradient(135deg,#00b4ff,#0050ff);border:none;border-radius:11px;color:#fff;font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(0,100,255,.38)}
-        .chy-save:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,100,255,.5)}
-        .chy-save:active{transform:translateY(0)}
+        .chy-save:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,100,255,.5)}
+        .chy-save:active:not(:disabled){transform:translateY(0)}
         .chy-save:disabled{opacity:.6;cursor:not-allowed;transform:none}
         .chy-done{position:absolute;inset:0;background:rgba(4,9,24,.95);border-radius:0 0 20px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:30;padding:2rem;text-align:center}
         .chy-done-stars{font-size:28px;margin-bottom:10px;letter-spacing:7px}
@@ -189,6 +199,10 @@ export default function CyberHeroCreator({ onSave, saving, childName }: CyberHer
         .chy-mission{padding:13px 34px;background:linear-gradient(135deg,#ff7b00,#ff2500);border:none;border-radius:13px;color:#fff;font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;box-shadow:0 4px 24px rgba(255,70,0,.5);transition:all .2s}
         .chy-mission:hover{transform:scale(1.06)}
         .chy-edit{margin-top:14px;font-size:12px;color:rgba(255,255,255,.38);cursor:pointer;text-decoration:underline;background:none;border:none}
+        .chy-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;color:rgba(255,255,255,.35);text-align:center}
+        .chy-placeholder-icon{font-size:64px;opacity:.5}
+        .chy-placeholder-text{font-family:'Orbitron',sans-serif;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:rgba(0,229,255,.4)}
+        .chy-placeholder-sub{font-size:12px;color:rgba(255,255,255,.25)}
         @media(max-width:680px){.chy-main{grid-template-columns:1fr}.chy-opts{max-height:none}}
       `}</style>
 
@@ -220,29 +234,41 @@ export default function CyberHeroCreator({ onSave, saving, childName }: CyberHer
               <div className="chy-sp" style={{ width:5,height:5,bottom:155,left:26,background:"#a855f7",animation:"chy-sp 2.5s 1.6s ease-in-out infinite" }} />
               <div className="chy-sp" style={{ width:4,height:4,bottom:80,right:40,background:"#00e5ff",animation:"chy-sp 2.5s 2.3s ease-in-out infinite" }} />
 
-              <div className="chy-stage chy-floating">
-                <img
-                  className={`chy-hero-img${swapping ? " swap" : ""}`}
-                  src={heroSrc}
-                  alt="Your cyber hero"
-                />
-                <div className="chy-glow" />
-              </div>
+              {heroReady ? (
+                <>
+                  <div className="chy-stage chy-floating">
+                    <img
+                      className={`chy-hero-img${swapping ? " swap" : ""}`}
+                      src={heroSrc}
+                      alt="Your cyber hero"
+                    />
+                    <div className="chy-glow" />
+                  </div>
 
-              <div className="chy-badge">{badge}</div>
-              <div className="chy-tagline">{tagline}</div>
+                  <div className="chy-badge">{badge}</div>
+                  <div className="chy-tagline">{tagline}</div>
 
-              <div className="chy-dots">
-                {SUITS.map((s, i) => (
-                  <button
-                    key={s.key}
-                    className={`chy-dot${i === suit ? " on" : ""}`}
-                    style={{ background: s.hex }}
-                    onClick={() => handleSuit(i)}
-                    aria-label={s.label}
-                  />
-                ))}
-              </div>
+                  <div className="chy-dots">
+                    {SUITS.map((s, i) => (
+                      <button
+                        key={s.key}
+                        className={`chy-dot${i === suit ? " on" : ""}`}
+                        style={{ background: s.hex }}
+                        onClick={() => handleSuit(i)}
+                        aria-label={s.label}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="chy-placeholder">
+                  <div className="chy-placeholder-icon">🛡️</div>
+                  <div className="chy-placeholder-text">Choose Your Hero</div>
+                  <div className="chy-placeholder-sub">
+                    Select gender, skin tone, suit color &amp; accessory to see your hero
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Options panel */}
@@ -341,14 +367,14 @@ export default function CyberHeroCreator({ onSave, saving, childName }: CyberHer
               <button
                 className="chy-save"
                 onClick={handleSaveClick}
-                disabled={saving}
+                disabled={!heroReady || saving}
               >
-                {saving ? "⏳ SAVING..." : "⚡ SAVE MY HERO!"}
+                {saving ? "⏳ SAVING..." : heroReady ? "⚡ SAVE MY HERO!" : "⚡ COMPLETE ALL SELECTIONS FIRST"}
               </button>
             </div>
 
             {/* Done overlay */}
-            {showDone && (
+            {showDone && heroReady && (
               <div className="chy-done">
                 <div className="chy-done-stars">⭐ ⭐ ⭐</div>
                 <div className="chy-done-title">{heroTitle}</div>
