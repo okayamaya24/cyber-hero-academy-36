@@ -16,13 +16,11 @@ import MemoryGame from "@/components/minigames/MemoryGame";
 import BossBattleGame from "@/components/minigames/BossBattleGame";
 import {
   MISSIONS,
-  CAPTAIN_CYBER,
   MINI_GAME_META,
   type MissionDef,
   type Question,
   type LearningMode,
   type MiniGameType,
-  type GuideCharacter,
   getMissionGames,
   getMissionLevels,
   getTotalGames,
@@ -35,40 +33,14 @@ import {
 } from "@/data/missions";
 import { checkAndAwardBadges } from "@/lib/badges";
 
-import detectiveCat from "@/assets/detective-cat.png";
-import wiseOwl from "@/assets/wise-owl.png";
-import robotGuide from "@/assets/robot-guide.png";
-import heroCharacter from "@/assets/hero-character.png";
-
-const ALL_GUIDES: Record<string, GuideCharacter> = {
-  "Captain Cyber": {
-    name: "Captain Cyber",
-    image: heroCharacter,
-    role: "Adventure Guide",
-  },
-  "Detective Whiskers": { name: "Detective Whiskers", image: detectiveCat },
-  "Robo Buddy": { name: "Robo Buddy", image: robotGuide },
-  "Professor Hoot": { name: "Professor Hoot", image: wiseOwl },
-};
-
-const MISSION_SUPPORT: Record<string, string[]> = {
-  "scam-detection": ["Captain Cyber", "Professor Hoot"],
-  "password-safety": ["Captain Cyber", "Professor Hoot"],
-  "safe-websites": ["Detective Whiskers", "Robo Buddy"],
-  "personal-info": ["Captain Cyber", "Detective Whiskers"],
-  "malware-monsters": ["Robo Buddy", "Captain Cyber"],
-  "phishy-messages": ["Detective Whiskers", "Professor Hoot"],
-  "smart-sharing": ["Professor Hoot", "Captain Cyber"],
-  "device-defender": ["Robo Buddy", "Detective Whiskers"],
-  "cyber-clues": ["Detective Whiskers", "Captain Cyber"],
-  "internet-detective": ["Professor Hoot", "Robo Buddy"],
-};
-
-function getSupportGuide(missionId: string, gameIndex: number): GuideCharacter {
-  const supports = MISSION_SUPPORT[missionId] ?? ["Captain Cyber"];
-  const name = supports[gameIndex % supports.length];
-  return ALL_GUIDES[name] ?? ALL_GUIDES["Captain Cyber"];
-}
+import {
+  GUIDE_REGISTRY,
+  getSupportGuide,
+  getMissionIntro,
+  getGuideEncouragement,
+} from "@/data/guides";
+import { getLevelRank } from "@/data/levelTitles";
+import { getActiveEvents, type EventMission } from "@/data/eventMissions";
 
 const CUSTOM_GAME_TYPES: MiniGameType[] = [
   "word-search",
@@ -98,20 +70,7 @@ const ENCOURAGEMENTS_TRY = [
   "You're on your way! Try again to beat your score! 🎯",
 ];
 
-const CAPTAIN_INTROS: Record<string, string> = {
-  "scam-detection": "Welcome, hero! Detective Whiskers needs your help spotting scams. Are you ready? Let's go! 🕵️",
-  "password-safety":
-    "Hey there, champion! Robo Buddy has prepared some password challenges. Let's make your passwords unbreakable! 🤖",
-  "safe-websites":
-    "Time to explore the web safely! Detective Whiskers will guide you through dangerous sites. Stay sharp! 🔍",
-  "personal-info": "Privacy is your superpower! Professor Hoot will teach you to guard your secrets. Let's begin! 🦉",
-  "malware-monsters": "Malware is lurking! Robo Buddy will help you fight off viruses and trojans. Let's do this! 🤖",
-  "phishy-messages": "Phishing attacks are everywhere! Detective Whiskers will teach you to spot them. Ready? 🐱",
-  "smart-sharing": "Sharing is caring — but only when done safely! Professor Hoot will guide you! 🦉",
-  "device-defender": "Your devices need protection! Robo Buddy knows all the tricks. Let's secure them! 🛡️",
-  "cyber-clues": "Put on your detective hat! Detective Whiskers has mysteries to solve! 🔍",
-  "internet-detective": "Not everything online is true! Professor Hoot will teach you to find the facts! 🦉",
-};
+const CAPTAIN_CYBER = GUIDE_REGISTRY["captain-cyber"];
 
 function getEncouragement(score: number, total: number) {
   const ratio = score / total;
@@ -461,7 +420,7 @@ export default function MissionsPage() {
 
             <div className="mb-5 rounded-2xl bg-muted/50 p-5">
               <p className="text-base font-medium text-foreground">
-                {CAPTAIN_INTROS[activeMission.id] || "Let's start this mission, hero!"}
+                {getMissionIntro(activeMission.id)}
               </p>
             </div>
 
