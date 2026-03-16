@@ -18,9 +18,10 @@ import {
   LEARNING_MODE_CONFIG,
   type LearningMode,
 } from "@/data/missions";
+import { getLevelRank, getNextRank, getProgressToNextLevel } from "@/data/levelTitles";
+import { getActiveEvents } from "@/data/eventMissions";
+import { GUIDE_REGISTRY } from "@/data/guides";
 import robotGuide from "@/assets/robot-guide.png";
-import HeroAvatar from "@/components/avatar/HeroAvatar";
-import DailyChallenge from "@/components/DailyChallenge";
 
 const container = {
   hidden: {},
