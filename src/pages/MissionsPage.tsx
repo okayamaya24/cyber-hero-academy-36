@@ -16,13 +16,11 @@ import MemoryGame from "@/components/minigames/MemoryGame";
 import BossBattleGame from "@/components/minigames/BossBattleGame";
 import {
   MISSIONS,
-  CAPTAIN_CYBER,
   MINI_GAME_META,
   type MissionDef,
   type Question,
   type LearningMode,
   type MiniGameType,
-  type GuideCharacter,
   getMissionGames,
   getMissionLevels,
   getTotalGames,
