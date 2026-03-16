@@ -154,7 +154,7 @@ export default function MissionWorldMap() {
   const level = child?.level ?? 1;
   const points = child?.points ?? 0;
   const rank = getLevelRank(level);
-  const captainCyber = GUIDE_REGISTRY["captain-cyber"];
+  const avatarConfig = child?.avatar_config as Record<string, any> | null;
 
   // Determine node statuses
   const nodeStatuses: { status: NodeStatus; stars: number; score: number; maxScore: number }[] =
