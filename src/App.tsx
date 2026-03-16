@@ -15,6 +15,7 @@ import ChildSelectPage from "./pages/ChildSelectPage";
 import CreateChildPage from "./pages/CreateChildPage";
 import CertificatePage from "./pages/CertificatePage";
 import ForParentsPage from "./pages/ForParentsPage";
+import MissionWorldMap from "./pages/MissionWorldMap";
 import ProtectedParentRoute from "./components/ProtectedParentRoute";
 import NotFound from "./pages/NotFound";
 
