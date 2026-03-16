@@ -230,24 +230,23 @@ export default function MissionWorldMap() {
           </div>
         </motion.div>
 
-        {/* Captain Cyber guide banner */}
+        {/* Player hero banner */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.15 }}
           className="mb-8 flex items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 shadow-card"
         >
-          <motion.img
-            src={captainCyber.image}
-            alt={captainCyber.name}
-            className="h-16 w-16 object-contain"
+          <motion.div
             animate={{ y: [0, -4, 0] }}
             transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-          />
+          >
+            <HeroAvatar avatarConfig={avatarConfig} size={64} fallbackEmoji="🦸" />
+          </motion.div>
           <div>
-            <p className="text-sm font-bold text-primary">{captainCyber.name}</p>
+            <p className="text-sm font-bold text-primary">{child?.name ?? "Hero"}</p>
             <p className="text-sm text-foreground">
-              Welcome to the World Map, hero! Complete each world to unlock the next adventure! 🗺️✨
+              Welcome to the World Map! Complete each world to unlock the next adventure! 🗺️✨
             </p>
           </div>
         </motion.div>
