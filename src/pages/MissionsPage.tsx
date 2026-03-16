@@ -420,7 +420,7 @@ export default function MissionsPage() {
 
             <div className="mb-5 rounded-2xl bg-muted/50 p-5">
               <p className="text-base font-medium text-foreground">
-                {CAPTAIN_INTROS[activeMission.id] || "Let's start this mission, hero!"}
+                {getMissionIntro(activeMission.id)}
               </p>
             </div>
 
