@@ -227,7 +227,7 @@ export default function KidDashboard() {
             transition={{ delay: 0.2 }}
           >
             <h1 className="text-2xl font-bold">Welcome, {child.name}!</h1>
-            <p className="opacity-90">Level {child.level} · Cyber Defender</p>
+            <p className="opacity-90">Level {child.level} · {getLevelRank(child.level).emoji} {getLevelRank(child.level).title}</p>
             <div className="mt-2 flex items-center gap-4">
               <span className="flex items-center gap-1">
                 <Star className="h-4 w-4" /> {child.points} Points
