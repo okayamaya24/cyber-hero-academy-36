@@ -72,20 +72,7 @@ const ENCOURAGEMENTS_TRY = [
   "You're on your way! Try again to beat your score! 🎯",
 ];
 
-const CAPTAIN_INTROS: Record<string, string> = {
-  "scam-detection": "Welcome, hero! Detective Whiskers needs your help spotting scams. Are you ready? Let's go! 🕵️",
-  "password-safety":
-    "Hey there, champion! Robo Buddy has prepared some password challenges. Let's make your passwords unbreakable! 🤖",
-  "safe-websites":
-    "Time to explore the web safely! Detective Whiskers will guide you through dangerous sites. Stay sharp! 🔍",
-  "personal-info": "Privacy is your superpower! Professor Hoot will teach you to guard your secrets. Let's begin! 🦉",
-  "malware-monsters": "Malware is lurking! Robo Buddy will help you fight off viruses and trojans. Let's do this! 🤖",
-  "phishy-messages": "Phishing attacks are everywhere! Detective Whiskers will teach you to spot them. Ready? 🐱",
-  "smart-sharing": "Sharing is caring — but only when done safely! Professor Hoot will guide you! 🦉",
-  "device-defender": "Your devices need protection! Robo Buddy knows all the tricks. Let's secure them! 🛡️",
-  "cyber-clues": "Put on your detective hat! Detective Whiskers has mysteries to solve! 🔍",
-  "internet-detective": "Not everything online is true! Professor Hoot will teach you to find the facts! 🦉",
-};
+const CAPTAIN_CYBER = GUIDE_REGISTRY["captain-cyber"];
 
 function getEncouragement(score: number, total: number) {
   const ratio = score / total;
