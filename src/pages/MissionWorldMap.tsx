@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { MISSIONS, getTotalGames, type LearningMode } from "@/data/missions";
 import { getLevelRank } from "@/data/levelTitles";
-import { GUIDE_REGISTRY } from "@/data/guides";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 
 // World map nodes — maps mission IDs to themed world names
