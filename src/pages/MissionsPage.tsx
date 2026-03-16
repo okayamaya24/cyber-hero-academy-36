@@ -35,40 +35,14 @@ import {
 } from "@/data/missions";
 import { checkAndAwardBadges } from "@/lib/badges";
 
-import detectiveCat from "@/assets/detective-cat.png";
-import wiseOwl from "@/assets/wise-owl.png";
-import robotGuide from "@/assets/robot-guide.png";
-import heroCharacter from "@/assets/hero-character.png";
-
-const ALL_GUIDES: Record<string, GuideCharacter> = {
-  "Captain Cyber": {
-    name: "Captain Cyber",
-    image: heroCharacter,
-    role: "Adventure Guide",
-  },
-  "Detective Whiskers": { name: "Detective Whiskers", image: detectiveCat },
-  "Robo Buddy": { name: "Robo Buddy", image: robotGuide },
-  "Professor Hoot": { name: "Professor Hoot", image: wiseOwl },
-};
-
-const MISSION_SUPPORT: Record<string, string[]> = {
-  "scam-detection": ["Captain Cyber", "Professor Hoot"],
-  "password-safety": ["Captain Cyber", "Professor Hoot"],
-  "safe-websites": ["Detective Whiskers", "Robo Buddy"],
-  "personal-info": ["Captain Cyber", "Detective Whiskers"],
-  "malware-monsters": ["Robo Buddy", "Captain Cyber"],
-  "phishy-messages": ["Detective Whiskers", "Professor Hoot"],
-  "smart-sharing": ["Professor Hoot", "Captain Cyber"],
-  "device-defender": ["Robo Buddy", "Detective Whiskers"],
-  "cyber-clues": ["Detective Whiskers", "Captain Cyber"],
-  "internet-detective": ["Professor Hoot", "Robo Buddy"],
-};
-
-function getSupportGuide(missionId: string, gameIndex: number): GuideCharacter {
-  const supports = MISSION_SUPPORT[missionId] ?? ["Captain Cyber"];
-  const name = supports[gameIndex % supports.length];
-  return ALL_GUIDES[name] ?? ALL_GUIDES["Captain Cyber"];
-}
+import {
+  GUIDE_REGISTRY,
+  getSupportGuide,
+  getMissionIntro,
+  getGuideEncouragement,
+} from "@/data/guides";
+import { getLevelRank } from "@/data/levelTitles";
+import { getActiveEvents, type EventMission } from "@/data/eventMissions";
 
 const CUSTOM_GAME_TYPES: MiniGameType[] = [
   "word-search",
