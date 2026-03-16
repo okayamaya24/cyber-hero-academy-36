@@ -13,113 +13,169 @@ interface Props {
 
 interface SortItem {
   text: string;
-  category: "safe" | "dangerous";
+  category: "safe" | "suspicious";
   explanation: string;
 }
 
 const SORT_ITEMS: Record<string, Record<AgeTier, SortItem[]>> = {
   "safe-websites": {
     junior: [
-      { text: "www.coolkidsgames.com 🔒", category: "safe", explanation: "This site has a lock icon — it's secure!" },
-      { text: "FREE-PRIZES-NOW.com", category: "dangerous", explanation: "Websites offering free prizes are usually scams!" },
-      { text: "www.library.org 🔒", category: "safe", explanation: "Library websites are trustworthy!" },
-      { text: "download-free-games.xyz", category: "dangerous", explanation: "Unknown download sites can have viruses!" },
-      { text: "www.nationalgeographic.com/kids 🔒", category: "safe", explanation: "Known educational sites are safe!" },
-      { text: "U-WON-1000-DOLLARS.com", category: "dangerous", explanation: "Nobody gives away money like that!" },
+      {
+        text: "www.coolkidsgames.com 🔒",
+        category: "safe",
+        explanation: "This site has a lock icon, which is a good sign.",
+      },
+      {
+        text: "FREE-PRIZES-NOW.com",
+        category: "suspicious",
+        explanation: "Websites offering free prizes are usually scams.",
+      },
+      { text: "www.library.org 🔒", category: "safe", explanation: "Library websites are trustworthy." },
+      {
+        text: "download-free-games.xyz",
+        category: "suspicious",
+        explanation: "Unknown download sites can have viruses.",
+      },
+      {
+        text: "www.nationalgeographic.com/kids 🔒",
+        category: "safe",
+        explanation: "Known educational sites are usually safe.",
+      },
+      {
+        text: "U-WON-1000-DOLLARS.com",
+        category: "suspicious",
+        explanation: "Nobody gives away money like that randomly.",
+      },
     ],
     defender: [
-      { text: "https://www.khanacademy.org", category: "safe", explanation: "Khan Academy is a trusted learning site." },
-      { text: "http://free-robux-generator.com", category: "dangerous", explanation: "Free game currency sites steal your info!" },
-      { text: "https://scratch.mit.edu", category: "safe", explanation: "Scratch is run by MIT — very trustworthy!" },
-      { text: "download-minecraft-free.tk", category: "dangerous", explanation: ".tk domains and free downloads are risky!" },
-      { text: "https://www.nasa.gov", category: "safe", explanation: ".gov sites are run by the government." },
-      { text: "click-here-to-win.biz", category: "dangerous", explanation: ".biz domains with prizes are suspicious!" },
+      {
+        text: "https://www.khanacademy.org",
+        category: "safe",
+        explanation: "Khan Academy is a trusted learning site.",
+      },
+      {
+        text: "http://free-robux-generator.com",
+        category: "suspicious",
+        explanation: "Free game currency sites often steal your info.",
+      },
+      { text: "https://scratch.mit.edu", category: "safe", explanation: "Scratch is run by MIT and is trustworthy." },
+      {
+        text: "download-minecraft-free.tk",
+        category: "suspicious",
+        explanation: "Free download offers like this are risky.",
+      },
+      { text: "https://www.nasa.gov", category: "safe", explanation: ".gov sites are official government websites." },
+      { text: "click-here-to-win.biz", category: "suspicious", explanation: "Prize links like this are suspicious." },
     ],
     guardian: [
-      { text: "https://github.com", category: "safe", explanation: "GitHub is a well-known developer platform." },
-      { text: "http://paypa1.com/verify", category: "dangerous", explanation: "Notice 'paypa1' uses a '1' instead of 'l' — it's spoofing!" },
-      { text: "https://www.wikipedia.org", category: "safe", explanation: "Wikipedia is a trusted encyclopedia." },
-      { text: "http://amaz0n-deals.ru", category: "dangerous", explanation: "Misspelled names + .ru domain = phishing!" },
-      { text: "https://www.wolframalpha.com", category: "safe", explanation: "Wolfram Alpha is a legitimate computation engine." },
-      { text: "http://verify-your-account-now.com", category: "dangerous", explanation: "Urgency + vague domain = social engineering!" },
+      { text: "https://github.com", category: "safe", explanation: "GitHub is a well-known and legitimate platform." },
+      {
+        text: "http://paypa1.com/verify",
+        category: "suspicious",
+        explanation: "This uses a '1' instead of an 'l' to trick people.",
+      },
+      { text: "https://www.wikipedia.org", category: "safe", explanation: "Wikipedia is a trusted encyclopedia site." },
+      {
+        text: "http://amaz0n-deals.ru",
+        category: "suspicious",
+        explanation: "Misspelled names and odd domains are red flags.",
+      },
+      { text: "https://www.wolframalpha.com", category: "safe", explanation: "Wolfram Alpha is a legitimate tool." },
+      {
+        text: "http://verify-your-account-now.com",
+        category: "suspicious",
+        explanation: "Urgent account warnings like this are often scams.",
+      },
     ],
   },
   "scam-detection": {
     junior: [
-      { text: "Your friend sent you a photo 📸", category: "safe", explanation: "Messages from friends you know are usually safe!" },
-      { text: "YOU WON A FREE iPAD!!!", category: "dangerous", explanation: "Nobody gives away free iPads to random people!" },
-      { text: "Homework reminder from teacher 📚", category: "safe", explanation: "Messages from your teacher are safe!" },
-      { text: "Click here or your account is DELETED", category: "dangerous", explanation: "Scary messages trying to rush you are scams!" },
-      { text: "Mom texted: come home for dinner", category: "safe", explanation: "Messages from family are safe!" },
-      { text: "A stranger wants your address 📍", category: "dangerous", explanation: "Never share your address with strangers!" },
+      {
+        text: "Your friend sent you a photo 📸",
+        category: "safe",
+        explanation: "Messages from people you know are usually okay.",
+      },
+      {
+        text: "YOU WON A FREE iPAD!!!",
+        category: "suspicious",
+        explanation: "Random free prize messages are usually fake.",
+      },
+      {
+        text: "Homework reminder from teacher 📚",
+        category: "safe",
+        explanation: "Teacher reminders are normal and safe.",
+      },
+      {
+        text: "Click here or your account is DELETED",
+        category: "suspicious",
+        explanation: "Scary rushed messages are a common trick.",
+      },
+      { text: "Mom texted: come home for dinner", category: "safe", explanation: "Messages from family are okay." },
+      {
+        text: "A stranger wants your address 📍",
+        category: "suspicious",
+        explanation: "Never share your address with strangers.",
+      },
     ],
     defender: [
-      { text: "School newsletter email", category: "safe", explanation: "Official school communications are trustworthy." },
-      { text: "\"Your Roblox account will be banned!\"", category: "dangerous", explanation: "Scare tactics are a common scam technique." },
-      { text: "Library overdue book notification", category: "safe", explanation: "Libraries send legitimate reminders." },
-      { text: "\"Send gift cards to unlock your prize\"", category: "dangerous", explanation: "Gift card requests are always scams!" },
-      { text: "Family group chat message", category: "safe", explanation: "Known family contacts are safe." },
-      { text: "\"Verify your password via this link\"", category: "dangerous", explanation: "Legitimate services never ask for passwords via links." },
+      {
+        text: "School newsletter email",
+        category: "safe",
+        explanation: "Official school communication is trustworthy.",
+      },
+      {
+        text: '"Your Roblox account will be banned!"',
+        category: "suspicious",
+        explanation: "Scare tactics are a common scam trick.",
+      },
+      {
+        text: "Library overdue book notification",
+        category: "safe",
+        explanation: "Libraries send normal reminder messages.",
+      },
+      {
+        text: '"Send gift cards to unlock your prize"',
+        category: "suspicious",
+        explanation: "Gift card requests are always suspicious.",
+      },
+      { text: "Family group chat message", category: "safe", explanation: "Known family contacts are usually safe." },
+      {
+        text: '"Verify your password via this link"',
+        category: "suspicious",
+        explanation: "Real services do not ask for passwords like this.",
+      },
     ],
     guardian: [
-      { text: "Two-factor authentication code from Google", category: "safe", explanation: "2FA codes from services you use are legitimate." },
-      { text: "\"Your Netflix is suspended — click to fix\"", category: "dangerous", explanation: "Go to netflix.com directly instead of clicking links." },
-      { text: "Password reset you requested", category: "safe", explanation: "If YOU requested it, it's legitimate." },
-      { text: "\"IRS owes you $5000 — claim now\"", category: "dangerous", explanation: "Government agencies never contact you this way." },
-      { text: "Software update notification from OS", category: "safe", explanation: "Official OS updates are safe." },
-      { text: "\"Your photos have been leaked — pay now\"", category: "dangerous", explanation: "Extortion emails are scams — don't respond." },
-    ],
-  },
-  "password-safety": {
-    junior: [
-      { text: "MyDog123!", category: "safe", explanation: "Has letters, numbers, and a symbol — good start!" },
-      { text: "password", category: "dangerous", explanation: "'password' is the easiest password to guess!" },
-      { text: "StarFish#77", category: "safe", explanation: "Mix of words, symbols and numbers!" },
-      { text: "1234", category: "dangerous", explanation: "Too short and too easy to guess!" },
-      { text: "BlueRocket!9", category: "safe", explanation: "Creative and strong!" },
-      { text: "abcabc", category: "dangerous", explanation: "Repeated simple letters are weak!" },
-    ],
-    defender: [
-      { text: "Tr0pic@lFish42", category: "safe", explanation: "Great mix of characters and substitutions!" },
-      { text: "qwerty123", category: "dangerous", explanation: "Keyboard patterns are easily guessed!" },
-      { text: "Ph0en!x_R1s3s", category: "safe", explanation: "Creative substitutions make this strong!" },
-      { text: "iloveyou", category: "dangerous", explanation: "Common phrases are in every hacker's dictionary!" },
-      { text: "C0sm!c_St@rm#7", category: "safe", explanation: "Long with many character types!" },
-      { text: "admin2024", category: "dangerous", explanation: "Common words + year = easily cracked!" },
-    ],
-    guardian: [
-      { text: "xK9#mP2$vL7@nQ", category: "safe", explanation: "Random characters are the strongest!" },
-      { text: "letmein", category: "dangerous", explanation: "One of the top 10 most common passwords!" },
-      { text: "Correct-Horse-Battery-Staple", category: "safe", explanation: "Passphrase style — long and memorable!" },
-      { text: "123456789", category: "dangerous", explanation: "Sequential numbers are instantly cracked!" },
-      { text: "7h3_Qu!ck_Br0wn_F0x", category: "safe", explanation: "Modified phrase with substitutions!" },
-      { text: "football2024", category: "dangerous", explanation: "Common word + year is easily guessed!" },
-    ],
-  },
-  "personal-info": {
-    junior: [
-      { text: "Your favorite color", category: "safe", explanation: "Favorite colors don't reveal personal details!" },
-      { text: "Your home address", category: "dangerous", explanation: "Never share where you live online!" },
-      { text: "Your favorite cartoon", category: "safe", explanation: "Talking about shows you like is fine!" },
-      { text: "Your school name and class", category: "dangerous", explanation: "Strangers could use this to find you!" },
-      { text: "Your favorite food", category: "safe", explanation: "Food preferences are safe to share!" },
-      { text: "Your phone number", category: "dangerous", explanation: "Only share your number with trusted people!" },
-    ],
-    defender: [
-      { text: "A drawing you made", category: "safe", explanation: "Sharing artwork is fine!" },
-      { text: "Your parents' credit card number", category: "dangerous", explanation: "Financial info is always private!" },
-      { text: "Your opinion on a movie", category: "safe", explanation: "Opinions are safe to share!" },
-      { text: "A photo showing your house number", category: "dangerous", explanation: "Photos can reveal your location!" },
-      { text: "Your favorite sports team", category: "safe", explanation: "Supporting a team is public info!" },
-      { text: "Your email password", category: "dangerous", explanation: "NEVER share passwords with anyone!" },
-    ],
-    guardian: [
-      { text: "A meme you found funny", category: "safe", explanation: "Sharing humor is fine!" },
-      { text: "Your Social Security Number", category: "dangerous", explanation: "SSN enables identity theft!" },
-      { text: "Your thoughts on a book", category: "safe", explanation: "Book reviews are safe!" },
-      { text: "Your daily schedule and location", category: "dangerous", explanation: "Routines reveal when you're vulnerable!" },
-      { text: "A game recommendation", category: "safe", explanation: "Game suggestions are harmless!" },
-      { text: "Your mother's maiden name", category: "dangerous", explanation: "Often used as a security question!" },
+      {
+        text: "Two-factor authentication code from Google",
+        category: "safe",
+        explanation: "If you triggered it, a 2FA code can be legitimate.",
+      },
+      {
+        text: '"Your Netflix is suspended — click to fix"',
+        category: "suspicious",
+        explanation: "Always go directly to the official site instead.",
+      },
+      {
+        text: "Password reset you requested",
+        category: "safe",
+        explanation: "If you requested it, this can be legitimate.",
+      },
+      {
+        text: '"IRS owes you $5000 — claim now"',
+        category: "suspicious",
+        explanation: "Government agencies do not contact people this way.",
+      },
+      {
+        text: "Software update notification from OS",
+        category: "safe",
+        explanation: "Official operating system updates are normal.",
+      },
+      {
+        text: '"Your photos have been leaked — pay now"',
+        category: "suspicious",
+        explanation: "This is an extortion scam.",
+      },
     ],
   },
 };
@@ -136,8 +192,9 @@ export default function SortGame({ missionId, ageTier, guideImage, guideName, on
   const [done, setDone] = useState(false);
 
   const current = items[currentIdx];
+  const progress = ((currentIdx + (feedback ? 1 : 0)) / items.length) * 100;
 
-  const handleSort = (choice: "safe" | "dangerous") => {
+  const handleSort = (choice: "safe" | "suspicious") => {
     const isCorrect = choice === current.category;
     if (isCorrect) setCorrectCount((c) => c + 1);
     setFeedback({ correct: isCorrect, explanation: current.explanation });
@@ -152,18 +209,50 @@ export default function SortGame({ missionId, ageTier, guideImage, guideName, on
     }
   };
 
+  const guidePrompt =
+    missionId === "password-safety"
+      ? "🔐 Decide if this is safe or suspicious password behavior."
+      : missionId === "scam-detection"
+        ? "🕵️ Spot the scam and choose carefully."
+        : "🛡️ Decide if this looks safe or suspicious.";
+
   if (done) {
-    const allCorrect = correctCount >= items.length * 0.8;
+    const percent = correctCount / items.length;
+    const passed = percent >= 0.8;
+    const badge =
+      percent === 1
+        ? "🏆 Perfect Protector"
+        : percent >= 0.8
+          ? "🛡️ Scam Spotter"
+          : percent >= 0.6
+            ? "✨ Cyber Learner"
+            : "🌱 Training Hero";
+
     return (
-      <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center space-y-4">
-        <p className="text-5xl">{allCorrect ? "🎉" : "💪"}</p>
-        <p className="text-lg font-bold">
-          {allCorrect ? "Amazing sorting skills!" : "Good effort! Keep practicing!"}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          You got {correctCount}/{items.length} correct!
-        </p>
-        <Button variant="hero" className="w-full py-5 text-base" onClick={() => onComplete(allCorrect)}>
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="space-y-5 text-center"
+      >
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-5xl">
+          {passed ? "🎉" : "💪"}
+        </div>
+
+        <div>
+          <h2 className="text-2xl font-extrabold">{passed ? "Mission Complete!" : "Nice Try!"}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            You got {correctCount} out of {items.length} correct.
+          </p>
+        </div>
+
+        <div className="mx-auto max-w-sm rounded-2xl border bg-card p-4 shadow-card">
+          <p className="text-lg font-bold text-primary">{badge}</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {passed ? "Your cyber skills are getting stronger." : "Practice helps you become a stronger cyber hero."}
+          </p>
+        </div>
+
+        <Button variant="hero" className="w-full py-5 text-base" onClick={() => onComplete(passed)}>
           Continue ✨
         </Button>
       </motion.div>
@@ -172,79 +261,91 @@ export default function SortGame({ missionId, ageTier, guideImage, guideName, on
 
   return (
     <div className="text-center">
-      <div className="flex items-center gap-3 mb-4">
-        <img src={guideImage} alt={guideName} className="h-12 w-12 object-contain" />
-        <div className="rounded-2xl rounded-bl-sm bg-muted px-4 py-2 text-left">
-          <p className="font-semibold text-sm">
-            {missionId === "personal-info"
-              ? "🤫 Should you share this online? Sort each item!"
-              : missionId === "password-safety"
-              ? "🔐 Is this a strong password or a weak one? Sort them!"
-              : "🛡️ Sort each item into the correct category!"}
-          </p>
+      <div className="mb-4 flex items-start gap-3">
+        <div className="shrink-0 rounded-2xl bg-card p-2 shadow-card">
+          <img src={guideImage} alt={guideName} className="h-14 w-14 object-contain" />
+        </div>
+        <div className="flex-1 rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-left">
+          <p className="font-semibold text-sm">{guidePrompt}</p>
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground mb-3">
-        Item {currentIdx + 1} of {items.length}
-      </p>
+      <div className="mb-4">
+        <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+          <span>Progress</span>
+          <span>
+            {currentIdx + 1} / {items.length}
+          </span>
+        </div>
+        <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
+          <motion.div
+            className="h-full rounded-full bg-primary"
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
+      </div>
+
+      <div className="mb-4 flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">
+          Question {currentIdx + 1} of {items.length}
+        </p>
+        <div className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+          ⭐ {correctCount} correct
+        </div>
+      </div>
 
       <AnimatePresence mode="wait">
         {!feedback ? (
           <motion.div
             key={currentIdx}
-            initial={{ x: 50, opacity: 0 }}
+            initial={{ x: 40, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -50, opacity: 0 }}
+            exit={{ x: -40, opacity: 0 }}
           >
-            <div className="rounded-2xl border-2 border-border bg-card p-6 mb-6 shadow-card">
-              <p className="text-lg font-bold">{current.text}</p>
+            <div className="mb-6 rounded-3xl border-2 border-border bg-card p-6 shadow-card">
+              <p className="text-lg font-bold leading-relaxed">{current.text}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleSort(missionId === "personal-info" ? "safe" : "safe")}
-                className="rounded-2xl border-2 border-secondary/40 bg-secondary/10 p-6 text-center hover:bg-secondary/20 transition-colors active:scale-95"
+                whileTap={{ scale: 0.96 }}
+                whileHover={{ scale: 1.02 }}
+                onClick={() => handleSort("safe")}
+                className="rounded-3xl border-2 border-emerald-300 bg-emerald-50 p-6 text-center transition-colors hover:bg-emerald-100"
               >
-                <span className="block text-4xl mb-2">
-                  {missionId === "personal-info" ? "👍" : missionId === "password-safety" ? "💪" : "✅"}
-                </span>
-                <span className="font-bold text-sm">
-                  {missionId === "personal-info" ? "OK to Share" : missionId === "password-safety" ? "Strong" : "Safe"}
-                </span>
+                <span className="mb-2 block text-4xl">✅</span>
+                <span className="font-bold text-sm text-emerald-700">Safe</span>
               </motion.button>
 
               <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleSort("dangerous")}
-                className="rounded-2xl border-2 border-destructive/40 bg-destructive/10 p-6 text-center hover:bg-destructive/20 transition-colors active:scale-95"
+                whileTap={{ scale: 0.96 }}
+                whileHover={{ scale: 1.02 }}
+                onClick={() => handleSort("suspicious")}
+                className="rounded-3xl border-2 border-rose-300 bg-rose-50 p-6 text-center transition-colors hover:bg-rose-100"
               >
-                <span className="block text-4xl mb-2">
-                  {missionId === "personal-info" ? "🤫" : missionId === "password-safety" ? "💔" : "⚠️"}
-                </span>
-                <span className="font-bold text-sm">
-                  {missionId === "personal-info" ? "Keep Private" : missionId === "password-safety" ? "Weak" : "Dangerous"}
-                </span>
+                <span className="mb-2 block text-4xl">⚠️</span>
+                <span className="font-bold text-sm text-rose-700">Suspicious</span>
               </motion.button>
             </div>
           </motion.div>
         ) : (
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-          >
-            <div className={`rounded-2xl p-5 mb-4 ${
-              feedback.correct
-                ? "bg-secondary/10 border-2 border-secondary/30"
-                : "bg-destructive/10 border-2 border-destructive/30"
-            }`}>
-              <p className="text-3xl mb-2">{feedback.correct ? "🎉" : "😊"}</p>
-              <p className="font-bold text-base mb-1">
-                {feedback.correct ? "Correct!" : "Not quite!"}
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+            <div
+              className={`mb-4 rounded-3xl p-5 ${
+                feedback.correct ? "border-2 border-emerald-300 bg-emerald-50" : "border-2 border-amber-300 bg-amber-50"
+              }`}
+            >
+              <p className="mb-2 text-4xl">{feedback.correct ? "🎉" : "🤔"}</p>
+              <p className="mb-1 text-base font-bold text-slate-900">
+                {feedback.correct ? "Nice catch, Cyber Hero!" : "Good try, Cyber Hero!"}
               </p>
-              <p className="text-sm text-muted-foreground">{feedback.explanation}</p>
+              <p className="text-sm text-slate-600">{feedback.explanation}</p>
+              <p className="mt-2 text-xs font-semibold text-primary">
+                {feedback.correct ? "+10 points" : "Keep learning and try the next one!"}
+              </p>
             </div>
+
             <Button variant="hero" className="w-full py-5 text-base" onClick={next}>
               {currentIdx + 1 < items.length ? "Next Item →" : "See Results 🎉"}
             </Button>
