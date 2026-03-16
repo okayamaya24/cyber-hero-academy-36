@@ -37,6 +37,7 @@ const App = () => (
             <Route path="/create-child" element={<CreateChildPage />} />
             <Route path="/dashboard" element={<KidDashboard />} />
             <Route path="/missions" element={<MissionsPage />} />
+            <Route path="/world-map" element={<MissionWorldMap />} />
             <Route path="/for-parents" element={<ForParentsPage />} />
             <Route path="/parent-dashboard" element={<ProtectedParentRoute><ParentDashboard /></ProtectedParentRoute>} />
             <Route path="/certificate" element={<CertificatePage />} />
