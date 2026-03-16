@@ -305,8 +305,86 @@ export default function KidDashboard() {
           ))}
         </motion.div>
 
+        {/* Rank Progress */}
+        {(() => {
+          const rank = getLevelRank(child.level);
+          const nextRankData = getNextRank(child.level);
+          const progress = getProgressToNextLevel(child.points);
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl border bg-card p-5 shadow-card"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">{rank.emoji}</span>
+                  <div>
+                    <h3 className="font-bold text-lg">{rank.title}</h3>
+                    <p className="text-xs text-muted-foreground">{rank.description}</p>
+                  </div>
+                </div>
+                {nextRankData && (
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">Next rank</p>
+                    <p className="text-sm font-bold">{nextRankData.emoji} {nextRankData.title}</p>
+                  </div>
+                )}
+              </div>
+              {nextRankData && (
+                <div>
+                  <div className="mb-1 flex justify-between text-xs text-muted-foreground">
+                    <span>XP Progress</span>
+                    <span>{progress.current}/{progress.needed} XP</span>
+                  </div>
+                  <Progress value={progress.percent} className="h-2.5" />
+                </div>
+              )}
+              {!nextRankData && (
+                <p className="text-sm font-bold text-accent text-center">🏆 Maximum rank achieved!</p>
+              )}
+            </motion.div>
+          );
+        })()}
+
         {/* Daily Challenge */}
         <DailyChallenge childId={child.id} childAge={child.age} />
+
+        {/* Event Missions */}
+        {getActiveEvents().length > 0 && (
+          <div>
+            <h2 className="mb-4 text-2xl font-bold">🎉 Special Events</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {getActiveEvents().map((event) => {
+                const guide = GUIDE_REGISTRY[event.guideId] ?? GUIDE_REGISTRY["captain-cyber"];
+                return (
+                  <motion.div
+                    key={event.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="group overflow-hidden rounded-2xl border-2 border-accent/30 bg-gradient-to-br from-accent/5 to-primary/5 p-5 shadow-card transition-all hover:-translate-y-1 hover:shadow-playful"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-3xl">{event.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold">{event.title}</h3>
+                        <p className="text-sm text-muted-foreground">{event.description}</p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <img src={guide.image} alt={guide.name} className="h-6 w-6 object-contain" />
+                          <span className="text-xs text-muted-foreground">{guide.name}</span>
+                          <span className="text-xs">{event.badgeIcon} {event.badgeName}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" className="mt-3 w-full" asChild>
+                      <Link to="/missions">Explore Event →</Link>
+                    </Button>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Continue Learning */}
         <div>
