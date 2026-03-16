@@ -363,19 +363,6 @@ export default function MissionWorldMap() {
                             </div>
                           )}
 
-                          {/* Guide hint */}
-                          {mission && status !== "locked" && (
-                            <div className="mt-2 flex items-center gap-1.5">
-                              <img
-                                src={mission.guide.image}
-                                alt={mission.guide.name}
-                                className="h-6 w-6 object-contain"
-                              />
-                              <span className="text-[11px] text-muted-foreground">
-                                Guide: {mission.guide.name}
-                              </span>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </motion.button>
