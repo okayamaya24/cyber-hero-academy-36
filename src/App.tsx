@@ -15,6 +15,7 @@ import ChildSelectPage from "./pages/ChildSelectPage";
 import CreateChildPage from "./pages/CreateChildPage";
 import CertificatePage from "./pages/CertificatePage";
 import ForParentsPage from "./pages/ForParentsPage";
+import MissionWorldMap from "./pages/MissionWorldMap";
 import ProtectedParentRoute from "./components/ProtectedParentRoute";
 import NotFound from "./pages/NotFound";
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/create-child" element={<CreateChildPage />} />
             <Route path="/dashboard" element={<KidDashboard />} />
             <Route path="/missions" element={<MissionsPage />} />
+            <Route path="/world-map" element={<MissionWorldMap />} />
             <Route path="/for-parents" element={<ForParentsPage />} />
             <Route path="/parent-dashboard" element={<ProtectedParentRoute><ParentDashboard /></ProtectedParentRoute>} />
             <Route path="/certificate" element={<CertificatePage />} />
