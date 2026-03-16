@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { MISSIONS, getTotalGames, type LearningMode } from "@/data/missions";
 import { getLevelRank } from "@/data/levelTitles";
-import { GUIDE_REGISTRY } from "@/data/guides";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 
 // World map nodes — maps mission IDs to themed world names
@@ -155,7 +154,7 @@ export default function MissionWorldMap() {
   const level = child?.level ?? 1;
   const points = child?.points ?? 0;
   const rank = getLevelRank(level);
-  const captainCyber = GUIDE_REGISTRY["captain-cyber"];
+  const avatarConfig = child?.avatar_config as Record<string, any> | null;
 
   // Determine node statuses
   const nodeStatuses: { status: NodeStatus; stars: number; score: number; maxScore: number }[] =
@@ -231,24 +230,23 @@ export default function MissionWorldMap() {
           </div>
         </motion.div>
 
-        {/* Captain Cyber guide banner */}
+        {/* Player hero banner */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.15 }}
           className="mb-8 flex items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 shadow-card"
         >
-          <motion.img
-            src={captainCyber.image}
-            alt={captainCyber.name}
-            className="h-16 w-16 object-contain"
+          <motion.div
             animate={{ y: [0, -4, 0] }}
             transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-          />
+          >
+            <HeroAvatar avatarConfig={avatarConfig} size={64} fallbackEmoji="🦸" />
+          </motion.div>
           <div>
-            <p className="text-sm font-bold text-primary">{captainCyber.name}</p>
+            <p className="text-sm font-bold text-primary">{child?.name ?? "Hero"}</p>
             <p className="text-sm text-foreground">
-              Welcome to the World Map, hero! Complete each world to unlock the next adventure! 🗺️✨
+              Welcome to the World Map! Complete each world to unlock the next adventure! 🗺️✨
             </p>
           </div>
         </motion.div>
@@ -365,19 +363,6 @@ export default function MissionWorldMap() {
                             </div>
                           )}
 
-                          {/* Guide hint */}
-                          {mission && status !== "locked" && (
-                            <div className="mt-2 flex items-center gap-1.5">
-                              <img
-                                src={mission.guide.image}
-                                alt={mission.guide.name}
-                                className="h-6 w-6 object-contain"
-                              />
-                              <span className="text-[11px] text-muted-foreground">
-                                Guide: {mission.guide.name}
-                              </span>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </motion.button>
