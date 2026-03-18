@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { ALL_BADGES } from "@/data/missions";
+import HeroAvatar from "@/components/avatar/HeroAvatar";
 
 export default function CertificatePage() {
   const { user, activeChildId } = useAuth();
