@@ -16,6 +16,7 @@ import CreateChildPage from "./pages/CreateChildPage";
 import CertificatePage from "./pages/CertificatePage";
 import ForParentsPage from "./pages/ForParentsPage";
 import MissionWorldMap from "./pages/MissionWorldMap";
+import EditAvatarPage from "./pages/EditAvatarPage";
 import ProtectedParentRoute from "./components/ProtectedParentRoute";
 import NotFound from "./pages/NotFound";
 
