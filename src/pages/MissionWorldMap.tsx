@@ -155,6 +155,12 @@ export default function MissionWorldMap() {
   const points = child?.points ?? 0;
   const rank = getLevelRank(level);
   const avatarConfig = child?.avatar_config as Record<string, any> | null;
+  const hasAvatar = !!avatarConfig?.heroSrc;
+
+  // Gate: redirect to hero creation if no avatar
+  useEffect(() => {
+    if (child && !hasAvatar) navigate("/edit-avatar");
+  }, [child, hasAvatar, navigate]);
 
   // Determine node statuses
   const nodeStatuses: { status: NodeStatus; stars: number; score: number; maxScore: number }[] =

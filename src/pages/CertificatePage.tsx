@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { ALL_BADGES } from "@/data/missions";
+import HeroAvatar from "@/components/avatar/HeroAvatar";
 
 export default function CertificatePage() {
   const { user, activeChildId } = useAuth();
@@ -98,14 +99,18 @@ export default function CertificatePage() {
             <div className="absolute bottom-4 right-4 text-4xl opacity-40">🌟</div>
 
             <div className="text-center">
-              {/* Trophy */}
+              {/* Hero Avatar */}
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring" }}
-                className="mb-4 text-7xl"
+                className="mb-4 flex justify-center"
               >
-                🏆
+                <HeroAvatar
+                  avatarConfig={(child as any).avatar_config as Record<string, any> | null}
+                  size={96}
+                  fallbackEmoji="🏆"
+                />
               </motion.div>
 
               {/* Title */}
