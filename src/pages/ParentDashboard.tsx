@@ -457,7 +457,7 @@ export default function ParentDashboard() {
               </h2>
               <motion.div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" variants={container} initial="hidden" animate="show">
                 {MISSIONS.map((m) => {
-                  const completed = allProgress.filter((p) => p.mission_id === m.id && p.status === "completed").length;
+                  const completed = filteredProgress.filter((p) => p.mission_id === m.id && p.status === "completed").length;
                   const Icon = m.icon;
 
                   return (
@@ -468,11 +468,11 @@ export default function ParentDashboard() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Progress
-                          value={children.length > 0 ? (completed / children.length) * 100 : 0}
+                          value={filteredChildren.length > 0 ? (completed / filteredChildren.length) * 100 : 0}
                           className="h-2 flex-1"
                         />
                         <span className="whitespace-nowrap text-xs text-muted-foreground">
-                          {completed}/{children.length}
+                          {completed}/{filteredChildren.length}
                         </span>
                       </div>
                     </motion.div>
