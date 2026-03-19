@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Star, Zap, Shield, MessageCircle } from "lucide-react";
+import { Lock, Star, Zap, Shield, MessageCircle, ChevronRight, Trophy, Swords, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { getTotalGames, type LearningMode } from "@/data/missions";
+import { MISSIONS, getTotalGames, getMissionLevels, LEVEL_NAMES, LEARNING_MODE_CONFIG, MINI_GAME_META, type LearningMode } from "@/data/missions";
 import { getLevelRank } from "@/data/levelTitles";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
+import { Button } from "@/components/ui/button";
 
 /* ─── World definitions ─────────────────────────────────── */
 const WORLDS = [
@@ -139,7 +140,6 @@ function MapPaths({ statuses }: { statuses: NodeStatus[] }) {
   ) {
     const mx = (from[0] + to[0]) / 2;
     const my = (from[1] + to[1]) / 2;
-    // offset control point perpendicular to line for a gentle curve
     const dx = to[0] - from[0];
     const dy = to[1] - from[1];
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -184,15 +184,12 @@ function MapPaths({ statuses }: { statuses: NodeStatus[] }) {
           </feMerge>
         </filter>
       </defs>
-      {/* Hub to first world */}
       {curvedLine(HUB, pts[0], statuses[0] === "locked" ? "locked" : "active", "hub-0")}
-      {/* World-to-world */}
       {pts.map((p, i) => {
         if (i === pts.length - 1) return null;
         const s = statuses[i] === "completed" ? "completed" : statuses[i + 1] !== "locked" ? "active" : "locked";
         return curvedLine(p, pts[i + 1], s, `seg-${i}`);
       })}
-      {/* Last back to hub */}
       {curvedLine(pts[6], HUB, "locked", "loop")}
     </svg>
   );
@@ -228,7 +225,6 @@ function GuideCharacter({
       transition={{ delay: 0.8 }}
       className="fixed bottom-24 right-4 z-50 flex flex-col items-end gap-2 md:bottom-8 md:right-6"
     >
-      {/* Speech bubble */}
       <AnimatePresence mode="wait">
         <motion.div
           key={message}
@@ -239,12 +235,10 @@ function GuideCharacter({
           className="relative max-w-[200px] rounded-2xl rounded-br-sm bg-card border border-border px-3 py-2 shadow-lg"
         >
           <p className="text-xs font-medium text-foreground leading-snug">{message}</p>
-          {/* Bubble tail */}
           <div className="absolute -bottom-1.5 right-4 h-3 w-3 rotate-45 bg-card border-r border-b border-border" />
         </motion.div>
       </AnimatePresence>
 
-      {/* Avatar button */}
       <motion.button
         onClick={onTap}
         whileHover={{ scale: 1.1 }}
@@ -265,12 +259,174 @@ function GuideCharacter({
   );
 }
 
+/* ─── World Detail Panel ─────────────────────────────── */
+function WorldDetailPanel({
+  world,
+  mission,
+  missionProgress,
+  learningMode,
+  age,
+  onClose,
+  onStartLevel,
+}: {
+  world: typeof WORLDS[number];
+  mission: typeof MISSIONS[number] | undefined;
+  missionProgress: any[];
+  learningMode: LearningMode;
+  age: number;
+  onClose: () => void;
+  onStartLevel: (missionId: string, levelIndex: number) => void;
+}) {
+  if (!mission) return null;
+
+  const totalGames = getTotalGames(learningMode);
+  const modeConfig = LEARNING_MODE_CONFIG[learningMode];
+  const progressRow = missionProgress.find((p) => p.mission_id === mission.id);
+  const completedGames = progressRow?.status === "completed" ? totalGames : (progressRow?.current_question ?? 0);
+  const levels = getMissionLevels(mission, age, learningMode, completedGames);
+
+  const STEP_LABELS = ["Mission 1", "Mission 2", "Boss Battle"];
+  const STEP_ICONS = ["🎯", "⚔️", "🐉"];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="w-full max-w-lg rounded-t-3xl border-t border-border bg-card p-6 pb-10 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="mb-5 flex items-center gap-3">
+          <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br text-2xl ${world.color}`}>
+            {world.icon}
+          </div>
+          <div className="flex-1">
+            <h2 className="text-lg font-bold">{world.name}</h2>
+            <p className="text-xs text-muted-foreground">{world.description}</p>
+          </div>
+          <button onClick={onClose} className="rounded-full p-1.5 hover:bg-muted transition-colors">
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Guide */}
+        <div className="mb-5 flex items-center gap-3 rounded-xl bg-muted/50 p-3">
+          <img src={mission.guide.image} alt={mission.guide.name} className="h-10 w-10 object-contain" />
+          <div>
+            <p className="text-xs font-bold">{mission.guide.name}</p>
+            <p className="text-[10px] text-muted-foreground">Your guide for this world</p>
+          </div>
+        </div>
+
+        {/* Sequential mission steps */}
+        <div className="space-y-3">
+          {levels.map((level, i) => {
+            const levelStart = i * modeConfig.gamesPerLevel;
+            const levelEnd = levelStart + modeConfig.gamesPerLevel;
+            const levelCompleted = Math.min(Math.max(completedGames - levelStart, 0), modeConfig.gamesPerLevel);
+            const levelDone = levelCompleted >= modeConfig.gamesPerLevel;
+            const levelActive = completedGames >= levelStart && completedGames < levelEnd;
+            const isLocked = level.locked;
+            const isBoss = i === levels.length - 1;
+
+            return (
+              <motion.div
+                key={level.level}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className={`flex items-center gap-3 rounded-xl border-2 p-3 transition-all ${
+                  levelDone
+                    ? "border-secondary/40 bg-secondary/10"
+                    : levelActive
+                    ? "border-primary/50 bg-primary/10"
+                    : isLocked
+                    ? "border-border bg-muted/30 opacity-50"
+                    : "border-border bg-muted/30"
+                }`}
+              >
+                {/* Step icon */}
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg ${
+                  levelDone ? "bg-secondary/20" : levelActive ? "bg-primary/20" : "bg-muted"
+                }`}>
+                  {isLocked ? <Lock className="h-4 w-4 text-muted-foreground" /> : <span>{STEP_ICONS[i]}</span>}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-bold">{STEP_LABELS[i]}</p>
+                    {isBoss && !isLocked && (
+                      <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-[9px] font-bold text-destructive">
+                        BOSS
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    {level.name} · {levelCompleted}/{modeConfig.gamesPerLevel} games
+                  </p>
+                  <div className="mt-1 flex gap-1">
+                    {level.miniGameTypes.slice(0, 3).map((type, j) => (
+                      <span key={j} className="text-[10px]" title={MINI_GAME_META[type].label}>
+                        {MINI_GAME_META[type].emoji}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action */}
+                {levelDone ? (
+                  <div className="flex items-center gap-1 text-secondary">
+                    <Trophy className="h-4 w-4" />
+                    <span className="text-xs font-bold">Done</span>
+                  </div>
+                ) : levelActive ? (
+                  <Button
+                    size="sm"
+                    variant="hero"
+                    className="text-xs"
+                    onClick={() => onStartLevel(mission.id, i)}
+                  >
+                    {completedGames > 0 ? "Continue" : isBoss ? "Fight!" : "Start"} <ChevronRight className="ml-1 h-3 w-3" />
+                  </Button>
+                ) : isLocked ? (
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                ) : null}
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* World progress */}
+        <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+          <span>{completedGames}/{totalGames} games completed</span>
+          {progressRow?.status === "completed" && (
+            <span className="flex items-center gap-1 font-bold text-secondary">
+              <Trophy className="h-3.5 w-3.5" /> World Conquered!
+            </span>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 /* ─── Main Component ─────────────────────────────────── */
 export default function MissionWorldMap() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
   const [guideMessage, setGuideMessage] = useState(GUIDE_MESSAGES.idle[0]);
   const [idleIndex, setIdleIndex] = useState(0);
+  const [selectedWorld, setSelectedWorld] = useState<typeof WORLDS[number] | null>(null);
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -305,6 +461,7 @@ export default function MissionWorldMap() {
   const rank = getLevelRank(level);
   const avatarConfig = child?.avatar_config as Record<string, any> | null;
   const hasAvatar = !!avatarConfig?.heroSrc;
+  const age = child?.age ?? 7;
 
   useEffect(() => {
     if (child && !hasAvatar) navigate("/edit-avatar");
@@ -330,7 +487,6 @@ export default function MissionWorldMap() {
   const completedCount = nodeStatuses.filter((n) => n.status === "completed").length;
   const currentWorldIdx = nodeStatuses.findIndex((n) => n.status === "unlocked");
 
-  // Set progress message if any worlds completed
   useEffect(() => {
     if (completedCount > 0 && completedCount < WORLDS.length) {
       setGuideMessage(GUIDE_MESSAGES.progress);
@@ -349,9 +505,15 @@ export default function MissionWorldMap() {
       return;
     }
     setGuideMessage(GUIDE_MESSAGES.worldSelected);
-    // Small delay so message shows before navigation
-    setTimeout(() => navigate(`/missions?mission=${world.id}`), 400);
+    setSelectedWorld(world);
   };
+
+  const handleStartLevel = (missionId: string, _levelIndex: number) => {
+    setSelectedWorld(null);
+    navigate(`/missions?mission=${missionId}`);
+  };
+
+  const selectedMission = selectedWorld ? MISSIONS.find((m) => m.id === selectedWorld.id) : undefined;
 
   return (
     <div className="min-h-screen pb-24 pt-20 relative overflow-hidden"
@@ -361,7 +523,6 @@ export default function MissionWorldMap() {
     >
       {/* Decorative background elements */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        {/* Stars / sparkles */}
         {Array.from({ length: 30 }).map((_, i) => (
           <motion.div
             key={i}
@@ -381,7 +542,6 @@ export default function MissionWorldMap() {
             }}
           />
         ))}
-        {/* Soft cloud shapes */}
         <div className="absolute top-[8%] left-[5%] h-20 w-40 rounded-full bg-white/[0.03] blur-2xl" />
         <div className="absolute top-[15%] right-[10%] h-16 w-32 rounded-full bg-white/[0.04] blur-2xl" />
         <div className="absolute bottom-[20%] left-[15%] h-24 w-48 rounded-full bg-white/[0.03] blur-3xl" />
@@ -414,20 +574,17 @@ export default function MissionWorldMap() {
 
         {/* ─── THE MAP ─────────────────────────────────── */}
         <div className="relative mx-auto aspect-square max-w-3xl w-full">
-          {/* Map background */}
           <div className="absolute inset-0 rounded-3xl border border-white/10 overflow-hidden shadow-2xl"
             style={{
               background: "radial-gradient(ellipse at center, hsl(200 45% 20% / 0.9), hsl(210 40% 14% / 0.95))",
             }}
           >
-            {/* Subtle grid pattern */}
             <div className="absolute inset-0 opacity-[0.04]"
               style={{
                 backgroundImage: "radial-gradient(circle, hsl(195 85% 60%) 1px, transparent 1px)",
                 backgroundSize: "28px 28px",
               }}
             />
-            {/* Color zone tints per world area */}
             <div className="absolute top-0 left-1/4 right-1/4 h-1/4 rounded-b-full bg-[hsl(195,85%,50%/0.06)] blur-xl" />
             <div className="absolute top-[10%] right-0 w-1/3 h-1/3 rounded-full bg-[hsl(30,95%,55%/0.05)] blur-2xl" />
             <div className="absolute top-1/3 right-0 w-1/4 h-1/3 rounded-full bg-[hsl(175,70%,42%/0.05)] blur-2xl" />
@@ -437,10 +594,9 @@ export default function MissionWorldMap() {
             <div className="absolute top-[10%] left-0 w-1/3 h-1/4 rounded-full bg-[hsl(330,70%,55%/0.05)] blur-2xl" />
           </div>
 
-          {/* SVG path connections */}
           <MapPaths statuses={nodeStatuses.map((n) => n.status)} />
 
-          {/* Central Hub - now just the label, no avatar */}
+          {/* Central Hub */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -489,7 +645,6 @@ export default function MissionWorldMap() {
                     status === "locked" ? "opacity-35 grayscale cursor-not-allowed" : "cursor-pointer"
                   }`}
                 >
-                  {/* Current world pulse ring */}
                   {isCurrent && (
                     <motion.div
                       animate={{ scale: [1, 1.25, 1], opacity: [0.4, 0.15, 0.4] }}
@@ -498,7 +653,6 @@ export default function MissionWorldMap() {
                     />
                   )}
 
-                  {/* World icon circle */}
                   <div
                     className={`relative flex h-14 w-14 md:h-[72px] md:w-[72px] items-center justify-center rounded-xl border-2 bg-gradient-to-br text-2xl md:text-3xl transition-all duration-200 ${
                       status === "completed"
@@ -514,7 +668,6 @@ export default function MissionWorldMap() {
                       <span className="drop-shadow-lg">{world.icon}</span>
                     )}
 
-                    {/* Completion check */}
                     {status === "completed" && (
                       <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] text-secondary-foreground shadow-md">
                         ✓
@@ -522,7 +675,6 @@ export default function MissionWorldMap() {
                     )}
                   </div>
 
-                  {/* Stars */}
                   {status === "completed" && stars > 0 && (
                     <div className="mt-1 flex gap-0.5">
                       {[1, 2, 3].map((s) => (
@@ -536,7 +688,6 @@ export default function MissionWorldMap() {
                     </div>
                   )}
 
-                  {/* World name label */}
                   <div className={`mt-1 rounded-lg px-2 py-0.5 backdrop-blur-sm ${
                     status === "locked" ? "bg-white/5" : `${world.bgTile} bg-opacity-80`
                   }`}>
@@ -547,14 +698,13 @@ export default function MissionWorldMap() {
                     </p>
                   </div>
 
-                  {/* Status badge */}
                   {status === "unlocked" && (
                     <motion.span
                       animate={{ opacity: [0.7, 1, 0.7] }}
                       transition={{ repeat: Infinity, duration: 1.5 }}
                       className="mt-0.5 text-[8px] md:text-[10px] font-bold text-primary"
                     >
-                      ▶ PLAY
+                      {nodeStatuses.some((n) => n.status === "completed") ? "▶ CONTINUE" : "▶ START"}
                     </motion.span>
                   )}
                 </motion.button>
@@ -600,6 +750,21 @@ export default function MissionWorldMap() {
         message={guideMessage}
         onTap={cycleIdleMessage}
       />
+
+      {/* World Detail Panel */}
+      <AnimatePresence>
+        {selectedWorld && (
+          <WorldDetailPanel
+            world={selectedWorld}
+            mission={selectedMission}
+            missionProgress={missionProgress}
+            learningMode={learningMode}
+            age={age}
+            onClose={() => setSelectedWorld(null)}
+            onStartLevel={handleStartLevel}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
