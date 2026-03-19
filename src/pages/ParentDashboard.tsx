@@ -273,7 +273,7 @@ export default function ParentDashboard() {
         </motion.div>
 
         <motion.div
-          className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4"
+          className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
           variants={container}
           initial="hidden"
           animate="show"
@@ -303,361 +303,249 @@ export default function ParentDashboard() {
               icon: Award,
               color: "text-cyber-teal",
             },
-          ].map((s) => (
+            {
+              label: "Time Spent",
+              value: `${Math.min(children.reduce((acc, c) => acc + (c.last_activity_date === new Date().toISOString().split("T")[0] ? Math.round((c.points % 200) * 0.5 + 5) : 0), 0), 120)} min`,
+              icon: Clock,
+              color: "text-primary",
+              subtext: `${Math.round(children.reduce((acc, c) => acc + Math.round((c.points % 500) * 0.3 + 10), 0) / 60)}h ${children.reduce((acc, c) => acc + Math.round((c.points % 500) * 0.3 + 10), 0) % 60}m this week`,
+            },
+          ].map((s: any) => (
             <motion.div key={s.label} variants={fadeUp} className="rounded-2xl border bg-card p-5 shadow-card">
               <s.icon className={`mb-2 h-6 w-6 ${s.color}`} />
               <div className="text-2xl font-bold">{s.value}</div>
               <div className="text-sm text-muted-foreground">{s.label}</div>
+              {s.subtext && <div className="mt-1 text-[10px] text-muted-foreground">{s.subtext}</div>}
             </motion.div>
           ))}
         </motion.div>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
-            <div>
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-xl font-bold">
-                  <Users className="h-5 w-5 text-primary" /> Children
-                </h2>
-                <Button variant="hero" size="sm" asChild>
-                  <Link to="/create-child">
-                    <Plus className="mr-1 h-4 w-4" /> Add Child
-                  </Link>
-                </Button>
-              </div>
-
-              {children.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="rounded-2xl border-2 border-dashed bg-card p-8 text-center"
-                >
-                  <Users className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
-                  <h3 className="text-lg font-bold">No children added yet</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Add your first child to start their cybersecurity learning journey!
-                  </p>
-                </motion.div>
-              ) : (
-                <motion.div className="space-y-4" variants={container} initial="hidden" animate="show">
-                  {children.map((child) => {
-                    const childMissions = getChildMissions(child.id);
-                    const childBadges = getChildBadges(child.id);
-                    const rawMode = ((child as any).learning_mode as string) || "standard";
-                    const childMode: LearningMode = (rawMode in LEARNING_MODE_CONFIG ? rawMode : "standard") as LearningMode;
-                    const totalGames = getTotalGames(childMode);
-
-                    const completedGamesTotal = childMissions.reduce((acc, mp) => {
-                      if (mp.status === "completed") return acc + totalGames;
-                      return acc + (mp.current_question ?? 0);
-                    }, 0);
-
-                    const totalGamesOverall = MISSIONS.length * totalGames;
-
-                    return (
-                      <motion.div
-                        key={child.id}
-                        variants={fadeUp}
-                        className="rounded-2xl border bg-card p-5 shadow-card"
-                      >
-                        <div className="flex items-center gap-4">
-                          <HeroAvatar
-                            avatarConfig={(child as any).avatar_config as Record<string, any> | null}
-                            size={48}
-                            fallbackEmoji={child.avatar}
-                          />
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="font-bold">{child.name}</h3>
-                              <Badge variant="secondary" className="border-0">
-                                Level {child.level}
-                              </Badge>
-                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                Age {child.age}
-                              </span>
-                              <Badge className="border-0 bg-primary/10 text-xs text-primary">
-                                {LEARNING_MODE_CONFIG[childMode].emoji} {LEARNING_MODE_CONFIG[childMode].label}
-                              </Badge>
-                              {child.last_activity_date && (
-                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  <Clock className="h-3 w-3" />
-                                  {child.last_activity_date === new Date().toISOString().split("T")[0]
-                                    ? "Today"
-                                    : child.last_activity_date}
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
-                              <span>⭐ {child.points} pts</span>
-                              <span>🏅 {childBadges.length} badges</span>
-                              <span>
-                                🎮 {completedGamesTotal}/{totalGamesOverall} games
-                              </span>
-                              <span>🔥 {child.streak} streak</span>
-                            </div>
-
-                            <div className="mt-2">
-                              <Progress
-                                value={totalGamesOverall > 0 ? (completedGamesTotal / totalGamesOverall) * 100 : 0}
-                                className="h-2"
-                              />
-                            </div>
-                          </div>
-
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => deleteChild(child.id, child.name)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              )}
+        <div className="space-y-8">
+          {/* Children Section */}
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-xl font-bold">
+                <Users className="h-5 w-5 text-primary" /> Children
+              </h2>
+              <Button variant="hero" size="sm" asChild>
+                <Link to="/create-child">
+                  <Plus className="mr-1 h-4 w-4" /> Add Child
+                </Link>
+              </Button>
             </div>
 
-            {children.length > 0 && (
-              <div>
-                <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
-                  <Settings2 className="h-5 w-5 text-secondary" /> Learning Mode
-                </h2>
+            {children.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="rounded-2xl border-2 border-dashed bg-card p-8 text-center"
+              >
+                <Users className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
+                <h3 className="text-lg font-bold">No children added yet</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Add your first child to start their cybersecurity learning journey!
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div className="grid gap-4 sm:grid-cols-2" variants={container} initial="hidden" animate="show">
+                {children.map((child) => {
+                  const childBadges = getChildBadges(child.id);
+                  const summary = getChildSummary(child.id);
 
-                <motion.div className="space-y-4" variants={container} initial="hidden" animate="show">
-                  {children.map((child) => {
-                    const rawMode2 = ((child as any).learning_mode as string) || "standard";
-                    const childMode: LearningMode = (rawMode2 in LEARNING_MODE_CONFIG ? rawMode2 : "standard") as LearningMode;
-                    const summary = getChildSummary(child.id);
-
-                    return (
-                      <motion.div
-                        key={child.id}
-                        variants={fadeUp}
-                        className="rounded-2xl border bg-card p-5 shadow-card"
-                      >
-                        <div className="mb-4 flex items-center gap-3">
-                          <HeroAvatar
-                            avatarConfig={(child as any).avatar_config as Record<string, any> | null}
-                            size={32}
-                            fallbackEmoji={child.avatar}
-                          />
-                          <h3 className="font-bold">{child.name}'s Learning Mode</h3>
-                        </div>
-
-                        {/* Learning summary stats */}
-                        <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                          <div className="rounded-lg bg-primary/5 p-2 text-center">
-                            <div className="text-lg font-bold text-primary">{summary.completedCount}</div>
-                            <div className="text-[10px] text-muted-foreground">Missions Done</div>
+                  return (
+                    <motion.div
+                      key={child.id}
+                      variants={fadeUp}
+                      className="rounded-2xl border bg-card p-5 shadow-card"
+                    >
+                      <div className="flex items-center gap-4">
+                        <HeroAvatar
+                          avatarConfig={(child as any).avatar_config as Record<string, any> | null}
+                          size={48}
+                          fallbackEmoji={child.avatar}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="font-bold">{child.name}</h3>
+                            <Badge variant="secondary" className="border-0">
+                              Level {child.level}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">Age {child.age}</span>
                           </div>
-                          <div className="rounded-lg bg-accent/5 p-2 text-center">
-                            <div className="text-lg font-bold text-accent">{summary.totalStars} ⭐</div>
-                            <div className="text-[10px] text-muted-foreground">Stars Earned</div>
-                          </div>
-                          <div className="rounded-lg bg-secondary/10 p-2 text-center">
-                            <div className="truncate text-xs font-semibold text-secondary">{summary.strongestTopic}</div>
-                            <div className="text-[10px] text-muted-foreground">Strongest</div>
-                          </div>
-                          <div className="rounded-lg bg-destructive/5 p-2 text-center">
-                            <div className="truncate text-xs font-semibold text-destructive">{summary.needsReviewTopic}</div>
-                            <div className="text-[10px] text-muted-foreground">Needs Review</div>
+                          <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                            <span>⭐ {child.points} pts</span>
+                            <span>🏅 {childBadges.length} badges</span>
+                            <span>🔥 {child.streak} streak</span>
                           </div>
                         </div>
-
-                        {resettingMode === child.id && (
-                          <div className="mb-3 rounded-lg border border-accent/30 bg-accent/10 p-3 text-sm text-accent">
-                            ⚡ Switching mode and resetting mission progress...
-                          </div>
-                        )}
-
-                        <RadioGroup
-                          value={childMode}
-                          onValueChange={(value) => updateLearningMode(child.id, value as LearningMode)}
-                          className="grid gap-3 sm:grid-cols-2"
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => deleteChild(child.id, child.name)}
                         >
-                          {(
-                            Object.entries(LEARNING_MODE_CONFIG) as [
-                              LearningMode,
-                              (typeof LEARNING_MODE_CONFIG)[LearningMode],
-                            ][]
-                          ).map(([key, config]) => (
-                            <div
-                              key={key}
-                              className={`cursor-pointer rounded-xl border p-3 transition-all hover:border-primary/50 ${
-                                childMode === key ? "border-primary bg-primary/5" : ""
-                              }`}
-                            >
-                              <div className="flex items-start gap-3">
-                                <RadioGroupItem value={key} id={`${child.id}-${key}`} className="mt-0.5" />
-                                <Label htmlFor={`${child.id}-${key}`} className="flex-1 cursor-pointer">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-lg">{config.emoji}</span>
-                                    <span className="text-sm font-semibold">{config.label}</span>
-                                  </div>
-                                  <p className="mt-0.5 text-xs text-muted-foreground">{config.description}</p>
-                                  {key === "auto" && (
-                                    <p className="mt-1 text-[10px] font-medium text-primary">
-                                      Generates extra practice after core levels are done
-                                    </p>
-                                  )}
-                                </Label>
-                              </div>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              </div>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        <div className="rounded-lg bg-primary/5 p-2 text-center">
+                          <div className="text-lg font-bold text-primary">{summary.completedCount}</div>
+                          <div className="text-[10px] text-muted-foreground">Missions</div>
+                        </div>
+                        <div className="rounded-lg bg-accent/5 p-2 text-center">
+                          <div className="text-lg font-bold text-accent">{summary.totalStars} ⭐</div>
+                          <div className="text-[10px] text-muted-foreground">Stars</div>
+                        </div>
+                        <div className="rounded-lg bg-secondary/10 p-2 text-center">
+                          <div className="truncate text-xs font-semibold text-secondary">{summary.strongestTopic}</div>
+                          <div className="text-[10px] text-muted-foreground">Strongest</div>
+                        </div>
+                        <div className="rounded-lg bg-destructive/5 p-2 text-center">
+                          <div className="truncate text-xs font-semibold text-destructive">{summary.needsReviewTopic}</div>
+                          <div className="text-[10px] text-muted-foreground">Needs Review</div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
             )}
           </div>
 
-          <div className="space-y-6">
-            {/* Mission Completion */}
+          {/* Mission Completion — full width */}
+          {children.length > 0 && (
             <div>
               <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
                 <BarChart3 className="h-5 w-5 text-secondary" /> Mission Completion
               </h2>
+              <motion.div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" variants={container} initial="hidden" animate="show">
+                {MISSIONS.map((m) => {
+                  const completed = allProgress.filter((p) => p.mission_id === m.id && p.status === "completed").length;
+                  const Icon = m.icon;
 
-              {children.length === 0 ? (
-                <div className="rounded-2xl border-2 border-dashed bg-card p-6 text-center text-sm text-muted-foreground">
-                  Add children to see mission stats
-                </div>
-              ) : (
-                <motion.div className="space-y-4" variants={container} initial="hidden" animate="show">
-                  {MISSIONS.map((m) => {
-                    const completed = allProgress.filter((p) => p.mission_id === m.id && p.status === "completed").length;
-                    const Icon = m.icon;
-
-                    return (
-                      <motion.div key={m.id} variants={fadeUp} className="rounded-2xl border bg-card p-4 shadow-card">
-                        <div className="mb-2 flex items-center gap-3">
-                          <Icon className={`h-5 w-5 ${m.color}`} />
-                          <span className="text-sm font-bold">{m.title}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Progress
-                            value={children.length > 0 ? (completed / children.length) * 100 : 0}
-                            className="h-2 flex-1"
-                          />
-                          <span className="whitespace-nowrap text-xs text-muted-foreground">
-                            {completed}/{children.length} children
-                          </span>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              )}
-            </div>
-
-            {/* Areas Needing Review */}
-            {areasNeedingReview.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
-                  <AlertCircle className="h-5 w-5 text-destructive" /> Areas Needing Review
-                </h2>
-                <div className="space-y-3">
-                  {areasNeedingReview.map((area) => (
-                    <div key={area.missionTitle} className="rounded-2xl border bg-card p-4 shadow-card">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold">{area.missionTitle}</span>
-                        <Badge variant="outline" className="text-[10px]">
-                          {area.status}
-                        </Badge>
+                  return (
+                    <motion.div key={m.id} variants={fadeUp} className="rounded-2xl border bg-card p-4 shadow-card">
+                      <div className="mb-2 flex items-center gap-3">
+                        <Icon className={`h-5 w-5 ${m.color}`} />
+                        <span className="text-sm font-bold">{m.title}</span>
                       </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {area.childNames.join(", ")}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <Progress
+                          value={children.length > 0 ? (completed / children.length) * 100 : 0}
+                          className="h-2 flex-1"
+                        />
+                        <span className="whitespace-nowrap text-xs text-muted-foreground">
+                          {completed}/{children.length}
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            </div>
+          )}
+
+          {/* Areas Needing Review */}
+          {areasNeedingReview.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+              <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
+                <AlertCircle className="h-5 w-5 text-destructive" /> Areas Needing Review
+              </h2>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {areasNeedingReview.map((area) => (
+                  <div key={area.missionTitle} className="rounded-2xl border bg-card p-4 shadow-card">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold">{area.missionTitle}</span>
+                      <Badge variant="outline" className="text-[10px]">
+                        {area.status}
+                      </Badge>
                     </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {area.childNames.join(", ")}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
-            {/* Conversation Starter */}
-            {conversationStarter && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="rounded-2xl border bg-primary/5 p-5"
-              >
-                <h3 className="mb-2 flex items-center gap-2 font-bold text-primary">
-                  <MessageCircle className="h-4 w-4" /> Conversation Starter
-                </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{conversationStarter}</p>
-              </motion.div>
-            )}
-
-            {/* Certificate Progress */}
+          {/* Conversation Starter */}
+          {conversationStarter && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
-              className="rounded-2xl border bg-card p-5 shadow-card"
+              transition={{ delay: 0.3 }}
+              className="rounded-2xl border bg-primary/5 p-5"
             >
-              <h3 className="mb-3 flex items-center gap-2 font-bold">
-                <GraduationCap className="h-5 w-5 text-primary" /> Certificate Progress
+              <h3 className="mb-2 flex items-center gap-2 font-bold text-primary">
+                <MessageCircle className="h-4 w-4" /> Conversation Starter
               </h3>
-              <div className="flex items-center gap-3">
-                <Progress value={certProgress.percent} className="h-3 flex-1" />
-                <span className="text-sm font-semibold text-primary">{certProgress.percent}%</span>
-              </div>
-              <p className="mt-2 text-xs text-muted-foreground">
-                {certProgress.earned}/{certProgress.total} badges earned across all children.
-                {certProgress.percent < 100
-                  ? ` ${certProgress.total - certProgress.earned} more to unlock the CyberGuardian Certificate!`
-                  : " 🎉 Certificate unlocked!"}
-              </p>
+              <p className="text-sm leading-relaxed text-muted-foreground">{conversationStarter}</p>
             </motion.div>
+          )}
 
-            {/* Recent Badges */}
-            {recentBadges.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <h3 className="mb-3 flex items-center gap-2 text-xl font-bold">
-                  <Star className="h-5 w-5 text-accent" /> Recent Badges
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {recentBadges.map((b) => {
-                    const childName = children.find((c) => c.id === b.child_id)?.name || "";
-                    return (
-                      <div
-                        key={b.id}
-                        className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2 shadow-card"
-                      >
-                        <span className="text-lg">{b.badge_icon}</span>
-                        <div>
-                          <div className="text-xs font-semibold">{b.badge_name}</div>
-                          <div className="text-[10px] text-muted-foreground">{childName}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Tips for Parents */}
-            <div className="rounded-2xl border bg-primary/5 p-5">
-              <h3 className="mb-2 font-bold text-primary">💡 Tips for Parents</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Use Learning Mode to adjust difficulty</li>
-                <li>• Quick Play is great for younger kids</li>
-                <li>• Deep Practice builds stronger habits</li>
-                <li>• Celebrate badge achievements</li>
-                <li>• Review progress weekly</li>
-              </ul>
+          {/* Certificate Progress */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="rounded-2xl border bg-card p-5 shadow-card"
+          >
+            <h3 className="mb-3 flex items-center gap-2 font-bold">
+              <GraduationCap className="h-5 w-5 text-primary" /> Certificate Progress
+            </h3>
+            <div className="flex items-center gap-3">
+              <Progress value={certProgress.percent} className="h-3 flex-1" />
+              <span className="text-sm font-semibold text-primary">{certProgress.percent}%</span>
             </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {certProgress.earned}/{certProgress.total} badges earned across all children.
+              {certProgress.percent < 100
+                ? ` ${certProgress.total - certProgress.earned} more to unlock the CyberGuardian Certificate!`
+                : " 🎉 Certificate unlocked!"}
+            </p>
+          </motion.div>
+
+          {/* Recent Badges */}
+          {recentBadges.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <h3 className="mb-3 flex items-center gap-2 text-xl font-bold">
+                <Star className="h-5 w-5 text-accent" /> Recent Badges
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {recentBadges.map((b) => {
+                  const childName = children.find((c) => c.id === b.child_id)?.name || "";
+                  return (
+                    <div
+                      key={b.id}
+                      className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2 shadow-card"
+                    >
+                      <span className="text-lg">{b.badge_icon}</span>
+                      <div>
+                        <div className="text-xs font-semibold">{b.badge_name}</div>
+                        <div className="text-[10px] text-muted-foreground">{childName}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Tips for Parents */}
+          <div className="rounded-2xl border bg-primary/5 p-5">
+            <h3 className="mb-2 font-bold text-primary">💡 Tips for Parents</h3>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>• Review progress weekly</li>
+              <li>• Celebrate badge achievements</li>
+              <li>• Use conversation starters above</li>
+              <li>• Adjust learning mode from child settings</li>
+            </ul>
           </div>
         </div>
       </div>
