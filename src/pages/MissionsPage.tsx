@@ -757,8 +757,6 @@ export default function MissionsPage() {
     return mp?.status === "completed";
   });
 
-  const [worldFilter, setWorldFilter] = useState<string>("all");
-  const [starFilter, setStarFilter] = useState<number>(0);
 
   const WORLD_LABELS: Record<string, string> = {
     "password-safety": "🏔️ Password Peak",
