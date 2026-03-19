@@ -417,7 +417,7 @@ export default function MissionWorldMap() {
           {/* Map background */}
           <div className="absolute inset-0 rounded-3xl border border-white/10 overflow-hidden shadow-2xl"
             style={{
-              background: "radial-gradient(ellipse at center, hsl(220 50% 20% / 0.9), hsl(240 45% 14% / 0.95))",
+              background: "radial-gradient(ellipse at center, hsl(200 45% 20% / 0.9), hsl(210 40% 14% / 0.95))",
             }}
           >
             {/* Subtle grid pattern */}
