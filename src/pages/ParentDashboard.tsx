@@ -327,6 +327,36 @@ export default function ParentDashboard() {
         </motion.div>
 
         <div className="space-y-8">
+          {/* Child Switcher */}
+          {children.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-sm font-medium text-muted-foreground">Viewing:</span>
+              <button
+                onClick={() => setSelectedChildId(null)}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  selectedChildId === null
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                All Children
+              </button>
+              {children.map((child) => (
+                <button
+                  key={child.id}
+                  onClick={() => setSelectedChildId(child.id)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    selectedChildId === child.id
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {child.name}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Children Section */}
           <div>
             <div className="mb-4 flex items-center justify-between">
