@@ -536,7 +536,7 @@ export default function ParentDashboard() {
               <span className="text-sm font-semibold text-primary">{certProgress.percent}%</span>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              {certProgress.earned}/{certProgress.total} badges earned across all children.
+              {certProgress.earned}/{certProgress.total} badges earned{selectedChildId ? "" : " across all children"}.
               {certProgress.percent < 100
                 ? ` ${certProgress.total - certProgress.earned} more to unlock the CyberGuardian Certificate!`
                 : " 🎉 Certificate unlocked!"}
