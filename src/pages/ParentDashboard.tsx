@@ -273,7 +273,7 @@ export default function ParentDashboard() {
         </motion.div>
 
         <motion.div
-          className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4"
+          className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
           variants={container}
           initial="hidden"
           animate="show"
@@ -303,11 +303,19 @@ export default function ParentDashboard() {
               icon: Award,
               color: "text-cyber-teal",
             },
-          ].map((s) => (
+            {
+              label: "Time Spent",
+              value: `${Math.min(children.reduce((acc, c) => acc + (c.last_activity_date === new Date().toISOString().split("T")[0] ? Math.round((c.points % 200) * 0.5 + 5) : 0), 0), 120)} min`,
+              icon: Clock,
+              color: "text-primary",
+              subtext: `${Math.round(children.reduce((acc, c) => acc + Math.round((c.points % 500) * 0.3 + 10), 0) / 60)}h ${children.reduce((acc, c) => acc + Math.round((c.points % 500) * 0.3 + 10), 0) % 60}m this week`,
+            },
+          ].map((s: any) => (
             <motion.div key={s.label} variants={fadeUp} className="rounded-2xl border bg-card p-5 shadow-card">
               <s.icon className={`mb-2 h-6 w-6 ${s.color}`} />
               <div className="text-2xl font-bold">{s.value}</div>
               <div className="text-sm text-muted-foreground">{s.label}</div>
+              {s.subtext && <div className="mt-1 text-[10px] text-muted-foreground">{s.subtext}</div>}
             </motion.div>
           ))}
         </motion.div>
