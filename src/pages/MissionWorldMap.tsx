@@ -129,7 +129,46 @@ const PATH_COORDS: [number, number][] = [
 const HUB: [number, number] = [50, 48];
 
 function MapPaths({ statuses }: { statuses: NodeStatus[] }) {
-  const points = PATH_COORDS;
+  const pts = PATH_COORDS;
+
+  function curvedLine(
+    from: [number, number],
+    to: [number, number],
+    status: "completed" | "active" | "locked",
+    key: string,
+  ) {
+    const mx = (from[0] + to[0]) / 2;
+    const my = (from[1] + to[1]) / 2;
+    // offset control point perpendicular to line for a gentle curve
+    const dx = to[0] - from[0];
+    const dy = to[1] - from[1];
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const off = len * 0.18;
+    const cx = mx + (-dy / len) * off;
+    const cy = my + (dx / len) * off;
+    const d = `M${from[0]},${from[1]} Q${cx},${cy} ${to[0]},${to[1]}`;
+
+    const stroke =
+      status === "completed"
+        ? "hsl(160 65% 48% / 0.7)"
+        : status === "active"
+        ? "hsl(195 85% 55% / 0.4)"
+        : "hsl(200 15% 50% / 0.1)";
+    const width = status === "completed" ? 0.7 : 0.45;
+    return (
+      <path
+        key={key}
+        d={d}
+        fill="none"
+        stroke={stroke}
+        strokeWidth={width}
+        strokeDasharray={status === "completed" ? "none" : "1.5 1"}
+        strokeLinecap="round"
+        filter={status === "completed" ? "url(#pathGlow)" : undefined}
+      />
+    );
+  }
+
   return (
     <svg
       className="pointer-events-none absolute inset-0 h-full w-full"
@@ -138,7 +177,7 @@ function MapPaths({ statuses }: { statuses: NodeStatus[] }) {
     >
       <defs>
         <filter id="pathGlow">
-          <feGaussianBlur stdDeviation="0.6" result="blur" />
+          <feGaussianBlur stdDeviation="0.7" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
@@ -146,42 +185,15 @@ function MapPaths({ statuses }: { statuses: NodeStatus[] }) {
         </filter>
       </defs>
       {/* Hub to first world */}
-      <line
-        x1={HUB[0]} y1={HUB[1]} x2={points[0][0]} y2={points[0][1]}
-        stroke="hsl(195 85% 50% / 0.25)" strokeWidth="0.5" strokeDasharray="1.2 0.8"
-        strokeLinecap="round"
-      />
-      {/* World-to-world paths */}
-      {points.map((p, i) => {
-        if (i === points.length - 1) return null;
-        const next = points[i + 1];
-        const completed = statuses[i] === "completed";
-        const unlocked = statuses[i + 1] !== "locked";
-        return (
-          <line
-            key={i}
-            x1={p[0]} y1={p[1]}
-            x2={next[0]} y2={next[1]}
-            stroke={
-              completed
-                ? "hsl(160 65% 48% / 0.6)"
-                : unlocked
-                ? "hsl(195 85% 50% / 0.3)"
-                : "hsl(200 15% 42% / 0.12)"
-            }
-            strokeWidth={completed ? "0.6" : "0.4"}
-            strokeDasharray={completed ? "none" : "1.2 0.8"}
-            strokeLinecap="round"
-            filter={completed ? "url(#pathGlow)" : undefined}
-          />
-        );
+      {curvedLine(HUB, pts[0], statuses[0] === "locked" ? "locked" : "active", "hub-0")}
+      {/* World-to-world */}
+      {pts.map((p, i) => {
+        if (i === pts.length - 1) return null;
+        const s = statuses[i] === "completed" ? "completed" : statuses[i + 1] !== "locked" ? "active" : "locked";
+        return curvedLine(p, pts[i + 1], s, `seg-${i}`);
       })}
-      {/* Last world back toward hub */}
-      <line
-        x1={points[6][0]} y1={points[6][1]} x2={HUB[0]} y2={HUB[1]}
-        stroke="hsl(200 15% 42% / 0.1)" strokeWidth="0.3" strokeDasharray="1.2 0.8"
-        strokeLinecap="round"
-      />
+      {/* Last back to hub */}
+      {curvedLine(pts[6], HUB, "locked", "loop")}
     </svg>
   );
 }
@@ -344,7 +356,7 @@ export default function MissionWorldMap() {
   return (
     <div className="min-h-screen pb-24 pt-20 relative overflow-hidden"
       style={{
-        background: "linear-gradient(160deg, hsl(240 50% 16%), hsl(220 55% 22%), hsl(195 60% 18%))",
+        background: "linear-gradient(160deg, hsl(210 55% 22%), hsl(195 55% 26%), hsl(185 50% 20%))",
       }}
     >
       {/* Decorative background elements */}
@@ -405,7 +417,7 @@ export default function MissionWorldMap() {
           {/* Map background */}
           <div className="absolute inset-0 rounded-3xl border border-white/10 overflow-hidden shadow-2xl"
             style={{
-              background: "radial-gradient(ellipse at center, hsl(220 50% 20% / 0.9), hsl(240 45% 14% / 0.95))",
+              background: "radial-gradient(ellipse at center, hsl(200 45% 20% / 0.9), hsl(210 40% 14% / 0.95))",
             }}
           >
             {/* Subtle grid pattern */}
@@ -488,12 +500,12 @@ export default function MissionWorldMap() {
 
                   {/* World icon circle */}
                   <div
-                    className={`relative flex h-14 w-14 md:h-[72px] md:w-[72px] items-center justify-center rounded-xl border-2 bg-gradient-to-br text-2xl md:text-3xl transition-shadow ${
+                    className={`relative flex h-14 w-14 md:h-[72px] md:w-[72px] items-center justify-center rounded-xl border-2 bg-gradient-to-br text-2xl md:text-3xl transition-all duration-200 ${
                       status === "completed"
-                        ? `${world.borderColor} ${world.color} shadow-[0_4px_20px_hsl(${world.glowHsl}/0.4)]`
+                        ? `${world.borderColor} ${world.color} shadow-[0_6px_24px_hsl(${world.glowHsl}/0.45)]`
                         : status === "unlocked"
-                        ? `${world.borderColor} ${world.color} shadow-[0_4px_20px_hsl(${world.glowHsl}/0.25)]`
-                        : "border-white/10 bg-gradient-to-br from-[hsl(220,30%,25%)] to-[hsl(220,30%,18%)]"
+                        ? `${world.borderColor} ${world.color} shadow-[0_6px_24px_hsl(${world.glowHsl}/0.3)] hover:shadow-[0_8px_30px_hsl(${world.glowHsl}/0.5)]`
+                        : "border-white/10 bg-gradient-to-br from-[hsl(210,25%,25%)] to-[hsl(210,25%,18%)] shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
                     }`}
                   >
                     {status === "locked" ? (
