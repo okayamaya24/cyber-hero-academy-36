@@ -44,6 +44,7 @@ export default function ParentDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [resettingMode, setResettingMode] = useState<string | null>(null);
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
