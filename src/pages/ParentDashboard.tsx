@@ -172,18 +172,23 @@ export default function ParentDashboard() {
 
   const getChildBadges = (childId: string) => allBadges.filter((b) => b.child_id === childId);
 
+  // Filtered data based on selected child
+  const filteredChildren = selectedChildId ? children.filter((c) => c.id === selectedChildId) : children;
+  const filteredProgress = selectedChildId ? allProgress.filter((p) => p.child_id === selectedChildId) : allProgress;
+  const filteredBadges = selectedChildId ? allBadges.filter((b) => b.child_id === selectedChildId) : allBadges;
+
   const totalMissionsDone = allProgress.filter((p) => p.status === "completed").length;
   const totalBadges = allBadges.length;
 
-  // --- New: Areas needing review ---
+  // --- Areas needing review (filtered) ---
   const areasNeedingReview = useMemo(() => {
-    if (children.length === 0) return [];
+    if (filteredChildren.length === 0) return [];
     const weakAreas: { missionTitle: string; childNames: string[]; status: string }[] = [];
     for (const mission of MISSIONS) {
       const childrenNeedingWork: string[] = [];
       let worstStatus = "completed";
-      for (const child of children) {
-        const progress = allProgress.find((p) => p.child_id === child.id && p.mission_id === mission.id);
+      for (const child of filteredChildren) {
+        const progress = filteredProgress.find((p) => p.child_id === child.id && p.mission_id === mission.id);
         if (!progress) {
           childrenNeedingWork.push(child.name);
           worstStatus = "not started";
@@ -200,7 +205,7 @@ export default function ParentDashboard() {
       }
     }
     return weakAreas.slice(0, 4);
-  }, [children, allProgress]);
+  }, [filteredChildren, filteredProgress]);
 
   // --- New: Conversation starters based on weak areas ---
   const conversationStarter = useMemo(() => {
