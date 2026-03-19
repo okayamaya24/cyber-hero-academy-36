@@ -44,6 +44,7 @@ export default function ParentDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [resettingMode, setResettingMode] = useState<string | null>(null);
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -171,18 +172,23 @@ export default function ParentDashboard() {
 
   const getChildBadges = (childId: string) => allBadges.filter((b) => b.child_id === childId);
 
+  // Filtered data based on selected child
+  const filteredChildren = selectedChildId ? children.filter((c) => c.id === selectedChildId) : children;
+  const filteredProgress = selectedChildId ? allProgress.filter((p) => p.child_id === selectedChildId) : allProgress;
+  const filteredBadges = selectedChildId ? allBadges.filter((b) => b.child_id === selectedChildId) : allBadges;
+
   const totalMissionsDone = allProgress.filter((p) => p.status === "completed").length;
   const totalBadges = allBadges.length;
 
-  // --- New: Areas needing review ---
+  // --- Areas needing review (filtered) ---
   const areasNeedingReview = useMemo(() => {
-    if (children.length === 0) return [];
+    if (filteredChildren.length === 0) return [];
     const weakAreas: { missionTitle: string; childNames: string[]; status: string }[] = [];
     for (const mission of MISSIONS) {
       const childrenNeedingWork: string[] = [];
       let worstStatus = "completed";
-      for (const child of children) {
-        const progress = allProgress.find((p) => p.child_id === child.id && p.mission_id === mission.id);
+      for (const child of filteredChildren) {
+        const progress = filteredProgress.find((p) => p.child_id === child.id && p.mission_id === mission.id);
         if (!progress) {
           childrenNeedingWork.push(child.name);
           worstStatus = "not started";
@@ -199,7 +205,7 @@ export default function ParentDashboard() {
       }
     }
     return weakAreas.slice(0, 4);
-  }, [children, allProgress]);
+  }, [filteredChildren, filteredProgress]);
 
   // --- New: Conversation starters based on weak areas ---
   const conversationStarter = useMemo(() => {
@@ -216,17 +222,17 @@ export default function ParentDashboard() {
     return starters[topic.missionTitle] || `Talk with your child about "${topic.missionTitle}" — they could use some extra practice!`;
   }, [areasNeedingReview]);
 
-  // --- New: Certificate progress ---
+  // --- Certificate progress (filtered) ---
   const certProgress = useMemo(() => {
     const totalBadgesNeeded = ALL_BADGES.length;
-    const uniqueEarned = new Set(allBadges.map((b) => b.badge_id)).size;
+    const uniqueEarned = new Set(filteredBadges.map((b) => b.badge_id)).size;
     return { earned: uniqueEarned, total: totalBadgesNeeded, percent: totalBadgesNeeded > 0 ? Math.round((uniqueEarned / totalBadgesNeeded) * 100) : 0 };
-  }, [allBadges]);
+  }, [filteredBadges]);
 
-  // --- New: Recent badges (last 5) ---
+  // --- Recent badges (filtered, last 5) ---
   const recentBadges = useMemo(() => {
-    return [...allBadges].sort((a, b) => new Date(b.earned_at).getTime() - new Date(a.earned_at).getTime()).slice(0, 5);
-  }, [allBadges]);
+    return [...filteredBadges].sort((a, b) => new Date(b.earned_at).getTime() - new Date(a.earned_at).getTime()).slice(0, 5);
+  }, [filteredBadges]);
 
   // --- New: Per-child learning summary ---
   const getChildSummary = (childId: string) => {
@@ -321,6 +327,36 @@ export default function ParentDashboard() {
         </motion.div>
 
         <div className="space-y-8">
+          {/* Child Switcher */}
+          {children.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-sm font-medium text-muted-foreground">Viewing:</span>
+              <button
+                onClick={() => setSelectedChildId(null)}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  selectedChildId === null
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                All Children
+              </button>
+              {children.map((child) => (
+                <button
+                  key={child.id}
+                  onClick={() => setSelectedChildId(child.id)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    selectedChildId === child.id
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {child.name}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Children Section */}
           <div>
             <div className="mb-4 flex items-center justify-between">
@@ -421,7 +457,7 @@ export default function ParentDashboard() {
               </h2>
               <motion.div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" variants={container} initial="hidden" animate="show">
                 {MISSIONS.map((m) => {
-                  const completed = allProgress.filter((p) => p.mission_id === m.id && p.status === "completed").length;
+                  const completed = filteredProgress.filter((p) => p.mission_id === m.id && p.status === "completed").length;
                   const Icon = m.icon;
 
                   return (
@@ -432,11 +468,11 @@ export default function ParentDashboard() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Progress
-                          value={children.length > 0 ? (completed / children.length) * 100 : 0}
+                          value={filteredChildren.length > 0 ? (completed / filteredChildren.length) * 100 : 0}
                           className="h-2 flex-1"
                         />
                         <span className="whitespace-nowrap text-xs text-muted-foreground">
-                          {completed}/{children.length}
+                          {completed}/{filteredChildren.length}
                         </span>
                       </div>
                     </motion.div>
@@ -500,7 +536,7 @@ export default function ParentDashboard() {
               <span className="text-sm font-semibold text-primary">{certProgress.percent}%</span>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              {certProgress.earned}/{certProgress.total} badges earned across all children.
+              {certProgress.earned}/{certProgress.total} badges earned{selectedChildId ? "" : " across all children"}.
               {certProgress.percent < 100
                 ? ` ${certProgress.total - certProgress.earned} more to unlock the CyberGuardian Certificate!`
                 : " 🎉 Certificate unlocked!"}
