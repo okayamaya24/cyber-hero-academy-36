@@ -278,6 +278,36 @@ export default function ParentDashboard() {
           </Button>
         </motion.div>
 
+        {/* Child Switcher — directly under header */}
+        {children.length > 1 && (
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-sm font-medium text-muted-foreground">Viewing:</span>
+            <button
+              onClick={() => setSelectedChildId(null)}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                selectedChildId === null
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              All Children
+            </button>
+            {children.map((child) => (
+              <button
+                key={child.id}
+                onClick={() => setSelectedChildId(child.id)}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  selectedChildId === child.id
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                {child.name}
+              </button>
+            ))}
+          </div>
+        )}
+
         <motion.div
           className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
           variants={container}
@@ -287,34 +317,34 @@ export default function ParentDashboard() {
           {[
             {
               label: "Children",
-              value: children.length,
+              value: selectedChildId ? 1 : children.length,
               icon: Users,
               color: "text-primary",
             },
             {
               label: "Active Today",
-              value: children.filter((c) => c.last_activity_date === new Date().toISOString().split("T")[0]).length,
+              value: filteredChildren.filter((c) => c.last_activity_date === new Date().toISOString().split("T")[0]).length,
               icon: TrendingUp,
               color: "text-secondary",
             },
             {
               label: "Missions Done",
-              value: totalMissionsDone,
+              value: filteredProgress.filter((p) => p.status === "completed").length,
               icon: CheckCircle2,
               color: "text-accent",
             },
             {
               label: "Badges Earned",
-              value: totalBadges,
+              value: filteredBadges.length,
               icon: Award,
               color: "text-cyber-teal",
             },
             {
               label: "Time Spent",
-              value: `${Math.min(children.reduce((acc, c) => acc + (c.last_activity_date === new Date().toISOString().split("T")[0] ? Math.round((c.points % 200) * 0.5 + 5) : 0), 0), 120)} min`,
+              value: `${Math.min(filteredChildren.reduce((acc, c) => acc + (c.last_activity_date === new Date().toISOString().split("T")[0] ? Math.round((c.points % 200) * 0.5 + 5) : 0), 0), 120)} min`,
               icon: Clock,
               color: "text-primary",
-              subtext: `${Math.round(children.reduce((acc, c) => acc + Math.round((c.points % 500) * 0.3 + 10), 0) / 60)}h ${children.reduce((acc, c) => acc + Math.round((c.points % 500) * 0.3 + 10), 0) % 60}m this week`,
+              subtext: `${Math.round(filteredChildren.reduce((acc, c) => acc + Math.round((c.points % 500) * 0.3 + 10), 0) / 60)}h ${filteredChildren.reduce((acc, c) => acc + Math.round((c.points % 500) * 0.3 + 10), 0) % 60}m this week`,
             },
           ].map((s: any) => (
             <motion.div key={s.label} variants={fadeUp} className="rounded-2xl border bg-card p-5 shadow-card">
@@ -327,35 +357,6 @@ export default function ParentDashboard() {
         </motion.div>
 
         <div className="space-y-8">
-          {/* Child Switcher */}
-          {children.length > 1 && (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-1 text-sm font-medium text-muted-foreground">Viewing:</span>
-              <button
-                onClick={() => setSelectedChildId(null)}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                  selectedChildId === null
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                All Children
-              </button>
-              {children.map((child) => (
-                <button
-                  key={child.id}
-                  onClick={() => setSelectedChildId(child.id)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                    selectedChildId === child.id
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  {child.name}
-                </button>
-              ))}
-            </div>
-          )}
 
           {/* Children Section */}
           <div>
