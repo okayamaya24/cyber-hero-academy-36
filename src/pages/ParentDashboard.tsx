@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -15,13 +15,17 @@ import {
   Trash2,
   LogOut,
   Settings2,
+  AlertCircle,
+  MessageCircle,
+  GraduationCap,
+  Star,
 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MISSIONS, getTotalGames, LEARNING_MODE_CONFIG, type LearningMode } from "@/data/missions";
+import { MISSIONS, ALL_BADGES, getTotalGames, LEARNING_MODE_CONFIG, type LearningMode } from "@/data/missions";
 import { toast } from "sonner";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 
