@@ -1,7 +1,7 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Lock, Star, Zap, Shield } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Lock, Star, Zap, Shield, MessageCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -21,7 +21,6 @@ const WORLDS = [
     bgTile: "bg-[hsl(195,85%,50%/0.12)]",
     borderColor: "border-[hsl(195,85%,50%)]",
     glowHsl: "195 85% 50%",
-    // Position on the map (% from center hub)
     pos: { top: "6%", left: "50%", tx: "-50%" },
     pathFrom: "hub",
   },
@@ -118,14 +117,16 @@ function getStars(score: number, maxScore: number): number {
 
 /* ─── SVG path lines between positioned worlds ───────── */
 const PATH_COORDS: [number, number][] = [
-  [50, 14],   // Password Peak
-  [82, 26],   // Phish Lagoon
-  [88, 54],   // Browse Bazaar
-  [75, 82],   // Privacy Palace
-  [25, 82],   // Download Dungeon
-  [12, 54],   // Stranger Shore
-  [18, 26],   // Kindness Kingdom
+  [50, 14],
+  [82, 26],
+  [88, 54],
+  [75, 82],
+  [25, 82],
+  [12, 54],
+  [18, 26],
 ];
+
+const HUB: [number, number] = [50, 48];
 
 function MapPaths({ statuses }: { statuses: NodeStatus[] }) {
   const points = PATH_COORDS;
@@ -135,29 +136,120 @@ function MapPaths({ statuses }: { statuses: NodeStatus[] }) {
       viewBox="0 0 100 100"
       preserveAspectRatio="none"
     >
+      <defs>
+        <filter id="pathGlow">
+          <feGaussianBlur stdDeviation="0.6" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
       {/* Hub to first world */}
-      <line x1={50} y1={48} x2={points[0][0]} y2={points[0][1]}
-        stroke="hsl(195 85% 50% / 0.3)" strokeWidth="0.4" strokeDasharray="1.5 1" />
+      <line
+        x1={HUB[0]} y1={HUB[1]} x2={points[0][0]} y2={points[0][1]}
+        stroke="hsl(195 85% 50% / 0.25)" strokeWidth="0.5" strokeDasharray="1.2 0.8"
+        strokeLinecap="round"
+      />
       {/* World-to-world paths */}
       {points.map((p, i) => {
         if (i === points.length - 1) return null;
         const next = points[i + 1];
-        const active = statuses[i] === "completed";
+        const completed = statuses[i] === "completed";
+        const unlocked = statuses[i + 1] !== "locked";
         return (
           <line
             key={i}
             x1={p[0]} y1={p[1]}
             x2={next[0]} y2={next[1]}
-            stroke={active ? "hsl(160 65% 48% / 0.5)" : "hsl(200 15% 42% / 0.18)"}
-            strokeWidth="0.4"
-            strokeDasharray={active ? "none" : "1.5 1"}
+            stroke={
+              completed
+                ? "hsl(160 65% 48% / 0.6)"
+                : unlocked
+                ? "hsl(195 85% 50% / 0.3)"
+                : "hsl(200 15% 42% / 0.12)"
+            }
+            strokeWidth={completed ? "0.6" : "0.4"}
+            strokeDasharray={completed ? "none" : "1.2 0.8"}
+            strokeLinecap="round"
+            filter={completed ? "url(#pathGlow)" : undefined}
           />
         );
       })}
-      {/* Last world back toward hub (visual loop hint) */}
-      <line x1={points[6][0]} y1={points[6][1]} x2={50} y2={48}
-        stroke="hsl(200 15% 42% / 0.12)" strokeWidth="0.3" strokeDasharray="1.5 1" />
+      {/* Last world back toward hub */}
+      <line
+        x1={points[6][0]} y1={points[6][1]} x2={HUB[0]} y2={HUB[1]}
+        stroke="hsl(200 15% 42% / 0.1)" strokeWidth="0.3" strokeDasharray="1.2 0.8"
+        strokeLinecap="round"
+      />
     </svg>
+  );
+}
+
+/* ─── Guide messages ─────────────────────────────────── */
+const GUIDE_MESSAGES = {
+  idle: [
+    "Hey Guardian! Ready to start your journey? 🚀",
+    "Every world has secrets to discover! 🔍",
+    "You're doing amazing, keep it up! 💪",
+    "Tap a world to begin your mission! 🎯",
+  ],
+  worldSelected: "Let's explore this world! 🌟",
+  worldLocked: "Finish the previous world to unlock this one! 🔒",
+  progress: "Great job! Keep going, hero! 🎉",
+};
+
+/* ─── Guide Character Component ──────────────────────── */
+function GuideCharacter({
+  avatarConfig,
+  message,
+  onTap,
+}: {
+  avatarConfig: Record<string, any> | null;
+  message: string;
+  onTap: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.8 }}
+      className="fixed bottom-24 right-4 z-50 flex flex-col items-end gap-2 md:bottom-8 md:right-6"
+    >
+      {/* Speech bubble */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={message}
+          initial={{ opacity: 0, scale: 0.85, y: 6 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.85, y: 6 }}
+          transition={{ duration: 0.25 }}
+          className="relative max-w-[200px] rounded-2xl rounded-br-sm bg-card border border-border px-3 py-2 shadow-lg"
+        >
+          <p className="text-xs font-medium text-foreground leading-snug">{message}</p>
+          {/* Bubble tail */}
+          <div className="absolute -bottom-1.5 right-4 h-3 w-3 rotate-45 bg-card border-r border-b border-border" />
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Avatar button */}
+      <motion.button
+        onClick={onTap}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-primary bg-card shadow-[0_0_20px_hsl(195_85%_50%/0.3)] transition-shadow hover:shadow-[0_0_28px_hsl(195_85%_50%/0.45)]"
+      >
+        <motion.div
+          animate={{ y: [0, -2, 0] }}
+          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+        >
+          <HeroAvatar avatarConfig={avatarConfig} size={36} fallbackEmoji="🦸" />
+        </motion.div>
+        <div className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary">
+          <MessageCircle className="h-3 w-3 text-primary-foreground" />
+        </div>
+      </motion.button>
+    </motion.div>
   );
 }
 
@@ -165,6 +257,8 @@ function MapPaths({ statuses }: { statuses: NodeStatus[] }) {
 export default function MissionWorldMap() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
+  const [guideMessage, setGuideMessage] = useState(GUIDE_MESSAGES.idle[0]);
+  const [idleIndex, setIdleIndex] = useState(0);
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -222,18 +316,66 @@ export default function MissionWorldMap() {
 
   const totalStars = nodeStatuses.reduce((s, n) => s + n.stars, 0);
   const completedCount = nodeStatuses.filter((n) => n.status === "completed").length;
-
-  // Find current world (first unlocked)
   const currentWorldIdx = nodeStatuses.findIndex((n) => n.status === "unlocked");
 
+  // Set progress message if any worlds completed
+  useEffect(() => {
+    if (completedCount > 0 && completedCount < WORLDS.length) {
+      setGuideMessage(GUIDE_MESSAGES.progress);
+    }
+  }, [completedCount]);
+
+  const cycleIdleMessage = useCallback(() => {
+    const next = (idleIndex + 1) % GUIDE_MESSAGES.idle.length;
+    setIdleIndex(next);
+    setGuideMessage(GUIDE_MESSAGES.idle[next]);
+  }, [idleIndex]);
+
   const handleWorldClick = (world: typeof WORLDS[number], status: NodeStatus) => {
-    if (status === "locked") return;
-    navigate(`/missions?mission=${world.id}`);
+    if (status === "locked") {
+      setGuideMessage(GUIDE_MESSAGES.worldLocked);
+      return;
+    }
+    setGuideMessage(GUIDE_MESSAGES.worldSelected);
+    // Small delay so message shows before navigation
+    setTimeout(() => navigate(`/missions?mission=${world.id}`), 400);
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24 pt-20">
-      <div className="mx-auto max-w-5xl px-4">
+    <div className="min-h-screen pb-24 pt-20 relative overflow-hidden"
+      style={{
+        background: "linear-gradient(160deg, hsl(240 50% 16%), hsl(220 55% 22%), hsl(195 60% 18%))",
+      }}
+    >
+      {/* Decorative background elements */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {/* Stars / sparkles */}
+        {Array.from({ length: 30 }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full bg-white"
+            style={{
+              width: Math.random() * 3 + 1,
+              height: Math.random() * 3 + 1,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              opacity: Math.random() * 0.4 + 0.1,
+            }}
+            animate={{ opacity: [0.1, 0.5, 0.1] }}
+            transition={{
+              repeat: Infinity,
+              duration: Math.random() * 3 + 2,
+              delay: Math.random() * 2,
+            }}
+          />
+        ))}
+        {/* Soft cloud shapes */}
+        <div className="absolute top-[8%] left-[5%] h-20 w-40 rounded-full bg-white/[0.03] blur-2xl" />
+        <div className="absolute top-[15%] right-[10%] h-16 w-32 rounded-full bg-white/[0.04] blur-2xl" />
+        <div className="absolute bottom-[20%] left-[15%] h-24 w-48 rounded-full bg-white/[0.03] blur-3xl" />
+      </div>
+
+      <div className="relative mx-auto max-w-5xl px-4">
         {/* Header bar */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -241,40 +383,52 @@ export default function MissionWorldMap() {
           className="mb-4 flex flex-wrap items-center justify-between gap-3"
         >
           <div>
-            <h1 className="text-2xl font-bold md:text-3xl">🗺️ Adventure Map</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-2xl font-bold text-white md:text-3xl">🗺️ Adventure Map</h1>
+            <p className="text-sm text-white/60">
               {rank.emoji} {rank.title} · {completedCount}/{WORLDS.length} worlds conquered
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1.5">
+            <div className="flex items-center gap-1.5 rounded-full bg-accent/20 px-3 py-1.5 backdrop-blur-sm">
               <Star className="h-4 w-4 text-accent" fill="hsl(var(--accent))" />
-              <span className="text-sm font-bold">{totalStars}</span>
+              <span className="text-sm font-bold text-white">{totalStars}</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1.5">
+            <div className="flex items-center gap-1.5 rounded-full bg-primary/20 px-3 py-1.5 backdrop-blur-sm">
               <Zap className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold">{points} XP</span>
+              <span className="text-sm font-bold text-white">{points} XP</span>
             </div>
           </div>
         </motion.div>
 
         {/* ─── THE MAP ─────────────────────────────────── */}
         <div className="relative mx-auto aspect-square max-w-3xl w-full">
-          {/* Background texture */}
-          <div className="absolute inset-0 rounded-3xl border-2 border-border bg-card overflow-hidden shadow-lg">
+          {/* Map background */}
+          <div className="absolute inset-0 rounded-3xl border border-white/10 overflow-hidden shadow-2xl"
+            style={{
+              background: "radial-gradient(ellipse at center, hsl(220 50% 20% / 0.9), hsl(240 45% 14% / 0.95))",
+            }}
+          >
             {/* Subtle grid pattern */}
-            <div className="absolute inset-0 opacity-[0.03]"
+            <div className="absolute inset-0 opacity-[0.04]"
               style={{
-                backgroundImage: "radial-gradient(circle, hsl(195 85% 50%) 1px, transparent 1px)",
-                backgroundSize: "24px 24px",
+                backgroundImage: "radial-gradient(circle, hsl(195 85% 60%) 1px, transparent 1px)",
+                backgroundSize: "28px 28px",
               }}
             />
+            {/* Color zone tints per world area */}
+            <div className="absolute top-0 left-1/4 right-1/4 h-1/4 rounded-b-full bg-[hsl(195,85%,50%/0.06)] blur-xl" />
+            <div className="absolute top-[10%] right-0 w-1/3 h-1/3 rounded-full bg-[hsl(30,95%,55%/0.05)] blur-2xl" />
+            <div className="absolute top-1/3 right-0 w-1/4 h-1/3 rounded-full bg-[hsl(175,70%,42%/0.05)] blur-2xl" />
+            <div className="absolute bottom-[5%] right-1/4 w-1/3 h-1/4 rounded-full bg-[hsl(270,60%,55%/0.06)] blur-2xl" />
+            <div className="absolute bottom-[5%] left-[5%] w-1/3 h-1/4 rounded-full bg-[hsl(0,84%,60%/0.05)] blur-2xl" />
+            <div className="absolute top-1/3 left-0 w-1/4 h-1/3 rounded-full bg-[hsl(185,80%,48%/0.05)] blur-2xl" />
+            <div className="absolute top-[10%] left-0 w-1/3 h-1/4 rounded-full bg-[hsl(330,70%,55%/0.05)] blur-2xl" />
           </div>
 
           {/* SVG path connections */}
           <MapPaths statuses={nodeStatuses.map((n) => n.status)} />
 
-          {/* Central Hub */}
+          {/* Central Hub - now just the label, no avatar */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -282,18 +436,12 @@ export default function MissionWorldMap() {
             className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2"
           >
             <div className="flex flex-col items-center">
-              <div className="relative flex h-20 w-20 md:h-24 md:w-24 items-center justify-center rounded-full border-[3px] border-primary bg-card shadow-[0_0_30px_hsl(195_85%_50%/0.25)]">
-                <motion.div
-                  animate={{ y: [0, -3, 0] }}
-                  transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-                >
-                  <HeroAvatar avatarConfig={avatarConfig} size={52} fallbackEmoji="🦸" />
-                </motion.div>
-                <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground shadow">
-                  <Shield className="h-3.5 w-3.5" />
-                </div>
+              <div className="relative flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-full border-2 border-primary/60 shadow-[0_0_35px_hsl(195_85%_50%/0.35)]"
+                style={{ background: "radial-gradient(circle, hsl(195 85% 50% / 0.2), hsl(220 50% 18% / 0.8))" }}
+              >
+                <Shield className="h-7 w-7 md:h-9 md:w-9 text-primary" />
               </div>
-              <div className="mt-2 rounded-full bg-primary/10 px-3 py-0.5">
+              <div className="mt-2 rounded-full bg-primary/15 px-3 py-0.5 backdrop-blur-sm border border-primary/20">
                 <p className="text-[10px] md:text-xs font-bold text-primary whitespace-nowrap">
                   CyberGuard Academy
                 </p>
@@ -326,37 +474,37 @@ export default function MissionWorldMap() {
                   whileHover={isClickable ? { scale: 1.08 } : {}}
                   whileTap={isClickable ? { scale: 0.95 } : {}}
                   className={`group relative flex flex-col items-center transition-all ${
-                    status === "locked" ? "opacity-40 grayscale cursor-not-allowed" : "cursor-pointer"
+                    status === "locked" ? "opacity-35 grayscale cursor-not-allowed" : "cursor-pointer"
                   }`}
                 >
-                  {/* Current world indicator */}
+                  {/* Current world pulse ring */}
                   {isCurrent && (
                     <motion.div
-                      animate={{ scale: [1, 1.3, 1] }}
-                      transition={{ repeat: Infinity, duration: 2 }}
-                      className="absolute -top-2 -left-2 -right-2 -bottom-2 rounded-2xl border-2 border-primary/40 bg-primary/5 z-0"
+                      animate={{ scale: [1, 1.25, 1], opacity: [0.4, 0.15, 0.4] }}
+                      transition={{ repeat: Infinity, duration: 2.5 }}
+                      className="absolute -inset-3 rounded-2xl border-2 border-primary/50 z-0"
                     />
                   )}
 
                   {/* World icon circle */}
                   <div
-                    className={`relative flex h-14 w-14 md:h-[72px] md:w-[72px] items-center justify-center rounded-xl border-2 bg-gradient-to-br text-2xl md:text-3xl shadow-md transition-shadow ${
+                    className={`relative flex h-14 w-14 md:h-[72px] md:w-[72px] items-center justify-center rounded-xl border-2 bg-gradient-to-br text-2xl md:text-3xl transition-shadow ${
                       status === "completed"
-                        ? `${world.borderColor} ${world.color} shadow-[0_0_16px_hsl(${world.glowHsl}/0.3)]`
+                        ? `${world.borderColor} ${world.color} shadow-[0_4px_20px_hsl(${world.glowHsl}/0.4)]`
                         : status === "unlocked"
-                        ? `${world.borderColor} ${world.color} shadow-[0_0_16px_hsl(${world.glowHsl}/0.2)]`
-                        : "border-muted bg-muted"
+                        ? `${world.borderColor} ${world.color} shadow-[0_4px_20px_hsl(${world.glowHsl}/0.25)]`
+                        : "border-white/10 bg-gradient-to-br from-[hsl(220,30%,25%)] to-[hsl(220,30%,18%)]"
                     }`}
                   >
                     {status === "locked" ? (
-                      <Lock className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground" />
+                      <Lock className="h-5 w-5 md:h-6 md:w-6 text-white/30" />
                     ) : (
-                      <span className="drop-shadow">{world.icon}</span>
+                      <span className="drop-shadow-lg">{world.icon}</span>
                     )}
 
                     {/* Completion check */}
                     {status === "completed" && (
-                      <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] text-secondary-foreground shadow">
+                      <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] text-secondary-foreground shadow-md">
                         ✓
                       </div>
                     )}
@@ -369,7 +517,7 @@ export default function MissionWorldMap() {
                         <Star
                           key={s}
                           className={`h-3 w-3 ${
-                            s <= stars ? "text-accent fill-[hsl(var(--accent))]" : "text-muted-foreground/20"
+                            s <= stars ? "text-accent fill-[hsl(var(--accent))]" : "text-white/15"
                           }`}
                         />
                       ))}
@@ -377,11 +525,11 @@ export default function MissionWorldMap() {
                   )}
 
                   {/* World name label */}
-                  <div className={`mt-1 rounded-lg px-2 py-0.5 ${
-                    status === "locked" ? "bg-muted/60" : world.bgTile
+                  <div className={`mt-1 rounded-lg px-2 py-0.5 backdrop-blur-sm ${
+                    status === "locked" ? "bg-white/5" : `${world.bgTile} bg-opacity-80`
                   }`}>
                     <p className={`text-[9px] md:text-[11px] font-bold leading-tight whitespace-nowrap ${
-                      status === "locked" ? "text-muted-foreground" : "text-foreground"
+                      status === "locked" ? "text-white/30" : "text-white"
                     }`}>
                       {world.name}
                     </p>
@@ -409,7 +557,7 @@ export default function MissionWorldMap() {
             transition={{ delay: 1.2 }}
             className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10"
           >
-            <p className="text-xs text-muted-foreground font-medium text-center">
+            <p className="text-xs text-white/50 font-medium text-center">
               🏆 Complete all worlds to earn your certificate!
             </p>
           </motion.div>
@@ -420,7 +568,7 @@ export default function MissionWorldMap() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground"
+          className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-white/50"
         >
           <span className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-full bg-primary animate-pulse" /> Current
@@ -429,10 +577,17 @@ export default function MissionWorldMap() {
             <span className="h-3 w-3 rounded-full bg-secondary" /> Completed
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-muted border border-muted-foreground/20" /> Locked
+            <span className="h-3 w-3 rounded-full bg-white/15 border border-white/10" /> Locked
           </span>
         </motion.div>
       </div>
+
+      {/* Guide Character in corner */}
+      <GuideCharacter
+        avatarConfig={avatarConfig}
+        message={guideMessage}
+        onTap={cycleIdleMessage}
+      />
     </div>
   );
 }
