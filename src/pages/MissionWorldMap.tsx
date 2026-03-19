@@ -356,7 +356,7 @@ export default function MissionWorldMap() {
   return (
     <div className="min-h-screen pb-24 pt-20 relative overflow-hidden"
       style={{
-        background: "linear-gradient(160deg, hsl(240 50% 16%), hsl(220 55% 22%), hsl(195 60% 18%))",
+        background: "linear-gradient(160deg, hsl(210 55% 22%), hsl(195 55% 26%), hsl(185 50% 20%))",
       }}
     >
       {/* Decorative background elements */}
