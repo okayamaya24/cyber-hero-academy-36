@@ -500,12 +500,12 @@ export default function MissionWorldMap() {
 
                   {/* World icon circle */}
                   <div
-                    className={`relative flex h-14 w-14 md:h-[72px] md:w-[72px] items-center justify-center rounded-xl border-2 bg-gradient-to-br text-2xl md:text-3xl transition-shadow ${
+                    className={`relative flex h-14 w-14 md:h-[72px] md:w-[72px] items-center justify-center rounded-xl border-2 bg-gradient-to-br text-2xl md:text-3xl transition-all duration-200 ${
                       status === "completed"
-                        ? `${world.borderColor} ${world.color} shadow-[0_4px_20px_hsl(${world.glowHsl}/0.4)]`
+                        ? `${world.borderColor} ${world.color} shadow-[0_6px_24px_hsl(${world.glowHsl}/0.45)]`
                         : status === "unlocked"
-                        ? `${world.borderColor} ${world.color} shadow-[0_4px_20px_hsl(${world.glowHsl}/0.25)]`
-                        : "border-white/10 bg-gradient-to-br from-[hsl(220,30%,25%)] to-[hsl(220,30%,18%)]"
+                        ? `${world.borderColor} ${world.color} shadow-[0_6px_24px_hsl(${world.glowHsl}/0.3)] hover:shadow-[0_8px_30px_hsl(${world.glowHsl}/0.5)]`
+                        : "border-white/10 bg-gradient-to-br from-[hsl(210,25%,25%)] to-[hsl(210,25%,18%)] shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
                     }`}
                   >
                     {status === "locked" ? (
