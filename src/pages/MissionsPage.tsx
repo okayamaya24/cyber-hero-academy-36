@@ -157,6 +157,8 @@ export default function MissionsPage() {
   const [score, setScore] = useState(0);
   const [missionComplete, setMissionComplete] = useState(false);
   const [gameKey, setGameKey] = useState(0);
+  const [worldFilter, setWorldFilter] = useState<string>("all");
+  const [starFilter, setStarFilter] = useState<number>(0);
 
   useEffect(() => {
     if (!user) navigate("/login");
