@@ -174,6 +174,85 @@ export default function ParentDashboard() {
   const totalMissionsDone = allProgress.filter((p) => p.status === "completed").length;
   const totalBadges = allBadges.length;
 
+  // --- New: Areas needing review ---
+  const areasNeedingReview = useMemo(() => {
+    if (children.length === 0) return [];
+    const weakAreas: { missionTitle: string; childNames: string[]; status: string }[] = [];
+    for (const mission of MISSIONS) {
+      const childrenNeedingWork: string[] = [];
+      let worstStatus = "completed";
+      for (const child of children) {
+        const progress = allProgress.find((p) => p.child_id === child.id && p.mission_id === mission.id);
+        if (!progress) {
+          childrenNeedingWork.push(child.name);
+          worstStatus = "not started";
+        } else if (progress.status !== "completed") {
+          childrenNeedingWork.push(child.name);
+          if (worstStatus !== "not started") worstStatus = "in progress";
+        } else if (progress.score < progress.max_score * 0.7) {
+          childrenNeedingWork.push(child.name);
+          if (worstStatus === "completed") worstStatus = "needs review";
+        }
+      }
+      if (childrenNeedingWork.length > 0) {
+        weakAreas.push({ missionTitle: mission.title, childNames: childrenNeedingWork, status: worstStatus });
+      }
+    }
+    return weakAreas.slice(0, 4);
+  }, [children, allProgress]);
+
+  // --- New: Conversation starters based on weak areas ---
+  const conversationStarter = useMemo(() => {
+    if (areasNeedingReview.length === 0) return null;
+    const topic = areasNeedingReview[0];
+    const starters: Record<string, string> = {
+      "Spot the Scam!": "Ask your child: 'If you got a message saying you won a prize, what would you do?'",
+      "Password Power": "Try this: 'Can you make up a silly sentence to use as a password? Like PurpleDinosaur-Eats-Pizza42!'",
+      "Safe Sites Explorer": "Ask: 'How can you tell if a website is safe before clicking?'",
+      "Secret Keeper": "Discuss: 'What information should we never share online with strangers?'",
+      "Malware Monsters": "Ask: 'What would you do if a pop-up said your tablet has a virus?'",
+      "Phishy Messages": "Try: 'Let's look at an email together — can you spot anything suspicious?'",
+    };
+    return starters[topic.missionTitle] || `Talk with your child about "${topic.missionTitle}" — they could use some extra practice!`;
+  }, [areasNeedingReview]);
+
+  // --- New: Certificate progress ---
+  const certProgress = useMemo(() => {
+    const totalBadgesNeeded = ALL_BADGES.length;
+    const uniqueEarned = new Set(allBadges.map((b) => b.badge_id)).size;
+    return { earned: uniqueEarned, total: totalBadgesNeeded, percent: totalBadgesNeeded > 0 ? Math.round((uniqueEarned / totalBadgesNeeded) * 100) : 0 };
+  }, [allBadges]);
+
+  // --- New: Recent badges (last 5) ---
+  const recentBadges = useMemo(() => {
+    return [...allBadges].sort((a, b) => new Date(b.earned_at).getTime() - new Date(a.earned_at).getTime()).slice(0, 5);
+  }, [allBadges]);
+
+  // --- New: Per-child learning summary ---
+  const getChildSummary = (childId: string) => {
+    const childMissions = getChildMissions(childId);
+    const completedMissions = childMissions.filter((m) => m.status === "completed");
+    const totalStars = completedMissions.reduce((acc, m) => {
+      const ratio = m.max_score > 0 ? m.score / m.max_score : 0;
+      return acc + (ratio >= 0.9 ? 3 : ratio >= 0.7 ? 2 : 1);
+    }, 0);
+
+    let strongestTopic = "—";
+    let needsReviewTopic = "—";
+    let bestScore = -1;
+    let worstScore = Infinity;
+
+    for (const m of childMissions) {
+      const mission = MISSIONS.find((mi) => mi.id === m.mission_id);
+      if (!mission) continue;
+      const ratio = m.max_score > 0 ? m.score / m.max_score : 0;
+      if (ratio > bestScore) { bestScore = ratio; strongestTopic = mission.title; }
+      if (ratio < worstScore) { worstScore = ratio; needsReviewTopic = mission.title; }
+    }
+
+    return { completedCount: completedMissions.length, totalStars, strongestTopic, needsReviewTopic };
+  };
+
   if (!user) return null;
 
   return (
@@ -352,6 +431,7 @@ export default function ParentDashboard() {
                   {children.map((child) => {
                     const rawMode2 = ((child as any).learning_mode as string) || "standard";
                     const childMode: LearningMode = (rawMode2 in LEARNING_MODE_CONFIG ? rawMode2 : "standard") as LearningMode;
+                    const summary = getChildSummary(child.id);
 
                     return (
                       <motion.div
@@ -366,6 +446,26 @@ export default function ParentDashboard() {
                             fallbackEmoji={child.avatar}
                           />
                           <h3 className="font-bold">{child.name}'s Learning Mode</h3>
+                        </div>
+
+                        {/* Learning summary stats */}
+                        <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          <div className="rounded-lg bg-primary/5 p-2 text-center">
+                            <div className="text-lg font-bold text-primary">{summary.completedCount}</div>
+                            <div className="text-[10px] text-muted-foreground">Missions Done</div>
+                          </div>
+                          <div className="rounded-lg bg-accent/5 p-2 text-center">
+                            <div className="text-lg font-bold text-accent">{summary.totalStars} ⭐</div>
+                            <div className="text-[10px] text-muted-foreground">Stars Earned</div>
+                          </div>
+                          <div className="rounded-lg bg-secondary/10 p-2 text-center">
+                            <div className="truncate text-xs font-semibold text-secondary">{summary.strongestTopic}</div>
+                            <div className="text-[10px] text-muted-foreground">Strongest</div>
+                          </div>
+                          <div className="rounded-lg bg-destructive/5 p-2 text-center">
+                            <div className="truncate text-xs font-semibold text-destructive">{summary.needsReviewTopic}</div>
+                            <div className="text-[10px] text-muted-foreground">Needs Review</div>
+                          </div>
                         </div>
 
                         {resettingMode === child.id && (
@@ -417,43 +517,138 @@ export default function ParentDashboard() {
             )}
           </div>
 
-          <div>
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
-              <BarChart3 className="h-5 w-5 text-secondary" /> Mission Completion
-            </h2>
+          <div className="space-y-6">
+            {/* Mission Completion */}
+            <div>
+              <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
+                <BarChart3 className="h-5 w-5 text-secondary" /> Mission Completion
+              </h2>
 
-            {children.length === 0 ? (
-              <div className="rounded-2xl border-2 border-dashed bg-card p-6 text-center text-sm text-muted-foreground">
-                Add children to see mission stats
-              </div>
-            ) : (
-              <motion.div className="space-y-4" variants={container} initial="hidden" animate="show">
-                {MISSIONS.map((m) => {
-                  const completed = allProgress.filter((p) => p.mission_id === m.id && p.status === "completed").length;
-                  const Icon = m.icon;
+              {children.length === 0 ? (
+                <div className="rounded-2xl border-2 border-dashed bg-card p-6 text-center text-sm text-muted-foreground">
+                  Add children to see mission stats
+                </div>
+              ) : (
+                <motion.div className="space-y-4" variants={container} initial="hidden" animate="show">
+                  {MISSIONS.map((m) => {
+                    const completed = allProgress.filter((p) => p.mission_id === m.id && p.status === "completed").length;
+                    const Icon = m.icon;
 
-                  return (
-                    <motion.div key={m.id} variants={fadeUp} className="rounded-2xl border bg-card p-4 shadow-card">
-                      <div className="mb-2 flex items-center gap-3">
-                        <Icon className={`h-5 w-5 ${m.color}`} />
-                        <span className="text-sm font-bold">{m.title}</span>
+                    return (
+                      <motion.div key={m.id} variants={fadeUp} className="rounded-2xl border bg-card p-4 shadow-card">
+                        <div className="mb-2 flex items-center gap-3">
+                          <Icon className={`h-5 w-5 ${m.color}`} />
+                          <span className="text-sm font-bold">{m.title}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Progress
+                            value={children.length > 0 ? (completed / children.length) * 100 : 0}
+                            className="h-2 flex-1"
+                          />
+                          <span className="whitespace-nowrap text-xs text-muted-foreground">
+                            {completed}/{children.length} children
+                          </span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </div>
+
+            {/* Areas Needing Review */}
+            {areasNeedingReview.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
+                  <AlertCircle className="h-5 w-5 text-destructive" /> Areas Needing Review
+                </h2>
+                <div className="space-y-3">
+                  {areasNeedingReview.map((area) => (
+                    <div key={area.missionTitle} className="rounded-2xl border bg-card p-4 shadow-card">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold">{area.missionTitle}</span>
+                        <Badge variant="outline" className="text-[10px]">
+                          {area.status}
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Progress
-                          value={children.length > 0 ? (completed / children.length) * 100 : 0}
-                          className="h-2 flex-1"
-                        />
-                        <span className="whitespace-nowrap text-xs text-muted-foreground">
-                          {completed}/{children.length} children
-                        </span>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {area.childNames.join(", ")}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </motion.div>
             )}
 
-            <div className="mt-6 rounded-2xl border bg-primary/5 p-5">
+            {/* Conversation Starter */}
+            {conversationStarter && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="rounded-2xl border bg-primary/5 p-5"
+              >
+                <h3 className="mb-2 flex items-center gap-2 font-bold text-primary">
+                  <MessageCircle className="h-4 w-4" /> Conversation Starter
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{conversationStarter}</p>
+              </motion.div>
+            )}
+
+            {/* Certificate Progress */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="rounded-2xl border bg-card p-5 shadow-card"
+            >
+              <h3 className="mb-3 flex items-center gap-2 font-bold">
+                <GraduationCap className="h-5 w-5 text-primary" /> Certificate Progress
+              </h3>
+              <div className="flex items-center gap-3">
+                <Progress value={certProgress.percent} className="h-3 flex-1" />
+                <span className="text-sm font-semibold text-primary">{certProgress.percent}%</span>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {certProgress.earned}/{certProgress.total} badges earned across all children.
+                {certProgress.percent < 100
+                  ? ` ${certProgress.total - certProgress.earned} more to unlock the CyberGuardian Certificate!`
+                  : " 🎉 Certificate unlocked!"}
+              </p>
+            </motion.div>
+
+            {/* Recent Badges */}
+            {recentBadges.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <h3 className="mb-3 flex items-center gap-2 text-xl font-bold">
+                  <Star className="h-5 w-5 text-accent" /> Recent Badges
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {recentBadges.map((b) => {
+                    const childName = children.find((c) => c.id === b.child_id)?.name || "";
+                    return (
+                      <div
+                        key={b.id}
+                        className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2 shadow-card"
+                      >
+                        <span className="text-lg">{b.badge_icon}</span>
+                        <div>
+                          <div className="text-xs font-semibold">{b.badge_name}</div>
+                          <div className="text-[10px] text-muted-foreground">{childName}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Tips for Parents */}
+            <div className="rounded-2xl border bg-primary/5 p-5">
               <h3 className="mb-2 font-bold text-primary">💡 Tips for Parents</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>• Use Learning Mode to adjust difficulty</li>
