@@ -222,17 +222,17 @@ export default function ParentDashboard() {
     return starters[topic.missionTitle] || `Talk with your child about "${topic.missionTitle}" — they could use some extra practice!`;
   }, [areasNeedingReview]);
 
-  // --- New: Certificate progress ---
+  // --- Certificate progress (filtered) ---
   const certProgress = useMemo(() => {
     const totalBadgesNeeded = ALL_BADGES.length;
-    const uniqueEarned = new Set(allBadges.map((b) => b.badge_id)).size;
+    const uniqueEarned = new Set(filteredBadges.map((b) => b.badge_id)).size;
     return { earned: uniqueEarned, total: totalBadgesNeeded, percent: totalBadgesNeeded > 0 ? Math.round((uniqueEarned / totalBadgesNeeded) * 100) : 0 };
-  }, [allBadges]);
+  }, [filteredBadges]);
 
-  // --- New: Recent badges (last 5) ---
+  // --- Recent badges (filtered, last 5) ---
   const recentBadges = useMemo(() => {
-    return [...allBadges].sort((a, b) => new Date(b.earned_at).getTime() - new Date(a.earned_at).getTime()).slice(0, 5);
-  }, [allBadges]);
+    return [...filteredBadges].sort((a, b) => new Date(b.earned_at).getTime() - new Date(a.earned_at).getTime()).slice(0, 5);
+  }, [filteredBadges]);
 
   // --- New: Per-child learning summary ---
   const getChildSummary = (childId: string) => {
