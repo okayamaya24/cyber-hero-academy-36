@@ -748,12 +748,44 @@ export default function MissionsPage() {
     );
   }
 
+  // Build list of completed missions only for practice mode
+  const completedMissions = MISSIONS.filter((m) => {
+    const totalGames = getTotalGames(learningMode);
+    const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
+    return mp?.status === "completed";
+  });
+
+  const [worldFilter, setWorldFilter] = useState<string>("all");
+  const [starFilter, setStarFilter] = useState<number>(0);
+
+  const WORLD_LABELS: Record<string, string> = {
+    "password-safety": "🏔️ Password Peak",
+    "scam-detection": "🐟 Phish Lagoon",
+    "safe-websites": "🏪 Browse Bazaar",
+    "personal-info": "🏰 Privacy Palace",
+    "malware-monsters": "🕳️ Download Dungeon",
+    "smart-sharing": "🏝️ Stranger Shore",
+    "phishy-messages": "👑 Kindness Kingdom",
+  };
+
+  const filteredMissions = completedMissions.filter((m) => {
+    if (worldFilter !== "all" && m.id !== worldFilter) return false;
+    if (starFilter > 0) {
+      const totalGames = getTotalGames(learningMode);
+      const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
+      if (!mp) return false;
+      const stars = mp.max_score > 0 ? (mp.score / mp.max_score >= 0.9 ? 3 : mp.score / mp.max_score >= 0.6 ? 2 : 1) : 0;
+      if (stars < starFilter) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <motion.div className="mb-8 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl font-bold md:text-4xl">🎮 Learning Missions</h1>
-          <p className="mt-2 text-muted-foreground">Explore all missions and become a Cyber Hero!</p>
+          <h1 className="text-3xl font-bold md:text-4xl">🏋️ Training Center</h1>
+          <p className="mt-2 text-muted-foreground">Replay completed missions to sharpen your skills!</p>
 
           {child && (
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
@@ -767,137 +799,122 @@ export default function MissionsPage() {
           )}
         </motion.div>
 
-        <motion.div
-          className="grid gap-6 sm:grid-cols-2"
-          initial="hidden"
-          animate="show"
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1 } } }}
-        >
-          {MISSIONS.map((m) => {
-            const totalGames = getTotalGames(learningMode);
-            const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
-            const completedGames = mp?.status === "completed" ? totalGames : (mp?.current_question ?? 0);
-            const isCompleted = mp?.status === "completed";
-            const isInProgress = mp?.status === "in_progress";
-            const levels = getMissionLevels(m, age, learningMode, completedGames);
+        {/* Filters */}
+        {completedMissions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-6 flex flex-wrap items-center justify-center gap-2"
+          >
+            <select
+              value={worldFilter}
+              onChange={(e) => setWorldFilter(e.target.value)}
+              className="rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground"
+            >
+              <option value="all">All Worlds</option>
+              {completedMissions.map((m) => (
+                <option key={m.id} value={m.id}>{WORLD_LABELS[m.id] || m.title}</option>
+              ))}
+            </select>
 
-            return (
-              <motion.div
-                key={m.id}
-                variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                className="group overflow-hidden rounded-2xl border-2 bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-playful"
-              >
-                <div className={`p-6 ${m.bgColor}`}>
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-card shadow">
-                      <m.icon className={`h-7 w-7 ${m.color}`} />
+            <select
+              value={starFilter}
+              onChange={(e) => setStarFilter(Number(e.target.value))}
+              className="rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground"
+            >
+              <option value={0}>Any Stars</option>
+              <option value={1}>⭐ 1+ Stars</option>
+              <option value={2}>⭐⭐ 2+ Stars</option>
+              <option value={3}>⭐⭐⭐ 3 Stars</option>
+            </select>
+          </motion.div>
+        )}
+
+        {completedMissions.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mx-auto max-w-md rounded-2xl border-2 border-dashed border-border bg-card p-10 text-center"
+          >
+            <p className="text-4xl mb-3">🗺️</p>
+            <h2 className="text-xl font-bold mb-2">No missions completed yet!</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Complete missions on the Adventure Map to unlock them here for practice.
+            </p>
+            <Button variant="hero" onClick={() => navigate("/world-map")}>
+              Go to Adventure Map 🚀
+            </Button>
+          </motion.div>
+        ) : (
+          <motion.div
+            className="grid gap-6 sm:grid-cols-2"
+            initial="hidden"
+            animate="show"
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1 } } }}
+          >
+            {filteredMissions.map((m) => {
+              const totalGames = getTotalGames(learningMode);
+              const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
+              const starCount = mp && mp.max_score > 0 ? (mp.score / mp.max_score >= 0.9 ? 3 : mp.score / mp.max_score >= 0.6 ? 2 : 1) : 0;
+
+              return (
+                <motion.div
+                  key={m.id}
+                  variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+                  className="group overflow-hidden rounded-2xl border-2 bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-playful"
+                >
+                  <div className={`p-6 ${m.bgColor}`}>
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-card shadow">
+                        <m.icon className={`h-7 w-7 ${m.color}`} />
+                      </div>
+
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold">{m.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {WORLD_LABELS[m.id] || m.title}
+                        </p>
+                      </div>
+
+                      <img
+                        src={m.guide.image}
+                        alt={m.guide.name}
+                        className="ml-auto h-16 w-16 object-contain opacity-80 transition-opacity group-hover:opacity-100"
+                      />
                     </div>
-
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold">{m.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {totalGames} games · 3 levels · {m.guide.name}
-                      </p>
-                    </div>
-
-                    <img
-                      src={m.guide.image}
-                      alt={m.guide.name}
-                      className="ml-auto h-16 w-16 object-contain opacity-80 transition-opacity group-hover:opacity-100"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <p className="mb-4 text-sm text-muted-foreground">{m.description}</p>
-
-                  <div className="mb-4 grid grid-cols-3 gap-2">
-                    {levels.map((level) => {
-                      const levelStart = (level.level - 1) * modeConfig.gamesPerLevel;
-                      const levelEnd = levelStart + modeConfig.gamesPerLevel;
-                      const levelCompleted = Math.min(
-                        Math.max(completedGames - levelStart, 0),
-                        modeConfig.gamesPerLevel,
-                      );
-                      const levelDone = levelCompleted >= modeConfig.gamesPerLevel;
-                      const levelActive = completedGames >= levelStart && completedGames < levelEnd;
-
-                      return (
-                        <div
-                          key={level.level}
-                          className={`rounded-xl border p-2 text-center text-xs transition-all ${
-                            levelDone
-                              ? "border-secondary/40 bg-secondary/10"
-                              : level.locked
-                                ? "border-border bg-muted/50 opacity-60"
-                                : levelActive
-                                  ? "border-primary/40 bg-primary/10"
-                                  : "border-border bg-muted/30"
-                          }`}
-                        >
-                          <div className="mb-1 flex items-center justify-center gap-1">
-                            {level.locked ? (
-                              <LockIcon className="h-3 w-3 text-muted-foreground" />
-                            ) : levelDone ? (
-                              <CheckCircle2 className="h-3 w-3 text-secondary" />
-                            ) : (
-                              <span className="text-sm">{level.emoji}</span>
-                            )}
-                          </div>
-
-                          <p className="font-semibold">{level.name}</p>
-                          <p className="text-muted-foreground">
-                            {levelCompleted}/{modeConfig.gamesPerLevel}
-                          </p>
-
-                          <div className="mt-1 flex flex-wrap justify-center gap-0.5">
-                            {level.miniGameTypes.slice(0, 2).map((type, i) => (
-                              <span key={i} className="text-[9px]" title={MINI_GAME_META[type].label}>
-                                {MINI_GAME_META[type].emoji}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
                   </div>
 
-                  <div className="mb-3">
-                    <div className="mb-1 flex justify-between text-xs">
-                      <span className="font-semibold">Total Progress</span>
-                      <span className="font-bold text-primary">
-                        {completedGames}/{totalGames} games
+                  <div className="p-6">
+                    <p className="mb-4 text-sm text-muted-foreground">{m.description}</p>
+
+                    {/* Stars & Score */}
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex gap-1">
+                        {[1, 2, 3].map((s) => (
+                          <Star
+                            key={s}
+                            className={`h-5 w-5 ${
+                              s <= starCount ? "text-accent fill-[hsl(var(--accent))]" : "text-muted"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm font-bold text-muted-foreground">
+                        Best: {mp?.score}/{mp?.max_score}
                       </span>
                     </div>
-                    <Progress value={totalGames > 0 ? (completedGames / totalGames) * 100 : 0} className="h-2.5" />
-                  </div>
 
-                  {isCompleted ? (
-                    <div className="flex items-center gap-2">
-                      <Badge className="border-0 bg-secondary text-secondary-foreground">✓ Completed</Badge>
-                      <span className="text-xs text-muted-foreground">
-                        Score: {mp?.score}/{mp?.max_score}
-                      </span>
-                      <Button variant="outline" size="sm" className="ml-auto" onClick={() => startMission(m)}>
-                        Retry
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button variant="hero" className="w-full" onClick={() => startMission(m)}>
-                      {isInProgress ? (
-                        <>
-                          Continue Mission → <Gamepad2 className="ml-2 h-4 w-4" />
-                        </>
-                      ) : (
-                        <>Start Mission 🚀</>
-                      )}
+                    <Button variant="outline" className="w-full" onClick={() => startMission(m)}>
+                      <Gamepad2 className="mr-2 h-4 w-4" />
+                      Play Again
                     </Button>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
       </div>
     </div>
   );
