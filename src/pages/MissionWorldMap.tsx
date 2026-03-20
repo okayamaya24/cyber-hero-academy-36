@@ -5,7 +5,15 @@ import { Lock, Star, Zap, Shield, MessageCircle, ChevronRight, Trophy, Swords, X
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { MISSIONS, getTotalGames, getMissionLevels, LEVEL_NAMES, LEARNING_MODE_CONFIG, MINI_GAME_META, type LearningMode } from "@/data/missions";
+import {
+  MISSIONS,
+  getTotalGames,
+  getMissionLevels,
+  LEVEL_NAMES,
+  LEARNING_MODE_CONFIG,
+  MINI_GAME_META,
+  type LearningMode,
+} from "@/data/missions";
 import { getLevelRank } from "@/data/levelTitles";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import { Button } from "@/components/ui/button";
@@ -22,7 +30,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(195,85%,50%/0.12)]",
     borderColor: "border-[hsl(195,85%,50%)]",
     glowHsl: "195 85% 50%",
-    pos: { top: "6%", left: "50%", tx: "-50%" },
+    pos: { top: "72%", left: "18%", tx: "-50%" },
     pathFrom: "hub",
   },
   {
@@ -35,7 +43,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(30,95%,55%/0.12)]",
     borderColor: "border-[hsl(30,95%,55%)]",
     glowHsl: "30 95% 55%",
-    pos: { top: "18%", left: "82%", tx: "-50%" },
+    pos: { top: "56%", left: "36%", tx: "-50%" },
     pathFrom: "password-safety",
   },
   {
@@ -48,7 +56,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(175,70%,42%/0.12)]",
     borderColor: "border-[hsl(175,70%,42%)]",
     glowHsl: "175 70% 42%",
-    pos: { top: "50%", left: "88%", tx: "-50%" },
+    pos: { top: "41%", left: "56%", tx: "-50%" },
     pathFrom: "scam-detection",
   },
   {
@@ -61,7 +69,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(270,60%,55%/0.12)]",
     borderColor: "border-[hsl(270,60%,55%)]",
     glowHsl: "270 60% 55%",
-    pos: { top: "78%", left: "75%", tx: "-50%" },
+    pos: { top: "24%", left: "72%", tx: "-50%" },
     pathFrom: "safe-websites",
   },
   {
@@ -74,7 +82,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(0,84%,60%/0.12)]",
     borderColor: "border-[hsl(0,84%,60%)]",
     glowHsl: "0 84% 60%",
-    pos: { top: "78%", left: "25%", tx: "-50%" },
+    pos: { top: "14%", left: "48%", tx: "-50%" },
     pathFrom: "personal-info",
   },
   {
@@ -87,7 +95,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(185,80%,48%/0.12)]",
     borderColor: "border-[hsl(185,80%,48%)]",
     glowHsl: "185 80% 48%",
-    pos: { top: "50%", left: "12%", tx: "-50%" },
+    pos: { top: "10%", left: "22%", tx: "-50%" },
     pathFrom: "malware-monsters",
   },
   {
@@ -100,7 +108,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(330,70%,55%/0.12)]",
     borderColor: "border-[hsl(330,70%,55%)]",
     glowHsl: "330 70% 55%",
-    pos: { top: "18%", left: "18%", tx: "-50%" },
+    pos: { top: "24%", left: "8%", tx: "-50%" },
     pathFrom: "smart-sharing",
   },
 ];
@@ -118,16 +126,16 @@ function getStars(score: number, maxScore: number): number {
 
 /* ─── SVG path lines between positioned worlds ───────── */
 const PATH_COORDS: [number, number][] = [
-  [50, 14],
-  [82, 26],
-  [88, 54],
-  [75, 82],
-  [25, 82],
-  [12, 54],
-  [18, 26],
+  [18, 72],
+  [36, 56],
+  [56, 41],
+  [72, 24],
+  [48, 14],
+  [22, 10],
+  [8, 24],
 ];
 
-const HUB: [number, number] = [50, 48];
+const HUB: [number, number] = [50, 50];
 
 function MapPaths({ statuses }: { statuses: NodeStatus[] }) {
   const pts = PATH_COORDS;
@@ -152,8 +160,8 @@ function MapPaths({ statuses }: { statuses: NodeStatus[] }) {
       status === "completed"
         ? "hsl(160 65% 48% / 0.7)"
         : status === "active"
-        ? "hsl(195 85% 55% / 0.4)"
-        : "hsl(200 15% 50% / 0.1)";
+          ? "hsl(195 85% 55% / 0.4)"
+          : "hsl(200 15% 50% / 0.1)";
     const width = status === "completed" ? 0.7 : 0.45;
     return (
       <path
@@ -190,7 +198,6 @@ function MapPaths({ statuses }: { statuses: NodeStatus[] }) {
         const s = statuses[i] === "completed" ? "completed" : statuses[i + 1] !== "locked" ? "active" : "locked";
         return curvedLine(p, pts[i + 1], s, `seg-${i}`);
       })}
-      {curvedLine(pts[6], HUB, "locked", "loop")}
     </svg>
   );
 }
@@ -245,10 +252,7 @@ function GuideCharacter({
         whileTap={{ scale: 0.9 }}
         className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-primary bg-card shadow-[0_0_20px_hsl(195_85%_50%/0.3)] transition-shadow hover:shadow-[0_0_28px_hsl(195_85%_50%/0.45)]"
       >
-        <motion.div
-          animate={{ y: [0, -2, 0] }}
-          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-        >
+        <motion.div animate={{ y: [0, -2, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}>
           <HeroAvatar avatarConfig={avatarConfig} size={36} fallbackEmoji="🦸" />
         </motion.div>
         <div className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary">
@@ -269,8 +273,8 @@ function WorldDetailPanel({
   onClose,
   onStartLevel,
 }: {
-  world: typeof WORLDS[number];
-  mission: typeof MISSIONS[number] | undefined;
+  world: (typeof WORLDS)[number];
+  mission: (typeof MISSIONS)[number] | undefined;
   missionProgress: any[];
   learningMode: LearningMode;
   age: number;
@@ -306,7 +310,9 @@ function WorldDetailPanel({
       >
         {/* Header */}
         <div className="mb-5 flex items-center gap-3">
-          <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br text-2xl ${world.color}`}>
+          <div
+            className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br text-2xl ${world.color}`}
+          >
             {world.icon}
           </div>
           <div className="flex-1">
@@ -348,16 +354,18 @@ function WorldDetailPanel({
                   levelDone
                     ? "border-secondary/40 bg-secondary/10"
                     : levelActive
-                    ? "border-primary/50 bg-primary/10"
-                    : isLocked
-                    ? "border-border bg-muted/30 opacity-50"
-                    : "border-border bg-muted/30"
+                      ? "border-primary/50 bg-primary/10"
+                      : isLocked
+                        ? "border-border bg-muted/30 opacity-50"
+                        : "border-border bg-muted/30"
                 }`}
               >
                 {/* Step icon */}
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg ${
-                  levelDone ? "bg-secondary/20" : levelActive ? "bg-primary/20" : "bg-muted"
-                }`}>
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg ${
+                    levelDone ? "bg-secondary/20" : levelActive ? "bg-primary/20" : "bg-muted"
+                  }`}
+                >
                   {isLocked ? <Lock className="h-4 w-4 text-muted-foreground" /> : <span>{STEP_ICONS[i]}</span>}
                 </div>
 
@@ -390,13 +398,9 @@ function WorldDetailPanel({
                     <span className="text-xs font-bold">Done</span>
                   </div>
                 ) : levelActive ? (
-                  <Button
-                    size="sm"
-                    variant="hero"
-                    className="text-xs"
-                    onClick={() => onStartLevel(mission.id, i)}
-                  >
-                    {completedGames > 0 ? "Continue" : isBoss ? "Fight!" : "Start"} <ChevronRight className="ml-1 h-3 w-3" />
+                  <Button size="sm" variant="hero" className="text-xs" onClick={() => onStartLevel(mission.id, i)}>
+                    {completedGames > 0 ? "Continue" : isBoss ? "Fight!" : "Start"}{" "}
+                    <ChevronRight className="ml-1 h-3 w-3" />
                   </Button>
                 ) : isLocked ? (
                   <Lock className="h-4 w-4 text-muted-foreground" />
@@ -408,7 +412,9 @@ function WorldDetailPanel({
 
         {/* World progress */}
         <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-          <span>{completedGames}/{totalGames} games completed</span>
+          <span>
+            {completedGames}/{totalGames} games completed
+          </span>
           {progressRow?.status === "completed" && (
             <span className="flex items-center gap-1 font-bold text-secondary">
               <Trophy className="h-3.5 w-3.5" /> World Conquered!
@@ -426,7 +432,7 @@ export default function MissionWorldMap() {
   const navigate = useNavigate();
   const [guideMessage, setGuideMessage] = useState(GUIDE_MESSAGES.idle[0]);
   const [idleIndex, setIdleIndex] = useState(0);
-  const [selectedWorld, setSelectedWorld] = useState<typeof WORLDS[number] | null>(null);
+  const [selectedWorld, setSelectedWorld] = useState<(typeof WORLDS)[number] | null>(null);
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -436,8 +442,7 @@ export default function MissionWorldMap() {
   const { data: child } = useQuery({
     queryKey: ["child", activeChildId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("child_profiles").select("*").eq("id", activeChildId!).single();
+      const { data, error } = await supabase.from("child_profiles").select("*").eq("id", activeChildId!).single();
       if (error) throw error;
       return data;
     },
@@ -447,8 +452,7 @@ export default function MissionWorldMap() {
   const { data: missionProgress = [] } = useQuery({
     queryKey: ["mission_progress", activeChildId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("mission_progress").select("*").eq("child_id", activeChildId!);
+      const { data, error } = await supabase.from("mission_progress").select("*").eq("child_id", activeChildId!);
       if (error) throw error;
       return data;
     },
@@ -471,7 +475,7 @@ export default function MissionWorldMap() {
     const expectedTotal = getTotalGames(learningMode);
     return WORLDS.map((world, index) => {
       const progress = missionProgress.find(
-        (p) => p.mission_id === world.id && (p.max_score ?? expectedTotal) === expectedTotal
+        (p) => p.mission_id === world.id && (p.max_score ?? expectedTotal) === expectedTotal,
       );
       if (progress?.status === "completed") {
         return { status: "completed" as const, stars: getStars(progress.score, progress.max_score) };
@@ -479,7 +483,7 @@ export default function MissionWorldMap() {
       if (index === 0) return { status: "unlocked" as const, stars: 0 };
       const prev = WORLDS[index - 1];
       const prevDone = missionProgress.find((p) => p.mission_id === prev.id && p.status === "completed");
-      return { status: prevDone ? "unlocked" as const : "locked" as const, stars: 0 };
+      return { status: prevDone ? ("unlocked" as const) : ("locked" as const), stars: 0 };
     });
   }, [missionProgress, learningMode]);
 
@@ -499,7 +503,7 @@ export default function MissionWorldMap() {
     setGuideMessage(GUIDE_MESSAGES.idle[next]);
   }, [idleIndex]);
 
-  const handleWorldClick = (world: typeof WORLDS[number], status: NodeStatus) => {
+  const handleWorldClick = (world: (typeof WORLDS)[number], status: NodeStatus) => {
     if (status === "locked") {
       setGuideMessage(GUIDE_MESSAGES.worldLocked);
       return;
@@ -516,7 +520,8 @@ export default function MissionWorldMap() {
   const selectedMission = selectedWorld ? MISSIONS.find((m) => m.id === selectedWorld.id) : undefined;
 
   return (
-    <div className="min-h-screen pb-24 pt-20 relative overflow-hidden"
+    <div
+      className="min-h-screen pb-24 pt-20 relative overflow-hidden"
       style={{
         background: "linear-gradient(160deg, hsl(210 55% 22%), hsl(195 55% 26%), hsl(185 50% 20%))",
       }}
@@ -574,12 +579,14 @@ export default function MissionWorldMap() {
 
         {/* ─── THE MAP ─────────────────────────────────── */}
         <div className="relative mx-auto aspect-square max-w-3xl w-full">
-          <div className="absolute inset-0 rounded-3xl border border-white/10 overflow-hidden shadow-2xl"
+          <div
+            className="absolute inset-0 rounded-3xl border border-white/10 overflow-hidden shadow-2xl"
             style={{
               background: "radial-gradient(ellipse at center, hsl(200 45% 20% / 0.9), hsl(210 40% 14% / 0.95))",
             }}
           >
-            <div className="absolute inset-0 opacity-[0.04]"
+            <div
+              className="absolute inset-0 opacity-[0.04]"
               style={{
                 backgroundImage: "radial-gradient(circle, hsl(195 85% 60%) 1px, transparent 1px)",
                 backgroundSize: "28px 28px",
@@ -604,15 +611,14 @@ export default function MissionWorldMap() {
             className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2"
           >
             <div className="flex flex-col items-center">
-              <div className="relative flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-full border-2 border-primary/60 shadow-[0_0_35px_hsl(195_85%_50%/0.35)]"
+              <div
+                className="relative flex h-18 w-18 md:h-24 md:w-24 items-center justify-center rounded-full border-2 border-primary/60 shadow-[0_0_35px_hsl(195_85%_50%/0.35)] backdrop-blur-md"
                 style={{ background: "radial-gradient(circle, hsl(195 85% 50% / 0.2), hsl(220 50% 18% / 0.8))" }}
               >
                 <Shield className="h-7 w-7 md:h-9 md:w-9 text-primary" />
               </div>
               <div className="mt-2 rounded-full bg-primary/15 px-3 py-0.5 backdrop-blur-sm border border-primary/20">
-                <p className="text-[10px] md:text-xs font-bold text-primary whitespace-nowrap">
-                  CyberGuard Academy
-                </p>
+                <p className="text-[10px] md:text-xs font-bold text-primary whitespace-nowrap">CyberGuard Academy</p>
               </div>
             </div>
           </motion.div>
@@ -658,8 +664,8 @@ export default function MissionWorldMap() {
                       status === "completed"
                         ? `${world.borderColor} ${world.color} shadow-[0_6px_24px_hsl(${world.glowHsl}/0.45)]`
                         : status === "unlocked"
-                        ? `${world.borderColor} ${world.color} shadow-[0_6px_24px_hsl(${world.glowHsl}/0.3)] hover:shadow-[0_8px_30px_hsl(${world.glowHsl}/0.5)]`
-                        : "border-white/10 bg-gradient-to-br from-[hsl(210,25%,25%)] to-[hsl(210,25%,18%)] shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
+                          ? `${world.borderColor} ${world.color} shadow-[0_6px_24px_hsl(${world.glowHsl}/0.3)] hover:shadow-[0_8px_30px_hsl(${world.glowHsl}/0.5)]`
+                          : "border-white/10 bg-gradient-to-br from-[hsl(210,25%,25%)] to-[hsl(210,25%,18%)] shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
                     }`}
                   >
                     {status === "locked" ? (
@@ -688,12 +694,16 @@ export default function MissionWorldMap() {
                     </div>
                   )}
 
-                  <div className={`mt-1 rounded-lg px-2 py-0.5 backdrop-blur-sm ${
-                    status === "locked" ? "bg-white/5" : `${world.bgTile} bg-opacity-80`
-                  }`}>
-                    <p className={`text-[9px] md:text-[11px] font-bold leading-tight whitespace-nowrap ${
-                      status === "locked" ? "text-white/30" : "text-white"
-                    }`}>
+                  <div
+                    className={`mt-1 rounded-lg px-2 py-0.5 backdrop-blur-sm ${
+                      status === "locked" ? "bg-white/5" : `${world.bgTile} bg-opacity-80`
+                    }`}
+                  >
+                    <p
+                      className={`text-[9px] md:text-[11px] font-bold leading-tight whitespace-nowrap ${
+                        status === "locked" ? "text-white/30" : "text-white"
+                      }`}
+                    >
                       {world.name}
                     </p>
                   </div>
@@ -745,11 +755,7 @@ export default function MissionWorldMap() {
       </div>
 
       {/* Guide Character in corner */}
-      <GuideCharacter
-        avatarConfig={avatarConfig}
-        message={guideMessage}
-        onTap={cycleIdleMessage}
-      />
+      <GuideCharacter avatarConfig={avatarConfig} message={guideMessage} onTap={cycleIdleMessage} />
 
       {/* World Detail Panel */}
       <AnimatePresence>
