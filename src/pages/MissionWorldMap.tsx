@@ -30,7 +30,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(195,85%,50%/0.12)]",
     borderColor: "border-[hsl(195,85%,50%)]",
     glowHsl: "195 85% 50%",
-    pos: { top: "72%", left: "18%", tx: "-50%" },
+    pos: { top: "78%", left: "24%", tx: "-50%" },
     pathFrom: "hub",
   },
   {
@@ -43,7 +43,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(30,95%,55%/0.12)]",
     borderColor: "border-[hsl(30,95%,55%)]",
     glowHsl: "30 95% 55%",
-    pos: { top: "56%", left: "36%", tx: "-50%" },
+    pos: { top: "63%", left: "43%", tx: "-50%" },
     pathFrom: "password-safety",
   },
   {
@@ -56,7 +56,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(175,70%,42%/0.12)]",
     borderColor: "border-[hsl(175,70%,42%)]",
     glowHsl: "175 70% 42%",
-    pos: { top: "41%", left: "56%", tx: "-50%" },
+    pos: { top: "48%", left: "63%", tx: "-50%" },
     pathFrom: "scam-detection",
   },
   {
@@ -69,7 +69,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(270,60%,55%/0.12)]",
     borderColor: "border-[hsl(270,60%,55%)]",
     glowHsl: "270 60% 55%",
-    pos: { top: "24%", left: "72%", tx: "-50%" },
+    pos: { top: "31%", left: "79%", tx: "-50%" },
     pathFrom: "safe-websites",
   },
   {
@@ -82,7 +82,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(0,84%,60%/0.12)]",
     borderColor: "border-[hsl(0,84%,60%)]",
     glowHsl: "0 84% 60%",
-    pos: { top: "14%", left: "48%", tx: "-50%" },
+    pos: { top: "20%", left: "57%", tx: "-50%" },
     pathFrom: "personal-info",
   },
   {
@@ -95,7 +95,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(185,80%,48%/0.12)]",
     borderColor: "border-[hsl(185,80%,48%)]",
     glowHsl: "185 80% 48%",
-    pos: { top: "10%", left: "22%", tx: "-50%" },
+    pos: { top: "16%", left: "28%", tx: "-50%" },
     pathFrom: "malware-monsters",
   },
   {
@@ -108,7 +108,7 @@ const WORLDS = [
     bgTile: "bg-[hsl(330,70%,55%/0.12)]",
     borderColor: "border-[hsl(330,70%,55%)]",
     glowHsl: "330 70% 55%",
-    pos: { top: "24%", left: "8%", tx: "-50%" },
+    pos: { top: "31%", left: "15%", tx: "-50%" },
     pathFrom: "smart-sharing",
   },
 ];
@@ -126,16 +126,16 @@ function getStars(score: number, maxScore: number): number {
 
 /* ─── SVG path lines between positioned worlds ───────── */
 const PATH_COORDS: [number, number][] = [
-  [18, 72],
-  [36, 56],
-  [56, 41],
-  [72, 24],
-  [48, 14],
-  [22, 10],
-  [8, 24],
+  [24, 78],
+  [43, 63],
+  [63, 48],
+  [79, 31],
+  [57, 20],
+  [28, 16],
+  [15, 31],
 ];
 
-const HUB: [number, number] = [50, 50];
+const HUB: [number, number] = [50, 57];
 
 function MapPaths({ statuses }: { statuses: NodeStatus[] }) {
   const pts = PATH_COORDS;
@@ -648,7 +648,7 @@ export default function MissionWorldMap() {
                   whileHover={isClickable ? { scale: 1.08 } : {}}
                   whileTap={isClickable ? { scale: 0.95 } : {}}
                   className={`group relative flex flex-col items-center transition-all ${
-                    status === "locked" ? "opacity-35 grayscale cursor-not-allowed" : "cursor-pointer"
+                    status === "locked" ? "opacity-55 grayscale-[0.35] cursor-not-allowed" : "cursor-pointer"
                   }`}
                 >
                   {isCurrent && (
@@ -665,7 +665,7 @@ export default function MissionWorldMap() {
                         ? `${world.borderColor} ${world.color} shadow-[0_6px_24px_hsl(${world.glowHsl}/0.45)]`
                         : status === "unlocked"
                           ? `${world.borderColor} ${world.color} shadow-[0_6px_24px_hsl(${world.glowHsl}/0.3)] hover:shadow-[0_8px_30px_hsl(${world.glowHsl}/0.5)]`
-                          : "border-white/10 bg-gradient-to-br from-[hsl(210,25%,25%)] to-[hsl(210,25%,18%)] shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
+                          : "border-white/15 bg-gradient-to-br from-[hsl(210,22%,28%)] to-[hsl(210,22%,20%)] shadow-[0_4px_16px_rgba(0,0,0,0.28)]"
                     }`}
                   >
                     {status === "locked" ? (
