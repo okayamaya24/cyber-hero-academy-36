@@ -668,7 +668,7 @@ export default function MissionWorldMap() {
           {/* City Nodes */}
           {CITY_NODES.map((node, index) => {
             if (node.isHub) {
-              // Central hub node
+              // Central HQ node — larger, gold glow, always clickable
               return (
                 <motion.div
                   key={node.id}
@@ -678,24 +678,42 @@ export default function MissionWorldMap() {
                   className="absolute z-20"
                   style={{ top: `${node.y}%`, left: `${node.x}%`, transform: "translate(-50%, -50%)" }}
                 >
-                  <div className="flex flex-col items-center">
+                  <motion.button
+                    onClick={() => handleNodeClick(node, index)}
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.94 }}
+                    className="flex flex-col items-center cursor-pointer"
+                  >
+                    {/* Outer gold pulse ring */}
+                    <motion.div
+                      animate={{ scale: [1, 1.6, 1], opacity: [0.4, 0, 0.4] }}
+                      transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
+                      className="absolute -inset-3 md:-inset-4 rounded-full border-2 border-[hsl(45_90%_55%/0.5)]"
+                    />
+                    <motion.div
+                      animate={{ scale: [1, 1.3, 1], opacity: [0.25, 0, 0.25] }}
+                      transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut", delay: 0.5 }}
+                      className="absolute -inset-1.5 md:-inset-2 rounded-full border border-[hsl(45_90%_55%/0.3)]"
+                    />
+
+                    {/* Node circle — 1.4x larger than regular nodes */}
                     <div
-                      className="relative flex h-14 w-14 md:h-18 md:w-18 items-center justify-center rounded-full border-2 border-[hsl(195_80%_50%/0.5)] shadow-[0_0_30px_hsl(195_85%_50%/0.3)] backdrop-blur-md"
-                      style={{ background: "radial-gradient(circle, hsl(195 80% 50% / 0.2), hsl(220 45% 14% / 0.9))" }}
+                      className="relative flex h-14 w-14 md:h-[68px] md:w-[68px] items-center justify-center rounded-full border-2 border-[hsl(45_90%_55%/0.6)] shadow-[0_0_30px_hsl(45_90%_55%/0.35)] backdrop-blur-md"
+                      style={{ background: "radial-gradient(circle, hsl(45 85% 45% / 0.3), hsl(35 50% 18% / 0.9))" }}
                     >
-                      <Shield className="h-6 w-6 md:h-8 md:w-8 text-[hsl(195_80%_60%)]" />
-                      <motion.div
-                        className="absolute inset-0 rounded-full border border-[hsl(195_80%_50%/0.3)]"
-                        animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0, 0.3] }}
-                        transition={{ repeat: Infinity, duration: 3 }}
-                      />
+                      <span className="text-2xl md:text-3xl drop-shadow-md">🏠</span>
                     </div>
-                    <div className="mt-1.5 rounded-full bg-[hsl(195_80%_50%/0.15)] px-2.5 py-0.5 border border-[hsl(195_80%_50%/0.2)]">
-                      <p className="text-[9px] md:text-[10px] font-bold text-[hsl(195_80%_70%)] whitespace-nowrap tracking-wide">
-                        HQ
+
+                    {/* Label */}
+                    <div className="mt-1.5 rounded-full bg-[hsl(45_90%_55%/0.15)] px-2.5 py-0.5 border border-[hsl(45_90%_55%/0.25)]">
+                      <p className="text-[8px] md:text-[10px] font-bold text-[hsl(45_90%_70%)] whitespace-nowrap tracking-wide">
+                        HQ — Cyber Hero Command
                       </p>
                     </div>
-                  </div>
+                    <p className="mt-0.5 text-[6px] md:text-[7px] text-[hsl(45_90%_60%/0.6)] whitespace-nowrap">
+                      Begin your mission here
+                    </p>
+                  </motion.button>
                 </motion.div>
               );
             }
