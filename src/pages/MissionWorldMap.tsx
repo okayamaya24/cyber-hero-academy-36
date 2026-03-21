@@ -523,7 +523,7 @@ export default function MissionWorldMap() {
 
     return CITY_NODES.map((node) => {
       if (node.isHub) return { status: "unlocked" as const, stars: 0 };
-      if (!missionIds.has(node.id)) return { status: "locked" as const, stars: 0 };
+      if (!missionIds.has(node.id) && !node.isHub) return { status: "locked" as const, stars: 0 };
 
       const seqIndex = sequentialIds.indexOf(node.id);
       const progress = missionProgress.find(
