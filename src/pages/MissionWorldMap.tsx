@@ -826,6 +826,9 @@ export default function MissionWorldMap() {
           className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-white/40"
         >
           <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(45_90%_55%)] shadow-[0_0_6px_hsl(45_90%_55%/0.5)]" /> HQ
+          </span>
+          <span className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-[hsl(195_80%_50%)] animate-pulse" /> Available
           </span>
           <span className="flex items-center gap-1.5">
