@@ -159,7 +159,7 @@ function getStars(score: number, maxScore: number): number {
 }
 
 /* ─── SVG connection paths ───────────────────────────────── */
-function MapConnections({ statuses }: { statuses: NodeStatus[] }) {
+function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqCompleted: boolean }) {
   return (
     <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
       <defs>
@@ -170,20 +170,45 @@ function MapConnections({ statuses }: { statuses: NodeStatus[] }) {
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
+        <filter id="goldGlow">
+          <feGaussianBlur stdDeviation="0.4" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
       {CONNECTIONS.map(([a, b], i) => {
         const from = CITY_NODES[a];
         const to = CITY_NODES[b];
+        const isHQConn = from.isHub || to.isHub;
         const aStatus = from.isHub ? "unlocked" : statuses[a];
         const bStatus = to.isHub ? "unlocked" : statuses[b];
         const bothDone = aStatus === "completed" && bStatus === "completed";
-        const anyUnlocked = aStatus !== "locked" && bStatus !== "locked";
+        const anyUnlocked = aStatus !== "locked" && aStatus !== "gated" && bStatus !== "locked" && bStatus !== "gated";
 
-        const stroke = bothDone
-          ? "hsl(160 65% 55% / 0.6)"
-          : anyUnlocked
-            ? "hsl(195 85% 60% / 0.3)"
-            : "hsl(200 15% 40% / 0.08)";
+        let stroke: string;
+        let dashArr: string;
+        let filterAttr: string | undefined;
+
+        if (isHQConn) {
+          // Gold dashed lines from HQ
+          stroke = hqCompleted ? "hsl(45 90% 55% / 0.4)" : "hsl(45 90% 55% / 0.25)";
+          dashArr = "1.5 1";
+          filterAttr = "url(#goldGlow)";
+        } else if (bothDone) {
+          stroke = "hsl(160 65% 55% / 0.6)";
+          dashArr = "none";
+          filterAttr = "url(#connGlow)";
+        } else if (anyUnlocked) {
+          stroke = "hsl(195 85% 60% / 0.3)";
+          dashArr = "1 0.8";
+          filterAttr = undefined;
+        } else {
+          stroke = "hsl(200 15% 40% / 0.08)";
+          dashArr = "1 0.8";
+          filterAttr = undefined;
+        }
 
         // Curved path
         const mx = (from.x + to.x) / 2;
@@ -202,9 +227,9 @@ function MapConnections({ statuses }: { statuses: NodeStatus[] }) {
             fill="none"
             stroke={stroke}
             strokeWidth={bothDone ? 0.5 : 0.3}
-            strokeDasharray={bothDone ? "none" : "1 0.8"}
+            strokeDasharray={dashArr}
             strokeLinecap="round"
-            filter={bothDone ? "url(#connGlow)" : undefined}
+            filter={filterAttr}
           />
         );
       })}
