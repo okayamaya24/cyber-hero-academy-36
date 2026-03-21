@@ -564,7 +564,11 @@ export default function MissionWorldMap() {
   }, [idleIndex]);
 
   const handleNodeClick = (node: (typeof CITY_NODES)[number], index: number) => {
-    if (node.isHub) return;
+    if (node.isHub) {
+      setGuideMessage("Welcome to HQ, Guardian! 🏠");
+      setSelectedWorld(node);
+      return;
+    }
     const { status } = nodeStatuses[index];
     if (status === "locked") {
       setGuideMessage(GUIDE_MESSAGES.worldLocked);
