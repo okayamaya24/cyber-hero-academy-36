@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import type { AgeTier } from "@/data/missions";
 
 interface Props {
-  missionId: string;
+  missionId?: string;
   ageTier: AgeTier;
   guideImage: string;
   guideName: string;
   onComplete: (correct: boolean) => void;
+  customWords?: string[];
+  customGridSize?: number;
 }
 
 const WORD_LISTS: Record<string, Record<AgeTier, string[]>> = {
