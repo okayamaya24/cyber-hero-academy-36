@@ -144,10 +144,12 @@ export type Database = {
           completed_at: string | null
           created_at: string
           current_question: number
+          game_type: string | null
           id: string
           max_score: number
           mission_id: string
           score: number
+          stars_earned: number
           status: string
           updated_at: string
         }
@@ -156,10 +158,12 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           current_question?: number
+          game_type?: string | null
           id?: string
           max_score?: number
           mission_id: string
           score?: number
+          stars_earned?: number
           status?: string
           updated_at?: string
         }
@@ -168,10 +172,12 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           current_question?: number
+          game_type?: string | null
           id?: string
           max_score?: number
           mission_id?: string
           score?: number
+          stars_earned?: number
           status?: string
           updated_at?: string
         }

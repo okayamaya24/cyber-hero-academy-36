@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import type { AgeTier } from "@/data/missions";
 
 interface Props {
-  missionId: string;
+  missionId?: string;
   ageTier: AgeTier;
   guideImage: string;
   guideName: string;
   onComplete: (correct: boolean) => void;
+  customWords?: string[];
+  customGridSize?: number;
 }
 
 const WORD_LISTS: Record<string, Record<AgeTier, string[]>> = {
@@ -131,9 +133,9 @@ function generateGrid(words: string[], size: number): { grid: string[][]; placem
   return { grid, placements };
 }
 
-export default function WordSearchGame({ missionId, ageTier, guideImage, guideName, onComplete }: Props) {
-  const size = ageTier === "junior" ? 7 : ageTier === "defender" ? 9 : 11;
-  const wordList = WORD_LISTS[missionId]?.[ageTier] ?? WORD_LISTS["scam-detection"][ageTier];
+export default function WordSearchGame({ missionId, ageTier, guideImage, guideName, onComplete, customWords, customGridSize }: Props) {
+  const size = customGridSize ?? (ageTier === "junior" ? 7 : ageTier === "defender" ? 9 : 11);
+  const wordList = customWords ?? (WORD_LISTS[missionId ?? ""]?.[ageTier] ?? WORD_LISTS["scam-detection"][ageTier]);
 
   const { grid, placements } = useMemo(() => generateGrid(wordList, size), [missionId, ageTier]);
 
