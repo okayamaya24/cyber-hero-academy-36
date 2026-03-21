@@ -994,19 +994,19 @@ export default function MissionWorldMap() {
           className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-white/40"
         >
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(45_90%_55%)] shadow-[0_0_6px_hsl(45_90%_55%/0.5)]" /> HQ
+            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(45_90%_55%)] shadow-[0_0_6px_hsl(45_90%_55%/0.5)]" /> ⭐ HQ
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(195_80%_50%)] animate-pulse" /> Available
+            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(195_80%_50%)] animate-pulse" /> 🔵 Available
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(160_65%_50%)]" /> Secured
+            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(160_65%_50%)]" /> 🟢 Secured
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-white/10 border border-white/10" /> Locked
+            <span className="h-2.5 w-2.5 rounded-full bg-white/10 border border-white/10" /> ⚫ Locked
           </span>
           <span className="flex items-center gap-1.5">
-            <Radio className="h-3 w-3 text-[hsl(45_90%_60%)]" /> Coming Soon
+            <Radio className="h-3 w-3 text-[hsl(45_90%_60%)]" /> 📶 Coming Soon
           </span>
         </motion.div>
       </div>
