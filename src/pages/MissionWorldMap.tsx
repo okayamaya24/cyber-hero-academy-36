@@ -798,7 +798,6 @@ export default function MissionWorldMap() {
           {/* City Nodes */}
           {CITY_NODES.map((node, index) => {
             if (node.isHub) {
-              // Central HQ node — larger, gold glow, always clickable
               return (
                 <motion.div
                   key={node.id}
@@ -808,6 +807,21 @@ export default function MissionWorldMap() {
                   className="absolute z-20"
                   style={{ top: `${node.y}%`, left: `${node.x}%`, transform: "translate(-50%, -50%)" }}
                 >
+                  {/* "Start here!" floating arrow — only before first HQ click */}
+                  {!hqCompleted && !hasClickedHQ && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1, x: [0, 6, 0] }}
+                      transition={{ x: { repeat: Infinity, duration: 1.2, ease: "easeInOut" }, opacity: { duration: 0.5 } }}
+                      className="absolute -right-28 top-1/2 -translate-y-1/2 flex items-center gap-1 z-30"
+                    >
+                      <span className="text-[hsl(45_90%_60%)] text-lg">→</span>
+                      <span className="rounded-full bg-[hsl(45_90%_55%/0.2)] border border-[hsl(45_90%_55%/0.4)] px-2.5 py-1 text-[10px] font-bold text-[hsl(45_90%_70%)] whitespace-nowrap shadow-[0_0_12px_hsl(45_90%_55%/0.2)]">
+                        Start here!
+                      </span>
+                    </motion.div>
+                  )}
+
                   <motion.button
                     onClick={() => handleNodeClick(node, index)}
                     whileHover={{ scale: 1.08 }}
@@ -826,7 +840,16 @@ export default function MissionWorldMap() {
                       className="absolute -inset-1.5 md:-inset-2 rounded-full border border-[hsl(45_90%_55%/0.3)]"
                     />
 
-                    {/* Node circle — 1.4x larger than regular nodes */}
+                    {/* Beckoning shimmer for pre-HQ state */}
+                    {!hqCompleted && (
+                      <motion.div
+                        animate={{ scale: [1, 1.15, 1], opacity: [0.6, 0.3, 0.6] }}
+                        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                        className="absolute -inset-1 rounded-full bg-[hsl(45_90%_55%/0.1)]"
+                      />
+                    )}
+
+                    {/* Node circle — 1.4x larger */}
                     <div
                       className="relative flex h-14 w-14 md:h-[68px] md:w-[68px] items-center justify-center rounded-full border-2 border-[hsl(45_90%_55%/0.6)] shadow-[0_0_30px_hsl(45_90%_55%/0.35)] backdrop-blur-md"
                       style={{ background: "radial-gradient(circle, hsl(45 85% 45% / 0.3), hsl(35 50% 18% / 0.9))" }}
@@ -841,7 +864,7 @@ export default function MissionWorldMap() {
                       </p>
                     </div>
                     <p className="mt-0.5 text-[6px] md:text-[7px] text-[hsl(45_90%_60%/0.6)] whitespace-nowrap">
-                      Begin your mission here
+                      {hqCompleted ? "Home Base" : "Begin your mission here"}
                     </p>
                   </motion.button>
                 </motion.div>
