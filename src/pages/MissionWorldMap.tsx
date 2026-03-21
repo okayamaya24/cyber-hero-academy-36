@@ -35,16 +35,16 @@ const CITY_NODES = [
     icon: "🎣",
     description: "Catch phishy scams before they catch you!",
     hue: 30,
-    x: 46, y: 28,
+    x: 45, y: 22,
   },
   {
     id: "safe-websites",
     name: "Browse Bazaar",
-    city: "Tokyo, Japan",
+    city: "Mumbai, India",
     icon: "🌐",
     description: "Navigate the web marketplace safely!",
     hue: 175,
-    x: 82, y: 36,
+    x: 70, y: 45,
   },
   {
     id: "personal-info",
@@ -53,7 +53,7 @@ const CITY_NODES = [
     icon: "🛡️",
     description: "Guard your secrets in the royal palace!",
     hue: 270,
-    x: 60, y: 42,
+    x: 62, y: 42,
   },
   {
     id: "malware-monsters",
@@ -62,7 +62,7 @@ const CITY_NODES = [
     icon: "⬇️",
     description: "Defeat malware lurking in the dungeon depths!",
     hue: 0,
-    x: 49, y: 30,
+    x: 52, y: 20,
   },
   {
     id: "smart-sharing",
@@ -71,7 +71,7 @@ const CITY_NODES = [
     icon: "🚷",
     description: "Learn who to trust on the mysterious shore!",
     hue: 45,
-    x: 46, y: 54,
+    x: 48, y: 58,
   },
   {
     id: "phishy-messages",
@@ -80,9 +80,8 @@ const CITY_NODES = [
     icon: "💖",
     description: "Spread kindness and fight cyberbullying!",
     hue: 330,
-    x: 28, y: 62,
+    x: 28, y: 68,
   },
-  // New zones (no mission match yet — locked placeholders)
   {
     id: "malware-maze",
     name: "Malware Maze",
@@ -90,7 +89,7 @@ const CITY_NODES = [
     icon: "🦠",
     description: "Navigate the maze of malicious software!",
     hue: 120,
-    x: 85, y: 68,
+    x: 82, y: 72,
   },
   {
     id: "firewall-frontier",
@@ -99,7 +98,7 @@ const CITY_NODES = [
     icon: "🧱",
     description: "Build walls to keep threats out!",
     hue: 210,
-    x: 82, y: 30,
+    x: 80, y: 28,
   },
   {
     id: "dark-web-den",
@@ -108,7 +107,7 @@ const CITY_NODES = [
     icon: "🕸️",
     description: "Shine light into the darkest corners!",
     hue: 280,
-    x: 55, y: 46,
+    x: 55, y: 48,
   },
   {
     id: "encrypt-enclave",
@@ -117,15 +116,15 @@ const CITY_NODES = [
     icon: "🔐",
     description: "Master the art of secret codes!",
     hue: 160,
-    x: 20, y: 32,
+    x: 18, y: 28,
   },
   {
     id: "cyberguard-academy",
-    name: "CyberGuard Academy",
-    city: "Central HQ",
-    icon: "🏛️",
-    description: "Your home base and training ground!",
-    hue: 195,
+    name: "Cyber Hero Command",
+    city: "Global HQ",
+    icon: "🏠",
+    description: "Your home base — begin your mission here!",
+    hue: 45,
     x: 50, y: 50,
     isHub: true,
   },
@@ -133,18 +132,18 @@ const CITY_NODES = [
 
 // Path connections between nodes (pairs of indices)
 const CONNECTIONS: [number, number][] = [
-  [11, 0], // Hub to Password Peak
-  [11, 1], // Hub to Phish Lagoon
-  [11, 3], // Hub to Privacy Palace
-  [0, 10], // Password Peak to Encrypt Enclave
-  [0, 6],  // Password Peak to Kindness Kingdom
-  [1, 4],  // Phish Lagoon to Download Dungeon
-  [1, 5],  // Phish Lagoon to Stranger Shore
-  [3, 9],  // Privacy Palace to Dark Web Den
-  [3, 2],  // Privacy Palace to Browse Bazaar
-  [2, 8],  // Browse Bazaar to Firewall Frontier
-  [2, 7],  // Browse Bazaar to Malware Maze
-  [5, 6],  // Stranger Shore to Kindness Kingdom
+  [11, 0],  // HQ to Password Peak
+  [11, 10], // HQ to Encrypt Enclave
+  [11, 1],  // HQ to Phish Lagoon
+  [0, 10],  // Password Peak to Encrypt Enclave
+  [0, 6],   // Password Peak to Kindness Kingdom
+  [1, 4],   // Phish Lagoon to Download Dungeon
+  [1, 5],   // Phish Lagoon to Stranger Shore
+  [3, 9],   // Privacy Palace to Dark Web Den
+  [3, 2],   // Privacy Palace to Browse Bazaar
+  [2, 8],   // Browse Bazaar to Firewall Frontier
+  [2, 7],   // Browse Bazaar to Malware Maze
+  [5, 6],   // Stranger Shore to Kindness Kingdom
 ];
 
 type NodeStatus = "completed" | "unlocked" | "locked";
@@ -335,6 +334,63 @@ function WorldDetailPanel({
   onClose: () => void;
   onStartLevel: (missionId: string, levelIndex: number) => void;
 }) {
+  // HQ special panel
+  if (world.isHub) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          className="w-full max-w-lg rounded-t-3xl border-t border-[hsl(45_90%_55%/0.25)] bg-[hsl(210_40%_12%)] p-6 pb-10 shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl bg-[hsl(45_80%_30%)]">
+              🏠
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-white">CYBER HERO COMMAND // GLOBAL HQ</h2>
+              <p className="text-xs text-[hsl(45_90%_65%)]">Your home base and training ground</p>
+            </div>
+            <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10 transition-colors">
+              <X className="h-5 w-5 text-white/50" />
+            </button>
+          </div>
+
+          <p className="mb-5 text-sm text-white/70 leading-relaxed">
+            Welcome, Guardian! This is your home base. Complete your orientation mission to unlock your first zone and begin protecting the digital world.
+          </p>
+
+          <div className="mb-5 flex items-center gap-3 rounded-xl border-2 border-[hsl(45_90%_55%/0.3)] bg-[hsl(45_90%_55%/0.08)] p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[hsl(45_80%_45%/0.2)] text-lg">
+              🎯
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white">OP: GUARDIAN ORIENTATION</p>
+              <p className="text-[10px] text-white/40">Difficulty: ◆◇◇◇◇ · TUTORIAL</p>
+              <p className="text-[10px] text-[hsl(45_90%_65%)]">+100 XP · Unlocks: Password Peak + Encrypt Enclave</p>
+            </div>
+          </div>
+
+          <Button
+            className="w-full text-sm font-bold bg-[hsl(45_90%_50%)] hover:bg-[hsl(45_90%_45%)] text-[hsl(210_40%_10%)] border-0 shadow-[0_0_20px_hsl(45_90%_50%/0.3)]"
+            onClick={() => onStartLevel("password-safety", 0)}
+          >
+            🚀 BEGIN ORIENTATION
+          </Button>
+        </motion.div>
+      </motion.div>
+    );
+  }
+
   if (!mission) return null;
 
   const totalGames = getTotalGames(learningMode);
@@ -524,7 +580,7 @@ export default function MissionWorldMap() {
 
     return CITY_NODES.map((node) => {
       if (node.isHub) return { status: "unlocked" as const, stars: 0 };
-      if (!missionIds.has(node.id)) return { status: "locked" as const, stars: 0 };
+      if (!missionIds.has(node.id) && !node.isHub) return { status: "locked" as const, stars: 0 };
 
       const seqIndex = sequentialIds.indexOf(node.id);
       const progress = missionProgress.find(
@@ -565,7 +621,11 @@ export default function MissionWorldMap() {
   }, [idleIndex]);
 
   const handleNodeClick = (node: (typeof CITY_NODES)[number], index: number) => {
-    if (node.isHub) return;
+    if (node.isHub) {
+      setGuideMessage("Welcome to HQ, Guardian! 🏠");
+      setSelectedWorld(node);
+      return;
+    }
     const { status } = nodeStatuses[index];
     if (status === "locked") {
       setGuideMessage(GUIDE_MESSAGES.worldLocked);
@@ -665,7 +725,7 @@ export default function MissionWorldMap() {
           {/* City Nodes */}
           {CITY_NODES.map((node, index) => {
             if (node.isHub) {
-              // Central hub node
+              // Central HQ node — larger, gold glow, always clickable
               return (
                 <motion.div
                   key={node.id}
@@ -675,24 +735,42 @@ export default function MissionWorldMap() {
                   className="absolute z-20"
                   style={{ top: `${node.y}%`, left: `${node.x}%`, transform: "translate(-50%, -50%)" }}
                 >
-                  <div className="flex flex-col items-center">
+                  <motion.button
+                    onClick={() => handleNodeClick(node, index)}
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.94 }}
+                    className="flex flex-col items-center cursor-pointer"
+                  >
+                    {/* Outer gold pulse ring */}
+                    <motion.div
+                      animate={{ scale: [1, 1.6, 1], opacity: [0.4, 0, 0.4] }}
+                      transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
+                      className="absolute -inset-3 md:-inset-4 rounded-full border-2 border-[hsl(45_90%_55%/0.5)]"
+                    />
+                    <motion.div
+                      animate={{ scale: [1, 1.3, 1], opacity: [0.25, 0, 0.25] }}
+                      transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut", delay: 0.5 }}
+                      className="absolute -inset-1.5 md:-inset-2 rounded-full border border-[hsl(45_90%_55%/0.3)]"
+                    />
+
+                    {/* Node circle — 1.4x larger than regular nodes */}
                     <div
-                      className="relative flex h-14 w-14 md:h-18 md:w-18 items-center justify-center rounded-full border-2 border-[hsl(195_80%_50%/0.5)] shadow-[0_0_30px_hsl(195_85%_50%/0.3)] backdrop-blur-md"
-                      style={{ background: "radial-gradient(circle, hsl(195 80% 50% / 0.2), hsl(220 45% 14% / 0.9))" }}
+                      className="relative flex h-14 w-14 md:h-[68px] md:w-[68px] items-center justify-center rounded-full border-2 border-[hsl(45_90%_55%/0.6)] shadow-[0_0_30px_hsl(45_90%_55%/0.35)] backdrop-blur-md"
+                      style={{ background: "radial-gradient(circle, hsl(45 85% 45% / 0.3), hsl(35 50% 18% / 0.9))" }}
                     >
-                      <Shield className="h-6 w-6 md:h-8 md:w-8 text-[hsl(195_80%_60%)]" />
-                      <motion.div
-                        className="absolute inset-0 rounded-full border border-[hsl(195_80%_50%/0.3)]"
-                        animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0, 0.3] }}
-                        transition={{ repeat: Infinity, duration: 3 }}
-                      />
+                      <span className="text-2xl md:text-3xl drop-shadow-md">🏠</span>
                     </div>
-                    <div className="mt-1.5 rounded-full bg-[hsl(195_80%_50%/0.15)] px-2.5 py-0.5 border border-[hsl(195_80%_50%/0.2)]">
-                      <p className="text-[9px] md:text-[10px] font-bold text-[hsl(195_80%_70%)] whitespace-nowrap tracking-wide">
-                        HQ
+
+                    {/* Label */}
+                    <div className="mt-1.5 rounded-full bg-[hsl(45_90%_55%/0.15)] px-2.5 py-0.5 border border-[hsl(45_90%_55%/0.25)]">
+                      <p className="text-[8px] md:text-[10px] font-bold text-[hsl(45_90%_70%)] whitespace-nowrap tracking-wide">
+                        HQ — Cyber Hero Command
                       </p>
                     </div>
-                  </div>
+                    <p className="mt-0.5 text-[6px] md:text-[7px] text-[hsl(45_90%_60%/0.6)] whitespace-nowrap">
+                      Begin your mission here
+                    </p>
+                  </motion.button>
                 </motion.div>
               );
             }
@@ -804,6 +882,9 @@ export default function MissionWorldMap() {
           transition={{ delay: 1 }}
           className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-white/40"
         >
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(45_90%_55%)] shadow-[0_0_6px_hsl(45_90%_55%/0.5)]" /> HQ
+          </span>
           <span className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-[hsl(195_80%_50%)] animate-pulse" /> Available
           </span>
