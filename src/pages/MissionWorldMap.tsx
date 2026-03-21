@@ -872,7 +872,8 @@ export default function MissionWorldMap() {
             }
 
             const { status, stars } = nodeStatuses[index];
-            const isClickable = status !== "locked";
+            const isGated = status === "gated";
+            const isClickable = status !== "locked" && status !== "gated";
             const hasMission = missionIds.has(node.id);
             const isCurrentTarget = status === "unlocked" && hasMission;
 
@@ -891,8 +892,9 @@ export default function MissionWorldMap() {
                   whileHover={isClickable ? { scale: 1.12 } : {}}
                   whileTap={isClickable ? { scale: 0.93 } : {}}
                   className={`group relative flex flex-col items-center transition-all ${
-                    status === "locked" ? "opacity-40 cursor-not-allowed" : "cursor-pointer"
+                    status === "locked" ? "opacity-30 cursor-not-allowed" : isGated ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                   }`}
+                  title={isGated ? "Complete HQ Orientation to unlock" : undefined}
                 >
                   {/* Ping ring for current target */}
                   {isCurrentTarget && (
@@ -903,6 +905,15 @@ export default function MissionWorldMap() {
                     />
                   )}
 
+                  {/* Amber outline pulse for gated nodes */}
+                  {isGated && (
+                    <motion.div
+                      animate={{ opacity: [0.3, 0.6, 0.3] }}
+                      transition={{ repeat: Infinity, duration: 2.5 }}
+                      className="absolute -inset-1.5 rounded-full border border-[hsl(45_90%_55%/0.4)]"
+                    />
+                  )}
+
                   {/* Node circle */}
                   <div
                     className={`relative flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full border-2 text-lg md:text-xl transition-all duration-200 ${
@@ -910,16 +921,20 @@ export default function MissionWorldMap() {
                         ? `border-[hsl(160_65%_50%/0.6)] shadow-[0_0_18px_hsl(160_65%_50%/0.35)]`
                         : status === "unlocked"
                           ? `border-[hsl(${node.hue}_70%_55%/0.6)] shadow-[0_0_18px_hsl(${node.hue}_70%_55%/0.25)] hover:shadow-[0_0_25px_hsl(${node.hue}_70%_55%/0.4)]`
-                          : "border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                          : isGated
+                            ? "border-[hsl(45_90%_55%/0.3)] shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                            : "border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
                     }`}
                     style={{
                       background: status === "locked"
                         ? "hsl(220 30% 18%)"
-                        : `radial-gradient(circle, hsl(${node.hue} 60% 35%), hsl(${node.hue} 50% 20%))`,
+                        : isGated
+                          ? "hsl(35 30% 18%)"
+                          : `radial-gradient(circle, hsl(${node.hue} 60% 35%), hsl(${node.hue} 50% 20%))`,
                     }}
                   >
-                    {status === "locked" ? (
-                      <Lock className="h-4 w-4 text-white/20" />
+                    {status === "locked" || isGated ? (
+                      <Lock className={`h-4 w-4 ${isGated ? "text-[hsl(45_90%_55%/0.4)]" : "text-white/20"}`} />
                     ) : status === "completed" ? (
                       <span className="text-sm">✅</span>
                     ) : (
@@ -941,15 +956,15 @@ export default function MissionWorldMap() {
 
                   {/* Label */}
                   <div className={`mt-1 rounded-md px-1.5 py-0.5 backdrop-blur-sm ${
-                    status === "locked" ? "bg-white/[0.03]" : "bg-[hsl(210_40%_14%/0.8)]"
+                    status === "locked" || isGated ? "bg-white/[0.03]" : "bg-[hsl(210_40%_14%/0.8)]"
                   }`}>
                     <p className={`text-[7px] md:text-[9px] font-bold leading-tight whitespace-nowrap tracking-wide ${
-                      status === "locked" ? "text-white/20" : "text-white/80"
+                      status === "locked" ? "text-white/20" : isGated ? "text-[hsl(45_90%_55%/0.4)]" : "text-white/80"
                     }`}>
                       {node.name}
                     </p>
                     <p className={`text-[6px] md:text-[7px] leading-tight whitespace-nowrap ${
-                      status === "locked" ? "text-white/10" : "text-white/30"
+                      status === "locked" || isGated ? "text-white/10" : "text-white/30"
                     }`}>
                       {node.city}
                     </p>
