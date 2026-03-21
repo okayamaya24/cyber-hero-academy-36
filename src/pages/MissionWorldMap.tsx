@@ -132,18 +132,18 @@ const CITY_NODES = [
 
 // Path connections between nodes (pairs of indices)
 const CONNECTIONS: [number, number][] = [
-  [11, 0], // Hub to Password Peak
-  [11, 1], // Hub to Phish Lagoon
-  [11, 3], // Hub to Privacy Palace
-  [0, 10], // Password Peak to Encrypt Enclave
-  [0, 6],  // Password Peak to Kindness Kingdom
-  [1, 4],  // Phish Lagoon to Download Dungeon
-  [1, 5],  // Phish Lagoon to Stranger Shore
-  [3, 9],  // Privacy Palace to Dark Web Den
-  [3, 2],  // Privacy Palace to Browse Bazaar
-  [2, 8],  // Browse Bazaar to Firewall Frontier
-  [2, 7],  // Browse Bazaar to Malware Maze
-  [5, 6],  // Stranger Shore to Kindness Kingdom
+  [11, 0],  // HQ to Password Peak
+  [11, 10], // HQ to Encrypt Enclave
+  [11, 1],  // HQ to Phish Lagoon
+  [0, 10],  // Password Peak to Encrypt Enclave
+  [0, 6],   // Password Peak to Kindness Kingdom
+  [1, 4],   // Phish Lagoon to Download Dungeon
+  [1, 5],   // Phish Lagoon to Stranger Shore
+  [3, 9],   // Privacy Palace to Dark Web Den
+  [3, 2],   // Privacy Palace to Browse Bazaar
+  [2, 8],   // Browse Bazaar to Firewall Frontier
+  [2, 7],   // Browse Bazaar to Malware Maze
+  [5, 6],   // Stranger Shore to Kindness Kingdom
 ];
 
 type NodeStatus = "completed" | "unlocked" | "locked";
