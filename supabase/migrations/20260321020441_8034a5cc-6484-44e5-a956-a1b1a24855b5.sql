@@ -1,0 +1,1 @@
+ALTER TABLE public.child_profiles ADD COLUMN hq_completed boolean NOT NULL DEFAULT false;
