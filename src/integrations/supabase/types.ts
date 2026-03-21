@@ -20,6 +20,7 @@ export type Database = {
           avatar: string
           avatar_config: Json
           created_at: string
+          hq_completed: boolean
           id: string
           last_activity_date: string | null
           learning_mode: string
@@ -35,6 +36,7 @@ export type Database = {
           avatar?: string
           avatar_config?: Json
           created_at?: string
+          hq_completed?: boolean
           id?: string
           last_activity_date?: string | null
           learning_mode?: string
@@ -50,6 +52,7 @@ export type Database = {
           avatar?: string
           avatar_config?: Json
           created_at?: string
+          hq_completed?: boolean
           id?: string
           last_activity_date?: string | null
           learning_mode?: string

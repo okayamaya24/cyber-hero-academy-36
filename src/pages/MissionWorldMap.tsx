@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Star, Zap, Shield, MessageCircle, ChevronRight, Trophy, X, Globe, Radio } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import {
   MISSIONS,
@@ -125,7 +126,7 @@ const CITY_NODES = [
     icon: "🏠",
     description: "Your home base — begin your mission here!",
     hue: 45,
-    x: 50, y: 50,
+    x: 12, y: 50,
     isHub: true,
   },
 ];
@@ -146,7 +147,7 @@ const CONNECTIONS: [number, number][] = [
   [5, 6],   // Stranger Shore to Kindness Kingdom
 ];
 
-type NodeStatus = "completed" | "unlocked" | "locked";
+type NodeStatus = "completed" | "unlocked" | "locked" | "gated";
 
 function getStars(score: number, maxScore: number): number {
   if (maxScore === 0) return 0;
@@ -158,7 +159,7 @@ function getStars(score: number, maxScore: number): number {
 }
 
 /* ─── SVG connection paths ───────────────────────────────── */
-function MapConnections({ statuses }: { statuses: NodeStatus[] }) {
+function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqCompleted: boolean }) {
   return (
     <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
       <defs>
@@ -169,20 +170,45 @@ function MapConnections({ statuses }: { statuses: NodeStatus[] }) {
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
+        <filter id="goldGlow">
+          <feGaussianBlur stdDeviation="0.4" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
       {CONNECTIONS.map(([a, b], i) => {
         const from = CITY_NODES[a];
         const to = CITY_NODES[b];
+        const isHQConn = from.isHub || to.isHub;
         const aStatus = from.isHub ? "unlocked" : statuses[a];
         const bStatus = to.isHub ? "unlocked" : statuses[b];
         const bothDone = aStatus === "completed" && bStatus === "completed";
-        const anyUnlocked = aStatus !== "locked" && bStatus !== "locked";
+        const anyUnlocked = aStatus !== "locked" && aStatus !== "gated" && bStatus !== "locked" && bStatus !== "gated";
 
-        const stroke = bothDone
-          ? "hsl(160 65% 55% / 0.6)"
-          : anyUnlocked
-            ? "hsl(195 85% 60% / 0.3)"
-            : "hsl(200 15% 40% / 0.08)";
+        let stroke: string;
+        let dashArr: string;
+        let filterAttr: string | undefined;
+
+        if (isHQConn) {
+          // Gold dashed lines from HQ
+          stroke = hqCompleted ? "hsl(45 90% 55% / 0.4)" : "hsl(45 90% 55% / 0.25)";
+          dashArr = "1.5 1";
+          filterAttr = "url(#goldGlow)";
+        } else if (bothDone) {
+          stroke = "hsl(160 65% 55% / 0.6)";
+          dashArr = "none";
+          filterAttr = "url(#connGlow)";
+        } else if (anyUnlocked) {
+          stroke = "hsl(195 85% 60% / 0.3)";
+          dashArr = "1 0.8";
+          filterAttr = undefined;
+        } else {
+          stroke = "hsl(200 15% 40% / 0.08)";
+          dashArr = "1 0.8";
+          filterAttr = undefined;
+        }
 
         // Curved path
         const mx = (from.x + to.x) / 2;
@@ -201,9 +227,9 @@ function MapConnections({ statuses }: { statuses: NodeStatus[] }) {
             fill="none"
             stroke={stroke}
             strokeWidth={bothDone ? 0.5 : 0.3}
-            strokeDasharray={bothDone ? "none" : "1 0.8"}
+            strokeDasharray={dashArr}
             strokeLinecap="round"
-            filter={bothDone ? "url(#connGlow)" : undefined}
+            filter={filterAttr}
           />
         );
       })}
@@ -265,7 +291,9 @@ const GUIDE_MESSAGES = {
   ],
   worldSelected: "Let's explore this zone! 🌟",
   worldLocked: "Complete earlier zones to unlock this one! 🔒",
+  hqGated: "Complete HQ Orientation to unlock zones! 🏠",
   progress: "Great job! Keep going, hero! 🎉",
+  hqComplete: "Amazing work, Guardian! Your first zones are now open — choose your mission! 🌟",
 };
 
 /* ─── Guide Character Component ──────────────────────── */
@@ -525,9 +553,13 @@ function WorldDetailPanel({
 export default function MissionWorldMap() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [guideMessage, setGuideMessage] = useState(GUIDE_MESSAGES.idle[0]);
   const [idleIndex, setIdleIndex] = useState(0);
   const [selectedWorld, setSelectedWorld] = useState<(typeof CITY_NODES)[number] | null>(null);
+  const [hasClickedHQ, setHasClickedHQ] = useState(() => {
+    return localStorage.getItem("cyber_hero_hq_clicked") === "true";
+  });
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -553,6 +585,8 @@ export default function MissionWorldMap() {
     },
     enabled: !!activeChildId,
   });
+
+  const hqCompleted = !!(child as any)?.hq_completed;
 
   const learningMode = ((child as any)?.learning_mode as LearningMode) || "standard";
   const level = child?.level ?? 1;
@@ -580,6 +614,16 @@ export default function MissionWorldMap() {
 
     return CITY_NODES.map((node) => {
       if (node.isHub) return { status: "unlocked" as const, stars: 0 };
+
+      // If HQ not completed, gate everything
+      if (!hqCompleted) {
+        // Show Password Peak and Encrypt Enclave as "gated" (amber hint)
+        if (node.id === "password-safety" || node.id === "encrypt-enclave") {
+          return { status: "gated" as const, stars: 0 };
+        }
+        return { status: "locked" as const, stars: 0 };
+      }
+
       if (!missionIds.has(node.id) && !node.isHub) return { status: "locked" as const, stars: 0 };
 
       const seqIndex = sequentialIds.indexOf(node.id);
@@ -591,7 +635,7 @@ export default function MissionWorldMap() {
         return { status: "completed" as const, stars: getStars(progress.score, progress.max_score) };
       }
 
-      // First mission always unlocked
+      // First mission always unlocked after HQ
       if (seqIndex === 0) return { status: "unlocked" as const, stars: 0 };
 
       // Sequential unlock
@@ -603,16 +647,18 @@ export default function MissionWorldMap() {
 
       return { status: "locked" as const, stars: 0 };
     });
-  }, [missionProgress, learningMode]);
+  }, [missionProgress, learningMode, hqCompleted]);
 
   const completedCount = nodeStatuses.filter((n) => n.status === "completed").length;
   const totalPlayable = CITY_NODES.filter((n) => missionIds.has(n.id)).length;
 
   useEffect(() => {
-    if (completedCount > 0 && completedCount < totalPlayable) {
+    if (hqCompleted && completedCount > 0 && completedCount < totalPlayable) {
       setGuideMessage(GUIDE_MESSAGES.progress);
+    } else if (!hqCompleted) {
+      setGuideMessage("Hey Guardian! Start at HQ to begin your journey! 🏠");
     }
-  }, [completedCount, totalPlayable]);
+  }, [completedCount, totalPlayable, hqCompleted]);
 
   const cycleIdleMessage = useCallback(() => {
     const next = (idleIndex + 1) % GUIDE_MESSAGES.idle.length;
@@ -622,11 +668,19 @@ export default function MissionWorldMap() {
 
   const handleNodeClick = (node: (typeof CITY_NODES)[number], index: number) => {
     if (node.isHub) {
+      if (!hasClickedHQ) {
+        setHasClickedHQ(true);
+        localStorage.setItem("cyber_hero_hq_clicked", "true");
+      }
       setGuideMessage("Welcome to HQ, Guardian! 🏠");
       setSelectedWorld(node);
       return;
     }
     const { status } = nodeStatuses[index];
+    if (status === "gated") {
+      setGuideMessage(GUIDE_MESSAGES.hqGated);
+      return;
+    }
     if (status === "locked") {
       setGuideMessage(GUIDE_MESSAGES.worldLocked);
       return;
@@ -635,7 +689,26 @@ export default function MissionWorldMap() {
     setSelectedWorld(node);
   };
 
+  const handleHQComplete = async () => {
+    if (!activeChildId) return;
+    // Mark HQ as completed
+    await supabase
+      .from("child_profiles")
+      .update({ hq_completed: true } as any)
+      .eq("id", activeChildId);
+    // Refresh child data
+    queryClient.invalidateQueries({ queryKey: ["child", activeChildId] });
+    setSelectedWorld(null);
+    setGuideMessage(GUIDE_MESSAGES.hqComplete);
+  };
+
   const handleStartLevel = (missionId: string, _levelIndex: number) => {
+    // If starting from HQ orientation, mark HQ as completed first
+    if (selectedWorld?.isHub) {
+      handleHQComplete();
+      navigate(`/missions?mission=${missionId}`);
+      return;
+    }
     setSelectedWorld(null);
     navigate(`/missions?mission=${missionId}`);
   };
@@ -720,12 +793,11 @@ export default function MissionWorldMap() {
             <div className="absolute top-0 bottom-0 left-[50%] w-px bg-[hsl(195_80%_50%/0.04)]" />
           </div>
 
-          <MapConnections statuses={nodeStatuses.map((n) => n.status)} />
+          <MapConnections statuses={nodeStatuses.map((n) => n.status)} hqCompleted={hqCompleted} />
 
           {/* City Nodes */}
           {CITY_NODES.map((node, index) => {
             if (node.isHub) {
-              // Central HQ node — larger, gold glow, always clickable
               return (
                 <motion.div
                   key={node.id}
@@ -735,6 +807,21 @@ export default function MissionWorldMap() {
                   className="absolute z-20"
                   style={{ top: `${node.y}%`, left: `${node.x}%`, transform: "translate(-50%, -50%)" }}
                 >
+                  {/* "Start here!" floating arrow — only before first HQ click */}
+                  {!hqCompleted && !hasClickedHQ && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1, x: [0, 6, 0] }}
+                      transition={{ x: { repeat: Infinity, duration: 1.2, ease: "easeInOut" }, opacity: { duration: 0.5 } }}
+                      className="absolute -right-28 top-1/2 -translate-y-1/2 flex items-center gap-1 z-30"
+                    >
+                      <span className="text-[hsl(45_90%_60%)] text-lg">→</span>
+                      <span className="rounded-full bg-[hsl(45_90%_55%/0.2)] border border-[hsl(45_90%_55%/0.4)] px-2.5 py-1 text-[10px] font-bold text-[hsl(45_90%_70%)] whitespace-nowrap shadow-[0_0_12px_hsl(45_90%_55%/0.2)]">
+                        Start here!
+                      </span>
+                    </motion.div>
+                  )}
+
                   <motion.button
                     onClick={() => handleNodeClick(node, index)}
                     whileHover={{ scale: 1.08 }}
@@ -753,7 +840,16 @@ export default function MissionWorldMap() {
                       className="absolute -inset-1.5 md:-inset-2 rounded-full border border-[hsl(45_90%_55%/0.3)]"
                     />
 
-                    {/* Node circle — 1.4x larger than regular nodes */}
+                    {/* Beckoning shimmer for pre-HQ state */}
+                    {!hqCompleted && (
+                      <motion.div
+                        animate={{ scale: [1, 1.15, 1], opacity: [0.6, 0.3, 0.6] }}
+                        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                        className="absolute -inset-1 rounded-full bg-[hsl(45_90%_55%/0.1)]"
+                      />
+                    )}
+
+                    {/* Node circle — 1.4x larger */}
                     <div
                       className="relative flex h-14 w-14 md:h-[68px] md:w-[68px] items-center justify-center rounded-full border-2 border-[hsl(45_90%_55%/0.6)] shadow-[0_0_30px_hsl(45_90%_55%/0.35)] backdrop-blur-md"
                       style={{ background: "radial-gradient(circle, hsl(45 85% 45% / 0.3), hsl(35 50% 18% / 0.9))" }}
@@ -768,7 +864,7 @@ export default function MissionWorldMap() {
                       </p>
                     </div>
                     <p className="mt-0.5 text-[6px] md:text-[7px] text-[hsl(45_90%_60%/0.6)] whitespace-nowrap">
-                      Begin your mission here
+                      {hqCompleted ? "Home Base" : "Begin your mission here"}
                     </p>
                   </motion.button>
                 </motion.div>
@@ -776,7 +872,8 @@ export default function MissionWorldMap() {
             }
 
             const { status, stars } = nodeStatuses[index];
-            const isClickable = status !== "locked";
+            const isGated = status === "gated";
+            const isClickable = status !== "locked" && status !== "gated";
             const hasMission = missionIds.has(node.id);
             const isCurrentTarget = status === "unlocked" && hasMission;
 
@@ -795,8 +892,9 @@ export default function MissionWorldMap() {
                   whileHover={isClickable ? { scale: 1.12 } : {}}
                   whileTap={isClickable ? { scale: 0.93 } : {}}
                   className={`group relative flex flex-col items-center transition-all ${
-                    status === "locked" ? "opacity-40 cursor-not-allowed" : "cursor-pointer"
+                    status === "locked" ? "opacity-30 cursor-not-allowed" : isGated ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                   }`}
+                  title={isGated ? "Complete HQ Orientation to unlock" : undefined}
                 >
                   {/* Ping ring for current target */}
                   {isCurrentTarget && (
@@ -807,6 +905,15 @@ export default function MissionWorldMap() {
                     />
                   )}
 
+                  {/* Amber outline pulse for gated nodes */}
+                  {isGated && (
+                    <motion.div
+                      animate={{ opacity: [0.3, 0.6, 0.3] }}
+                      transition={{ repeat: Infinity, duration: 2.5 }}
+                      className="absolute -inset-1.5 rounded-full border border-[hsl(45_90%_55%/0.4)]"
+                    />
+                  )}
+
                   {/* Node circle */}
                   <div
                     className={`relative flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full border-2 text-lg md:text-xl transition-all duration-200 ${
@@ -814,16 +921,20 @@ export default function MissionWorldMap() {
                         ? `border-[hsl(160_65%_50%/0.6)] shadow-[0_0_18px_hsl(160_65%_50%/0.35)]`
                         : status === "unlocked"
                           ? `border-[hsl(${node.hue}_70%_55%/0.6)] shadow-[0_0_18px_hsl(${node.hue}_70%_55%/0.25)] hover:shadow-[0_0_25px_hsl(${node.hue}_70%_55%/0.4)]`
-                          : "border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                          : isGated
+                            ? "border-[hsl(45_90%_55%/0.3)] shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                            : "border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
                     }`}
                     style={{
                       background: status === "locked"
                         ? "hsl(220 30% 18%)"
-                        : `radial-gradient(circle, hsl(${node.hue} 60% 35%), hsl(${node.hue} 50% 20%))`,
+                        : isGated
+                          ? "hsl(35 30% 18%)"
+                          : `radial-gradient(circle, hsl(${node.hue} 60% 35%), hsl(${node.hue} 50% 20%))`,
                     }}
                   >
-                    {status === "locked" ? (
-                      <Lock className="h-4 w-4 text-white/20" />
+                    {status === "locked" || isGated ? (
+                      <Lock className={`h-4 w-4 ${isGated ? "text-[hsl(45_90%_55%/0.4)]" : "text-white/20"}`} />
                     ) : status === "completed" ? (
                       <span className="text-sm">✅</span>
                     ) : (
@@ -845,15 +956,15 @@ export default function MissionWorldMap() {
 
                   {/* Label */}
                   <div className={`mt-1 rounded-md px-1.5 py-0.5 backdrop-blur-sm ${
-                    status === "locked" ? "bg-white/[0.03]" : "bg-[hsl(210_40%_14%/0.8)]"
+                    status === "locked" || isGated ? "bg-white/[0.03]" : "bg-[hsl(210_40%_14%/0.8)]"
                   }`}>
                     <p className={`text-[7px] md:text-[9px] font-bold leading-tight whitespace-nowrap tracking-wide ${
-                      status === "locked" ? "text-white/20" : "text-white/80"
+                      status === "locked" ? "text-white/20" : isGated ? "text-[hsl(45_90%_55%/0.4)]" : "text-white/80"
                     }`}>
                       {node.name}
                     </p>
                     <p className={`text-[6px] md:text-[7px] leading-tight whitespace-nowrap ${
-                      status === "locked" ? "text-white/10" : "text-white/30"
+                      status === "locked" || isGated ? "text-white/10" : "text-white/30"
                     }`}>
                       {node.city}
                     </p>
@@ -883,19 +994,19 @@ export default function MissionWorldMap() {
           className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-white/40"
         >
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(45_90%_55%)] shadow-[0_0_6px_hsl(45_90%_55%/0.5)]" /> HQ
+            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(45_90%_55%)] shadow-[0_0_6px_hsl(45_90%_55%/0.5)]" /> ⭐ HQ
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(195_80%_50%)] animate-pulse" /> Available
+            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(195_80%_50%)] animate-pulse" /> 🔵 Available
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(160_65%_50%)]" /> Secured
+            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(160_65%_50%)]" /> 🟢 Secured
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-white/10 border border-white/10" /> Locked
+            <span className="h-2.5 w-2.5 rounded-full bg-white/10 border border-white/10" /> ⚫ Locked
           </span>
           <span className="flex items-center gap-1.5">
-            <Radio className="h-3 w-3 text-[hsl(45_90%_60%)]" /> Coming Soon
+            <Radio className="h-3 w-3 text-[hsl(45_90%_60%)]" /> 📶 Coming Soon
           </span>
         </motion.div>
       </div>
