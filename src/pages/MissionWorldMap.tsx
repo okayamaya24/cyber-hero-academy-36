@@ -793,7 +793,7 @@ export default function MissionWorldMap() {
             <div className="absolute top-0 bottom-0 left-[50%] w-px bg-[hsl(195_80%_50%/0.04)]" />
           </div>
 
-          <MapConnections statuses={nodeStatuses.map((n) => n.status)} />
+          <MapConnections statuses={nodeStatuses.map((n) => n.status)} hqCompleted={hqCompleted} />
 
           {/* City Nodes */}
           {CITY_NODES.map((node, index) => {
