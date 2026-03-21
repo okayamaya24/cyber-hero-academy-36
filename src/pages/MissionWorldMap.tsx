@@ -126,7 +126,7 @@ const CITY_NODES = [
     icon: "🏠",
     description: "Your home base — begin your mission here!",
     hue: 45,
-    x: 50, y: 50,
+    x: 12, y: 50,
     isHub: true,
   },
 ];
