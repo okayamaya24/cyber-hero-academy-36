@@ -266,7 +266,9 @@ const GUIDE_MESSAGES = {
   ],
   worldSelected: "Let's explore this zone! 🌟",
   worldLocked: "Complete earlier zones to unlock this one! 🔒",
+  hqGated: "Complete HQ Orientation to unlock zones! 🏠",
   progress: "Great job! Keep going, hero! 🎉",
+  hqComplete: "Amazing work, Guardian! Your first zones are now open — choose your mission! 🌟",
 };
 
 /* ─── Guide Character Component ──────────────────────── */
