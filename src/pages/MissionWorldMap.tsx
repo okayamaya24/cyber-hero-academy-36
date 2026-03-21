@@ -334,6 +334,63 @@ function WorldDetailPanel({
   onClose: () => void;
   onStartLevel: (missionId: string, levelIndex: number) => void;
 }) {
+  // HQ special panel
+  if (world.isHub) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          className="w-full max-w-lg rounded-t-3xl border-t border-[hsl(45_90%_55%/0.25)] bg-[hsl(210_40%_12%)] p-6 pb-10 shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl bg-[hsl(45_80%_30%)]">
+              🏠
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-white">CYBER HERO COMMAND // GLOBAL HQ</h2>
+              <p className="text-xs text-[hsl(45_90%_65%)]">Your home base and training ground</p>
+            </div>
+            <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10 transition-colors">
+              <X className="h-5 w-5 text-white/50" />
+            </button>
+          </div>
+
+          <p className="mb-5 text-sm text-white/70 leading-relaxed">
+            Welcome, Guardian! This is your home base. Complete your orientation mission to unlock your first zone and begin protecting the digital world.
+          </p>
+
+          <div className="mb-5 flex items-center gap-3 rounded-xl border-2 border-[hsl(45_90%_55%/0.3)] bg-[hsl(45_90%_55%/0.08)] p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[hsl(45_80%_45%/0.2)] text-lg">
+              🎯
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white">OP: GUARDIAN ORIENTATION</p>
+              <p className="text-[10px] text-white/40">Difficulty: ◆◇◇◇◇ · TUTORIAL</p>
+              <p className="text-[10px] text-[hsl(45_90%_65%)]">+100 XP · Unlocks: Password Peak + Encrypt Enclave</p>
+            </div>
+          </div>
+
+          <Button
+            className="w-full text-sm font-bold bg-[hsl(45_90%_50%)] hover:bg-[hsl(45_90%_45%)] text-[hsl(210_40%_10%)] border-0 shadow-[0_0_20px_hsl(45_90%_50%/0.3)]"
+            onClick={() => onStartLevel("password-safety", 0)}
+          >
+            🚀 BEGIN ORIENTATION
+          </Button>
+        </motion.div>
+      </motion.div>
+    );
+  }
+
   if (!mission) return null;
 
   const totalGames = getTotalGames(learningMode);
