@@ -147,7 +147,7 @@ const CONNECTIONS: [number, number][] = [
   [5, 6],   // Stranger Shore to Kindness Kingdom
 ];
 
-type NodeStatus = "completed" | "unlocked" | "locked";
+type NodeStatus = "completed" | "unlocked" | "locked" | "gated";
 
 function getStars(score: number, maxScore: number): number {
   if (maxScore === 0) return 0;
