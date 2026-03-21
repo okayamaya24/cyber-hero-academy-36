@@ -528,9 +528,13 @@ function WorldDetailPanel({
 export default function MissionWorldMap() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [guideMessage, setGuideMessage] = useState(GUIDE_MESSAGES.idle[0]);
   const [idleIndex, setIdleIndex] = useState(0);
   const [selectedWorld, setSelectedWorld] = useState<(typeof CITY_NODES)[number] | null>(null);
+  const [hasClickedHQ, setHasClickedHQ] = useState(() => {
+    return localStorage.getItem("cyber_hero_hq_clicked") === "true";
+  });
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -556,6 +560,8 @@ export default function MissionWorldMap() {
     },
     enabled: !!activeChildId,
   });
+
+  const hqCompleted = !!(child as any)?.hq_completed;
 
   const learningMode = ((child as any)?.learning_mode as LearningMode) || "standard";
   const level = child?.level ?? 1;
@@ -583,6 +589,16 @@ export default function MissionWorldMap() {
 
     return CITY_NODES.map((node) => {
       if (node.isHub) return { status: "unlocked" as const, stars: 0 };
+
+      // If HQ not completed, gate everything
+      if (!hqCompleted) {
+        // Show Password Peak and Encrypt Enclave as "gated" (amber hint)
+        if (node.id === "password-safety" || node.id === "encrypt-enclave") {
+          return { status: "gated" as const, stars: 0 };
+        }
+        return { status: "locked" as const, stars: 0 };
+      }
+
       if (!missionIds.has(node.id) && !node.isHub) return { status: "locked" as const, stars: 0 };
 
       const seqIndex = sequentialIds.indexOf(node.id);
@@ -594,7 +610,7 @@ export default function MissionWorldMap() {
         return { status: "completed" as const, stars: getStars(progress.score, progress.max_score) };
       }
 
-      // First mission always unlocked
+      // First mission always unlocked after HQ
       if (seqIndex === 0) return { status: "unlocked" as const, stars: 0 };
 
       // Sequential unlock
@@ -606,16 +622,18 @@ export default function MissionWorldMap() {
 
       return { status: "locked" as const, stars: 0 };
     });
-  }, [missionProgress, learningMode]);
+  }, [missionProgress, learningMode, hqCompleted]);
 
   const completedCount = nodeStatuses.filter((n) => n.status === "completed").length;
   const totalPlayable = CITY_NODES.filter((n) => missionIds.has(n.id)).length;
 
   useEffect(() => {
-    if (completedCount > 0 && completedCount < totalPlayable) {
+    if (hqCompleted && completedCount > 0 && completedCount < totalPlayable) {
       setGuideMessage(GUIDE_MESSAGES.progress);
+    } else if (!hqCompleted) {
+      setGuideMessage("Hey Guardian! Start at HQ to begin your journey! 🏠");
     }
-  }, [completedCount, totalPlayable]);
+  }, [completedCount, totalPlayable, hqCompleted]);
 
   const cycleIdleMessage = useCallback(() => {
     const next = (idleIndex + 1) % GUIDE_MESSAGES.idle.length;
@@ -625,11 +643,19 @@ export default function MissionWorldMap() {
 
   const handleNodeClick = (node: (typeof CITY_NODES)[number], index: number) => {
     if (node.isHub) {
+      if (!hasClickedHQ) {
+        setHasClickedHQ(true);
+        localStorage.setItem("cyber_hero_hq_clicked", "true");
+      }
       setGuideMessage("Welcome to HQ, Guardian! 🏠");
       setSelectedWorld(node);
       return;
     }
     const { status } = nodeStatuses[index];
+    if (status === "gated") {
+      setGuideMessage(GUIDE_MESSAGES.hqGated);
+      return;
+    }
     if (status === "locked") {
       setGuideMessage(GUIDE_MESSAGES.worldLocked);
       return;
@@ -638,7 +664,26 @@ export default function MissionWorldMap() {
     setSelectedWorld(node);
   };
 
+  const handleHQComplete = async () => {
+    if (!activeChildId) return;
+    // Mark HQ as completed
+    await supabase
+      .from("child_profiles")
+      .update({ hq_completed: true } as any)
+      .eq("id", activeChildId);
+    // Refresh child data
+    queryClient.invalidateQueries({ queryKey: ["child", activeChildId] });
+    setSelectedWorld(null);
+    setGuideMessage(GUIDE_MESSAGES.hqComplete);
+  };
+
   const handleStartLevel = (missionId: string, _levelIndex: number) => {
+    // If starting from HQ orientation, mark HQ as completed first
+    if (selectedWorld?.isHub) {
+      handleHQComplete();
+      navigate(`/missions?mission=${missionId}`);
+      return;
+    }
     setSelectedWorld(null);
     navigate(`/missions?mission=${missionId}`);
   };
