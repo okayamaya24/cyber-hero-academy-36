@@ -25,11 +25,14 @@ export type Database = {
           last_activity_date: string | null
           learning_mode: string
           level: number
+          master_certificate_earned: boolean
           name: string
           parent_id: string
           points: number
           streak: number
           updated_at: string
+          villains_defeated: number
+          worlds_completed: number
         }
         Insert: {
           age: number
@@ -41,11 +44,14 @@ export type Database = {
           last_activity_date?: string | null
           learning_mode?: string
           level?: number
+          master_certificate_earned?: boolean
           name: string
           parent_id: string
           points?: number
           streak?: number
           updated_at?: string
+          villains_defeated?: number
+          worlds_completed?: number
         }
         Update: {
           age?: number
@@ -57,13 +63,57 @@ export type Database = {
           last_activity_date?: string | null
           learning_mode?: string
           level?: number
+          master_certificate_earned?: boolean
           name?: string
           parent_id?: string
           points?: number
           streak?: number
           updated_at?: string
+          villains_defeated?: number
+          worlds_completed?: number
         }
         Relationships: []
+      }
+      continent_progress: {
+        Row: {
+          boss_defeated: boolean
+          child_id: string
+          completed_at: string | null
+          continent_id: string
+          created_at: string
+          id: string
+          status: string
+          zones_completed: number
+        }
+        Insert: {
+          boss_defeated?: boolean
+          child_id: string
+          completed_at?: string | null
+          continent_id: string
+          created_at?: string
+          id?: string
+          status?: string
+          zones_completed?: number
+        }
+        Update: {
+          boss_defeated?: boolean
+          child_id?: string
+          completed_at?: string | null
+          continent_id?: string
+          created_at?: string
+          id?: string
+          status?: string
+          zones_completed?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "continent_progress_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       daily_challenges: {
         Row: {
@@ -220,6 +270,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      zone_progress: {
+        Row: {
+          child_id: string
+          continent_id: string
+          created_at: string
+          games_completed: number
+          id: string
+          stars_earned: number
+          status: string
+          total_games: number
+          unlocked_at: string | null
+          zone_id: string
+        }
+        Insert: {
+          child_id: string
+          continent_id: string
+          created_at?: string
+          games_completed?: number
+          id?: string
+          stars_earned?: number
+          status?: string
+          total_games?: number
+          unlocked_at?: string | null
+          zone_id: string
+        }
+        Update: {
+          child_id?: string
+          continent_id?: string
+          created_at?: string
+          games_completed?: number
+          id?: string
+          stars_earned?: number
+          status?: string
+          total_games?: number
+          unlocked_at?: string | null
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zone_progress_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
