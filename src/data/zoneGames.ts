@@ -47,11 +47,16 @@ export interface ZoneGameContent {
 }
 
 export interface BossBattleContent {
+  isFinalBoss?: boolean;
   quizQuestions: ZoneQuizQuestion[];
   defenseRound: {
     type: "shield-dodge" | "scam-real" | "kindness";
     title: string;
     items: any[];
+  };
+  finalRound?: {
+    title: string;
+    patterns: { sequence: string[]; answer: string; options: string[] }[];
   };
 }
 
@@ -360,6 +365,439 @@ const kindnessCitadelGames: ZoneGameContent = {
   },
 };
 
+/* ─── ASIA ──────────────────────────────────────────── */
+
+const privacyPalaceGames: ZoneGameContent = {
+  quiz: {
+    title: "App Permissions",
+    questions: [
+      { q: "A flashlight app asks for access to your contacts and location. What should you do?", choices: ["Allow everything — it probably needs it", "Deny unnecessary permissions — a flashlight doesn't need contacts or location", "Delete your contacts first", "Turn off your phone"], answer: 1, explanation: "A flashlight only needs to turn on your camera flash — contacts and location are unnecessary!" },
+      { q: "What is a privacy setting?", choices: ["A type of password", "Controls that let you decide who can see your information", "A secret website", "A computer virus"], answer: 1, explanation: "Privacy settings let you control who can see your posts, location, and personal info!" },
+      { q: "Which app permission should a simple game NOT need?", choices: ["Sound", "Display", "Your exact GPS location", "Screen brightness"], answer: 2, explanation: "A simple game has no reason to know your exact location — deny that permission!" },
+      { q: "What does it mean when an app tracks your location?", choices: ["It helps you play better", "It knows exactly where you are at all times", "It makes the app faster", "It connects you to friends"], answer: 1, explanation: "Location tracking means the app knows where you are — only allow this when truly necessary!" },
+      { q: "What should you do before installing a new app?", choices: ["Install it immediately", "Check what permissions it asks for and ask a trusted adult", "Share it with friends", "Give it all permissions"], answer: 1, explanation: "Always check permissions and ask a trusted adult before installing new apps!" },
+    ],
+  },
+  miniGame: { type: "app-permission", title: "App Permission Manager", description: "Toggle app permissions correctly!" },
+  wordSearch: {
+    junior: { size: 8, words: ["SAFE", "HIDE", "LOCK", "TELL", "STOP"] },
+    defender: { size: 12, words: ["PRIVACY", "PERMISSION", "LOCATION", "SETTINGS", "PERSONAL", "PROTECT", "PRIVATE"] },
+    guardian: { size: 15, words: ["GEOLOCATION", "PERMISSIONS", "SURVEILLANCE", "BIOMETRIC", "CONFIDENTIAL", "DATAPROTECT"] },
+  },
+  dragDrop: {
+    items: [
+      { text: "Maps app needs your location", bucket: "✅ NECESSARY" },
+      { text: "Flashlight app needs your contacts", bucket: "🚫 UNNECESSARY" },
+      { text: "Camera app needs camera access", bucket: "✅ NECESSARY" },
+      { text: "Calculator app needs your microphone", bucket: "🚫 UNNECESSARY" },
+      { text: "Music app needs audio access", bucket: "✅ NECESSARY" },
+      { text: "Simple game needs your exact GPS", bucket: "🚫 UNNECESSARY" },
+    ],
+    buckets: ["✅ NECESSARY", "🚫 UNNECESSARY"],
+  },
+};
+
+const browseBazaarGames: ZoneGameContent = {
+  quiz: {
+    title: "Safe Browsing",
+    questions: [
+      { q: "What does HTTPS mean in a website address?", choices: ["The website is old", "The website uses secure encrypted communication", "The website is free to use", "The website has lots of content"], answer: 1, explanation: "HTTPS means the website encrypts your data — look for it before entering any personal info!" },
+      { q: "You see a padlock icon next to a website address. What does this mean?", choices: ["The website is locked and you can't use it", "The website is using a secure connection", "The website costs money", "The website is under construction"], answer: 1, explanation: "A padlock icon means the connection is secure and encrypted!" },
+      { q: "Which website address looks suspicious?", choices: ["https://google.com", "https://amazon.com", "http://amaz0n-deals.xyz", "https://bbc.co.uk"], answer: 2, explanation: "amaz0n-deals.xyz uses a zero instead of 'o' and .xyz domain — classic phishing trick!" },
+      { q: "What should you do if a website asks for your home address to show you content?", choices: ["Enter it — websites need this", "Never enter personal info unless a trusted adult says it's okay", "Enter a fake address", "Close the tab and tell a trusted adult"], answer: 3, explanation: "Close the tab and tell a trusted adult — legitimate websites rarely need your home address!" },
+      { q: "What is a cookie on a website?", choices: ["A tasty snack", "A small file that remembers your preferences and tracks your activity", "A type of virus", "A security feature"], answer: 1, explanation: "Cookies track what you do on websites — it's okay to decline non-essential cookies!" },
+    ],
+  },
+  miniGame: { type: "url-inspector", title: "URL Inspector", description: "Identify safe vs suspicious URL components!" },
+  crossword: {
+    clues: [
+      { number: 1, direction: "across", clue: "Secure website protocol — look for this", answer: "HTTPS", juniorClue: "Safe letters", guardianClue: "Transport Layer Security HTTP protocol prefix" },
+      { number: 4, direction: "across", clue: "This icon means the connection is secure", answer: "PADLOCK", juniorClue: "Lock picture", guardianClue: "Visual TLS certificate validation indicator" },
+      { number: 6, direction: "across", clue: "Small file that tracks website activity", answer: "COOKIE", juniorClue: "Website memory", guardianClue: "HTTP state management mechanism per RFC 6265" },
+      { number: 2, direction: "down", clue: "Never enter this on unknown websites", answer: "PASSWORD", juniorClue: "Secret code", guardianClue: "Authentication credential string" },
+      { number: 3, direction: "down", clue: "Fake website designed to look real", answer: "PHISHING", juniorClue: "Trick site", guardianClue: "Credential harvesting via spoofed web properties" },
+      { number: 5, direction: "down", clue: "The address of a website", answer: "URL", juniorClue: "Web name", guardianClue: "Uniform Resource Locator" },
+    ],
+    wordBank: ["HTTPS", "PADLOCK", "COOKIE", "PASSWORD", "PHISHING", "URL"],
+  },
+  dragDrop: {
+    items: [
+      { text: "https://google.com 🔒", bucket: "✅ SAFE WEBSITE" },
+      { text: "http://free-movies-download.xyz", bucket: "🚨 UNSAFE WEBSITE" },
+      { text: "https://khanacademy.org 🔒", bucket: "✅ SAFE WEBSITE" },
+      { text: "http://g00gle.com (no padlock)", bucket: "🚨 UNSAFE WEBSITE" },
+      { text: "https://wikipedia.org 🔒", bucket: "✅ SAFE WEBSITE" },
+      { text: "http://win-prize-now.com", bucket: "🚨 UNSAFE WEBSITE" },
+    ],
+    buckets: ["✅ SAFE WEBSITE", "🚨 UNSAFE WEBSITE"],
+  },
+};
+
+const firewallFrontierGames: ZoneGameContent = {
+  quiz: {
+    title: "Firewalls and Network Security",
+    questions: [
+      { q: "What is a firewall?", choices: ["A wall made of fire", "A security system that monitors and controls incoming and outgoing network traffic", "A type of virus", "A fast internet connection"], answer: 1, explanation: "A firewall acts like a security guard for your network — blocking bad traffic and allowing good traffic!" },
+      { q: "What does a firewall protect against?", choices: ["Slow internet", "Unauthorized access and malicious traffic", "Power cuts", "Screen damage"], answer: 1, explanation: "Firewalls block hackers and malware from accessing your network!" },
+      { q: "What is a network?", choices: ["A type of fish net", "A group of connected computers and devices", "A social media app", "A computer brand"], answer: 1, explanation: "A network connects multiple devices so they can share information and resources!" },
+      { q: "Why should you never connect to unknown public WiFi without protection?", choices: ["It might be slow", "Hackers can set up fake networks to steal your data", "It uses too much battery", "It might cost money"], answer: 1, explanation: "Fake WiFi hotspots are a common hacking trick — always ask a trusted adult before connecting!" },
+      { q: "What should you do before connecting to a new WiFi network?", choices: ["Connect immediately", "Ask a trusted adult if it's safe to use", "Share the password with friends", "Turn off your firewall"], answer: 1, explanation: "Always check with a trusted adult before connecting to any new network!" },
+    ],
+  },
+  miniGame: { type: "firewall-builder", title: "Firewall Builder", description: "Block bad traffic and allow good traffic!" },
+  wordSearch: {
+    junior: { size: 8, words: ["WALL", "SAFE", "BLOCK", "GUARD", "STOP"] },
+    defender: { size: 12, words: ["FIREWALL", "NETWORK", "SECURITY", "PROTECT", "TRAFFIC", "BLOCK", "MONITOR"] },
+    guardian: { size: 15, words: ["FIREWALL", "BANDWIDTH", "ENCRYPTION", "PROTOCOL", "INTRUSION", "DETECTION", "NETWORK"] },
+  },
+  dragDrop: {
+    items: [
+      { text: "Traffic from a trusted school website", bucket: "✅ ALLOW" },
+      { text: "Unknown connection from foreign server", bucket: "🚫 BLOCK" },
+      { text: "Your favourite game's official servers", bucket: "✅ ALLOW" },
+      { text: "Suspicious program trying to access internet", bucket: "🚫 BLOCK" },
+      { text: "Video call with family members", bucket: "✅ ALLOW" },
+      { text: "Unknown app sending data at midnight", bucket: "🚫 BLOCK" },
+    ],
+    buckets: ["✅ ALLOW", "🚫 BLOCK"],
+  },
+};
+
+const cyberguardAcademyGames: ZoneGameContent = {
+  quiz: {
+    title: "All-Round Cyber Defence",
+    questions: [
+      { q: "What is the most important thing you can do to stay safe online?", choices: ["Never use the internet", "Always tell a trusted adult when something feels wrong", "Only use the internet at night", "Share your passwords with family"], answer: 1, explanation: "Telling a trusted adult is always the most important step!" },
+      { q: "Which of these is the BEST cyber safety habit?", choices: ["Using the same password for everything", "Never updating your apps", "Using strong unique passwords and 2FA", "Sharing your login with friends"], answer: 2, explanation: "Strong unique passwords plus 2FA is the gold standard of account security!" },
+      { q: "What should you do if you receive a message that makes you feel scared or uncomfortable?", choices: ["Reply angrily", "Delete it and say nothing", "Tell a trusted adult straight away", "Share it with classmates"], answer: 2, explanation: "Always tell a trusted adult — they can help and take action to keep you safe!" },
+      { q: "You notice your friend is being bullied in an online game. What is the RIGHT thing to do?", choices: ["Watch and say nothing", "Join in", "Support your friend, report the bully, and tell a trusted adult", "Leave the game"], answer: 2, explanation: "Be an upstander — support your friend and report the bullying!" },
+      { q: "What makes someone a true Cyber Hero?", choices: ["Knowing how to hack", "Staying safe online AND helping others stay safe too", "Never using the internet", "Having the most followers"], answer: 1, explanation: "A true Cyber Hero protects themselves and the people around them!" },
+    ],
+  },
+  miniGame: { type: "cyber-obstacle", title: "Cyber Obstacle Course", description: "Rapid fire mixed quiz across all Asia topics!" },
+  crossword: {
+    clues: [
+      { number: 1, direction: "across", clue: "Security system monitoring network traffic", answer: "FIREWALL", juniorClue: "Network guard", guardianClue: "Packet-filtering network security appliance" },
+      { number: 4, direction: "across", clue: "Second verification step for login", answer: "TWOFACTOR", juniorClue: "Extra check", guardianClue: "Multi-factor authentication protocol" },
+      { number: 6, direction: "across", clue: "Scrambling data to protect it", answer: "ENCRYPTION", juniorClue: "Secret code", guardianClue: "Cryptographic data transformation" },
+      { number: 8, direction: "across", clue: "Controls who can see your information", answer: "PRIVACY", juniorClue: "Keeping safe", guardianClue: "Data access governance framework" },
+      { number: 2, direction: "down", clue: "Network of connected devices", answer: "INTERNET", juniorClue: "Online world", guardianClue: "Global interconnected packet-switched network" },
+      { number: 3, direction: "down", clue: "Fake email designed to trick you", answer: "PHISHING", juniorClue: "Trick mail", guardianClue: "Social engineering credential harvesting attack" },
+      { number: 5, direction: "down", clue: "Harmful software on your device", answer: "MALWARE", juniorClue: "Bad program", guardianClue: "Malicious executable payload" },
+      { number: 7, direction: "down", clue: "Your secret account key", answer: "PASSWORD", juniorClue: "Secret word", guardianClue: "Authentication credential string" },
+    ],
+    wordBank: ["FIREWALL", "TWOFACTOR", "ENCRYPTION", "PRIVACY", "INTERNET", "PHISHING", "MALWARE", "PASSWORD"],
+  },
+  dragDrop: {
+    items: [
+      { text: "Phishing email", bucket: "🗑️ REPORT & DELETE" },
+      { text: "Weak password", bucket: "🔑 CHANGE TO STRONG" },
+      { text: "Unknown network connection", bucket: "🛡️ USE FIREWALL" },
+      { text: "Virus on device", bucket: "🔬 RUN ANTIVIRUS" },
+      { text: "Someone asking for personal info", bucket: "👨‍👩‍👧 TELL TRUSTED ADULT" },
+      { text: "Cyberbully online", bucket: "🚫 BLOCK & REPORT" },
+    ],
+    buckets: ["🗑️ REPORT & DELETE", "🔑 CHANGE TO STRONG", "🛡️ USE FIREWALL", "🔬 RUN ANTIVIRUS", "👨‍👩‍👧 TELL TRUSTED ADULT", "🚫 BLOCK & REPORT"],
+  },
+};
+
+/* ─── SOUTH AMERICA ─────────────────────────────────── */
+
+const kindnessKingdomGames: ZoneGameContent = {
+  quiz: {
+    title: "Social Media Safety",
+    questions: [
+      { q: "What is the minimum age for most social media platforms?", choices: ["8 years old", "10 years old", "13 years old", "18 years old"], answer: 2, explanation: "Most social media platforms require users to be at least 13 years old!" },
+      { q: "Before posting a photo online, what should you think about?", choices: ["How many likes it will get", "Whether it reveals personal info like your location or school", "Whether it's funny enough", "How quickly you can post it"], answer: 1, explanation: "Always think about what personal information might be visible in your photos before posting!" },
+      { q: "Someone you don't know sends you a friend request on social media. What should you do?", choices: ["Accept — the more friends the better", "Ask a trusted adult before accepting", "Accept and immediately share personal info", "Give them your phone number"], answer: 1, explanation: "Always check with a trusted adult before accepting friend requests from strangers!" },
+      { q: "What should you do before posting something online?", choices: ["Post immediately — be the first!", "Think: is this kind, is this safe, would I be happy if everyone saw this?", "Only think about whether friends will like it", "Post and delete later if needed"], answer: 1, explanation: "Think before you post — once it's online it can be very hard to remove!" },
+      { q: "What does 'digital footprint' mean?", choices: ["A type of computer mouse", "The trail of data you leave behind when using the internet", "A social media follower count", "A type of online game"], answer: 1, explanation: "Your digital footprint is everything you do online — it can last forever!" },
+    ],
+  },
+  miniGame: { type: "social-media-checker", title: "Social Media Safety Checker", description: "Check a post for safety issues before publishing!" },
+  wordSearch: {
+    junior: { size: 8, words: ["POST", "SAFE", "KIND", "TELL", "STOP"] },
+    defender: { size: 12, words: ["SOCIALMEDIA", "FOOTPRINT", "PRIVACY", "KINDNESS", "POSTING", "DIGITAL", "SAFETY"] },
+    guardian: { size: 15, words: ["DIGITALFOOTPRINT", "SOCIALMEDIA", "CYBERBULLYING", "PRIVACY", "REPUTATION", "OVERSHARING"] },
+  },
+  dragDrop: {
+    items: [
+      { text: "A drawing you made", bucket: "✅ SAFE TO POST" },
+      { text: "A photo showing your school sign", bucket: "🔒 KEEP PRIVATE" },
+      { text: "Your favourite book recommendation", bucket: "✅ SAFE TO POST" },
+      { text: "A photo showing your house number", bucket: "🔒 KEEP PRIVATE" },
+      { text: "A funny meme you made", bucket: "✅ SAFE TO POST" },
+      { text: "Your daily routine and schedule", bucket: "🔒 KEEP PRIVATE" },
+    ],
+    buckets: ["✅ SAFE TO POST", "🔒 KEEP PRIVATE"],
+  },
+};
+
+const socialFortressGames: ZoneGameContent = {
+  quiz: {
+    title: "Protecting Personal Information",
+    questions: [
+      { q: "What is personal information?", choices: ["Your favourite colour", "Details that can identify or locate you, like your name, address, or phone number", "The games you like", "Your favourite food"], answer: 1, explanation: "Personal information can be used to find or identify you — protect it carefully!" },
+      { q: "Which of these is NOT personal information?", choices: ["Your home address", "Your phone number", "Your favourite movie", "Your school name"], answer: 2, explanation: "Your favourite movie can't be used to find or identify you — the others can!" },
+      { q: "Why is it dangerous to share your location online?", choices: ["It uses too much battery", "People can find out where you are in real life", "It slows down your device", "It costs money"], answer: 1, explanation: "Sharing your location tells people exactly where you are — this can be very dangerous!" },
+      { q: "A website asks for your full name and birthday to sign up. What should you do?", choices: ["Enter it all quickly", "Ask a trusted adult if the website is safe before entering any information", "Make up fake details", "Enter just your first name"], answer: 1, explanation: "Always check with a trusted adult before giving ANY personal information to a website!" },
+      { q: "What should you do if you accidentally shared personal information online?", choices: ["Keep it secret and hope nothing happens", "Tell a trusted adult immediately so they can help fix it", "Share more information to cover it up", "Delete your account without telling anyone"], answer: 1, explanation: "Tell a trusted adult right away — they can help limit the damage and keep you safe!" },
+    ],
+  },
+  miniGame: { type: "info-vault", title: "Info Vault", description: "Lock personal info in the vault before the Data Thief steals it!" },
+  crossword: {
+    clues: [
+      { number: 1, direction: "across", clue: "Details that can identify or locate you", answer: "PERSONAL", juniorClue: "About you", guardianClue: "Personally identifiable information (PII)" },
+      { number: 4, direction: "across", clue: "Never share this with strangers — where you live", answer: "ADDRESS", juniorClue: "Home place", guardianClue: "Residential geospatial identifier" },
+      { number: 6, direction: "across", clue: "The trail you leave online", answer: "FOOTPRINT", juniorClue: "Online marks", guardianClue: "Persistent digital activity metadata" },
+      { number: 2, direction: "down", clue: "Keep this private — your location", answer: "LOCATION", juniorClue: "Where you are", guardianClue: "Geospatial coordinates" },
+      { number: 3, direction: "down", clue: "Always ask this person before sharing info", answer: "ADULT", juniorClue: "Grown-up", guardianClue: "Responsible custodial authority" },
+      { number: 5, direction: "down", clue: "Protect this — your identity", answer: "PRIVACY", juniorClue: "Keeping safe", guardianClue: "Data sovereignty and access control" },
+    ],
+    wordBank: ["PERSONAL", "ADDRESS", "FOOTPRINT", "LOCATION", "ADULT", "PRIVACY"],
+  },
+  dragDrop: {
+    items: [
+      { text: "Your favourite colour", bucket: "✅ PUBLIC OK" },
+      { text: "Your home address", bucket: "🔒 PERSONAL — PROTECT IT" },
+      { text: "Your favourite sport", bucket: "✅ PUBLIC OK" },
+      { text: "Your phone number", bucket: "🔒 PERSONAL — PROTECT IT" },
+      { text: "Your favourite animal", bucket: "✅ PUBLIC OK" },
+      { text: "What time you leave for school", bucket: "🔒 PERSONAL — PROTECT IT" },
+    ],
+    buckets: ["✅ PUBLIC OK", "🔒 PERSONAL — PROTECT IT"],
+  },
+};
+
+const identityIsleGames: ZoneGameContent = {
+  quiz: {
+    title: "Identity Theft Awareness",
+    questions: [
+      { q: "What is identity theft?", choices: ["Stealing someone's phone", "When someone steals your personal information to pretend to be you", "Copying someone's homework", "Taking someone's photo"], answer: 1, explanation: "Identity theft is when criminals use your personal info to impersonate you online or financially!" },
+      { q: "Someone online is pretending to be you and messaging your friends. What should you do?", choices: ["Send them a message asking them to stop", "Tell a trusted adult immediately and report the fake account", "Create a new account", "Ignore it"], answer: 1, explanation: "Tell a trusted adult right away — fake accounts can be reported and removed!" },
+      { q: "Which of these helps PREVENT identity theft?", choices: ["Using the same password everywhere", "Sharing your birthday publicly online", "Using strong passwords and keeping personal info private", "Accepting all friend requests"], answer: 2, explanation: "Strong passwords and keeping personal info private are your best defences!" },
+      { q: "You notice purchases on your parent's account that they didn't make. What could this mean?", choices: ["The shop made a mistake", "Someone may have stolen their account details", "It's a special surprise", "The bank made an error"], answer: 1, explanation: "Unexpected purchases could mean identity theft — tell a trusted adult to check immediately!" },
+      { q: "What is the safest way to protect your identity online?", choices: ["Share your info only with online friends", "Keep personal info private and use strong passwords", "Never use the internet", "Post your details publicly so everyone can verify it's you"], answer: 1, explanation: "Keeping personal info private and using strong passwords is the best protection!" },
+    ],
+  },
+  miniGame: { type: "identity-defender", title: "Identity Defender", description: "Spot differences between real and fake accounts!" },
+  wordSearch: {
+    junior: { size: 8, words: ["REAL", "FAKE", "SAFE", "TELL", "STOP"] },
+    defender: { size: 12, words: ["IDENTITY", "THEFT", "IMPOSTER", "PROTECT", "PERSONAL", "ACCOUNT", "REPORT"] },
+    guardian: { size: 15, words: ["IMPERSONATION", "CREDENTIALS", "AUTHENTICATION", "FRAUDULENT", "IDENTITY", "PROTECTION"] },
+  },
+  dragDrop: {
+    items: [
+      { text: "Account created today with no posts", bucket: "⚠️ SUSPICIOUS" },
+      { text: "Verified badge from the platform", bucket: "✅ LIKELY REAL" },
+      { text: "Asking for personal info in first message", bucket: "⚠️ SUSPICIOUS" },
+      { text: "Friends you know follow this account", bucket: "✅ LIKELY REAL" },
+      { text: "Profile photo looks like a stock image", bucket: "⚠️ SUSPICIOUS" },
+      { text: "Account has years of genuine posts and history", bucket: "✅ LIKELY REAL" },
+    ],
+    buckets: ["✅ LIKELY REAL", "⚠️ SUSPICIOUS"],
+  },
+};
+
+/* ─── AUSTRALIA ──────────────────────────────────────── */
+
+const malwareMazeGames: ZoneGameContent = {
+  quiz: {
+    title: "Malware Awareness",
+    questions: [
+      { q: "What is malware?", choices: ["A type of hardware", "Malicious software designed to damage or steal from your device", "A safe app", "A computer brand"], answer: 1, explanation: "Malware is any harmful software — including viruses, spyware, and ransomware!" },
+      { q: "How does malware usually get onto a device?", choices: ["Through official app stores", "By clicking suspicious links, downloading unsafe files, or visiting dangerous websites", "Through the power cable", "By using WiFi"], answer: 1, explanation: "Most malware arrives through suspicious downloads, links, or unsafe websites!" },
+      { q: "What is a computer virus?", choices: ["A type of illness", "Malware that copies itself and spreads to other devices", "A helpful program", "A type of game"], answer: 1, explanation: "A computer virus spreads from device to device and can damage files and steal data!" },
+      { q: "What is ransomware?", choices: ["A game about pirates", "Malware that locks your files and demands money to unlock them", "A type of antivirus", "A safe backup tool"], answer: 1, explanation: "Ransomware is incredibly dangerous malware that holds your files hostage for money!" },
+      { q: "What is the best protection against malware?", choices: ["Never turning on your device", "Using antivirus software, keeping software updated, and avoiding suspicious links", "Buying a new device every year", "Using the internet less"], answer: 1, explanation: "Antivirus software plus safe browsing habits plus regular updates is the winning combination!" },
+    ],
+  },
+  miniGame: { type: "virus-spotter", title: "Virus Spotter", description: "Find hidden viruses before time runs out!" },
+  wordSearch: {
+    junior: { size: 8, words: ["VIRUS", "SAFE", "SCAN", "STOP", "HELP"] },
+    defender: { size: 12, words: ["MALWARE", "VIRUS", "RANSOMWARE", "SPYWARE", "ANTIVIRUS", "PROTECT", "SCAN"] },
+    guardian: { size: 15, words: ["RANSOMWARE", "TROJAN", "SPYWARE", "ROOTKIT", "KEYLOGGER", "BOTNET", "EXPLOIT"] },
+  },
+  dragDrop: {
+    items: [
+      { text: "Locks your files and demands money", bucket: "💰 RANSOMWARE" },
+      { text: "Secretly watches everything you type", bucket: "👁️ SPYWARE" },
+      { text: "Copies itself and spreads to other devices", bucket: "🦠 VIRUS" },
+      { text: "Pretends to be a safe program but is harmful", bucket: "🎭 TROJAN" },
+    ],
+    buckets: ["💰 RANSOMWARE", "👁️ SPYWARE", "🦠 VIRUS", "🎭 TROJAN"],
+  },
+};
+
+const updateOutpostGames: ZoneGameContent = {
+  quiz: {
+    title: "Software Updates",
+    questions: [
+      { q: "Why are software updates important?", choices: ["They make apps look different", "They fix security vulnerabilities that hackers could exploit", "They use up storage", "They slow down your device"], answer: 1, explanation: "Updates patch security holes that hackers exploit — always keep software updated!" },
+      { q: "What is a security patch?", choices: ["A sticker for your device", "A fix for a discovered security weakness in software", "A type of antivirus", "A device screen cover"], answer: 1, explanation: "Security patches close vulnerabilities before hackers can exploit them!" },
+      { q: "You've been ignoring an update for weeks. What risk does this create?", choices: ["None — updates aren't important", "Your device has known vulnerabilities that hackers can exploit", "The app might look different", "Your storage might fill up"], answer: 1, explanation: "Unpatched vulnerabilities are open doors for hackers — update as soon as possible!" },
+      { q: "Where should software updates come from?", choices: ["Links in emails", "Pop-up ads on websites", "Official app stores or the software developer's official website", "Friends' recommendations"], answer: 2, explanation: "Only update through official channels — fake update prompts are a common malware trick!" },
+      { q: "What is the BEST setting for updates on your device?", choices: ["Manual only — never auto-update", "Automatic updates so you're always protected", "Never update — it changes things", "Update only when the device breaks"], answer: 1, explanation: "Automatic updates ensure you're always protected with the latest security fixes!" },
+    ],
+  },
+  miniGame: { type: "update-simulator", title: "Update Simulator", description: "Identify legitimate vs fake updates!" },
+  crossword: {
+    clues: [
+      { number: 1, direction: "across", clue: "Fixes security holes in software", answer: "PATCH", juniorClue: "Fix it", guardianClue: "Binary delta addressing CVE-identified vulnerabilities" },
+      { number: 4, direction: "across", clue: "Software designed to protect your device from threats", answer: "ANTIVIRUS", juniorClue: "Safety scanner", guardianClue: "Heuristic and signature-based malware detection engine" },
+      { number: 6, direction: "across", clue: "Keep software __ to stay protected", answer: "UPDATED", juniorClue: "Make new", guardianClue: "Current revision incorporating latest security patches" },
+      { number: 2, direction: "down", clue: "A weakness hackers can exploit", answer: "VULNERABILITY", juniorClue: "Weak spot", guardianClue: "Exploitable defect in system security posture" },
+      { number: 3, direction: "down", clue: "Harmful software on your device", answer: "MALWARE", juniorClue: "Bad program", guardianClue: "Malicious executable payload" },
+      { number: 5, direction: "down", clue: "The best update setting — happens by itself", answer: "AUTOMATIC", juniorClue: "By itself", guardianClue: "Unattended background patch deployment" },
+    ],
+    wordBank: ["PATCH", "ANTIVIRUS", "UPDATED", "VULNERABILITY", "MALWARE", "AUTOMATIC"],
+  },
+  dragDrop: {
+    items: [
+      { text: "Security patch for a critical vulnerability", bucket: "⚡ UPDATE NOW" },
+      { text: "A cosmetic theme update", bucket: "🕐 CAN WAIT" },
+      { text: "Antivirus definition update", bucket: "⚡ UPDATE NOW" },
+      { text: "New emoji pack", bucket: "🕐 CAN WAIT" },
+      { text: "Operating system security update", bucket: "⚡ UPDATE NOW" },
+      { text: "Update from a pop-up ad", bucket: "🚫 NOT NEEDED — SCAM" },
+    ],
+    buckets: ["⚡ UPDATE NOW", "🕐 CAN WAIT", "🚫 NOT NEEDED — SCAM"],
+  },
+};
+
+const antivirusAtollGames: ZoneGameContent = {
+  quiz: {
+    title: "Antivirus and Device Protection",
+    questions: [
+      { q: "What does antivirus software do?", choices: ["Makes your device faster", "Detects and removes malware and viruses from your device", "Blocks all websites", "Manages your passwords"], answer: 1, explanation: "Antivirus software scans for and removes harmful software protecting your device!" },
+      { q: "How often should you scan your device for viruses?", choices: ["Never — it's not necessary", "Regularly, or set up automatic scheduled scans", "Only when something goes wrong", "Once a year"], answer: 1, explanation: "Regular scans catch threats early — set up automatic scans for best protection!" },
+      { q: "Your antivirus says a file is dangerous. What should you do?", choices: ["Ignore the warning and open it", "Delete the file and tell a trusted adult", "Turn off the antivirus", "Share the file with friends"], answer: 1, explanation: "Always trust your antivirus warnings — delete the file and tell a trusted adult!" },
+      { q: "What sign might indicate your device has malware?", choices: ["It works perfectly", "It suddenly becomes very slow, crashes often, or shows strange pop-ups", "It charges faster", "The screen is brighter"], answer: 1, explanation: "Slowness, crashes, and strange pop-ups are classic signs of malware infection!" },
+      { q: "What is the best complete device protection strategy?", choices: ["Antivirus only", "Updates only", "Antivirus + regular updates + safe browsing habits + trusted adult supervision", "Never using the internet"], answer: 2, explanation: "Layered protection is best — antivirus, updates, safe habits, and trusted adult guidance!" },
+    ],
+  },
+  miniGame: { type: "antivirus-lab", title: "Antivirus Lab", description: "Match antivirus tools to virus types!" },
+  wordSearch: {
+    junior: { size: 8, words: ["SCAN", "SAFE", "CLEAN", "BLOCK", "GUARD"] },
+    defender: { size: 12, words: ["ANTIVIRUS", "SCANNER", "QUARANTINE", "PROTECT", "MALWARE", "DETECT", "REMOVE"] },
+    guardian: { size: 15, words: ["QUARANTINE", "HEURISTIC", "SIGNATURE", "REALTIME", "DETECTION", "SANDBOXING", "REMEDIATION"] },
+  },
+  dragDrop: {
+    items: [
+      { text: "Antivirus installed and updated", bucket: "🛡️ PROTECTED" },
+      { text: "No antivirus software", bucket: "⚠️ VULNERABLE" },
+      { text: "All software up to date", bucket: "🛡️ PROTECTED" },
+      { text: "Months of ignored updates", bucket: "⚠️ VULNERABLE" },
+      { text: "Only downloads from official sources", bucket: "🛡️ PROTECTED" },
+      { text: "Downloads from random websites", bucket: "⚠️ VULNERABLE" },
+    ],
+    buckets: ["🛡️ PROTECTED", "⚠️ VULNERABLE"],
+  },
+};
+
+/* ─── ANTARCTICA ─────────────────────────────────────── */
+
+const cryptoCavernGames: ZoneGameContent = {
+  quiz: {
+    title: "Cryptography Basics",
+    questions: [
+      { q: "What is cryptography?", choices: ["The study of caves", "The science of writing and solving codes to protect information", "A type of currency", "A computer programming language"], answer: 1, explanation: "Cryptography is the ancient and modern science of encoding messages so only the right person can read them!" },
+      { q: "What is a Caesar cipher?", choices: ["A type of salad", "A simple encryption method that shifts letters by a fixed number", "A computer program", "A type of firewall"], answer: 1, explanation: "Julius Caesar used this cipher — shift each letter by 3 positions to encrypt!" },
+      { q: "If A=1, B=2, C=3 — what does '8-5-12-12-15' spell?", choices: ["WORLD", "HELLO", "CYBER", "GUARD"], answer: 1, explanation: "8=H, 5=E, 12=L, 12=L, 15=O — HELLO! You decoded your first cipher!" },
+      { q: "Why is encryption used in everyday apps?", choices: ["To make apps look complicated", "To protect your messages and data from being read by anyone except the intended recipient", "To slow down hackers", "To make apps use less battery"], answer: 1, explanation: "End-to-end encryption means only you and the person you're messaging can read your messages!" },
+      { q: "What does end-to-end encryption mean?", choices: ["The message is encrypted at the start and end of the word", "Only the sender and recipient can read the message — nobody else", "The message is deleted after reading", "The message is backed up twice"], answer: 1, explanation: "End-to-end encryption means even the app company can't read your messages!" },
+    ],
+  },
+  miniGame: { type: "caesar-cipher", title: "Caesar Cipher Decoder", description: "Decode SHADOWBYTE's encrypted message!" },
+  crossword: {
+    clues: [
+      { number: 1, direction: "across", clue: "Science of writing and solving codes", answer: "CRYPTOGRAPHY", juniorClue: "Secret codes", guardianClue: "Mathematical discipline of secure communication" },
+      { number: 4, direction: "across", clue: "Simple letter-shifting cipher used by Roman emperors", answer: "CAESAR", juniorClue: "Roman code", guardianClue: "Substitution cipher with fixed alphabetic rotation" },
+      { number: 6, direction: "across", clue: "Only sender and receiver can read this type of message", answer: "ENCRYPTED", juniorClue: "Secret message", guardianClue: "Ciphertext produced by cryptographic transformation" },
+      { number: 2, direction: "down", clue: "A secret code key", answer: "CIPHER", juniorClue: "Code type", guardianClue: "Algorithm for encryption and decryption" },
+      { number: 3, direction: "down", clue: "Scrambled data", answer: "ENCODED", juniorClue: "Mixed up", guardianClue: "Data transformed via encoding scheme" },
+      { number: 5, direction: "down", clue: "Unscrambling a secret message", answer: "DECRYPT", juniorClue: "Solve it", guardianClue: "Reverse cryptographic transformation to plaintext" },
+    ],
+    wordBank: ["CRYPTOGRAPHY", "CAESAR", "ENCRYPTED", "CIPHER", "ENCODED", "DECRYPT"],
+  },
+  dragDrop: {
+    items: [
+      { text: "WhatsApp message (end-to-end encrypted)", bucket: "🔐 ENCRYPTED" },
+      { text: "Plain text email with no security", bucket: "📖 UNENCRYPTED" },
+      { text: "HTTPS website connection", bucket: "🔐 ENCRYPTED" },
+      { text: "HTTP website with no padlock", bucket: "📖 UNENCRYPTED" },
+      { text: "Password stored as a hash", bucket: "🔐 ENCRYPTED" },
+      { text: "Password written in plain text in a file", bucket: "📖 UNENCRYPTED" },
+    ],
+    buckets: ["🔐 ENCRYPTED", "📖 UNENCRYPTED"],
+  },
+};
+
+const algorithmAbyssGames: ZoneGameContent = {
+  quiz: {
+    title: "Ethical Hacking",
+    questions: [
+      { q: "What is an ethical hacker?", choices: ["A criminal who hacks for money", "A security professional who tests systems with permission to find vulnerabilities", "Someone who hacks their own device", "A hacker who only hacks at night"], answer: 1, explanation: "Ethical hackers have permission to hack systems to find and fix weaknesses before criminals do!" },
+      { q: "What is the key difference between ethical and unethical hacking?", choices: ["The tools they use", "Permission — ethical hackers always have authorization", "The time of day", "The speed of hacking"], answer: 1, explanation: "Permission is everything — ethical hackers are always authorized by the system owner!" },
+      { q: "What is a vulnerability?", choices: ["A type of password", "A weakness in a system that could be exploited by attackers", "A security feature", "A type of firewall rule"], answer: 1, explanation: "Vulnerabilities are weaknesses — ethical hackers find them so developers can fix them!" },
+      { q: "What should you do if you accidentally find a security vulnerability in a website?", choices: ["Exploit it for personal gain", "Keep it secret", "Report it responsibly to the website owner or a trusted adult", "Tell all your friends"], answer: 2, explanation: "Responsible disclosure means reporting vulnerabilities so they can be fixed!" },
+      { q: "Which of these is a cybersecurity career?", choices: ["Penetration Tester", "Social Media Manager", "Graphic Designer", "Video Editor"], answer: 0, explanation: "Penetration testers are paid ethical hackers who help companies find and fix security weaknesses!" },
+    ],
+  },
+  miniGame: { type: "pattern-breaker", title: "Pattern Breaker", description: "Break SHADOWBYTE's attack patterns!" },
+  wordSearch: {
+    junior: { size: 8, words: ["HACK", "FIND", "FIX", "SAFE", "GOOD"] },
+    defender: { size: 12, words: ["ETHICAL", "HACKING", "PERMISSION", "TESTING", "SECURITY", "VULNERABILITY", "REPORT"] },
+    guardian: { size: 15, words: ["PENETRATION", "VULNERABILITY", "AUTHORIZATION", "RESPONSIBLE", "DISCLOSURE", "EXPLOITATION", "ETHICAL"] },
+  },
+  dragDrop: {
+    items: [
+      { text: "Hacking with written permission from the owner", bucket: "✅ ETHICAL HACKER" },
+      { text: "Breaking into systems without permission", bucket: "🚨 UNETHICAL HACKER" },
+      { text: "Reporting a vulnerability to the website owner", bucket: "✅ ETHICAL HACKER" },
+      { text: "Stealing data after finding a vulnerability", bucket: "🚨 UNETHICAL HACKER" },
+      { text: "Testing your own device's security", bucket: "✅ ETHICAL HACKER" },
+      { text: "Selling stolen passwords online", bucket: "🚨 UNETHICAL HACKER" },
+    ],
+    buckets: ["✅ ETHICAL HACKER", "🚨 UNETHICAL HACKER"],
+  },
+};
+
+const codeCitadelGames: ZoneGameContent = {
+  quiz: {
+    title: "Cybersecurity Careers and Final Preparation",
+    questions: [
+      { q: "Which of these is a real cybersecurity job?", choices: ["Cyber Chef", "Security Analyst", "Digital Painter", "Internet Architect"], answer: 1, explanation: "Security Analysts monitor networks and systems for threats — a real and important career!" },
+      { q: "What does a Chief Information Security Officer (CISO) do?", choices: ["Makes coffee for the IT team", "Leads an organization's entire cybersecurity strategy", "Designs company logos", "Manages social media"], answer: 1, explanation: "The CISO is the top cybersecurity leader in an organization!" },
+      { q: "What qualification helps you start a cybersecurity career?", choices: ["A cooking certificate", "CompTIA Security+ or similar cybersecurity certification", "A driving licence", "A sports award"], answer: 1, explanation: "Certifications like CompTIA Security+ are entry-level qualifications for cybersecurity careers!" },
+      { q: "You are now a Cyber Hero. What is your most important mission?", choices: ["Hack as many systems as possible", "Protect yourself and others online and never stop learning", "Keep all cybersecurity knowledge secret", "Only protect your own devices"], answer: 1, explanation: "A true Cyber Hero never stops learning and always helps protect others!" },
+      { q: "SHADOWBYTE's final question: What is the ULTIMATE cybersecurity defence?", choices: ["The most expensive antivirus", "A combination of strong passwords, 2FA, updates, safe habits, AND education", "Never using the internet", "The strongest firewall money can buy"], answer: 1, explanation: "No single tool is enough — layered security combining technology AND knowledge is always strongest!" },
+    ],
+  },
+  miniGame: { type: "career-matcher", title: "Cyber Career Matcher", description: "Match cybersecurity jobs to their descriptions!" },
+  crossword: {
+    clues: [
+      { number: 1, direction: "across", clue: "Science of protecting digital systems", answer: "CYBERSECURITY", juniorClue: "Online safety", guardianClue: "Discipline of protecting digital infrastructure" },
+      { number: 5, direction: "across", clue: "Ethical hacker who tests systems with permission", answer: "PENTESTER", juniorClue: "Safe hacker", guardianClue: "Authorized offensive security professional" },
+      { number: 7, direction: "across", clue: "The S in CISO stands for this", answer: "SECURITY", juniorClue: "Being safe", guardianClue: "Information assurance domain" },
+      { number: 2, direction: "down", clue: "Protects your network from unauthorized access", answer: "FIREWALL", juniorClue: "Network guard", guardianClue: "Packet-filtering network security appliance" },
+      { number: 3, direction: "down", clue: "Second verification layer for login", answer: "TWOFACTOR", juniorClue: "Extra check", guardianClue: "Multi-factor authentication protocol" },
+      { number: 4, direction: "down", clue: "Harmful software — collective term", answer: "MALWARE", juniorClue: "Bad program", guardianClue: "Malicious executable payload" },
+      { number: 6, direction: "down", clue: "Scrambling data to protect it", answer: "ENCRYPTION", juniorClue: "Secret code", guardianClue: "Cryptographic data transformation" },
+    ],
+    wordBank: ["CYBERSECURITY", "PENTESTER", "SECURITY", "FIREWALL", "TWOFACTOR", "MALWARE", "ENCRYPTION"],
+  },
+  dragDrop: {
+    items: [
+      { text: "Finds vulnerabilities in systems", bucket: "🔍 PENETRATION TESTER" },
+      { text: "Monitors networks for threats 24/7", bucket: "👁️ SECURITY ANALYST" },
+      { text: "Leads an organization's security strategy", bucket: "👔 CISO" },
+      { text: "Responds to active cyberattacks", bucket: "🚨 INCIDENT RESPONDER" },
+    ],
+    buckets: ["🔍 PENETRATION TESTER", "👁️ SECURITY ANALYST", "👔 CISO", "🚨 INCIDENT RESPONDER"],
+  },
+};
+
 /* ─── BOSS BATTLES ──────────────────────────────────── */
 
 export const BOSS_BATTLES: Record<string, BossBattleContent> = {
@@ -419,6 +857,98 @@ export const BOSS_BATTLES: Record<string, BossBattleContent> = {
       ],
     },
   },
+  "boss-phantom": {
+    quizQuestions: [
+      ...privacyPalaceGames.quiz.questions.slice(0, 1),
+      ...browseBazaarGames.quiz.questions.slice(0, 1),
+      ...firewallFrontierGames.quiz.questions.slice(0, 1),
+      ...cyberguardAcademyGames.quiz.questions.slice(0, 2),
+    ],
+    defenseRound: {
+      type: "shield-dodge",
+      title: "Trap the Phantom",
+      items: [
+        { text: "PHISHING GHOST approaches!", correctAction: "SHIELD", explanation: "Use email filter to trap phishing ghost!" },
+        { text: "MALWARE GHOST phases through!", correctAction: "SHIELD", explanation: "Antivirus scan catches the malware ghost!" },
+        { text: "FIREWALL GHOST detected!", correctAction: "SHIELD", explanation: "Firewall blocks the network ghost!" },
+        { text: "Your strong password holds!", correctAction: "DODGE", explanation: "Strong passwords can't be cracked!" },
+        { text: "PRIVACY GHOST tries to steal data!", correctAction: "SHIELD", explanation: "Privacy settings stop the data theft!" },
+      ],
+    },
+  },
+  "boss-datathief": {
+    quizQuestions: [
+      ...kindnessKingdomGames.quiz.questions.slice(0, 2),
+      ...socialFortressGames.quiz.questions.slice(0, 1),
+      ...identityIsleGames.quiz.questions.slice(0, 2),
+    ],
+    defenseRound: {
+      type: "shield-dodge",
+      title: "Protect the Data Cards",
+      items: [
+        { text: "Home Address flying away!", correctAction: "SHIELD", explanation: "Keep private — protect your address!" },
+        { text: "Favourite Colour card", correctAction: "DODGE", explanation: "Favourite colour is safe to share!" },
+        { text: "School Name escaping!", correctAction: "SHIELD", explanation: "Keep private — protect school info!" },
+        { text: "Favourite Movie card", correctAction: "DODGE", explanation: "Favourite movie is safe to share!" },
+        { text: "Phone Number data card!", correctAction: "SHIELD", explanation: "Keep private — protect your number!" },
+        { text: "Hobby: Drawing card", correctAction: "DODGE", explanation: "Hobbies are safe to share!" },
+      ],
+    },
+  },
+  "boss-malware": {
+    quizQuestions: [
+      ...malwareMazeGames.quiz.questions.slice(0, 2),
+      ...updateOutpostGames.quiz.questions.slice(0, 1),
+      ...antivirusAtollGames.quiz.questions.slice(0, 2),
+    ],
+    defenseRound: {
+      type: "shield-dodge",
+      title: "Zap the Viruses",
+      items: [
+        { text: "RANSOMWARE hops out!", correctAction: "SHIELD", explanation: "Backup and restore defeats ransomware!" },
+        { text: "SPYWARE creeping in!", correctAction: "SHIELD", explanation: "Antivirus scan catches spyware!" },
+        { text: "Your updated system is strong!", correctAction: "DODGE", explanation: "Updated systems resist attacks!" },
+        { text: "TROJAN disguised as game!", correctAction: "SHIELD", explanation: "Delete suspicious files!" },
+        { text: "FAKE UPDATE popup!", correctAction: "SHIELD", explanation: "Ignore and report fake updates!" },
+      ],
+    },
+  },
+  "boss-shadowbyte": {
+    isFinalBoss: true,
+    quizQuestions: [
+      // Draw from ALL continents
+      ...passwordPeakGames.quiz.questions.slice(0, 1),
+      ...phishLagoonGames.quiz.questions.slice(0, 1),
+      ...strangerShoreGames.quiz.questions.slice(0, 1),
+      ...privacyPalaceGames.quiz.questions.slice(0, 1),
+      ...kindnessKingdomGames.quiz.questions.slice(0, 1),
+      ...malwareMazeGames.quiz.questions.slice(0, 1),
+      ...cryptoCavernGames.quiz.questions.slice(0, 1),
+      ...codeCitadelGames.quiz.questions.slice(0, 1),
+    ],
+    defenseRound: {
+      type: "shield-dodge",
+      title: "Ultimate Defence",
+      items: [
+        { text: "PHISHING EMAIL attack!", correctAction: "SHIELD", explanation: "Report and delete phishing emails!" },
+        { text: "WEAK PASSWORD vulnerability!", correctAction: "SHIELD", explanation: "Change to a strong password!" },
+        { text: "Your FIREWALL holds strong!", correctAction: "DODGE", explanation: "Firewalls block unauthorized access!" },
+        { text: "CYBERBULLY message incoming!", correctAction: "SHIELD", explanation: "Block and report cyberbullies!" },
+        { text: "STRANGER requests data!", correctAction: "SHIELD", explanation: "Tell a trusted adult!" },
+        { text: "FAKE UPDATE detected!", correctAction: "SHIELD", explanation: "Ignore fake updates!" },
+        { text: "Your ENCRYPTION is unbreakable!", correctAction: "DODGE", explanation: "Encrypted data stays safe!" },
+        { text: "DATA THEFT attempt!", correctAction: "SHIELD", explanation: "Keep personal info private!" },
+      ],
+    },
+    finalRound: {
+      title: "Break SHADOWBYTE's Code",
+      patterns: [
+        { sequence: ["🔴", "🔵", "🔴", "🔵", "🔴"], answer: "🔵", options: ["🔴", "🔵", "🟢"] },
+        { sequence: ["🛡️", "🛡️", "⚔️", "🛡️", "🛡️"], answer: "⚔️", options: ["🛡️", "⚔️", "🔒"] },
+        { sequence: ["1", "2", "4", "8"], answer: "16", options: ["10", "12", "16"] },
+      ],
+    },
+  },
 };
 
 /* ─── ZONE GAME REGISTRY ───────────────────────────── */
@@ -436,6 +966,23 @@ export const ZONE_GAMES: Record<string, ZoneGameContent> = {
   "stranger-shore": strangerShoreGames,
   "dark-web-den": darkWebDenGames,
   "kindness-citadel": kindnessCitadelGames,
+  // Asia
+  "privacy-palace": privacyPalaceGames,
+  "browse-bazaar": browseBazaarGames,
+  "firewall-frontier": firewallFrontierGames,
+  "cyberguard-academy": cyberguardAcademyGames,
+  // South America
+  "kindness-kingdom": kindnessKingdomGames,
+  "social-fortress": socialFortressGames,
+  "identity-isle": identityIsleGames,
+  // Australia
+  "malware-maze": malwareMazeGames,
+  "update-outpost": updateOutpostGames,
+  "antivirus-atoll": antivirusAtollGames,
+  // Antarctica
+  "crypto-cavern": cryptoCavernGames,
+  "algorithm-abyss": algorithmAbyssGames,
+  "code-citadel": codeCitadelGames,
 };
 
 /** Get game content for a zone. Returns undefined if no games defined yet. */

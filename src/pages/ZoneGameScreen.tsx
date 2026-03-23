@@ -150,6 +150,8 @@ export default function ZoneGameScreen() {
   const handleBossComplete = async (won: boolean, stars: number) => {
     if (!activeChildId || !zoneId || !continentId) return;
 
+    const isFinalBoss = zoneId === "boss-shadowbyte";
+
     // Mark boss zone completed
     await supabase.from("zone_progress").upsert({
       child_id: activeChildId,
@@ -170,19 +172,27 @@ export default function ZoneGameScreen() {
       completed_at: new Date().toISOString(),
     }, { onConflict: "child_id,continent_id" });
 
-    // Increment villains_defeated
+    // Update child profile
     if (child) {
-      await supabase.from("child_profiles").update({
+      const updates: any = {
         villains_defeated: (child.villains_defeated || 0) + 1,
         points: (child.points || 0) + pointsPerGame * 2,
-      }).eq("id", activeChildId);
+      };
+      if (isFinalBoss) {
+        updates.master_certificate_earned = true;
+        updates.worlds_completed = 7;
+      }
+      await supabase.from("child_profiles").update(updates).eq("id", activeChildId);
     }
 
     queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
     queryClient.invalidateQueries({ queryKey: ["continent_progress"] });
     queryClient.invalidateQueries({ queryKey: ["child"] });
 
-    setTimeout(() => navigate(`/world-map/${continentId}`), 3000);
+    setTimeout(() => {
+      if (isFinalBoss) navigate("/certificate");
+      else navigate(`/world-map/${continentId}`);
+    }, isFinalBoss ? 5000 : 3000);
   };
 
   if (!continent || !zone) return null;
