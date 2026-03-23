@@ -1,16 +1,29 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Star, ChevronLeft, X, MessageCircle, Trophy } from "lucide-react";
+import { Lock, ChevronLeft, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getContinentById, type ContinentDef, type ZoneDef } from "@/data/continents";
 import { getZoneGames, getBossBattle } from "@/data/zoneGames";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import VillainSprite from "@/components/world/VillainSprite";
 import StarfieldBackground from "@/components/world/StarfieldBackground";
 import { Button } from "@/components/ui/button";
+import {
+  ComposableMap,
+  Geographies,
+  Geography,
+  Marker,
+  Line,
+} from "react-simple-maps";
+import {
+  GEO_URL,
+  CONTINENT_COUNTRIES,
+  CONTINENT_PROJECTIONS,
+  ZONE_COORDINATES,
+} from "@/data/continentMapConfig";
 
 /* ─── Villain Taunts ─────────────────────────────────────── */
 const VILLAIN_TAUNTS: Record<string, string[]> = {
@@ -23,147 +36,30 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
   "SHADOWBYTE": ["You dare face ME?", "I am every threat combined.", "Your Cyber Hero skills end HERE.", "The digital world is already mine."],
 };
 
-/* ─── Villain Character (bottom-right with rotating taunts) ─ */
+/* ─── Villain Character ─────────────────────────────────── */
 function VillainCharacter({ villainName }: { villainName: string }) {
   const taunts = VILLAIN_TAUNTS[villainName] || ["..."];
   const [tauntIdx, setTauntIdx] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTauntIdx((i) => (i + 1) % taunts.length);
-    }, 8000);
+    const interval = setInterval(() => setTauntIdx((i) => (i + 1) % taunts.length), 8000);
     return () => clearInterval(interval);
   }, [taunts.length]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.5 }}
-      className="fixed bottom-6 right-4 z-50 flex flex-col items-end gap-2 md:bottom-8 md:right-6"
-    >
-      {/* Speech bubble */}
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}
+      className="fixed bottom-6 right-4 z-50 flex flex-col items-end gap-2 md:bottom-8 md:right-6">
       <AnimatePresence mode="wait">
-        <motion.div
-          key={tauntIdx}
-          initial={{ opacity: 0, scale: 0.85, y: 4 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.85, y: 4 }}
-          className="relative max-w-[200px] rounded-xl rounded-br-sm border border-[hsl(0_80%_55%/0.25)] bg-[hsl(0_40%_14%/0.9)] px-3 py-2 shadow-lg backdrop-blur-md"
-        >
+        <motion.div key={tauntIdx} initial={{ opacity: 0, scale: 0.85, y: 4 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.85, y: 4 }}
+          className="relative max-w-[200px] rounded-xl rounded-br-sm border border-[hsl(0_80%_55%/0.25)] bg-[hsl(0_40%_14%/0.9)] px-3 py-2 shadow-lg backdrop-blur-md">
           <p className="text-[10px] text-[hsl(0_80%_70%)] italic leading-snug">"{taunts[tauntIdx]}"</p>
           <div className="absolute -bottom-1.5 right-6 h-3 w-3 rotate-45 bg-[hsl(0_40%_14%/0.9)] border-r border-b border-[hsl(0_80%_55%/0.25)]" />
         </motion.div>
       </AnimatePresence>
-
-      {/* Villain sprite */}
-      <motion.div
-        animate={{ y: [0, -4, 0] }}
-        transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-      >
+      <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}>
         <VillainSprite villainName={villainName} size={80} menacing />
       </motion.div>
-    </motion.div>
-  );
-}
-
-/* ─── Zone positions on a 100x100 viewBox per continent ──── */
-function getZonePositions(continent: ContinentDef): { x: number; y: number }[] {
-  return continent.zones.map((_, i) => {
-    const count = continent.zones.length;
-    const t = count > 1 ? i / (count - 1) : 0.5;
-    const x = 15 + t * 70;
-    const y = 25 + Math.sin(t * Math.PI) * 20 + t * 25;
-    return { x, y };
-  });
-}
-
-/* ─── Progress Path SVG ──────────────────────────────────── */
-function ProgressPaths({ positions, zoneStatuses }: {
-  positions: { x: number; y: number }[];
-  zoneStatuses: string[];
-}) {
-  return (
-    <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <defs>
-        <filter id="pathGlow">
-          <feGaussianBlur stdDeviation="0.5" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-      </defs>
-      {positions.slice(0, -1).map((from, i) => {
-        const to = positions[i + 1];
-        const fromStatus = zoneStatuses[i];
-        const toStatus = zoneStatuses[i + 1];
-        const bothDone = fromStatus === "completed" && toStatus === "completed";
-        const available = fromStatus === "completed" && toStatus !== "locked";
-        const mx = (from.x + to.x) / 2;
-        const my = (from.y + to.y) / 2 - 5;
-        const stroke = bothDone ? "hsl(195 85% 55% / 0.6)" : available ? "hsl(195 85% 55% / 0.35)" : "hsl(200 15% 40% / 0.12)";
-        const dashArr = bothDone ? "none" : available ? "1.5 1" : "1 0.8";
-        return (
-          <path key={i} d={`M${from.x},${from.y} Q${mx},${my} ${to.x},${to.y}`} fill="none"
-            stroke={stroke} strokeWidth={bothDone ? 0.6 : 0.35} strokeDasharray={dashArr}
-            strokeLinecap="round" filter={bothDone ? "url(#pathGlow)" : undefined} />
-        );
-      })}
-    </svg>
-  );
-}
-
-/* ─── Zone Node Component ────────────────────────────────── */
-function ZoneNode({ zone, position, status, onClick }: {
-  zone: ZoneDef; position: { x: number; y: number }; status: string; onClick: () => void;
-}) {
-  const isLocked = status === "locked";
-  const isCompleted = status === "completed";
-  const isAvailable = status === "available";
-  const isBoss = zone.isBoss;
-  const isHQ = zone.isHQ;
-  const size = isBoss ? 1.5 : isHQ ? 1.3 : 1;
-
-  return (
-    <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}
-      className="absolute z-10" style={{ top: `${position.y}%`, left: `${position.x}%`, transform: "translate(-50%, -50%)" }}>
-      <motion.button onClick={onClick} disabled={isLocked}
-        whileHover={!isLocked ? { scale: 1.12 } : {}} whileTap={!isLocked ? { scale: 0.93 } : {}}
-        className={`group relative flex flex-col items-center ${isLocked ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}>
-        {isAvailable && (
-          <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }} transition={{ repeat: Infinity, duration: 2 }}
-            className={`absolute rounded-full border ${isBoss ? "border-[hsl(0_80%_55%/0.5)] -inset-3" : "border-[hsl(195_80%_50%/0.5)] -inset-2"}`} />
-        )}
-        {isBoss && !isLocked && (
-          <motion.div animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }}
-            className="absolute -inset-2 rounded-full bg-[hsl(0_80%_55%/0.15)]" />
-        )}
-        <div className={`relative flex items-center justify-center rounded-full border-2 transition-all ${
-          isCompleted ? "border-[hsl(160_65%_50%/0.6)] shadow-[0_0_18px_hsl(160_65%_50%/0.35)]"
-            : isBoss && !isLocked ? "border-[hsl(0_80%_55%/0.6)] shadow-[0_0_18px_hsl(0_80%_55%/0.3)]"
-              : isAvailable ? "border-[hsl(195_80%_50%/0.6)] shadow-[0_0_18px_hsl(195_80%_50%/0.25)]"
-                : isHQ ? "border-[hsl(45_90%_55%/0.6)] shadow-[0_0_18px_hsl(45_90%_55%/0.3)]" : "border-white/10"
-        }`} style={{
-          width: `${size * 3}rem`, height: `${size * 3}rem`,
-          background: isLocked ? "hsl(220 30% 18%)" : isBoss ? "radial-gradient(circle, hsl(0 60% 35%), hsl(0 50% 18%))"
-            : isHQ ? "radial-gradient(circle, hsl(45 85% 45% / 0.3), hsl(35 50% 18% / 0.9))"
-              : isCompleted ? "radial-gradient(circle, hsl(160 50% 30%), hsl(160 40% 16%))" : "radial-gradient(circle, hsl(195 60% 35%), hsl(195 50% 20%))",
-        }}>
-          {isLocked ? <Lock className="h-4 w-4 text-white/20" />
-            : isCompleted ? <span className="text-sm">✅</span>
-              : <span className={`drop-shadow-md ${isBoss ? "text-xl" : "text-lg"}`}>{zone.icon}</span>}
-        </div>
-        <div className={`mt-1.5 rounded-md px-2 py-0.5 backdrop-blur-sm max-w-[120px] ${isLocked ? "bg-white/[0.03]" : "bg-[hsl(210_40%_14%/0.8)]"}`}>
-          <p className={`text-[8px] md:text-[10px] font-bold leading-tight text-center whitespace-nowrap ${isLocked ? "text-white/20" : isBoss ? "text-[hsl(0_80%_70%)]" : "text-white/80"}`}>
-            {zone.name}
-          </p>
-          <p className={`text-[6px] md:text-[7px] text-center ${isLocked ? "text-white/10" : "text-white/30"}`}>{zone.city}</p>
-        </div>
-        {isAvailable && (
-          <motion.span animate={{ opacity: [0.6, 1, 0.6] }} transition={{ repeat: Infinity, duration: 1.5 }}
-            className={`mt-0.5 text-[8px] font-bold tracking-widest ${isBoss ? "text-[hsl(0_80%_60%)]" : "text-[hsl(195_80%_60%)]"}`}>
-            {isBoss ? "⚔️ FIGHT" : "▶ DEPLOY"}
-          </motion.span>
-        )}
-      </motion.button>
     </motion.div>
   );
 }
@@ -228,7 +124,6 @@ export default function ContinentMapScreen() {
   const { continentId } = useParams<{ continentId: string }>();
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [selectedZone, setSelectedZone] = useState<ZoneDef | null>(null);
 
   const continent = getContinentById(continentId || "");
@@ -277,7 +172,9 @@ export default function ContinentMapScreen() {
     });
   }, [continent, zoneProgress]);
 
-  const positions = useMemo(() => continent ? getZonePositions(continent) : [], [continent]);
+  const zoneCoords = useMemo(() => ZONE_COORDINATES[continentId || ""] || [], [continentId]);
+  const projection = CONTINENT_PROJECTIONS[continentId || ""];
+  const countryCodes = CONTINENT_COUNTRIES[continentId || ""] || [];
 
   const handleZoneClick = (zone: ZoneDef, index: number) => {
     if (zoneStatuses[index] === "locked") return;
@@ -285,6 +182,15 @@ export default function ContinentMapScreen() {
   };
 
   if (!continent) return null;
+
+  /* Color helpers for zone markers */
+  const markerColors = (zone: ZoneDef, status: string) => {
+    if (zone.isHQ) return { fill: "#f5c518", stroke: "#f5c518", glow: "rgba(245,197,24,0.45)" };
+    if (zone.isBoss) return { fill: "#ff2d55", stroke: "#ff2d55", glow: "rgba(255,45,85,0.4)" };
+    if (status === "completed") return { fill: "#00ff88", stroke: "#00ff88", glow: "rgba(0,255,136,0.35)" };
+    if (status === "available") return { fill: "#00ffe7", stroke: "#00ffe7", glow: "rgba(0,255,231,0.35)" };
+    return { fill: "#2a3a5a", stroke: "#3a4a6a", glow: "none" };
+  };
 
   return (
     <div className="min-h-screen pb-24 pt-20 relative overflow-hidden"
@@ -308,27 +214,166 @@ export default function ContinentMapScreen() {
           </h1>
         </motion.div>
 
-        {/* ─── THE CONTINENT MAP ─────────────────────── */}
-        <div className="relative mx-auto w-full" style={{ aspectRatio: "16/10", maxWidth: "900px" }}>
-          <div className="absolute inset-0 rounded-2xl border border-[hsl(195_80%_50%/0.15)] overflow-hidden shadow-2xl"
-            style={{
-              background: isAntarctica ? "radial-gradient(ellipse at 50% 45%, hsl(200 30% 14%), hsl(210 40% 8%))"
-                : "radial-gradient(ellipse at 50% 45%, hsl(210 50% 16% / 0.95), hsl(220 45% 10%))",
-            }}>
-            <div className="absolute inset-0 opacity-[0.06]" style={{
-              backgroundImage: "radial-gradient(circle, hsl(195 80% 60%) 0.5px, transparent 0.5px)", backgroundSize: "24px 24px",
-            }} />
-            <svg className="absolute inset-0 w-full h-full opacity-[0.08]" viewBox="0 0 100 100" preserveAspectRatio="none">
-              <path d={continent.silhouettePath}
-                fill={isAntarctica ? "hsl(200 40% 80%)" : "hsl(195 50% 40%)"}
-                stroke={isAntarctica ? "hsl(200 40% 60% / 0.3)" : "hsl(195 80% 50% / 0.15)"} strokeWidth="0.5" />
-            </svg>
-            {isAntarctica && <div className="absolute inset-0 border-4 border-white/[0.03] rounded-2xl" />}
-          </div>
-          <ProgressPaths positions={positions} zoneStatuses={zoneStatuses} />
-          {continent.zones.map((zone, i) => (
-            <ZoneNode key={zone.id} zone={zone} position={positions[i]} status={zoneStatuses[i] || "locked"} onClick={() => handleZoneClick(zone, i)} />
-          ))}
+        {/* ─── REAL SVG CONTINENT MAP ─────────────────── */}
+        <div className="relative mx-auto w-full rounded-2xl border border-[hsl(195_80%_50%/0.15)] overflow-hidden shadow-2xl"
+          style={{
+            aspectRatio: "16/10",
+            maxWidth: "900px",
+            background: isAntarctica
+              ? "radial-gradient(ellipse at 50% 45%, #0a1f3a, #050d1a)"
+              : "radial-gradient(ellipse at 50% 45%, #0d1f37, #050d1a)",
+          }}>
+
+          {/* Dot grid overlay */}
+          <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{
+            backgroundImage: "radial-gradient(circle, hsl(195 80% 60%) 0.5px, transparent 0.5px)",
+            backgroundSize: "24px 24px",
+          }} />
+
+          {projection && (
+            <ComposableMap
+              projection="geoMercator"
+              projectionConfig={{ center: projection.center, scale: projection.scale }}
+              style={{ width: "100%", height: "100%" }}
+            >
+              {/* Country polygons */}
+              <Geographies geography={GEO_URL}>
+                {({ geographies }) =>
+                  geographies
+                    .filter((geo) => countryCodes.includes(geo.id))
+                    .map((geo) => (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        fill="#0d2137"
+                        stroke="#1a4a6a"
+                        strokeWidth={0.5}
+                        style={{
+                          default: { outline: "none" },
+                          hover: { fill: "#0a3a5a", outline: "none" },
+                          pressed: { outline: "none" },
+                        }}
+                      />
+                    ))
+                }
+              </Geographies>
+
+              {/* Connection lines between zones */}
+              {zoneCoords.slice(0, -1).map((from, i) => {
+                const to = zoneCoords[i + 1];
+                const fromStatus = zoneStatuses[i];
+                const toStatus = zoneStatuses[i + 1];
+                const bothDone = fromStatus === "completed" && toStatus === "completed";
+                const available = fromStatus === "completed" && toStatus !== "locked";
+                return (
+                  <Line
+                    key={`line-${i}`}
+                    from={[from.lng, from.lat]}
+                    to={[to.lng, to.lat]}
+                    stroke={bothDone ? "hsl(195, 85%, 55%)" : available ? "hsl(195, 85%, 55%)" : "hsl(200, 15%, 40%)"}
+                    strokeWidth={bothDone ? 2 : 1}
+                    strokeOpacity={bothDone ? 0.6 : available ? 0.35 : 0.12}
+                    strokeDasharray={bothDone ? "none" : available ? "6 4" : "4 3"}
+                    strokeLinecap="round"
+                  />
+                );
+              })}
+
+              {/* Zone markers */}
+              {continent.zones.map((zone, i) => {
+                const coord = zoneCoords.find((c) => c.id === zone.id);
+                if (!coord) return null;
+                const status = zoneStatuses[i] || "locked";
+                const colors = markerColors(zone, status);
+                const isLocked = status === "locked";
+                const isAvailable = status === "available";
+                const isCompleted = status === "completed";
+                const r = zone.isHQ ? 14 : zone.isBoss ? 12 : 9;
+
+                return (
+                  <Marker
+                    key={zone.id}
+                    coordinates={[coord.lng, coord.lat]}
+                    onClick={() => handleZoneClick(zone, i)}
+                    style={{ cursor: isLocked ? "not-allowed" : "pointer" }}
+                  >
+                    {/* Ping ring for available zones */}
+                    {!isLocked && (
+                      <circle r={r + 6} fill="none" stroke={colors.stroke} strokeWidth={1.5} opacity={0.4}>
+                        <animate attributeName="r" values={`${r + 2};${r + 14};${r + 2}`} dur="2s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite" />
+                      </circle>
+                    )}
+
+                    {/* Glow */}
+                    {!isLocked && (
+                      <circle r={r + 3} fill={colors.glow} opacity={0.3}>
+                        <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite" />
+                      </circle>
+                    )}
+
+                    {/* Main circle */}
+                    <circle
+                      r={r}
+                      fill={isLocked ? "#1a2540" : colors.fill}
+                      stroke={colors.stroke}
+                      strokeWidth={2}
+                      opacity={isLocked ? 0.35 : 1}
+                    />
+
+                    {/* Icon text */}
+                    <text
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize={zone.isHQ || zone.isBoss ? 12 : 10}
+                      style={{ pointerEvents: "none", userSelect: "none" }}
+                    >
+                      {isLocked ? "🔒" : isCompleted ? "✅" : zone.icon}
+                    </text>
+
+                    {/* Label */}
+                    <text
+                      textAnchor="middle"
+                      y={r + 14}
+                      fontSize={7}
+                      fontWeight="bold"
+                      fill={isLocked ? "rgba(255,255,255,0.2)" : zone.isBoss ? "#ff6b8a" : "#fff"}
+                      opacity={isLocked ? 0.4 : 0.85}
+                      style={{ pointerEvents: "none", userSelect: "none", textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
+                    >
+                      {zone.name}
+                    </text>
+
+                    {/* City sublabel */}
+                    <text
+                      textAnchor="middle"
+                      y={r + 22}
+                      fontSize={5}
+                      fill="rgba(255,255,255,0.3)"
+                      style={{ pointerEvents: "none", userSelect: "none" }}
+                    >
+                      {zone.city}
+                    </text>
+
+                    {/* Action label */}
+                    {isAvailable && (
+                      <text
+                        textAnchor="middle"
+                        y={r + 30}
+                        fontSize={5.5}
+                        fontWeight="bold"
+                        fill={zone.isBoss ? "#ff6b8a" : "#00ffe7"}
+                        style={{ pointerEvents: "none", userSelect: "none" }}
+                      >
+                        {zone.isBoss ? "⚔️ FIGHT" : "▶ DEPLOY"}
+                        <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite" />
+                      </text>
+                    )}
+                  </Marker>
+                );
+              })}
+            </ComposableMap>
+          )}
         </div>
 
         {/* Legend */}
@@ -341,10 +386,10 @@ export default function ContinentMapScreen() {
         </motion.div>
       </div>
 
-      {/* Villain Character — bottom-right with rotating taunts */}
+      {/* Villain Character */}
       <VillainCharacter villainName={continent.villain} />
 
-      {/* Guide */}
+      {/* Guide avatar */}
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
         className="fixed bottom-6 left-4 z-50 flex flex-col items-start gap-2 md:bottom-8 md:left-6">
         <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-[hsl(195_80%_50%/0.5)] bg-[hsl(210_40%_14%/0.9)] shadow-[0_0_20px_hsl(195_85%_50%/0.3)]">
