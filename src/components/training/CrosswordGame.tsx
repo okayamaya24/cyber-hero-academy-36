@@ -130,11 +130,11 @@ function generateCrosswordGrid(clues: CrosswordClue[]) {
 
   // Calculate bounds
   let minR = Infinity, maxR = -Infinity, minC = Infinity, maxC = -Infinity;
-  for (const [key] of occupiedCells) {
+  Array.from(occupiedCells.entries()).forEach(([key]) => {
     const [r, c] = key.split(",").map(Number);
     minR = Math.min(minR, r); maxR = Math.max(maxR, r);
     minC = Math.min(minC, c); maxC = Math.max(maxC, c);
-  }
+  });
 
   const rows = maxR - minR + 1;
   const cols = maxC - minC + 1;
