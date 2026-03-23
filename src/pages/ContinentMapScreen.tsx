@@ -318,6 +318,8 @@ export default function ContinentMapScreen() {
       return data;
     },
     enabled: !!activeChildId && !!continentId,
+    refetchOnMount: "always",
+    staleTime: 0,
   });
 
   const avatarConfig = child?.avatar_config as Record<string, any> | null;
