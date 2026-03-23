@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronLeft, Lock } from "lucide-react";
@@ -8,6 +8,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getContinentById } from "@/data/continents";
 import { getZoneGames, getBossBattle } from "@/data/zoneGames";
 import { getAgeTier, getPointsPerCorrect } from "@/data/missions";
+import { getNextZone } from "@/data/zoneOrder";
 import StarfieldBackground from "@/components/world/StarfieldBackground";
 import VillainSprite from "@/components/world/VillainSprite";
 import ZoneQuizGame from "@/components/minigames/ZoneQuizGame";
@@ -34,6 +35,7 @@ export default function ZoneGameScreen() {
   const continent = getContinentById(continentId || "");
   const zone = continent?.zones.find((z) => z.id === zoneId);
   const isBoss = zone?.isBoss;
+  const isHQ = zone?.isHQ;
   const gameContent = isBoss ? null : getZoneGames(zoneId || "");
   const bossContent = isBoss ? getBossBattle(zoneId || "") : null;
 
@@ -86,6 +88,47 @@ export default function ZoneGameScreen() {
   const ageTier = child ? getAgeTier(child.age) : "defender" as const;
   const pointsPerGame = getPointsPerCorrect(ageTier) * 5;
 
+  /** Mark current zone as completed and unlock the next zone in sequence */
+  const handleZoneComplete = async (stars: number) => {
+    if (!activeChildId || !zoneId || !continentId) return;
+
+    // Step 1: Mark current zone as completed
+    await supabase.from("zone_progress").upsert({
+      child_id: activeChildId,
+      continent_id: continentId,
+      zone_id: zoneId,
+      status: "completed",
+      games_completed: 4,
+      total_games: 4,
+      stars_earned: stars,
+    }, { onConflict: "child_id,zone_id" });
+
+    // Step 2: If this is HQ, mark hq_completed on child profile
+    if (isHQ) {
+      await supabase.from("child_profiles").update({
+        hq_completed: true,
+      }).eq("id", activeChildId);
+    }
+
+    // Step 3: Unlock the next zone in sequence
+    const nextZoneId = getNextZone(continentId, zoneId);
+    if (nextZoneId) {
+      await supabase.from("zone_progress").upsert({
+        child_id: activeChildId,
+        continent_id: continentId,
+        zone_id: nextZoneId,
+        status: "available",
+        games_completed: 0,
+        total_games: 4,
+        stars_earned: 0,
+      }, { onConflict: "child_id,zone_id" });
+    }
+
+    // Step 4: Invalidate all relevant queries so the map re-fetches
+    queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
+    queryClient.invalidateQueries({ queryKey: ["child"] });
+  };
+
   const handleGameComplete = async (gameIndex: number, passed: boolean, stars: number) => {
     if (!activeChildId || !zoneId) return;
 
@@ -119,21 +162,11 @@ export default function ZoneGameScreen() {
     newCompleted.add(gameIndex);
     setCompletedGames(newCompleted);
 
-    // If all 4 done, mark zone completed
+    // If all 4 done, mark zone completed and unlock next
     if (newCompleted.size >= 4) {
-      await supabase.from("zone_progress").upsert({
-        child_id: activeChildId,
-        continent_id: continentId!,
-        zone_id: zoneId!,
-        status: "completed",
-        games_completed: 4,
-        total_games: 4,
-        stars_earned: stars,
-      }, { onConflict: "child_id,zone_id" });
+      await handleZoneComplete(stars);
 
-      queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
-
-      // Auto advance to next tab or back to map
+      // Navigate back to continent map after delay
       setTimeout(() => navigate(`/world-map/${continentId}`), 2000);
     } else {
       // Advance to next uncompleted tab
@@ -370,6 +403,19 @@ export default function ZoneGameScreen() {
             <CompletedState label="Drag & Drop" onReplay={() => { setCompletedGames((s) => { const n = new Set(s); n.delete(3); return n; }); }} />
           )}
         </div>
+
+        {/* Dev force-complete button */}
+        {import.meta.env.DEV && (
+          <button
+            onClick={async () => {
+              await handleZoneComplete(3);
+              navigate(`/world-map/${continentId}`);
+            }}
+            className="fixed bottom-4 left-4 z-[9999] rounded-lg bg-yellow-600/80 px-3 py-1.5 text-xs font-bold text-white hover:bg-yellow-500"
+          >
+            🔧 DEV: Force Zone Complete
+          </button>
+        )}
       </div>
     </div>
   );
