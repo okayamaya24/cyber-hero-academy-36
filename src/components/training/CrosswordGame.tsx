@@ -435,7 +435,19 @@ export default function CrosswordGame({ puzzle, ageTier, onComplete }: Props) {
   const solvedCount = solvedClueIds.size;
   const allSolved = solvedCount >= totalClues;
 
-  // Completion screen
+  // Solved cells for green coloring — must be before any early return
+  const solvedCellKeys = useMemo(() => {
+    const keys = new Set<string>();
+    for (const clue of renumberedClues) {
+      if (solvedClueIds.has(`${clue.direction}-${clue.number}`)) {
+        getClueCells(clue).forEach((c) => keys.add(ck(c.row, c.col)));
+      }
+    }
+    return keys;
+  }, [solvedClueIds, renumberedClues, getClueCells]);
+
+  const cellSize = cols > 12 ? 28 : cols > 9 ? 32 : 36;
+
   if (allSolved) {
     const elapsed = (Date.now() - startTime) / 1000;
     let stars = 1;
@@ -465,20 +477,6 @@ export default function CrosswordGame({ puzzle, ageTier, onComplete }: Props) {
       </motion.div>
     );
   }
-
-  // Solved cells for green coloring
-  const solvedCellKeys = useMemo(() => {
-    const keys = new Set<string>();
-    for (const clue of renumberedClues) {
-      if (solvedClueIds.has(`${clue.direction}-${clue.number}`)) {
-        getClueCells(clue).forEach((c) => keys.add(ck(c.row, c.col)));
-      }
-    }
-    return keys;
-  }, [solvedClueIds, renumberedClues, getClueCells]);
-
-  // Determine cell size based on grid dimensions
-  const cellSize = cols > 12 ? 28 : cols > 9 ? 32 : 36;
 
   return (
     <div
