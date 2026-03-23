@@ -14,7 +14,7 @@ import VillainSprite from "@/components/world/VillainSprite";
 import ZoneQuizGame from "@/components/minigames/ZoneQuizGame";
 import WordSearchGame from "@/components/minigames/WordSearchGame";
 import CrosswordGame from "@/components/training/CrosswordGame";
-import ZoneDragDropGame from "@/components/minigames/ZoneDragDropGame";
+import ZoneDragDropGame, { CONVEYOR_ZONES } from "@/components/minigames/ZoneDragDropGame";
 import MiniGamePlaceholder from "@/components/minigames/MiniGamePlaceholder";
 import BossBattleScreen from "@/components/minigames/BossBattleScreen";
 import { Button } from "@/components/ui/button";
@@ -396,6 +396,7 @@ export default function ZoneGameScreen() {
             <ZoneDragDropGame
               items={gameContent.dragDrop.items}
               buckets={gameContent.dragDrop.buckets}
+              mode={CONVEYOR_ZONES.has(zoneId || "") ? "conveyor" : "physics"}
               onComplete={(passed, stars) => handleGameComplete(3, passed, stars)}
             />
           )}
