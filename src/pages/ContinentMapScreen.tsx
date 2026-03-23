@@ -514,6 +514,10 @@ export default function ContinentMapScreen() {
             zone={selectedZone}
             continent={continent}
             onClose={() => setSelectedZone(null)}
+            onDeploy={() => {
+              setSelectedZone(null);
+              navigate(`/world-map/${continentId}/${selectedZone.id}`);
+            }}
           />
         )}
       </AnimatePresence>
