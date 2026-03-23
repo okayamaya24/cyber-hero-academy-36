@@ -143,10 +143,10 @@ function generateCrosswordGrid(clues: CrosswordClue[]) {
     Array.from({ length: cols }, () => ({ isBlack: true }))
   );
 
-  for (const [key, letter] of occupiedCells) {
+  Array.from(occupiedCells.entries()).forEach(([key, letter]) => {
     const [r, c] = key.split(",").map(Number);
     grid[r - minR][c - minC] = { isBlack: false, correctLetter: letter };
-  }
+  });
 
   // Renumber cells sequentially top-to-bottom, left-to-right
   const normalizedPlaced = placed.map((p) => ({
