@@ -343,13 +343,13 @@ export default function WorldSelectScreen() {
         </div>
 
         {/* ── Continent Grid ── */}
-        <div className="flex flex-col gap-4 flex-1">
-          {/* Top row — 4 cards */}
+        <div className="flex flex-col items-center gap-4 flex-1">
+          {/* Top row — 4 cards, fixed width so bottom row can match */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="grid grid-cols-4 gap-4"
+            className="grid grid-cols-4 gap-4 w-full"
           >
             {topRow.map((continent, i) => {
               const s = continentStatuses[continent.id] || {
@@ -375,43 +375,49 @@ export default function WorldSelectScreen() {
             })}
           </motion.div>
 
-          {/* Bottom row — 3 cards centered, matching width of top cards */}
+          {/* Bottom row — 3 cards perfectly centered under top 4 */}
+          {/* Use same total width as top row, split into 4 cols, center 3 cards */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55 }}
-            className="grid grid-cols-4 gap-4"
+            className="w-full flex justify-center"
           >
-            {/* Empty slot to center 3 cards under top 4 */}
-            <div className="hidden col-span-0" />
-            {bottomRow.map((continent, i) => {
-              const s = continentStatuses[continent.id] || {
-                status: "locked",
-                zonesCompleted: 0,
-                bossDefeated: false,
-              };
-              return (
-                <motion.div
-                  key={continent.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 + i * 0.07 }}
-                  className={
-                    // Center the 3 bottom cards: push first card to col 1 (skip col 0)
-                    i === 0 ? "col-start-1" : ""
-                  }
-                >
-                  <ContinentCard
-                    continent={continent}
-                    status={s.status as any}
-                    zonesCompleted={s.zonesCompleted}
-                    onClick={() => handleContinentClick(continent)}
-                  />
-                </motion.div>
-              );
-            })}
-            {/* Spacer to keep grid balanced */}
-            <div />
+            {/* Inner container matches top grid width, centers 3 cards with half-card offset */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(4, 1fr)",
+                gap: "1rem",
+                width: "100%",
+              }}
+            >
+              {/* Half-width invisible spacer — shifts 3 cards to center */}
+              <div style={{ gridColumn: "1 / 2", visibility: "hidden" }} />
+              {bottomRow.map((continent, i) => {
+                const s = continentStatuses[continent.id] || {
+                  status: "locked",
+                  zonesCompleted: 0,
+                  bossDefeated: false,
+                };
+                return (
+                  <motion.div
+                    key={continent.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 + i * 0.07 }}
+                    style={{ gridColumn: `${i + 2} / ${i + 3}` }}
+                  >
+                    <ContinentCard
+                      continent={continent}
+                      status={s.status as any}
+                      zonesCompleted={s.zonesCompleted}
+                      onClick={() => handleContinentClick(continent)}
+                    />
+                  </motion.div>
+                );
+              })}
+            </div>
           </motion.div>
         </div>
 
