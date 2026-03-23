@@ -147,7 +147,7 @@ const encryptEnclaveGames: ZoneGameContent = {
       { number: 3, direction: "down", clue: "The S in HTTPS stands for this", answer: "SAFE", juniorClue: "Not dangerous", guardianClue: "Colloquial reference to Secure Sockets Layer protocol" },
       { number: 5, direction: "down", clue: "Look for this icon before entering passwords online", answer: "PADLOCK", juniorClue: "Lock picture", guardianClue: "Visual TLS/SSL indicator in browser chrome" },
     ],
-    wordBank: ["ENCRYPTED", "SECURE", "KEY", "SAFE", "PADLOCK"],
+    wordBank: ["ENCRYPTED", "SECURE", "HTTPS", "KEY", "SAFE", "PADLOCK"],
   },
   dragDrop: {
     items: [
