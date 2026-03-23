@@ -142,7 +142,7 @@ const encryptEnclaveGames: ZoneGameContent = {
     clues: [
       { number: 1, direction: "across", clue: "Scrambled data that hackers can't read", answer: "ENCRYPTED", juniorClue: "Secret code", guardianClue: "Data rendered unintelligible via cryptographic transformation" },
       { number: 4, direction: "across", clue: "The padlock in your browser means this", answer: "SECURE", juniorClue: "Keeps you safe", guardianClue: "Protected state indicated by browser TLS certificate validation" },
-      { number: 6, direction: "across", clue: "HTTPS stands for Hyper Text Transfer Protocol ___", answer: "SECURE", juniorClue: "Safe word", guardianClue: "The cryptographic layer suffix in web protocol nomenclature" },
+      { number: 6, direction: "across", clue: "Encrypted website protocol prefix", answer: "HTTPS", juniorClue: "Safe letters", guardianClue: "TLS-encrypted HTTP protocol identifier" },
       { number: 2, direction: "down", clue: "A secret code only you can unlock", answer: "KEY", juniorClue: "Opens locks", guardianClue: "Asymmetric cryptographic artifact used for decryption" },
       { number: 3, direction: "down", clue: "The S in HTTPS stands for this", answer: "SAFE", juniorClue: "Not dangerous", guardianClue: "Colloquial reference to Secure Sockets Layer protocol" },
       { number: 5, direction: "down", clue: "Look for this icon before entering passwords online", answer: "PADLOCK", juniorClue: "Lock picture", guardianClue: "Visual TLS/SSL indicator in browser chrome" },
