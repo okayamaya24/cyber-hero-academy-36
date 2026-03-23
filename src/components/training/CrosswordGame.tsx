@@ -113,11 +113,11 @@ function generateCrosswordGrid(clues: CrosswordClue[]) {
     if (!wasPlaced) {
       // Fallback: place offset
       let minR = Infinity, maxR = -Infinity, minC = Infinity, maxC = -Infinity;
-      for (const [key] of occupiedCells) {
+      Array.from(occupiedCells.entries()).forEach(([key]) => {
         const [r, c] = key.split(",").map(Number);
         minR = Math.min(minR, r); maxR = Math.max(maxR, r);
         minC = Math.min(minC, c); maxC = Math.max(maxC, c);
-      }
+      });
       if (clue.direction === "across") {
         placeWord(word, clue.direction, maxR + 2, minC);
         placed.push({ clue, startRow: maxR + 2, startCol: minC });
