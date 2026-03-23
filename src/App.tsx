@@ -17,6 +17,7 @@ import CertificatePage from "./pages/CertificatePage";
 import ForParentsPage from "./pages/ForParentsPage";
 import WorldSelectScreen from "./pages/WorldSelectScreen";
 import ContinentMapScreen from "./pages/ContinentMapScreen";
+import ZoneGameScreen from "./pages/ZoneGameScreen";
 import EditAvatarPage from "./pages/EditAvatarPage";
 import ProtectedParentRoute from "./components/ProtectedParentRoute";
 import NotFound from "./pages/NotFound";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/missions" element={<MissionsPage />} />
             <Route path="/world-map" element={<WorldSelectScreen />} />
             <Route path="/world-map/:continentId" element={<ContinentMapScreen />} />
+            <Route path="/world-map/:continentId/:zoneId" element={<ZoneGameScreen />} />
             <Route path="/edit-avatar" element={<EditAvatarPage />} />
             <Route path="/for-parents" element={<ForParentsPage />} />
             <Route path="/parent-dashboard" element={<ProtectedParentRoute><ParentDashboard /></ProtectedParentRoute>} />

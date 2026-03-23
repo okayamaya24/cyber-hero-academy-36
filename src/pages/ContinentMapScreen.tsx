@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getContinentById, type ContinentDef, type ZoneDef } from "@/data/continents";
+import { getZoneGames, getBossBattle } from "@/data/zoneGames";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import VillainSprite from "@/components/world/VillainSprite";
 import StarfieldBackground from "@/components/world/StarfieldBackground";
@@ -195,12 +196,15 @@ function ZoneNode({ zone, position, status, onClick }: {
   );
 }
 
-/* ─── Zone Mission Panel (placeholder) ───────────────────── */
-function ZoneMissionPanel({ zone, continent, onClose }: {
+/* ─── Zone Mission Panel ─────────────────────────────────── */
+function ZoneMissionPanel({ zone, continent, onClose, onDeploy }: {
   zone: ZoneDef;
   continent: ContinentDef;
   onClose: () => void;
+  onDeploy: () => void;
 }) {
+  const hasGames = !!(getZoneGames(zone.id) || getBossBattle(zone.id));
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -231,17 +235,30 @@ function ZoneMissionPanel({ zone, continent, onClose }: {
         </div>
 
         {zone.isBoss ? (
-          <div className="text-center py-8">
+          <div className="text-center py-6">
             <span className="text-4xl mb-3 block">⚔️</span>
-            <p className="text-sm text-white/70 mb-2">Boss Battle unlocks after completing all zones in this continent</p>
-            <p className="text-xs text-[hsl(0_80%_65%)]">Defeat {continent.villain} to unlock the next world!</p>
+            <p className="text-sm text-white/70 mb-4">Defeat {continent.villain} to unlock the next world!</p>
+            {hasGames ? (
+              <Button onClick={onDeploy} className="bg-[hsl(0_70%_45%)] hover:bg-[hsl(0_70%_40%)] text-white font-bold">
+                ⚔️ START BOSS BATTLE
+              </Button>
+            ) : (
+              <p className="text-xs text-white/40">Boss Battle unlocks after completing all zones</p>
+            )}
           </div>
         ) : zone.isHQ ? (
           <div className="text-center py-6">
             <span className="text-4xl mb-3 block">🏠</span>
-            <p className="text-sm text-white/70 mb-4">Welcome, Guardian! This is your home base. Complete your orientation mission to unlock your first zone!</p>
-            <Button className="bg-[hsl(45_90%_50%)] hover:bg-[hsl(45_90%_45%)] text-[hsl(210_40%_10%)] font-bold">
+            <p className="text-sm text-white/70 mb-4">Welcome, Guardian! Complete your orientation to begin!</p>
+            <Button onClick={onDeploy} className="bg-[hsl(45_90%_50%)] hover:bg-[hsl(45_90%_45%)] text-[hsl(210_40%_10%)] font-bold">
               🚀 BEGIN ORIENTATION
+            </Button>
+          </div>
+        ) : hasGames ? (
+          <div className="text-center py-6">
+            <p className="text-sm text-white/70 mb-4">4 games await you in this zone!</p>
+            <Button onClick={onDeploy} className="bg-[hsl(195_80%_50%)] hover:bg-[hsl(195_80%_45%)] text-white font-bold">
+              🚀 DEPLOY MISSION
             </Button>
           </div>
         ) : (
@@ -497,6 +514,10 @@ export default function ContinentMapScreen() {
             zone={selectedZone}
             continent={continent}
             onClose={() => setSelectedZone(null)}
+            onDeploy={() => {
+              setSelectedZone(null);
+              navigate(`/world-map/${continentId}/${selectedZone.id}`);
+            }}
           />
         )}
       </AnimatePresence>
