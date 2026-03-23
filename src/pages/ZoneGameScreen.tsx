@@ -396,6 +396,7 @@ export default function ZoneGameScreen() {
             <ZoneDragDropGame
               items={gameContent.dragDrop.items}
               buckets={gameContent.dragDrop.buckets}
+              mode={CONVEYOR_ZONES.has(zoneId || "") ? "conveyor" : "physics"}
               onComplete={(passed, stars) => handleGameComplete(3, passed, stars)}
             />
           )}
