@@ -47,11 +47,16 @@ export interface ZoneGameContent {
 }
 
 export interface BossBattleContent {
+  isFinalBoss?: boolean;
   quizQuestions: ZoneQuizQuestion[];
   defenseRound: {
     type: "shield-dodge" | "scam-real" | "kindness";
     title: string;
     items: any[];
+  };
+  finalRound?: {
+    title: string;
+    patterns: { sequence: string[]; answer: string; options: string[] }[];
   };
 }
 
