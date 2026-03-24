@@ -102,7 +102,7 @@ export const CONTINENTS: ContinentDef[] = [
       { id: "network-nexus", name: "Network Nexus", icon: "🌐", city: "Singapore", lat: 1.3, lng: 103.8 },
       { id: "hack-haven", name: "Hack Haven", icon: "🔓", city: "Bangkok, Thailand", lat: 13.7, lng: 100.5 },
       { id: "tech-temple", name: "Tech Temple", icon: "⛩️", city: "Beijing, China", lat: 39.9, lng: 116.4 },
-      { id: "boss-phantom", name: "Phantom's Mainframe", icon: "⚔️", city: "Great Wall of China", lat: 40.4, lng: 116.6, isBoss: true },
+      { id: "boss-phantom", name: "Phantom's Mainframe", icon: "⚔️", city: "Himalayas", lat: 28.0, lng: 86.9, isBoss: true },
     ],
   },
   {

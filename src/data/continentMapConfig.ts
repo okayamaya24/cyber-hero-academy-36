@@ -82,7 +82,7 @@ export const ZONE_COORDINATES: Record<string, { id: string; lat: number; lng: nu
     { id: "network-nexus",     lat: 1.3,   lng: 103.8 },
     { id: "hack-haven",        lat: 13.7,  lng: 100.5 },
     { id: "tech-temple",       lat: 39.9,  lng: 116.4 },
-    { id: "boss-phantom",      lat: 40.4,  lng: 116.6 },
+    { id: "boss-phantom",      lat: 28.0,  lng: 86.9 },
   ],
   "south-america": [
     { id: "kindness-kingdom", lat: -23.5, lng: -46.6 },
