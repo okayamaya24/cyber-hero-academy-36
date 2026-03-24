@@ -1,13 +1,13 @@
 /** Static zone ordering per continent — used for sequential unlocking */
 
 export const ZONE_ORDER: Record<string, string[]> = {
-  "north-america": ["hq", "password-peak", "encrypt-enclave", "boss-keybreaker"],
-  "europe": ["phish-lagoon", "download-dungeon", "code-castle", "boss-phisher"],
-  "africa": ["stranger-shore", "dark-web-den", "kindness-citadel", "boss-troll"],
-  "asia": ["privacy-palace", "browse-bazaar", "firewall-frontier", "cyberguard-academy", "boss-phantom"],
-  "south-america": ["kindness-kingdom", "social-fortress", "identity-isle", "boss-datathief"],
-  "australia": ["malware-maze", "update-outpost", "antivirus-atoll", "boss-malware"],
-  "antarctica": ["crypto-cavern", "algorithm-abyss", "code-citadel", "boss-shadowbyte"],
+  "north-america": ["hq", "password-peak", "encrypt-enclave", "code-canyon", "signal-summit", "arctic-archive", "pixel-port", "shadow-station", "boss-keybreaker"],
+  "europe": ["phish-lagoon", "download-dungeon", "code-castle", "wifi-watch", "data-fortress", "cyber-citadel", "boss-phisher"],
+  "africa": ["stranger-shore", "dark-web-den", "kindness-citadel", "signal-savanna", "code-cape", "data-delta", "boss-troll"],
+  "asia": ["privacy-palace", "browse-bazaar", "firewall-frontier", "cyberguard-academy", "network-nexus", "hack-haven", "tech-temple", "boss-phantom"],
+  "south-america": ["kindness-kingdom", "social-fortress", "identity-isle", "jungle-junction", "cyber-coast", "boss-datathief"],
+  "australia": ["malware-maze", "update-outpost", "antivirus-atoll", "outback-ops", "reef-recon", "boss-malware"],
+  "antarctica": ["crypto-cavern", "algorithm-abyss", "code-citadel", "ice-intelligence", "boss-shadowbyte"],
 };
 
 export function getNextZone(continentId: string, currentZoneId: string): string | null {
