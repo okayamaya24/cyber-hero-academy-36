@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Star, Zap, Shield, MessageCircle, ChevronRight, Trophy, X, Globe, Radio } from "lucide-react";
+import { Lock, Star, Zap, Shield, MessageCircle, ChevronRight, Trophy, X, Globe, Radio, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   MISSIONS,
   getTotalGames,
@@ -14,34 +13,10 @@ import {
   MINI_GAME_META,
   type LearningMode,
 } from "@/data/missions";
-import { getLevelRank } from "@/data/levelTitles";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import { Button } from "@/components/ui/button";
 
-/* ─── City node definitions — North America map positions ───────────────────
-   All nodes are placed within North America bounds.
-   The SVG map viewBox is 0 0 1000 500, positions are % of container.
-   
-   North America layout (spread across the continent to avoid overlap):
-   
-   Canada (top band, y: 12–28%):
-   - Vancouver, BC      → x: 12%, y: 18%
-   - Toronto, ON        → x: 52%, y: 22%
-   - Montreal, QC       → x: 60%, y: 18%
-
-   USA (middle band, y: 30–55%):
-   - Seattle, WA        → x: 12%, y: 32%
-   - San Francisco, CA  → x: 10%, y: 44%
-   - Los Angeles, CA    → x: 12%, y: 54%
-   - Denver, CO         → x: 28%, y: 40%
-   - Chicago, IL        → x: 48%, y: 34%
-   - New York, NY       → x: 62%, y: 32%
-   - Washington DC      → x: 62%, y: 38%  ← HQ
-   - Miami, FL          → x: 56%, y: 56%
-
-   Mexico / Central:
-   - Mexico City        → x: 32%, y: 64%
-──────────────────────────────────────────────────────────────────────── */
+/* ─── City node definitions — North America map positions ─────────────────── */
 const CITY_NODES = [
   {
     id: "password-safety",
@@ -166,41 +141,50 @@ const CITY_NODES = [
   },
 ];
 
-// Path connections between nodes (pairs of indices)
 const CONNECTIONS: [number, number][] = [
-  [11, 0], // HQ → Password Peak
-  [11, 10], // HQ → Encrypt Enclave
-  [11, 1], // HQ → Phish Lagoon
-  [0, 10], // Password Peak ↔ Encrypt Enclave
-  [0, 6], // Password Peak → Kindness Kingdom
-  [1, 4], // Phish Lagoon → Download Dungeon
-  [1, 5], // Phish Lagoon → Stranger Shore
-  [3, 9], // Privacy Palace → Dark Web Den
-  [3, 2], // Privacy Palace → Browse Bazaar
-  [2, 8], // Browse Bazaar → Firewall Frontier
-  [2, 7], // Browse Bazaar → Malware Maze
-  [5, 6], // Stranger Shore → Kindness Kingdom
+  [11, 0],
+  [11, 10],
+  [11, 1],
+  [0, 10],
+  [0, 6],
+  [1, 4],
+  [1, 5],
+  [3, 9],
+  [3, 2],
+  [2, 8],
+  [2, 7],
+  [5, 6],
 ];
+
+const UNLOCK_RULES: Record<string, string[]> = {
+  "password-safety": [],
+  "encrypt-enclave": [],
+  "scam-detection": ["password-safety"],
+  "safe-websites": ["scam-detection"],
+  "personal-info": ["safe-websites"],
+  "malware-monsters": ["personal-info"],
+  "smart-sharing": ["malware-monsters"],
+  "phishy-messages": ["smart-sharing"],
+  "malware-maze": ["safe-websites"],
+  "firewall-frontier": ["encrypt-enclave"],
+  "dark-web-den": ["personal-info"],
+};
 
 type NodeStatus = "completed" | "unlocked" | "locked" | "gated";
 
 function getStars(score: number, maxScore: number): number {
   if (maxScore === 0) return 0;
-  const r = score / maxScore;
-  if (r >= 0.9) return 3;
-  if (r >= 0.6) return 2;
-  if (r > 0) return 1;
+  const ratio = score / maxScore;
+  if (ratio >= 0.9) return 3;
+  if (ratio >= 0.6) return 2;
+  if (ratio > 0) return 1;
   return 0;
 }
 
-/* ─── North America SVG Map ─────────────────────────────────────────────────
-   A stylized North America map. viewBox "0 0 1000 500" with the continent
-   filling most of the frame. Pin x/y percentages map onto this same space.
-─────────────────────────────────────────────────────────────────────────── */
 function WorldMapSVG() {
   return (
     <svg
-      className="absolute inset-0 w-full h-full"
+      className="absolute inset-0 h-full w-full"
       viewBox="0 0 1000 500"
       preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
@@ -234,11 +218,9 @@ function WorldMapSVG() {
         </linearGradient>
       </defs>
 
-      {/* Ocean */}
       <rect width="1000" height="500" fill="url(#mapGlow)" />
       <rect width="1000" height="500" fill="url(#dotGrid)" />
 
-      {/* Subtle lat/lon grid */}
       {[100, 200, 300, 400].map((y) => (
         <line
           key={`h${y}`}
@@ -264,7 +246,6 @@ function WorldMapSVG() {
         />
       ))}
 
-      {/* ── Canada ─────────────────────────────────────────────────────── */}
       <path
         d={`
           M 60,5  L 160,0  L 280,8  L 380,5  L 480,10  L 580,8
@@ -279,18 +260,17 @@ function WorldMapSVG() {
         strokeLinejoin="round"
         filter="url(#landGlow)"
       />
-      {/* Hudson Bay cutout (dark water) */}
+
       <path
         d={`M 500,18 L 560,22 L 600,35 L 595,52 L 565,58 L 530,55 L 505,48 L 492,35 Z`}
         fill="hsl(215 55% 12%)"
         stroke="hsl(195 70% 45% / 0.2)"
         strokeWidth="0.6"
       />
-      {/* Great Lakes hint */}
+
       <ellipse cx="595" cy="62" rx="20" ry="6" fill="hsl(215 55% 13%)" opacity="0.8" />
       <ellipse cx="560" cy="65" rx="12" ry="4" fill="hsl(215 55% 13%)" opacity="0.8" />
 
-      {/* ── USA ────────────────────────────────────────────────────────── */}
       <path
         d={`
           M 65,48   L 90,55   L 120,60  L 150,65  L 180,60
@@ -308,7 +288,7 @@ function WorldMapSVG() {
         strokeLinejoin="round"
         filter="url(#landGlow)"
       />
-      {/* Florida peninsula */}
+
       <path
         d={`M 620,158 L 635,170 L 630,190 L 615,200 L 600,188 L 595,172 L 610,162 Z`}
         fill="url(#usaGrad)"
@@ -316,7 +296,6 @@ function WorldMapSVG() {
         strokeWidth="0.8"
       />
 
-      {/* ── Alaska ─────────────────────────────────────────────────────── */}
       <path
         d={`M 25,55 L 60,50 L 75,62 L 72,80 L 55,88 L 30,85 L 18,72 Z`}
         fill="url(#northGrad)"
@@ -325,7 +304,6 @@ function WorldMapSVG() {
         strokeLinejoin="round"
       />
 
-      {/* ── Mexico ─────────────────────────────────────────────────────── */}
       <path
         d={`
           M 190,145 L 220,155 L 260,162 L 300,165 L 340,162
@@ -340,7 +318,6 @@ function WorldMapSVG() {
         filter="url(#landGlow)"
       />
 
-      {/* ── Greenland (partial, top-right) ──────────────────────────── */}
       <path
         d={`M 760,0 L 840,0 L 870,18 L 860,35 L 835,42 L 800,38 L 772,25 Z`}
         fill="hsl(210 35% 20%)"
@@ -348,12 +325,10 @@ function WorldMapSVG() {
         strokeWidth="0.7"
       />
 
-      {/* ── Caribbean islands hint ──────────────────────────────────── */}
       <circle cx="660" cy="195" r="4" fill="hsl(210 35% 22%)" stroke="hsl(195 70% 45% / 0.25)" strokeWidth="0.5" />
       <circle cx="675" cy="205" r="3" fill="hsl(210 35% 22%)" stroke="hsl(195 70% 45% / 0.25)" strokeWidth="0.5" />
       <circle cx="690" cy="200" r="3.5" fill="hsl(210 35% 22%)" stroke="hsl(195 70% 45% / 0.25)" strokeWidth="0.5" />
 
-      {/* Region border labels */}
       <text
         x="200"
         y="38"
@@ -388,7 +363,6 @@ function WorldMapSVG() {
         MEXICO
       </text>
 
-      {/* Vignette */}
       <defs>
         <radialGradient id="vig" cx="50%" cy="50%" r="70%">
           <stop offset="55%" stopColor="transparent" />
@@ -400,11 +374,10 @@ function WorldMapSVG() {
   );
 }
 
-/* ─── SVG connection paths ──────────────────────────────────────────────── */
 function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqCompleted: boolean }) {
   return (
     <svg
-      className="pointer-events-none absolute inset-0 w-full h-full z-10"
+      className="pointer-events-none absolute inset-0 z-10 h-full w-full"
       viewBox="0 0 100 100"
       preserveAspectRatio="none"
     >
@@ -453,7 +426,6 @@ function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqC
           filterAttr = undefined;
         }
 
-        // Gentle arc
         const mx = (from.x + to.x) / 2;
         const my = (from.y + to.y) / 2;
         const dx = to.x - from.x;
@@ -480,7 +452,6 @@ function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqC
   );
 }
 
-/* ─── HUD Bar ────────────────────────────────────────────────────────────── */
 function HUDBar({
   playerName,
   level,
@@ -498,15 +469,15 @@ function HUDBar({
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[hsl(195_80%_50%/0.2)] bg-[hsl(210_40%_14%/0.85)] px-4 py-2.5 backdrop-blur-md shadow-lg"
+      className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[hsl(195_80%_50%/0.2)] bg-[hsl(210_40%_14%/0.85)] px-4 py-2.5 shadow-lg backdrop-blur-md"
     >
       <div className="flex items-center gap-3 text-xs">
-        <span className="flex items-center gap-1.5 text-[hsl(195_80%_70%)] font-bold">
+        <span className="flex items-center gap-1.5 font-bold text-[hsl(195_80%_70%)]">
           <Globe className="h-3.5 w-3.5" />
           OPERATIVE: <span className="text-white">{playerName}</span>
         </span>
-        <span className="hidden sm:inline text-[hsl(195_80%_50%/0.3)]">|</span>
-        <span className="hidden sm:flex items-center gap-1 text-[hsl(160_70%_60%)]">
+        <span className="hidden text-[hsl(195_80%_50%/0.3)] sm:inline">|</span>
+        <span className="hidden items-center gap-1 text-[hsl(160_70%_60%)] sm:flex">
           <Zap className="h-3.5 w-3.5" />
           LVL {level} · {points} XP
         </span>
@@ -519,7 +490,7 @@ function HUDBar({
             {zonesSecured}/{totalZones}
           </span>
         </span>
-        <span className="rounded-full bg-[hsl(45_90%_55%/0.15)] border border-[hsl(45_90%_55%/0.3)] px-2 py-0.5 text-[10px] font-bold text-[hsl(45_90%_65%)]">
+        <span className="rounded-full border border-[hsl(45_90%_55%/0.3)] bg-[hsl(45_90%_55%/0.15)] px-2 py-0.5 text-[10px] font-bold text-[hsl(45_90%_65%)]">
           🛡️ GUARDIAN MODE
         </span>
       </div>
@@ -527,7 +498,6 @@ function HUDBar({
   );
 }
 
-/* ─── Guide messages ─────────────────────────────────────────────────────── */
 const GUIDE_MESSAGES = {
   idle: [
     "Hey Guardian! Ready to protect the digital world? 🚀",
@@ -542,7 +512,6 @@ const GUIDE_MESSAGES = {
   hqComplete: "Amazing work, Guardian! Your first zones are now open — choose your mission! 🌟",
 };
 
-/* ─── Guide Character ────────────────────────────────────────────────────── */
 function GuideCharacter({
   avatarConfig,
   message,
@@ -557,7 +526,7 @@ function GuideCharacter({
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.8 }}
-      className="fixed bottom-24 right-4 z-50 flex flex-col items-end gap-2 md:bottom-8 md:right-6"
+      className="fixed bottom-24 left-4 z-50 flex flex-col items-start gap-2 md:bottom-8 md:left-6"
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -566,12 +535,13 @@ function GuideCharacter({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.85, y: 6 }}
           transition={{ duration: 0.25 }}
-          className="relative max-w-[200px] rounded-2xl rounded-br-sm border border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_14%/0.9)] px-3 py-2 shadow-lg backdrop-blur-md"
+          className="relative max-w-[200px] rounded-2xl rounded-bl-sm border border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_14%/0.9)] px-3 py-2 shadow-lg backdrop-blur-md"
         >
-          <p className="text-xs font-medium text-white leading-snug">{message}</p>
-          <div className="absolute -bottom-1.5 right-4 h-3 w-3 rotate-45 bg-[hsl(210_40%_14%/0.9)] border-r border-b border-[hsl(195_80%_50%/0.25)]" />
+          <p className="text-xs font-medium leading-snug text-white">{message}</p>
+          <div className="absolute -bottom-1.5 left-4 h-3 w-3 rotate-45 border-b border-r border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_14%/0.9)]" />
         </motion.div>
       </AnimatePresence>
+
       <motion.button
         onClick={onTap}
         whileHover={{ scale: 1.1 }}
@@ -581,7 +551,7 @@ function GuideCharacter({
         <motion.div animate={{ y: [0, -2, 0] }} transition={{ repeat: Infinity, duration: 2.5 }}>
           <HeroAvatar avatarConfig={avatarConfig} size={36} fallbackEmoji="🦸" />
         </motion.div>
-        <div className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(195_80%_55%)]">
+        <div className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(195_80%_55%)]">
           <MessageCircle className="h-3 w-3 text-white" />
         </div>
       </motion.button>
@@ -589,7 +559,6 @@ function GuideCharacter({
   );
 }
 
-/* ─── World Detail Panel ─────────────────────────────────────────────────── */
 function WorldDetailPanel({
   world,
   mission,
@@ -625,33 +594,36 @@ function WorldDetailPanel({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl bg-[hsl(45_80%_30%)]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[hsl(45_80%_30%)] text-2xl">
               🏠
             </div>
             <div className="flex-1">
               <h2 className="text-lg font-bold text-white">CYBER HERO COMMAND // GLOBAL HQ</h2>
               <p className="text-xs text-[hsl(45_90%_65%)]">Your home base and training ground</p>
             </div>
-            <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10 transition-colors">
+            <button onClick={onClose} className="rounded-full p-1.5 transition-colors hover:bg-white/10">
               <X className="h-5 w-5 text-white/50" />
             </button>
           </div>
-          <p className="mb-5 text-sm text-white/70 leading-relaxed">
+
+          <p className="mb-5 text-sm leading-relaxed text-white/70">
             Welcome, Guardian! This is your home base. Complete your orientation mission to unlock your first zone and
             begin protecting the digital world.
           </p>
+
           <div className="mb-5 flex items-center gap-3 rounded-xl border-2 border-[hsl(45_90%_55%/0.3)] bg-[hsl(45_90%_55%/0.08)] p-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[hsl(45_80%_45%/0.2)] text-lg">
               🎯
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">OP: GUARDIAN ORIENTATION</p>
               <p className="text-[10px] text-white/40">Difficulty: ◆◇◇◇◇ · TUTORIAL</p>
               <p className="text-[10px] text-[hsl(45_90%_65%)]">+100 XP · Unlocks: Password Peak + Encrypt Enclave</p>
             </div>
           </div>
+
           <Button
-            className="w-full text-sm font-bold bg-[hsl(45_90%_50%)] hover:bg-[hsl(45_90%_45%)] text-[hsl(210_40%_10%)] border-0 shadow-[0_0_20px_hsl(45_90%_50%/0.3)]"
+            className="w-full border-0 bg-[hsl(45_90%_50%)] text-sm font-bold text-[hsl(210_40%_10%)] shadow-[0_0_20px_hsl(45_90%_50%/0.3)] hover:bg-[hsl(45_90%_45%)]"
             onClick={() => onStartLevel("password-safety", 0)}
           >
             🚀 BEGIN ORIENTATION
@@ -700,10 +672,11 @@ function WorldDetailPanel({
               {world.city} · {world.description}
             </p>
           </div>
-          <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10 transition-colors">
+          <button onClick={onClose} className="rounded-full p-1.5 transition-colors hover:bg-white/10">
             <X className="h-5 w-5 text-white/50" />
           </button>
         </div>
+
         <div className="mb-5 flex items-center gap-3 rounded-xl bg-white/5 p-3">
           <img src={mission.guide.image} alt={mission.guide.name} className="h-10 w-10 object-contain" />
           <div>
@@ -711,6 +684,7 @@ function WorldDetailPanel({
             <p className="text-[10px] text-white/50">Your guide for this zone</p>
           </div>
         </div>
+
         <div className="space-y-3">
           {levels.map((level, i) => {
             const levelStart = i * modeConfig.gamesPerLevel;
@@ -720,6 +694,7 @@ function WorldDetailPanel({
             const levelActive = completedGames >= levelStart && completedGames < levelEnd;
             const isLocked = level.locked;
             const isBoss = i === levels.length - 1;
+
             return (
               <motion.div
                 key={level.level}
@@ -743,7 +718,8 @@ function WorldDetailPanel({
                 >
                   {isLocked ? <Lock className="h-4 w-4 text-white/30" /> : <span>{STEP_ICONS[i]}</span>}
                 </div>
-                <div className="flex-1 min-w-0">
+
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-bold text-white">{STEP_LABELS[i]}</p>
                     {isBoss && !isLocked && (
@@ -763,6 +739,7 @@ function WorldDetailPanel({
                     ))}
                   </div>
                 </div>
+
                 {levelDone ? (
                   <div className="flex items-center gap-1 text-[hsl(160_65%_55%)]">
                     <Trophy className="h-4 w-4" />
@@ -771,7 +748,7 @@ function WorldDetailPanel({
                 ) : levelActive ? (
                   <Button
                     size="sm"
-                    className="text-xs bg-[hsl(195_80%_50%)] hover:bg-[hsl(195_80%_45%)] text-white border-0"
+                    className="border-0 bg-[hsl(195_80%_50%)] text-xs text-white hover:bg-[hsl(195_80%_45%)]"
                     onClick={() => onStartLevel(mission.id, i)}
                   >
                     {completedGames > 0 ? "Continue" : isBoss ? "Fight!" : "Deploy"}
@@ -784,6 +761,7 @@ function WorldDetailPanel({
             );
           })}
         </div>
+
         <div className="mt-4 flex items-center justify-between text-xs text-white/40">
           <span>
             {completedGames}/{totalGames} games completed
@@ -799,11 +777,11 @@ function WorldDetailPanel({
   );
 }
 
-/* ─── Main Component ─────────────────────────────────────────────────────── */
 export default function MissionWorldMap() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
   const [guideMessage, setGuideMessage] = useState(GUIDE_MESSAGES.idle[0]);
   const [idleIndex, setIdleIndex] = useState(0);
   const [selectedWorld, setSelectedWorld] = useState<(typeof CITY_NODES)[number] | null>(null);
@@ -853,41 +831,40 @@ export default function MissionWorldMap() {
 
   const nodeStatuses = useMemo(() => {
     const expectedTotal = getTotalGames(learningMode);
-    const sequentialIds = [
-      "password-safety",
-      "scam-detection",
-      "safe-websites",
-      "personal-info",
-      "malware-monsters",
-      "smart-sharing",
-      "phishy-messages",
-    ];
 
     return CITY_NODES.map((node) => {
       if (node.isHub) return { status: "unlocked" as const, stars: 0 };
+
       if (!hqCompleted) {
         if (node.id === "password-safety" || node.id === "encrypt-enclave") {
           return { status: "gated" as const, stars: 0 };
         }
         return { status: "locked" as const, stars: 0 };
       }
-      if (!missionIds.has(node.id) && !node.isHub) return { status: "locked" as const, stars: 0 };
-      const seqIndex = sequentialIds.indexOf(node.id);
+
+      if (!missionIds.has(node.id) && !node.isHub) {
+        return { status: "locked" as const, stars: 0 };
+      }
+
       const progress = missionProgress.find(
         (p: any) => p.mission_id === node.id && (p.max_score ?? expectedTotal) === expectedTotal,
       );
+
       if (progress?.status === "completed") {
         return { status: "completed" as const, stars: getStars(progress.score, progress.max_score) };
       }
-      if (seqIndex === 0) return { status: "unlocked" as const, stars: 0 };
-      if (seqIndex > 0) {
-        const prevId = sequentialIds[seqIndex - 1];
-        const prevDone = missionProgress.find((p: any) => p.mission_id === prevId && p.status === "completed");
-        return { status: prevDone ? ("unlocked" as const) : ("locked" as const), stars: 0 };
-      }
-      return { status: "locked" as const, stars: 0 };
+
+      const requirements = UNLOCK_RULES[node.id] ?? [];
+      const unlocked = requirements.every((reqId) =>
+        missionProgress.some((p: any) => p.mission_id === reqId && p.status === "completed"),
+      );
+
+      return {
+        status: unlocked ? ("unlocked" as const) : ("locked" as const),
+        stars: 0,
+      };
     });
-  }, [missionProgress, learningMode, hqCompleted]);
+  }, [missionProgress, learningMode, hqCompleted, missionIds]);
 
   const completedCount = nodeStatuses.filter((n) => n.status === "completed").length;
   const totalPlayable = CITY_NODES.filter((n) => missionIds.has(n.id)).length;
@@ -916,25 +893,31 @@ export default function MissionWorldMap() {
       setSelectedWorld(node);
       return;
     }
+
     const { status } = nodeStatuses[index];
+
     if (status === "gated") {
       setGuideMessage(GUIDE_MESSAGES.hqGated);
       return;
     }
+
     if (status === "locked") {
       setGuideMessage(GUIDE_MESSAGES.worldLocked);
       return;
     }
+
     setGuideMessage(GUIDE_MESSAGES.worldSelected);
     setSelectedWorld(node);
   };
 
   const handleHQComplete = async () => {
     if (!activeChildId) return;
+
     await supabase
       .from("child_profiles")
       .update({ hq_completed: true } as any)
       .eq("id", activeChildId);
+
     queryClient.invalidateQueries({ queryKey: ["child", activeChildId] });
     setSelectedWorld(null);
     setGuideMessage(GUIDE_MESSAGES.hqComplete);
@@ -946,6 +929,7 @@ export default function MissionWorldMap() {
       navigate(`/missions?mission=${missionId}`);
       return;
     }
+
     setSelectedWorld(null);
     navigate(`/missions?mission=${missionId}`);
   };
@@ -954,10 +938,9 @@ export default function MissionWorldMap() {
 
   return (
     <div
-      className="min-h-screen pb-24 pt-20 relative overflow-hidden"
+      className="relative min-h-screen overflow-hidden pb-24 pt-20"
       style={{ background: "linear-gradient(160deg, hsl(220 45% 10%), hsl(210 50% 14%), hsl(200 40% 12%))" }}
     >
-      {/* Starfield */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {Array.from({ length: 50 }).map((_, i) => (
           <motion.div
@@ -976,7 +959,6 @@ export default function MissionWorldMap() {
         ))}
       </div>
 
-      {/* Scanline */}
       <div
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
@@ -986,6 +968,33 @@ export default function MissionWorldMap() {
       />
 
       <div className="relative z-[2] mx-auto max-w-6xl px-4">
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/world-select")}
+              className="w-fit rounded-full border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_14%/0.65)] text-white hover:bg-[hsl(210_40%_18%/0.9)]"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to World Select
+            </Button>
+
+            <div>
+              <h1 className="text-2xl font-black tracking-tight text-white md:text-3xl">
+                🌎 North America — <span className="text-[hsl(45_90%_65%)]">The Keybreaker&apos;s Domain</span>
+              </h1>
+              <p className="mt-1 text-sm text-[hsl(195_60%_70%/0.8)]">
+                Secure each cyber zone, unlock new missions, and protect the continent.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[hsl(0_80%_60%/0.2)] bg-[hsl(210_40%_14%/0.75)] px-4 py-3 text-sm text-white/80 shadow-lg">
+            <p className="font-bold text-[hsl(0_80%_70%)]">⚠ Villain Signal Detected</p>
+            <p className="mt-1 text-xs text-white/60">“You&apos;ll never secure my network chaos!” — The Keybreaker</p>
+          </div>
+        </div>
+
         <HUDBar
           playerName={playerName}
           level={level}
@@ -1000,12 +1009,11 @@ export default function MissionWorldMap() {
           transition={{ delay: 0.5 }}
           className="mb-3 text-center"
         >
-          <p className="text-xs text-[hsl(45_90%_65%/0.7)] font-medium">
+          <p className="text-xs font-medium text-[hsl(45_90%_65%/0.7)]">
             🏆 Secure all zones to earn your Cyber Guardian Certificate!
           </p>
         </motion.div>
 
-        {/* ─── THE MAP ─────────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -1013,29 +1021,17 @@ export default function MissionWorldMap() {
           className="relative mx-auto w-full"
           style={{ aspectRatio: "16/9", maxWidth: "960px" }}
         >
-          {/* Map container with border & glow */}
-          <div className="absolute inset-0 rounded-2xl border border-[hsl(195_80%_50%/0.2)] overflow-hidden shadow-[0_0_60px_hsl(210_60%_15%/0.8),inset_0_0_40px_hsl(210_50%_10%/0.5)]">
-            {/* Actual world map SVG */}
+          <div className="absolute inset-0 overflow-hidden rounded-2xl border border-[hsl(195_80%_50%/0.2)] shadow-[0_0_60px_hsl(210_60%_15%/0.8),inset_0_0_40px_hsl(210_50%_10%/0.5)]">
             <WorldMapSVG />
 
-            {/* Corner decorations */}
-            <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-[hsl(195_80%_50%/0.4)] rounded-tl-lg" />
-            <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-[hsl(195_80%_50%/0.4)] rounded-tr-lg" />
-            <div className="absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2 border-[hsl(195_80%_50%/0.4)] rounded-bl-lg" />
-            <div className="absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 border-[hsl(195_80%_50%/0.4)] rounded-br-lg" />
-
-            {/* Region label */}
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none">
-              <p className="text-[9px] font-bold tracking-[0.25em] text-[hsl(195_70%_60%/0.4)] uppercase">
-                🌎 North America — The Keybreaker's Domain
-              </p>
-            </div>
+            <div className="absolute left-3 top-3 h-6 w-6 rounded-tl-lg border-l-2 border-t-2 border-[hsl(195_80%_50%/0.4)]" />
+            <div className="absolute right-3 top-3 h-6 w-6 rounded-tr-lg border-r-2 border-t-2 border-[hsl(195_80%_50%/0.4)]" />
+            <div className="absolute bottom-3 left-3 h-6 w-6 rounded-bl-lg border-b-2 border-l-2 border-[hsl(195_80%_50%/0.4)]" />
+            <div className="absolute bottom-3 right-3 h-6 w-6 rounded-br-lg border-b-2 border-r-2 border-[hsl(195_80%_50%/0.4)]" />
           </div>
 
-          {/* Connection lines */}
           <MapConnections statuses={nodeStatuses.map((n) => n.status)} hqCompleted={hqCompleted} />
 
-          {/* City Nodes */}
           {CITY_NODES.map((node, index) => {
             if (node.isHub) {
               return (
@@ -1047,15 +1043,14 @@ export default function MissionWorldMap() {
                   className="absolute z-20"
                   style={{ top: `${node.y}%`, left: `${node.x}%`, transform: "translate(-50%, -50%)" }}
                 >
-                  {/* Start here arrow */}
                   {!hqCompleted && !hasClickedHQ && (
                     <motion.div
                       animate={{ x: [0, 6, 0] }}
                       transition={{ repeat: Infinity, duration: 1.2 }}
-                      className="absolute -right-32 top-1/2 -translate-y-1/2 flex items-center gap-1 z-30 whitespace-nowrap"
+                      className="absolute -right-32 top-1/2 z-30 flex -translate-y-1/2 items-center gap-1 whitespace-nowrap"
                     >
-                      <span className="text-[hsl(45_90%_60%)] text-lg">→</span>
-                      <span className="rounded-full bg-[hsl(45_90%_55%/0.2)] border border-[hsl(45_90%_55%/0.4)] px-2.5 py-1 text-[10px] font-bold text-[hsl(45_90%_70%)]">
+                      <span className="text-lg text-[hsl(45_90%_60%)]">→</span>
+                      <span className="rounded-full border border-[hsl(45_90%_55%/0.4)] bg-[hsl(45_90%_55%/0.2)] px-2.5 py-1 text-[10px] font-bold text-[hsl(45_90%_70%)]">
                         Start here!
                       </span>
                     </motion.div>
@@ -1065,9 +1060,8 @@ export default function MissionWorldMap() {
                     onClick={() => handleNodeClick(node, index)}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.92 }}
-                    className="flex flex-col items-center cursor-pointer"
+                    className="flex cursor-pointer flex-col items-center"
                   >
-                    {/* Pulse rings */}
                     <motion.div
                       animate={{ scale: [1, 1.7, 1], opacity: [0.4, 0, 0.4] }}
                       transition={{ repeat: Infinity, duration: 3.5 }}
@@ -1079,21 +1073,19 @@ export default function MissionWorldMap() {
                       className="absolute -inset-2 rounded-full border border-[hsl(45_90%_55%/0.3)]"
                     />
 
-                    {/* HQ node */}
                     <div
-                      className="relative flex h-14 w-14 md:h-[68px] md:w-[68px] items-center justify-center rounded-full border-2 border-[hsl(45_90%_55%/0.7)] shadow-[0_0_32px_hsl(45_90%_55%/0.4)] backdrop-blur-md"
+                      className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-[hsl(45_90%_55%/0.7)] shadow-[0_0_32px_hsl(45_90%_55%/0.4)] backdrop-blur-md md:h-[68px] md:w-[68px]"
                       style={{ background: "radial-gradient(circle, hsl(45 85% 45% / 0.35), hsl(35 50% 18% / 0.9))" }}
                     >
-                      <span className="text-2xl md:text-3xl drop-shadow-md">🏠</span>
+                      <span className="text-2xl drop-shadow-md md:text-3xl">🏠</span>
                     </div>
 
-                    {/* Label */}
-                    <div className="mt-1.5 rounded-full bg-[hsl(45_90%_55%/0.15)] px-2.5 py-0.5 border border-[hsl(45_90%_55%/0.3)] backdrop-blur-sm">
-                      <p className="text-[8px] md:text-[10px] font-bold text-[hsl(45_90%_75%)] whitespace-nowrap tracking-wide">
+                    <div className="mt-1.5 rounded-full border border-[hsl(45_90%_55%/0.3)] bg-[hsl(45_90%_55%/0.15)] px-2.5 py-0.5 backdrop-blur-sm">
+                      <p className="whitespace-nowrap text-[8px] font-bold tracking-wide text-[hsl(45_90%_75%)] md:text-[10px]">
                         HQ — Cyber Hero Command
                       </p>
                     </div>
-                    <p className="mt-0.5 text-[6px] md:text-[8px] text-[hsl(45_90%_60%/0.6)] whitespace-nowrap">
+                    <p className="mt-0.5 whitespace-nowrap text-[6px] text-[hsl(45_90%_60%/0.6)] md:text-[8px]">
                       {node.city}
                     </p>
                   </motion.button>
@@ -1123,13 +1115,12 @@ export default function MissionWorldMap() {
                   whileTap={isClickable ? { scale: 0.92 } : {}}
                   className={`group relative flex flex-col items-center transition-all ${
                     status === "locked"
-                      ? "opacity-25 cursor-not-allowed"
+                      ? "cursor-not-allowed opacity-25"
                       : isGated
-                        ? "opacity-45 cursor-not-allowed"
+                        ? "cursor-not-allowed opacity-45"
                         : "cursor-pointer"
                   }`}
                 >
-                  {/* Active ping */}
                   {isCurrentTarget && (
                     <motion.div
                       animate={{ scale: [1, 1.6, 1], opacity: [0.5, 0, 0.5] }}
@@ -1138,7 +1129,6 @@ export default function MissionWorldMap() {
                     />
                   )}
 
-                  {/* Gated amber pulse */}
                   {isGated && (
                     <motion.div
                       animate={{ opacity: [0.3, 0.65, 0.3] }}
@@ -1147,9 +1137,8 @@ export default function MissionWorldMap() {
                     />
                   )}
 
-                  {/* Node circle */}
                   <div
-                    className={`relative flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border-2 text-base md:text-lg shadow-lg transition-all duration-200 ${
+                    className={`relative flex h-10 w-10 items-center justify-center rounded-full border-2 text-base shadow-lg transition-all duration-200 md:h-11 md:w-11 md:text-lg ${
                       status === "completed"
                         ? "border-[hsl(160_65%_50%/0.7)] shadow-[0_0_20px_hsl(160_65%_50%/0.4)]"
                         : status === "unlocked"
@@ -1175,34 +1164,31 @@ export default function MissionWorldMap() {
                       <span className="drop-shadow-sm">{node.icon}</span>
                     )}
 
-                    {/* Glint on active nodes */}
                     {(status === "unlocked" || status === "completed") && (
-                      <div className="absolute top-1 left-2 w-2 h-1 rounded-full bg-white/25 rotate-[-30deg]" />
+                      <div className="absolute left-2 top-1 h-1 w-2 rotate-[-30deg] rounded-full bg-white/25" />
                     )}
                   </div>
 
-                  {/* Stars */}
                   {status === "completed" && stars > 0 && (
                     <div className="mt-0.5 flex gap-0.5">
                       {[1, 2, 3].map((s) => (
                         <Star
                           key={s}
                           className={`h-2.5 w-2.5 ${
-                            s <= stars ? "text-[hsl(45_90%_60%)] fill-[hsl(45_90%_60%)]" : "text-white/15"
+                            s <= stars ? "fill-[hsl(45_90%_60%)] text-[hsl(45_90%_60%)]" : "text-white/15"
                           }`}
                         />
                       ))}
                     </div>
                   )}
 
-                  {/* Label */}
                   <div
-                    className={`mt-1 rounded-md px-1.5 py-0.5 backdrop-blur-sm max-w-[80px] ${
+                    className={`mt-1 max-w-[80px] rounded-md px-1.5 py-0.5 backdrop-blur-sm ${
                       status === "locked" || isGated ? "bg-black/20" : "bg-[hsl(210_40%_12%/0.85)]"
                     }`}
                   >
                     <p
-                      className={`text-[7px] md:text-[9px] font-bold leading-tight text-center tracking-wide ${
+                      className={`text-center text-[7px] font-bold leading-tight tracking-wide md:text-[9px] ${
                         status === "locked"
                           ? "text-white/20"
                           : isGated
@@ -1213,7 +1199,7 @@ export default function MissionWorldMap() {
                       {node.name}
                     </p>
                     <p
-                      className={`text-[5px] md:text-[6px] leading-tight text-center ${
+                      className={`text-center text-[5px] leading-tight md:text-[6px] ${
                         status === "locked" || isGated ? "text-white/10" : "text-white/35"
                       }`}
                     >
@@ -1221,12 +1207,11 @@ export default function MissionWorldMap() {
                     </p>
                   </div>
 
-                  {/* Deploy indicator */}
                   {isCurrentTarget && (
                     <motion.span
                       animate={{ opacity: [0.6, 1, 0.6] }}
                       transition={{ repeat: Infinity, duration: 1.5 }}
-                      className="mt-0.5 text-[7px] md:text-[8px] font-bold text-[hsl(195_80%_65%)] tracking-widest"
+                      className="mt-0.5 text-[7px] font-bold tracking-widest text-[hsl(195_80%_65%)] md:text-[8px]"
                     >
                       ▶ DEPLOY
                     </motion.span>
@@ -1237,7 +1222,6 @@ export default function MissionWorldMap() {
           })}
         </motion.div>
 
-        {/* Legend */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -1248,7 +1232,7 @@ export default function MissionWorldMap() {
             <span className="h-2.5 w-2.5 rounded-full bg-[hsl(45_90%_55%)] shadow-[0_0_6px_hsl(45_90%_55%/0.5)]" />⭐ HQ
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(195_80%_50%)] animate-pulse" />
+            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[hsl(195_80%_50%)]" />
             🔵 Available
           </span>
           <span className="flex items-center gap-1.5">
@@ -1256,7 +1240,7 @@ export default function MissionWorldMap() {
             🟢 Secured
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-white/10 border border-white/10" />⚫ Locked
+            <span className="h-2.5 w-2.5 rounded-full border border-white/10 bg-white/10" />⚫ Locked
           </span>
           <span className="flex items-center gap-1.5">
             <Radio className="h-3 w-3 text-[hsl(45_90%_60%)]" />
@@ -1265,10 +1249,8 @@ export default function MissionWorldMap() {
         </motion.div>
       </div>
 
-      {/* Guide Character */}
       <GuideCharacter avatarConfig={avatarConfig} message={guideMessage} onTap={cycleIdleMessage} />
 
-      {/* World Detail Panel */}
       <AnimatePresence>
         {selectedWorld && (
           <WorldDetailPanel
