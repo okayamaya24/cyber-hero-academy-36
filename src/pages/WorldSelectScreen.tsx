@@ -24,7 +24,7 @@ function HUDBar({
   worldsCompleted: number;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[hsl(195_80%_50%/0.2)] bg-[hsl(210_40%_14%/0.8)] px-4 py-2 backdrop-blur-md shadow-lg">
+    <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[hsl(195_80%_50%/0.2)] bg-[hsl(210_40%_14%/0.8)] px-4 py-2 backdrop-blur-md shadow-lg">
       <div className="flex items-center gap-4 text-xs">
         <span className="flex items-center gap-1.5 text-[hsl(195_80%_70%)] font-bold">
           <Globe className="h-3.5 w-3.5" />
@@ -37,6 +37,7 @@ function HUDBar({
           <span>{points.toLocaleString()} XP</span>
         </span>
       </div>
+
       <div className="flex items-center gap-2">
         <span className="flex items-center gap-1.5 text-xs text-[hsl(195_80%_70%)]">
           <Shield className="h-3.5 w-3.5" />
@@ -78,22 +79,21 @@ function ContinentCard({
     <motion.button
       onClick={onClick}
       disabled={isLocked}
-      whileHover={!isLocked ? { scale: 1.04, y: -5 } : {}}
-      whileTap={!isLocked ? { scale: 0.97 } : {}}
-      className={`relative flex flex-col items-center gap-2.5 rounded-2xl border p-4 w-full backdrop-blur-md transition-all duration-300 min-h-[185px] justify-between text-left ${
+      whileHover={!isLocked ? { scale: 1.03, y: -4 } : {}}
+      whileTap={!isLocked ? { scale: 0.98 } : {}}
+      className={`relative flex flex-col items-center gap-2 rounded-2xl border p-3 w-full backdrop-blur-md transition-all duration-300 min-h-[155px] justify-between text-left ${
         isLocked
           ? "border-white/5 bg-[hsl(210_40%_10%/0.5)] opacity-50 cursor-not-allowed"
           : status === "completed"
-            ? "border-[hsl(160_65%_50%/0.5)] bg-[hsl(160_65%_15%/0.25)] hover:shadow-[0_0_30px_hsl(160_65%_50%/0.25)] cursor-pointer"
+            ? "border-[hsl(160_65%_50%/0.5)] bg-[hsl(160_65%_15%/0.25)] hover:shadow-[0_0_24px_hsl(160_65%_50%/0.22)] cursor-pointer"
             : isAntarctica
-              ? "border-[hsl(200_60%_70%/0.3)] bg-[hsl(200_40%_15%/0.3)] hover:shadow-[0_0_30px_hsl(200_60%_70%/0.2)] cursor-pointer"
-              : "border-[hsl(195_80%_50%/0.3)] bg-[hsl(210_40%_14%/0.65)] hover:shadow-[0_0_30px_hsl(195_80%_50%/0.2)] hover:border-[hsl(195_80%_50%/0.55)] cursor-pointer"
+              ? "border-[hsl(200_60%_70%/0.3)] bg-[hsl(200_40%_15%/0.3)] hover:shadow-[0_0_24px_hsl(200_60%_70%/0.18)] cursor-pointer"
+              : "border-[hsl(195_80%_50%/0.3)] bg-[hsl(210_40%_14%/0.65)] hover:shadow-[0_0_24px_hsl(195_80%_50%/0.18)] hover:border-[hsl(195_80%_50%/0.55)] cursor-pointer"
       }`}
     >
-      {/* Glow effect on hover for active cards */}
       {!isLocked && (
         <div
-          className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none ${
+          className={`absolute inset-0 rounded-2xl opacity-0 transition-opacity pointer-events-none ${
             status === "completed"
               ? "bg-[radial-gradient(ellipse_at_top,hsl(160_65%_50%/0.08),transparent_70%)]"
               : "bg-[radial-gradient(ellipse_at_top,hsl(195_80%_50%/0.08),transparent_70%)]"
@@ -101,7 +101,6 @@ function ContinentCard({
         />
       )}
 
-      {/* Antarctica ice overlay */}
       {isAntarctica && isLocked && (
         <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-b from-[hsl(200_60%_90%/0.05)] to-transparent" />
@@ -115,17 +114,10 @@ function ContinentCard({
         </div>
       )}
 
-      {/* Top section — emoji + name */}
-      <div className="flex flex-col items-center gap-1.5 w-full">
+      <div className="flex flex-col items-center gap-1 w-full">
         <motion.span
-          className="text-4xl leading-none"
-          animate={
-            !isLocked
-              ? {
-                  y: [0, -3, 0],
-                }
-              : {}
-          }
+          className="text-3xl leading-none"
+          animate={!isLocked ? { y: [0, -3, 0] } : {}}
           transition={{
             repeat: Infinity,
             duration: 3,
@@ -138,9 +130,8 @@ function ContinentCard({
         <h3 className="text-sm font-bold text-white text-center leading-tight">{continent.name}</h3>
       </div>
 
-      {/* Villain row */}
       <div className="flex items-center justify-center gap-1.5 w-full">
-        <VillainSprite villainName={continent.villain} size={28} />
+        <VillainSprite villainName={continent.villain} size={24} />
         <div className="flex flex-col">
           <span className="text-[8px] text-white/40 leading-none">VILLAIN</span>
           <span className="text-[9px] font-bold text-[hsl(0_80%_65%)] leading-tight max-w-[85px]">
@@ -149,10 +140,8 @@ function ContinentCard({
         </div>
       </div>
 
-      {/* Zone count */}
       <p className="text-[9px] text-white/35 text-center">{totalZones} Zones + 1 Boss Battle</p>
 
-      {/* Progress bar — only for non-locked */}
       {!isLocked && (
         <div className="w-full space-y-0.5">
           <div className="flex justify-between text-[8px] text-white/35">
@@ -165,7 +154,6 @@ function ContinentCard({
         </div>
       )}
 
-      {/* Status badge */}
       <span
         className={`rounded-full px-2.5 py-0.5 text-[8px] font-bold border w-full text-center ${
           status === "completed"
@@ -233,8 +221,10 @@ export default function WorldSelectScreen() {
         bossDefeated: boolean;
       }
     > = {};
+
     for (const c of CONTINENTS) {
       const progress = continentProgress.find((p: any) => p.continent_id === c.id);
+
       if (c.unlockOrder === 0) {
         map[c.id] = {
           status: progress?.status === "completed" ? "completed" : "in_progress",
@@ -245,6 +235,7 @@ export default function WorldSelectScreen() {
         const allBossesDefeated = CONTINENTS.filter((cc) => cc.unlockOrder >= 0 && cc.unlockOrder < 6).every(
           (cc) => continentProgress.find((pr: any) => pr.continent_id === cc.id)?.boss_defeated === true,
         );
+
         map[c.id] = {
           status: allBossesDefeated ? (progress?.status === "completed" ? "completed" : "in_progress") : "locked",
           zonesCompleted: progress?.zones_completed ?? 0,
@@ -254,6 +245,7 @@ export default function WorldSelectScreen() {
         const prev = CONTINENTS.find((cc) => cc.unlockOrder === c.unlockOrder - 1);
         const prevProgress = prev ? continentProgress.find((p: any) => p.continent_id === prev.id) : null;
         const unlocked = prevProgress?.boss_defeated === true;
+
         map[c.id] = {
           status: unlocked ? (progress?.status === "completed" ? "completed" : "in_progress") : "locked",
           zonesCompleted: progress?.zones_completed ?? 0,
@@ -261,6 +253,7 @@ export default function WorldSelectScreen() {
         };
       }
     }
+
     return map;
   }, [continentProgress]);
 
@@ -290,16 +283,13 @@ export default function WorldSelectScreen() {
     setGuideMessage(IDLE_MSGS[next]);
   }, [idleIdx]);
 
-  // Split into rows: 4 top, 3 bottom
   const topRow = CONTINENTS.slice(0, 4);
   const bottomRow = CONTINENTS.slice(4, 7);
 
   return (
     <div className="h-screen relative overflow-hidden flex flex-col" style={{ background: "#050a14" }}>
-      {/* Starfield */}
       <StarfieldBackground />
 
-      {/* Scanline overlay */}
       <div
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
@@ -308,19 +298,15 @@ export default function WorldSelectScreen() {
         }}
       />
 
-      {/* Ambient glow blobs */}
       <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
         <div className="absolute top-[-10%] left-[20%] w-[40%] h-[35%] bg-[hsl(195_80%_50%/0.04)] rounded-full blur-[80px]" />
         <div className="absolute bottom-[-5%] right-[10%] w-[30%] h-[30%] bg-[hsl(270_70%_50%/0.04)] rounded-full blur-[80px]" />
       </div>
 
-      {/* Main content */}
-      <div className="relative z-[2] flex flex-col h-full max-w-6xl mx-auto w-full px-5 pt-3 pb-4">
-        {/* HUD */}
+      <div className="relative z-[2] flex flex-col h-full max-w-6xl mx-auto w-full px-5 pt-2 pb-2 overflow-hidden">
         <HUDBar playerName={playerName} level={level} points={points} worldsCompleted={worldsCompleted} />
 
-        {/* Page title — compact */}
-        <div className="mt-3 mb-4">
+        <div className="mt-2 mb-2 shrink-0">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -332,6 +318,7 @@ export default function WorldSelectScreen() {
               Cyber Hero Academy
             </span>
           </motion.div>
+
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -342,14 +329,12 @@ export default function WorldSelectScreen() {
           </motion.p>
         </div>
 
-        {/* ── Continent Grid ── */}
-        <div className="flex flex-col items-center gap-4 flex-1">
-          {/* Top row — 4 cards, fixed width so bottom row can match */}
+        <div className="flex flex-col items-center justify-center gap-3 flex-1 min-h-0">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="grid grid-cols-4 gap-4 w-full"
+            className="grid grid-cols-4 gap-3 w-full"
           >
             {topRow.map((continent, i) => {
               const s = continentStatuses[continent.id] || {
@@ -357,6 +342,7 @@ export default function WorldSelectScreen() {
                 zonesCompleted: 0,
                 bossDefeated: false,
               };
+
               return (
                 <motion.div
                   key={continent.id}
@@ -366,7 +352,7 @@ export default function WorldSelectScreen() {
                 >
                   <ContinentCard
                     continent={continent}
-                    status={s.status as any}
+                    status={s.status as "locked" | "in_progress" | "completed"}
                     zonesCompleted={s.zonesCompleted}
                     onClick={() => handleContinentClick(continent)}
                   />
@@ -375,31 +361,29 @@ export default function WorldSelectScreen() {
             })}
           </motion.div>
 
-          {/* Bottom row — 3 cards perfectly centered under top 4 */}
-          {/* Use same total width as top row, split into 4 cols, center 3 cards */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55 }}
-            className="w-full flex justify-center"
+            className="w-full flex justify-center shrink-0"
           >
-            {/* Inner container matches top grid width, centers 3 cards with half-card offset */}
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(4, 1fr)",
-                gap: "1rem",
+                gap: "0.75rem",
                 width: "100%",
               }}
             >
-              {/* Half-width invisible spacer — shifts 3 cards to center */}
               <div style={{ gridColumn: "1 / 2", visibility: "hidden" }} />
+
               {bottomRow.map((continent, i) => {
                 const s = continentStatuses[continent.id] || {
                   status: "locked",
                   zonesCompleted: 0,
                   bossDefeated: false,
                 };
+
                 return (
                   <motion.div
                     key={continent.id}
@@ -410,7 +394,7 @@ export default function WorldSelectScreen() {
                   >
                     <ContinentCard
                       continent={continent}
-                      status={s.status as any}
+                      status={s.status as "locked" | "in_progress" | "completed"}
                       zonesCompleted={s.zonesCompleted}
                       onClick={() => handleContinentClick(continent)}
                     />
@@ -421,12 +405,11 @@ export default function WorldSelectScreen() {
           </motion.div>
         </div>
 
-        {/* Certificate progress bar — bottom of page */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
-          className="mt-3 flex items-center gap-3"
+          className="mt-2 flex items-center gap-2 shrink-0 pb-1"
         >
           <span className="text-[10px] text-white/40 whitespace-nowrap">MASTER CERTIFICATE</span>
           <div className="flex-1">
@@ -436,14 +419,12 @@ export default function WorldSelectScreen() {
         </motion.div>
       </div>
 
-      {/* ── Guide Character — bottom right ── */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.85 }}
         className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2"
       >
-        {/* Speech bubble */}
         <AnimatePresence mode="wait">
           <motion.div
             key={guideMessage}
@@ -454,12 +435,10 @@ export default function WorldSelectScreen() {
             className="relative max-w-[200px] rounded-2xl rounded-br-sm border border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_12%/0.95)] px-3 py-2 shadow-xl backdrop-blur-md"
           >
             <p className="text-[11px] font-medium text-white leading-snug">{guideMessage}</p>
-            {/* Bubble tail */}
             <div className="absolute -bottom-1.5 right-4 w-3 h-3 bg-[hsl(210_40%_12%/0.95)] border-r border-b border-[hsl(195_80%_50%/0.25)] rotate-45" />
           </motion.div>
         </AnimatePresence>
 
-        {/* Avatar button */}
         <motion.button
           onClick={cycleIdle}
           whileHover={{ scale: 1.1 }}
@@ -467,7 +446,6 @@ export default function WorldSelectScreen() {
           className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-[hsl(195_80%_50%/0.5)] bg-[hsl(210_40%_14%/0.95)] shadow-[0_0_20px_hsl(195_85%_50%/0.35)]"
         >
           <HeroAvatar avatarConfig={avatarConfig} size={36} fallbackEmoji="🦸" />
-          {/* Message icon badge */}
           <motion.div
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ repeat: Infinity, duration: 2.5 }}
