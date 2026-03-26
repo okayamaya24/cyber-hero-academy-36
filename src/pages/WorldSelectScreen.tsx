@@ -81,7 +81,7 @@ function ContinentCard({
       disabled={isLocked}
       whileHover={!isLocked ? { scale: 1.03, y: -4 } : {}}
       whileTap={!isLocked ? { scale: 0.98 } : {}}
-      className={`relative flex flex-col items-center gap-2 rounded-2xl border p-3 w-full backdrop-blur-md transition-all duration-300 min-h-[155px] justify-between text-left ${
+      className={`relative flex flex-col items-center gap-1.5 rounded-2xl border p-2.5 w-full backdrop-blur-md transition-all duration-300 min-h-[138px] justify-between text-left ${
         isLocked
           ? "border-white/5 bg-[hsl(210_40%_10%/0.5)] opacity-50 cursor-not-allowed"
           : status === "completed"
@@ -116,7 +116,7 @@ function ContinentCard({
 
       <div className="flex flex-col items-center gap-1 w-full">
         <motion.span
-          className="text-3xl leading-none"
+          className="text-2xl leading-none"
           animate={!isLocked ? { y: [0, -3, 0] } : {}}
           transition={{
             repeat: Infinity,
@@ -131,7 +131,7 @@ function ContinentCard({
       </div>
 
       <div className="flex items-center justify-center gap-1.5 w-full">
-        <VillainSprite villainName={continent.villain} size={24} />
+        <VillainSprite villainName={continent.villain} size={20} />
         <div className="flex flex-col">
           <span className="text-[8px] text-white/40 leading-none">VILLAIN</span>
           <span className="text-[9px] font-bold text-[hsl(0_80%_65%)] leading-tight max-w-[85px]">
@@ -287,7 +287,7 @@ export default function WorldSelectScreen() {
   const bottomRow = CONTINENTS.slice(4, 7);
 
   return (
-    <div className="h-screen relative overflow-hidden flex flex-col" style={{ background: "#050a14" }}>
+    <div className="relative h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#050a14]"> overflow-hidden flex flex-col" style={{ background: "#050a14" }}>
       <StarfieldBackground />
 
       <div
@@ -303,17 +303,17 @@ export default function WorldSelectScreen() {
         <div className="absolute bottom-[-5%] right-[10%] w-[30%] h-[30%] bg-[hsl(270_70%_50%/0.04)] rounded-full blur-[80px]" />
       </div>
 
-      <div className="relative z-[2] flex flex-col h-full max-w-6xl mx-auto w-full px-5 pt-2 pb-2 overflow-hidden">
+      <div className="relative z-[2] mx-auto grid h-full max-h-[100dvh] w-full max-w-6xl grid-rows-[auto_auto_1fr_auto] px-4 pt-2 pb-2 overflow-hidden">
         <HUDBar playerName={playerName} level={level} points={points} worldsCompleted={worldsCompleted} />
 
-        <div className="mt-2 mb-2 shrink-0">
+        <div className="mt-1.5 mb-1.5 shrink-0">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="flex items-baseline gap-3"
           >
-            <h1 className="text-2xl font-bold text-white tracking-wide">🌍 SELECT YOUR WORLD</h1>
+            <h1 className="text-xl font-bold text-white tracking-wide">🌍 SELECT YOUR WORLD</h1>
             <span className="text-[10px] text-[hsl(195_80%_60%)] font-bold tracking-widest uppercase opacity-70">
               Cyber Hero Academy
             </span>
@@ -329,12 +329,12 @@ export default function WorldSelectScreen() {
           </motion.p>
         </div>
 
-        <div className="flex flex-col items-center justify-center gap-3 flex-1 min-h-0">
+        <div className="min-h-0 overflow-hidden grid content-center gap-2">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="grid grid-cols-4 gap-3 w-full"
+            className="grid grid-cols-4 gap-2.5 w-full"
           >
             {topRow.map((continent, i) => {
               const s = continentStatuses[continent.id] || {
@@ -371,7 +371,7 @@ export default function WorldSelectScreen() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(4, 1fr)",
-                gap: "0.75rem",
+                gap: "0.625rem",
                 width: "100%",
               }}
             >
@@ -409,7 +409,7 @@ export default function WorldSelectScreen() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
-          className="mt-2 flex items-center gap-2 shrink-0 pb-1"
+          className="mt-1 flex items-center gap-2 shrink-0 pb-0.5"
         >
           <span className="text-[10px] text-white/40 whitespace-nowrap">MASTER CERTIFICATE</span>
           <div className="flex-1">
