@@ -287,7 +287,7 @@ export default function WorldSelectScreen() {
   const bottomRow = CONTINENTS.slice(4, 7);
 
   return (
-    <div className="relative h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#050a14]"> overflow-hidden flex flex-col" style={{ background: "#050a14" }}>
+    <div className="relative h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#050a14]">
       <StarfieldBackground />
 
       <div
