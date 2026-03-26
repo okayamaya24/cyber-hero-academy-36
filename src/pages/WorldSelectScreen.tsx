@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Shield, Zap, Globe, MessageCircle } from "lucide-react";
+import { Shield, Zap, Globe, MessageCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -24,7 +24,7 @@ function HUDBar({
   worldsCompleted: number;
 }) {
   return (
-    <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[hsl(195_80%_50%/0.2)] bg-[hsl(210_40%_14%/0.8)] px-4 py-2 backdrop-blur-md shadow-lg">
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[hsl(195_80%_50%/0.2)] bg-[hsl(210_40%_14%/0.8)] px-4 py-2 backdrop-blur-md shadow-lg">
       <div className="flex items-center gap-4 text-xs">
         <span className="flex items-center gap-1.5 text-[hsl(195_80%_70%)] font-bold">
           <Globe className="h-3.5 w-3.5" />
@@ -79,21 +79,21 @@ function ContinentCard({
     <motion.button
       onClick={onClick}
       disabled={isLocked}
-      whileHover={!isLocked ? { scale: 1.03, y: -4 } : {}}
+      whileHover={!isLocked ? { scale: 1.02, y: -2 } : {}}
       whileTap={!isLocked ? { scale: 0.98 } : {}}
-      className={`relative flex flex-col items-center gap-1.5 rounded-2xl border p-2.5 w-full backdrop-blur-md transition-all duration-300 min-h-[138px] justify-between text-left ${
+      className={`relative flex h-full min-h-[126px] flex-col items-center justify-between gap-1.5 rounded-2xl border p-2.5 text-left backdrop-blur-md transition-all duration-300 ${
         isLocked
           ? "border-white/5 bg-[hsl(210_40%_10%/0.5)] opacity-50 cursor-not-allowed"
           : status === "completed"
-            ? "border-[hsl(160_65%_50%/0.5)] bg-[hsl(160_65%_15%/0.25)] hover:shadow-[0_0_24px_hsl(160_65%_50%/0.22)] cursor-pointer"
+            ? "border-[hsl(160_65%_50%/0.5)] bg-[hsl(160_65%_15%/0.25)] hover:shadow-[0_0_20px_hsl(160_65%_50%/0.2)] cursor-pointer"
             : isAntarctica
-              ? "border-[hsl(200_60%_70%/0.3)] bg-[hsl(200_40%_15%/0.3)] hover:shadow-[0_0_24px_hsl(200_60%_70%/0.18)] cursor-pointer"
-              : "border-[hsl(195_80%_50%/0.3)] bg-[hsl(210_40%_14%/0.65)] hover:shadow-[0_0_24px_hsl(195_80%_50%/0.18)] hover:border-[hsl(195_80%_50%/0.55)] cursor-pointer"
+              ? "border-[hsl(200_60%_70%/0.3)] bg-[hsl(200_40%_15%/0.3)] hover:shadow-[0_0_20px_hsl(200_60%_70%/0.15)] cursor-pointer"
+              : "border-[hsl(195_80%_50%/0.3)] bg-[hsl(210_40%_14%/0.65)] hover:shadow-[0_0_20px_hsl(195_80%_50%/0.15)] hover:border-[hsl(195_80%_50%/0.55)] cursor-pointer"
       }`}
     >
       {!isLocked && (
         <div
-          className={`absolute inset-0 rounded-2xl opacity-0 transition-opacity pointer-events-none ${
+          className={`absolute inset-0 rounded-2xl opacity-0 pointer-events-none ${
             status === "completed"
               ? "bg-[radial-gradient(ellipse_at_top,hsl(160_65%_50%/0.08),transparent_70%)]"
               : "bg-[radial-gradient(ellipse_at_top,hsl(195_80%_50%/0.08),transparent_70%)]"
@@ -117,45 +117,40 @@ function ContinentCard({
       <div className="flex flex-col items-center gap-1 w-full">
         <motion.span
           className="text-2xl leading-none"
-          animate={!isLocked ? { y: [0, -3, 0] } : {}}
-          transition={{
-            repeat: Infinity,
-            duration: 3,
-            ease: "easeInOut",
-            delay: Math.random() * 2,
-          }}
+          animate={!isLocked ? { y: [0, -2, 0] } : {}}
+          transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
         >
           {continent.emoji}
         </motion.span>
-        <h3 className="text-sm font-bold text-white text-center leading-tight">{continent.name}</h3>
+        <h3 className="text-[13px] font-bold text-white text-center leading-tight">{continent.name}</h3>
       </div>
 
       <div className="flex items-center justify-center gap-1.5 w-full">
-        <VillainSprite villainName={continent.villain} size={20} />
+        <VillainSprite villainName={continent.villain} size={18} />
         <div className="flex flex-col">
-          <span className="text-[8px] text-white/40 leading-none">VILLAIN</span>
-          <span className="text-[9px] font-bold text-[hsl(0_80%_65%)] leading-tight max-w-[85px]">
+          <span className="text-[7px] text-white/40 leading-none">VILLAIN</span>
+          <span className="text-[8px] font-bold text-[hsl(0_80%_65%)] leading-tight max-w-[82px]">
             {continent.villain.toUpperCase()}
           </span>
         </div>
       </div>
 
-      <p className="text-[9px] text-white/35 text-center">{totalZones} Zones + 1 Boss Battle</p>
+      <p className="text-[8px] text-white/35 text-center">{totalZones} Zones + 1 Boss</p>
 
       {!isLocked && (
         <div className="w-full space-y-0.5">
-          <div className="flex justify-between text-[8px] text-white/35">
+          <div className="flex justify-between text-[7px] text-white/35">
             <span>
               {zonesCompleted}/{totalZones} zones
             </span>
             <span>{Math.round(progress)}%</span>
           </div>
-          <Progress value={progress} className="h-1.5 bg-white/10" />
+          <Progress value={progress} className="h-1 bg-white/10" />
         </div>
       )}
 
       <span
-        className={`rounded-full px-2.5 py-0.5 text-[8px] font-bold border w-full text-center ${
+        className={`rounded-full px-2 py-0.5 text-[7px] font-bold border w-full text-center ${
           status === "completed"
             ? "bg-[hsl(160_65%_50%/0.15)] border-[hsl(160_65%_50%/0.3)] text-[hsl(160_65%_65%)]"
             : status === "in_progress"
@@ -168,7 +163,7 @@ function ContinentCard({
           : status === "in_progress"
             ? "🔵 IN PROGRESS"
             : isAntarctica
-              ? "🔒 Defeat all 6 villains to unlock"
+              ? "🔒 Beat all 6 villains"
               : "🔒 LOCKED"}
       </span>
     </motion.button>
@@ -303,17 +298,17 @@ export default function WorldSelectScreen() {
         <div className="absolute bottom-[-5%] right-[10%] w-[30%] h-[30%] bg-[hsl(270_70%_50%/0.04)] rounded-full blur-[80px]" />
       </div>
 
-      <div className="relative z-[2] mx-auto grid h-full max-h-[100dvh] w-full max-w-6xl grid-rows-[auto_auto_1fr_auto] px-4 pt-2 pb-2 overflow-hidden">
+      <div className="relative z-[2] mx-auto h-full max-w-6xl px-4 py-2 grid grid-rows-[auto_auto_1fr_auto] gap-2 overflow-hidden">
         <HUDBar playerName={playerName} level={level} points={points} worldsCompleted={worldsCompleted} />
 
-        <div className="mt-1.5 mb-1.5 shrink-0">
+        <div className="shrink-0">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="flex items-baseline gap-3"
           >
-            <h1 className="text-xl font-bold text-white tracking-wide">🌍 SELECT YOUR WORLD</h1>
+            <h1 className="text-lg md:text-xl font-bold text-white tracking-wide">🌍 SELECT YOUR WORLD</h1>
             <span className="text-[10px] text-[hsl(195_80%_60%)] font-bold tracking-widest uppercase opacity-70">
               Cyber Hero Academy
             </span>
@@ -329,12 +324,12 @@ export default function WorldSelectScreen() {
           </motion.p>
         </div>
 
-        <div className="min-h-0 overflow-hidden grid content-center gap-2">
+        <div className="min-h-0 overflow-hidden grid grid-rows-2 gap-2 content-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="grid grid-cols-4 gap-2.5 w-full"
+            className="grid h-full min-h-0 grid-cols-4 auto-rows-fr gap-2"
           >
             {topRow.map((continent, i) => {
               const s = continentStatuses[continent.id] || {
@@ -349,6 +344,7 @@ export default function WorldSelectScreen() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 + i * 0.07 }}
+                  className="min-h-0"
                 >
                   <ContinentCard
                     continent={continent}
@@ -365,43 +361,33 @@ export default function WorldSelectScreen() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55 }}
-            className="w-full flex justify-center shrink-0"
+            className="grid h-full min-h-0 grid-cols-4 auto-rows-fr gap-2"
           >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: "0.625rem",
-                width: "100%",
-              }}
-            >
-              <div style={{ gridColumn: "1 / 2", visibility: "hidden" }} />
+            <div className="invisible" />
+            {bottomRow.map((continent, i) => {
+              const s = continentStatuses[continent.id] || {
+                status: "locked",
+                zonesCompleted: 0,
+                bossDefeated: false,
+              };
 
-              {bottomRow.map((continent, i) => {
-                const s = continentStatuses[continent.id] || {
-                  status: "locked",
-                  zonesCompleted: 0,
-                  bossDefeated: false,
-                };
-
-                return (
-                  <motion.div
-                    key={continent.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 + i * 0.07 }}
-                    style={{ gridColumn: `${i + 2} / ${i + 3}` }}
-                  >
-                    <ContinentCard
-                      continent={continent}
-                      status={s.status as "locked" | "in_progress" | "completed"}
-                      zonesCompleted={s.zonesCompleted}
-                      onClick={() => handleContinentClick(continent)}
-                    />
-                  </motion.div>
-                );
-              })}
-            </div>
+              return (
+                <motion.div
+                  key={continent.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 + i * 0.07 }}
+                  className="min-h-0"
+                >
+                  <ContinentCard
+                    continent={continent}
+                    status={s.status as "locked" | "in_progress" | "completed"}
+                    zonesCompleted={s.zonesCompleted}
+                    onClick={() => handleContinentClick(continent)}
+                  />
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
 
@@ -409,7 +395,7 @@ export default function WorldSelectScreen() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
-          className="mt-1 flex items-center gap-2 shrink-0 pb-0.5"
+          className="flex items-center gap-2 pb-0.5"
         >
           <span className="text-[10px] text-white/40 whitespace-nowrap">MASTER CERTIFICATE</span>
           <div className="flex-1">
@@ -423,7 +409,7 @@ export default function WorldSelectScreen() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.85 }}
-        className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2"
+        className="fixed bottom-3 right-4 z-50 flex flex-col items-end gap-2"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -432,26 +418,26 @@ export default function WorldSelectScreen() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 8 }}
             transition={{ duration: 0.2 }}
-            className="relative max-w-[200px] rounded-2xl rounded-br-sm border border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_12%/0.95)] px-3 py-2 shadow-xl backdrop-blur-md"
+            className="relative max-w-[180px] rounded-2xl rounded-br-sm border border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_12%/0.95)] px-3 py-2 shadow-xl backdrop-blur-md"
           >
-            <p className="text-[11px] font-medium text-white leading-snug">{guideMessage}</p>
+            <p className="text-[10px] font-medium text-white leading-snug">{guideMessage}</p>
             <div className="absolute -bottom-1.5 right-4 w-3 h-3 bg-[hsl(210_40%_12%/0.95)] border-r border-b border-[hsl(195_80%_50%/0.25)] rotate-45" />
           </motion.div>
         </AnimatePresence>
 
         <motion.button
           onClick={cycleIdle}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-[hsl(195_80%_50%/0.5)] bg-[hsl(210_40%_14%/0.95)] shadow-[0_0_20px_hsl(195_85%_50%/0.35)]"
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.92 }}
+          className="relative flex h-12 w-12 items-center justify-center rounded-full border-2 border-[hsl(195_80%_50%/0.5)] bg-[hsl(210_40%_14%/0.95)] shadow-[0_0_20px_hsl(195_85%_50%/0.35)]"
         >
-          <HeroAvatar avatarConfig={avatarConfig} size={36} fallbackEmoji="🦸" />
+          <HeroAvatar avatarConfig={avatarConfig} size={30} fallbackEmoji="🦸" />
           <motion.div
-            animate={{ scale: [1, 1.2, 1] }}
+            animate={{ scale: [1, 1.15, 1] }}
             transition={{ repeat: Infinity, duration: 2.5 }}
-            className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(195_80%_55%)] border-2 border-[#050a14]"
+            className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[hsl(195_80%_55%)] border-2 border-[#050a14]"
           >
-            <MessageCircle className="h-2.5 w-2.5 text-white" />
+            <MessageCircle className="h-2 w-2 text-white" />
           </motion.div>
         </motion.button>
       </motion.div>
