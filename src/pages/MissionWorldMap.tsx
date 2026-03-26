@@ -169,7 +169,7 @@ const CITY_NODES: CityNode[] = [
     y: 39,
     isHub: true,
   },
-] as const;
+];
 
 const CONNECTIONS: [number, number][] = [
   [11, 0],
