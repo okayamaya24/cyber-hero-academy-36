@@ -16,7 +16,25 @@ import {
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import { Button } from "@/components/ui/button";
 
-/* ─── City node definitions — North America map positions ─────────────────── */
+/* ─── Exact progression order ──────────────────────────────────────────────
+   This is the order the child must complete levels in.
+   Finish one → unlock the next one.
+──────────────────────────────────────────────────────────────────────────── */
+const PROGRESSION_ORDER = [
+  "password-safety",
+  "encrypt-enclave",
+  "safe-websites",
+  "scam-detection",
+  "personal-info",
+  "malware-monsters",
+  "smart-sharing",
+  "phishy-messages",
+  "malware-maze",
+  "firewall-frontier",
+  "dark-web-den",
+] as const;
+
+/* ─── City node definitions ─────────────────────────────────────────────── */
 const CITY_NODES = [
   {
     id: "password-safety",
@@ -139,36 +157,23 @@ const CITY_NODES = [
     y: 39,
     isHub: true,
   },
-];
+] as const;
 
 const CONNECTIONS: [number, number][] = [
   [11, 0],
   [11, 10],
-  [11, 1],
+  [11, 2],
   [0, 10],
-  [0, 6],
-  [1, 4],
-  [1, 5],
-  [3, 9],
-  [3, 2],
-  [2, 8],
-  [2, 7],
+  [10, 2],
+  [2, 1],
+  [1, 3],
+  [3, 4],
+  [4, 5],
   [5, 6],
+  [6, 7],
+  [7, 8],
+  [8, 9],
 ];
-
-const UNLOCK_RULES: Record<string, string[]> = {
-  "password-safety": [],
-  "encrypt-enclave": [],
-  "scam-detection": ["password-safety"],
-  "safe-websites": ["scam-detection"],
-  "personal-info": ["safe-websites"],
-  "malware-monsters": ["personal-info"],
-  "smart-sharing": ["malware-monsters"],
-  "phishy-messages": ["smart-sharing"],
-  "malware-maze": ["safe-websites"],
-  "firewall-frontier": ["encrypt-enclave"],
-  "dark-web-den": ["personal-info"],
-};
 
 type NodeStatus = "completed" | "unlocked" | "locked" | "gated";
 
@@ -181,6 +186,7 @@ function getStars(score: number, maxScore: number): number {
   return 0;
 }
 
+/* ─── North America SVG Map ─────────────────────────────────────────────── */
 function WorldMapSVG() {
   return (
     <svg
@@ -216,6 +222,10 @@ function WorldMapSVG() {
           <stop offset="0%" stopColor="hsl(215 35% 22%)" />
           <stop offset="100%" stopColor="hsl(220 30% 16%)" />
         </linearGradient>
+        <radialGradient id="vig" cx="50%" cy="50%" r="70%">
+          <stop offset="55%" stopColor="transparent" />
+          <stop offset="100%" stopColor="hsl(220 50% 8% / 0.65)" />
+        </radialGradient>
       </defs>
 
       <rect width="1000" height="500" fill="url(#mapGlow)" />
@@ -363,17 +373,12 @@ function WorldMapSVG() {
         MEXICO
       </text>
 
-      <defs>
-        <radialGradient id="vig" cx="50%" cy="50%" r="70%">
-          <stop offset="55%" stopColor="transparent" />
-          <stop offset="100%" stopColor="hsl(220 50% 8% / 0.65)" />
-        </radialGradient>
-      </defs>
       <rect width="1000" height="500" fill="url(#vig)" />
     </svg>
   );
 }
 
+/* ─── Connection Paths ──────────────────────────────────────────────────── */
 function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqCompleted: boolean }) {
   return (
     <svg
@@ -390,6 +395,7 @@ function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqC
           </feMerge>
         </filter>
       </defs>
+
       {CONNECTIONS.map(([a, b], i) => {
         const from = CITY_NODES[a];
         const to = CITY_NODES[b];
@@ -399,10 +405,10 @@ function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqC
         const bothDone = aStatus === "completed" && bStatus === "completed";
         const anyUnlocked = aStatus !== "locked" && aStatus !== "gated" && bStatus !== "locked" && bStatus !== "gated";
 
-        let stroke: string;
-        let strokeWidth: number;
-        let dashArr: string;
-        let filterAttr: string | undefined;
+        let stroke = "hsl(200 20% 50% / 0.07)";
+        let strokeWidth = 0.2;
+        let dashArr = "0.8 0.6";
+        let filterAttr: string | undefined = undefined;
 
         if (bothDone) {
           stroke = "hsl(160 65% 55% / 0.7)";
@@ -413,17 +419,10 @@ function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqC
           stroke = hqCompleted ? "hsl(45 90% 55% / 0.5)" : "hsl(45 90% 55% / 0.2)";
           strokeWidth = 0.3;
           dashArr = "1.2 0.8";
-          filterAttr = undefined;
         } else if (anyUnlocked) {
           stroke = "hsl(195 85% 60% / 0.35)";
           strokeWidth = 0.25;
           dashArr = "0.8 0.6";
-          filterAttr = undefined;
-        } else {
-          stroke = "hsl(200 20% 50% / 0.07)";
-          strokeWidth = 0.2;
-          dashArr = "0.8 0.6";
-          filterAttr = undefined;
         }
 
         const mx = (from.x + to.x) / 2;
@@ -452,6 +451,7 @@ function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqC
   );
 }
 
+/* ─── HUD ──────────────────────────────────────────────────────────────── */
 function HUDBar({
   playerName,
   level,
@@ -482,6 +482,7 @@ function HUDBar({
           LVL {level} · {points} XP
         </span>
       </div>
+
       <div className="flex items-center gap-3 text-xs">
         <span className="flex items-center gap-1 text-[hsl(195_80%_70%)]">
           <Shield className="h-3.5 w-3.5" />
@@ -503,13 +504,13 @@ const GUIDE_MESSAGES = {
     "Hey Guardian! Ready to protect the digital world? 🚀",
     "Every zone has secrets to discover! 🔍",
     "You're doing amazing, keep it up! 💪",
-    "Tap a zone to begin your mission! 🎯",
+    "Tap the glowing zone to continue! 🎯",
   ],
   worldSelected: "Let's explore this zone! 🌟",
-  worldLocked: "Complete earlier zones to unlock this one! 🔒",
-  hqGated: "Complete HQ Orientation to unlock zones! 🏠",
+  worldLocked: "Finish the current zone to unlock the next one! 🔒",
+  hqGated: "Complete HQ Orientation to unlock your first zone! 🏠",
   progress: "Great job! Keep going, hero! 🎉",
-  hqComplete: "Amazing work, Guardian! Your first zones are now open — choose your mission! 🌟",
+  hqComplete: "Amazing work, Guardian! Your first zone is now open! 🌟",
 };
 
 function GuideCharacter({
@@ -535,7 +536,7 @@ function GuideCharacter({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.85, y: 6 }}
           transition={{ duration: 0.25 }}
-          className="relative max-w-[200px] rounded-2xl rounded-bl-sm border border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_14%/0.9)] px-3 py-2 shadow-lg backdrop-blur-md"
+          className="relative max-w-[220px] rounded-2xl rounded-bl-sm border border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_14%/0.9)] px-3 py-2 shadow-lg backdrop-blur-md"
         >
           <p className="text-xs font-medium leading-snug text-white">{message}</p>
           <div className="absolute -bottom-1.5 left-4 h-3 w-3 rotate-45 border-b border-r border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_14%/0.9)]" />
@@ -559,6 +560,7 @@ function GuideCharacter({
   );
 }
 
+/* ─── Detail Panel ─────────────────────────────────────────────────────── */
 function WorldDetailPanel({
   world,
   mission,
@@ -607,8 +609,7 @@ function WorldDetailPanel({
           </div>
 
           <p className="mb-5 text-sm leading-relaxed text-white/70">
-            Welcome, Guardian! This is your home base. Complete your orientation mission to unlock your first zone and
-            begin protecting the digital world.
+            Welcome, Guardian! Complete your orientation mission to unlock your first cyber zone.
           </p>
 
           <div className="mb-5 flex items-center gap-3 rounded-xl border-2 border-[hsl(45_90%_55%/0.3)] bg-[hsl(45_90%_55%/0.08)] p-4">
@@ -618,7 +619,7 @@ function WorldDetailPanel({
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">OP: GUARDIAN ORIENTATION</p>
               <p className="text-[10px] text-white/40">Difficulty: ◆◇◇◇◇ · TUTORIAL</p>
-              <p className="text-[10px] text-[hsl(45_90%_65%)]">+100 XP · Unlocks: Password Peak + Encrypt Enclave</p>
+              <p className="text-[10px] text-[hsl(45_90%_65%)]">+100 XP · Unlocks: Password Peak</p>
             </div>
           </div>
 
@@ -777,6 +778,7 @@ function WorldDetailPanel({
   );
 }
 
+/* ─── Main Component ───────────────────────────────────────────────────── */
 export default function MissionWorldMap() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
@@ -824,7 +826,9 @@ export default function MissionWorldMap() {
   const playerName = child?.name ?? "Guardian";
 
   useEffect(() => {
-    if (child && !hasAvatar) navigate("/edit-avatar");
+    if (child && !hasAvatar) {
+      navigate("/edit-avatar");
+    }
   }, [child, hasAvatar, navigate]);
 
   const missionIds = new Set(MISSIONS.map((m) => m.id));
@@ -833,16 +837,19 @@ export default function MissionWorldMap() {
     const expectedTotal = getTotalGames(learningMode);
 
     return CITY_NODES.map((node) => {
-      if (node.isHub) return { status: "unlocked" as const, stars: 0 };
+      if (node.isHub) {
+        return { status: "unlocked" as const, stars: 0 };
+      }
 
-      if (!hqCompleted) {
-        if (node.id === "password-safety" || node.id === "encrypt-enclave") {
-          return { status: "gated" as const, stars: 0 };
-        }
+      if (!missionIds.has(node.id)) {
         return { status: "locked" as const, stars: 0 };
       }
 
-      if (!missionIds.has(node.id) && !node.isHub) {
+      // Before HQ completion: only first mission is available to unlock next
+      if (!hqCompleted) {
+        if (node.id === PROGRESSION_ORDER[0]) {
+          return { status: "gated" as const, stars: 0 };
+        }
         return { status: "locked" as const, stars: 0 };
       }
 
@@ -851,29 +858,44 @@ export default function MissionWorldMap() {
       );
 
       if (progress?.status === "completed") {
-        return { status: "completed" as const, stars: getStars(progress.score, progress.max_score) };
+        return {
+          status: "completed" as const,
+          stars: getStars(progress.score ?? expectedTotal, progress.max_score ?? expectedTotal),
+        };
       }
 
-      const requirements = UNLOCK_RULES[node.id] ?? [];
-      const unlocked = requirements.every((reqId) =>
-        missionProgress.some((p: any) => p.mission_id === reqId && p.status === "completed"),
+      const currentIndex = PROGRESSION_ORDER.indexOf(node.id as (typeof PROGRESSION_ORDER)[number]);
+
+      if (currentIndex === -1) {
+        return { status: "locked" as const, stars: 0 };
+      }
+
+      // First mission unlocks right after HQ
+      if (currentIndex === 0) {
+        return { status: "unlocked" as const, stars: 0 };
+      }
+
+      // Every mission unlocks only when the previous one is completed
+      const previousMissionId = PROGRESSION_ORDER[currentIndex - 1];
+      const previousCompleted = missionProgress.some(
+        (p: any) => p.mission_id === previousMissionId && p.status === "completed",
       );
 
       return {
-        status: unlocked ? ("unlocked" as const) : ("locked" as const),
+        status: previousCompleted ? ("unlocked" as const) : ("locked" as const),
         stars: 0,
       };
     });
   }, [missionProgress, learningMode, hqCompleted, missionIds]);
 
   const completedCount = nodeStatuses.filter((n) => n.status === "completed").length;
-  const totalPlayable = CITY_NODES.filter((n) => missionIds.has(n.id)).length;
+  const totalPlayable = CITY_NODES.filter((n) => !n.isHub && missionIds.has(n.id)).length;
 
   useEffect(() => {
-    if (hqCompleted && completedCount > 0 && completedCount < totalPlayable) {
-      setGuideMessage(GUIDE_MESSAGES.progress);
-    } else if (!hqCompleted) {
+    if (!hqCompleted) {
       setGuideMessage("Hey Guardian! Start at HQ to begin your journey! 🏠");
+    } else if (completedCount > 0 && completedCount < totalPlayable) {
+      setGuideMessage(GUIDE_MESSAGES.progress);
     }
   }, [completedCount, totalPlayable, hqCompleted]);
 
@@ -925,7 +947,7 @@ export default function MissionWorldMap() {
 
   const handleStartLevel = (missionId: string, _levelIndex: number) => {
     if (selectedWorld?.isHub) {
-      handleHQComplete();
+      void handleHQComplete();
       navigate(`/missions?mission=${missionId}`);
       return;
     }
@@ -954,7 +976,11 @@ export default function MissionWorldMap() {
               opacity: Math.random() * 0.5 + 0.05,
             }}
             animate={{ opacity: [0.05, 0.4, 0.05] }}
-            transition={{ repeat: Infinity, duration: Math.random() * 4 + 2, delay: Math.random() * 3 }}
+            transition={{
+              repeat: Infinity,
+              duration: Math.random() * 4 + 2,
+              delay: Math.random() * 3,
+            }}
           />
         ))}
       </div>
@@ -983,9 +1009,7 @@ export default function MissionWorldMap() {
               <h1 className="text-2xl font-black tracking-tight text-white md:text-3xl">
                 🌎 North America — <span className="text-[hsl(45_90%_65%)]">The Keybreaker&apos;s Domain</span>
               </h1>
-              <p className="mt-1 text-sm text-[hsl(195_60%_70%/0.8)]">
-                Secure each cyber zone, unlock new missions, and protect the continent.
-              </p>
+              <p className="mt-1 text-sm text-[hsl(195_60%_70%/0.8)]">Finish each zone to unlock the next one.</p>
             </div>
           </div>
 
@@ -1146,7 +1170,7 @@ export default function MissionWorldMap() {
                           : isGated
                             ? "border-[hsl(45_90%_55%/0.35)]"
                             : "border-white/10"
-                    }`}
+                    } ${isCurrentTarget ? "scale-110 ring-4 ring-[hsl(195_80%_50%/0.35)]" : ""}`}
                     style={{
                       background:
                         status === "locked"
@@ -1213,7 +1237,7 @@ export default function MissionWorldMap() {
                       transition={{ repeat: Infinity, duration: 1.5 }}
                       className="mt-0.5 text-[7px] font-bold tracking-widest text-[hsl(195_80%_65%)] md:text-[8px]"
                     >
-                      ▶ DEPLOY
+                      🚀 START HERE
                     </motion.span>
                   )}
                 </motion.button>
