@@ -24,6 +24,7 @@ import {
   CONTINENT_PROJECTIONS,
   ZONE_COORDINATES,
 } from "@/data/continentMapConfig";
+import NorthAmericaBoard from "@/components/world/NorthAmericaBoard";
 
 /* ─── Villain Taunts ─────────────────────────────────────── */
 const VILLAIN_TAUNTS: Record<string, string[]> = {
