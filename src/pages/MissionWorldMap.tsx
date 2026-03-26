@@ -35,7 +35,19 @@ const PROGRESSION_ORDER = [
 ] as const;
 
 /* ─── City node definitions ─────────────────────────────────────────────── */
-const CITY_NODES = [
+interface CityNode {
+  id: string;
+  name: string;
+  city: string;
+  icon: string;
+  description: string;
+  hue: number;
+  x: number;
+  y: number;
+  isHub?: boolean;
+}
+
+const CITY_NODES: CityNode[] = [
   {
     id: "password-safety",
     name: "Password Peak",
