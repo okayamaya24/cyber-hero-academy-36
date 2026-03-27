@@ -11,7 +11,7 @@ import HeroAvatar from "@/components/avatar/HeroAvatar";
 import VillainSprite from "@/components/world/VillainSprite";
 import StarfieldBackground from "@/components/world/StarfieldBackground";
 import { Button } from "@/components/ui/button";
-import { ComposableMap, Geographies, Geography, Marker, Line, ZoomableGroup } from "react-simple-maps";
+import { ComposableMap, Geographies, Geography, Marker, Line } from "react-simple-maps";
 import { GEO_URL, CONTINENT_COUNTRIES, CONTINENT_PROJECTIONS, ZONE_COORDINATES } from "@/data/continentMapConfig";
 
 /* ─── Villain Taunts ─────────────────────────────────────── */
@@ -58,17 +58,6 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
     "Your Cyber Hero skills end HERE.",
     "The digital world is already mine.",
   ],
-};
-
-/* ─── Default map position per continent ────────────────── */
-const DEFAULT_POSITIONS: Record<string, { coordinates: [number, number]; zoom: number }> = {
-  "north-america": { coordinates: [-95, 42], zoom: 1 },
-  europe: { coordinates: [15, 52], zoom: 1 },
-  africa: { coordinates: [22, 2], zoom: 1 },
-  asia: { coordinates: [90, 35], zoom: 1 },
-  "south-america": { coordinates: [-60, -15], zoom: 1 },
-  australia: { coordinates: [134, -28], zoom: 1 },
-  antarctica: { coordinates: [0, -85], zoom: 1 },
 };
 
 /* ─── Villain Character ─────────────────────────────────── */
@@ -202,9 +191,6 @@ export default function ContinentMapScreen() {
   const navigate = useNavigate();
   const [selectedZone, setSelectedZone] = useState<ZoneDef | null>(null);
 
-  const defaultPos = DEFAULT_POSITIONS[continentId || ""] ?? { coordinates: [0, 0] as [number, number], zoom: 1 };
-  const [mapPosition, setMapPosition] = useState<{ coordinates: [number, number]; zoom: number }>(defaultPos);
-
   const continent = getContinentById(continentId || "");
 
   useEffect(() => {
@@ -212,12 +198,6 @@ export default function ContinentMapScreen() {
     else if (!activeChildId) navigate("/select-child");
     else if (!continent) navigate("/world-map");
   }, [user, activeChildId, continent, navigate]);
-
-  // Reset map position when continent changes
-  useEffect(() => {
-    const pos = DEFAULT_POSITIONS[continentId || ""];
-    if (pos) setMapPosition(pos);
-  }, [continentId]);
 
   const { data: child } = useQuery({
     queryKey: ["child", activeChildId],
@@ -267,25 +247,11 @@ export default function ContinentMapScreen() {
 
   const handleZoneClick = (zone: ZoneDef, index: number) => {
     if (zoneStatuses[index] === "locked") return;
-    const coord = zoneCoords.find((c) => c.id === zone.id);
-    if (coord) {
-      setMapPosition({ coordinates: [coord.lng, coord.lat], zoom: 4 });
-      setTimeout(() => setSelectedZone(zone), 450);
-    } else {
-      setSelectedZone(zone);
-    }
-  };
-
-  const handlePanelClose = () => {
-    setSelectedZone(null);
-    // Zoom back out smoothly
-    const pos = DEFAULT_POSITIONS[continentId || ""];
-    if (pos) setMapPosition(pos);
+    setSelectedZone(zone);
   };
 
   if (!continent) return null;
 
-  /* Color helpers for zone markers */
   const markerColors = (zone: ZoneDef, status: string) => {
     if (zone.isHQ) return { fill: "#f5c518", stroke: "#f5c518", glow: "rgba(245,197,24,0.45)" };
     if (zone.isBoss) return { fill: "#ff2d55", stroke: "#ff2d55", glow: "rgba(255,45,85,0.4)" };
@@ -353,155 +319,141 @@ export default function ContinentMapScreen() {
               projectionConfig={{ center: projection.center, scale: projection.scale }}
               style={{ width: "100%", height: "100%" }}
             >
-              <ZoomableGroup
-                zoom={mapPosition.zoom}
-                center={mapPosition.coordinates}
-                onMoveEnd={({ coordinates, zoom }) => setMapPosition({ coordinates, zoom })}
-                maxZoom={8}
-                minZoom={1}
-              >
-                {/* Country polygons */}
-                <Geographies geography={GEO_URL}>
-                  {({ geographies }) =>
-                    geographies
-                      .filter((geo) => countryCodes.includes(geo.id))
-                      .map((geo) => (
-                        <Geography
-                          key={geo.rsmKey}
-                          geography={geo}
-                          fill="#0d2137"
-                          stroke="#1a4a6a"
-                          strokeWidth={0.5}
-                          style={{
-                            default: { outline: "none" },
-                            hover: { fill: "#0a3a5a", outline: "none" },
-                            pressed: { outline: "none" },
-                          }}
-                        />
-                      ))
-                  }
-                </Geographies>
-
-                {/* Connection lines between zones */}
-                {zoneCoords.slice(0, -1).map((from, i) => {
-                  const to = zoneCoords[i + 1];
-                  const fromStatus = zoneStatuses[i];
-                  const toStatus = zoneStatuses[i + 1];
-                  const bothDone = fromStatus === "completed" && toStatus === "completed";
-                  const available = fromStatus === "completed" && toStatus !== "locked";
-                  return (
-                    <Line
-                      key={`line-${i}`}
-                      from={[from.lng, from.lat]}
-                      to={[to.lng, to.lat]}
-                      stroke={bothDone ? "hsl(195, 85%, 55%)" : available ? "hsl(195, 85%, 55%)" : "hsl(200, 15%, 40%)"}
-                      strokeWidth={bothDone ? 2 : 1}
-                      strokeOpacity={bothDone ? 0.6 : available ? 0.35 : 0.12}
-                      strokeDasharray={bothDone ? "none" : available ? "6 4" : "4 3"}
-                      strokeLinecap="round"
-                    />
-                  );
-                })}
-
-                {/* Zone markers */}
-                {continent.zones.map((zone, i) => {
-                  const coord = zoneCoords.find((c) => c.id === zone.id);
-                  if (!coord) return null;
-                  const status = zoneStatuses[i] || "locked";
-                  const colors = markerColors(zone, status);
-                  const isLocked = status === "locked";
-                  const isAvailable = status === "available";
-                  const isCompleted = status === "completed";
-                  const r = zone.isHQ ? 14 : zone.isBoss ? 12 : 9;
-
-                  return (
-                    <Marker
-                      key={zone.id}
-                      coordinates={[coord.lng, coord.lat]}
-                      onClick={() => handleZoneClick(zone, i)}
-                      style={{ cursor: isLocked ? "not-allowed" : "pointer" }}
-                    >
-                      {/* Ping ring for available zones */}
-                      {!isLocked && (
-                        <circle r={r + 6} fill="none" stroke={colors.stroke} strokeWidth={1.5} opacity={0.4}>
-                          <animate
-                            attributeName="r"
-                            values={`${r + 2};${r + 14};${r + 2}`}
-                            dur="2s"
-                            repeatCount="indefinite"
-                          />
-                          <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite" />
-                        </circle>
-                      )}
-
-                      {/* Glow */}
-                      {!isLocked && (
-                        <circle r={r + 3} fill={colors.glow} opacity={0.3}>
-                          <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite" />
-                        </circle>
-                      )}
-
-                      {/* Main circle */}
-                      <circle
-                        r={r}
-                        fill={isLocked ? "#1a2540" : colors.fill}
-                        stroke={colors.stroke}
-                        strokeWidth={2}
-                        opacity={isLocked ? 0.35 : 1}
+              {/* Country polygons */}
+              <Geographies geography={GEO_URL}>
+                {({ geographies }) =>
+                  geographies
+                    .filter((geo) => countryCodes.includes(geo.id))
+                    .map((geo) => (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        fill="#0d2137"
+                        stroke="#1a4a6a"
+                        strokeWidth={0.5}
+                        style={{
+                          default: { outline: "none" },
+                          hover: { fill: "#0a3a5a", outline: "none" },
+                          pressed: { outline: "none" },
+                        }}
                       />
+                    ))
+                }
+              </Geographies>
 
-                      {/* Icon text */}
+              {/* Connection lines between zones */}
+              {zoneCoords.slice(0, -1).map((from, i) => {
+                const to = zoneCoords[i + 1];
+                const fromStatus = zoneStatuses[i];
+                const toStatus = zoneStatuses[i + 1];
+                const bothDone = fromStatus === "completed" && toStatus === "completed";
+                const available = fromStatus === "completed" && toStatus !== "locked";
+                return (
+                  <Line
+                    key={`line-${i}`}
+                    from={[from.lng, from.lat]}
+                    to={[to.lng, to.lat]}
+                    stroke={bothDone ? "hsl(195, 85%, 55%)" : available ? "hsl(195, 85%, 55%)" : "hsl(200, 15%, 40%)"}
+                    strokeWidth={bothDone ? 2 : 1}
+                    strokeOpacity={bothDone ? 0.6 : available ? 0.35 : 0.12}
+                    strokeDasharray={bothDone ? "none" : available ? "6 4" : "4 3"}
+                    strokeLinecap="round"
+                  />
+                );
+              })}
+
+              {/* Zone markers */}
+              {continent.zones.map((zone, i) => {
+                const coord = zoneCoords.find((c) => c.id === zone.id);
+                if (!coord) return null;
+                const status = zoneStatuses[i] || "locked";
+                const colors = markerColors(zone, status);
+                const isLocked = status === "locked";
+                const isAvailable = status === "available";
+                const isCompleted = status === "completed";
+                const r = zone.isHQ ? 14 : zone.isBoss ? 12 : 9;
+
+                return (
+                  <Marker
+                    key={zone.id}
+                    coordinates={[coord.lng, coord.lat]}
+                    onClick={() => handleZoneClick(zone, i)}
+                    style={{ cursor: isLocked ? "not-allowed" : "pointer" }}
+                  >
+                    {/* Ping ring */}
+                    {!isLocked && (
+                      <circle r={r + 6} fill="none" stroke={colors.stroke} strokeWidth={1.5} opacity={0.4}>
+                        <animate
+                          attributeName="r"
+                          values={`${r + 2};${r + 14};${r + 2}`}
+                          dur="2s"
+                          repeatCount="indefinite"
+                        />
+                        <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite" />
+                      </circle>
+                    )}
+                    {/* Glow */}
+                    {!isLocked && (
+                      <circle r={r + 3} fill={colors.glow} opacity={0.3}>
+                        <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite" />
+                      </circle>
+                    )}
+                    {/* Main circle */}
+                    <circle
+                      r={r}
+                      fill={isLocked ? "#1a2540" : colors.fill}
+                      stroke={colors.stroke}
+                      strokeWidth={2}
+                      opacity={isLocked ? 0.35 : 1}
+                    />
+                    {/* Icon */}
+                    <text
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize={zone.isHQ || zone.isBoss ? 12 : 10}
+                      style={{ pointerEvents: "none", userSelect: "none" }}
+                    >
+                      {isLocked ? "🔒" : isCompleted ? "✅" : zone.icon}
+                    </text>
+                    {/* Label */}
+                    <text
+                      textAnchor="middle"
+                      y={r + 14}
+                      fontSize={7}
+                      fontWeight="bold"
+                      fill={isLocked ? "rgba(255,255,255,0.2)" : zone.isBoss ? "#ff6b8a" : "#fff"}
+                      opacity={isLocked ? 0.4 : 0.85}
+                      style={{ pointerEvents: "none", userSelect: "none", textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
+                    >
+                      {zone.name}
+                    </text>
+                    {/* City */}
+                    <text
+                      textAnchor="middle"
+                      y={r + 22}
+                      fontSize={5}
+                      fill="rgba(255,255,255,0.3)"
+                      style={{ pointerEvents: "none", userSelect: "none" }}
+                    >
+                      {zone.city}
+                    </text>
+                    {/* Action */}
+                    {isAvailable && (
                       <text
                         textAnchor="middle"
-                        dominantBaseline="central"
-                        fontSize={zone.isHQ || zone.isBoss ? 12 : 10}
-                        style={{ pointerEvents: "none", userSelect: "none" }}
-                      >
-                        {isLocked ? "🔒" : isCompleted ? "✅" : zone.icon}
-                      </text>
-
-                      {/* Label */}
-                      <text
-                        textAnchor="middle"
-                        y={r + 14}
-                        fontSize={7}
+                        y={r + 30}
+                        fontSize={5.5}
                         fontWeight="bold"
-                        fill={isLocked ? "rgba(255,255,255,0.2)" : zone.isBoss ? "#ff6b8a" : "#fff"}
-                        opacity={isLocked ? 0.4 : 0.85}
-                        style={{ pointerEvents: "none", userSelect: "none", textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
-                      >
-                        {zone.name}
-                      </text>
-
-                      {/* City sublabel */}
-                      <text
-                        textAnchor="middle"
-                        y={r + 22}
-                        fontSize={5}
-                        fill="rgba(255,255,255,0.3)"
+                        fill={zone.isBoss ? "#ff6b8a" : "#00ffe7"}
                         style={{ pointerEvents: "none", userSelect: "none" }}
                       >
-                        {zone.city}
+                        {zone.isBoss ? "⚔️ FIGHT" : "▶ DEPLOY"}
+                        <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite" />
                       </text>
-
-                      {/* Action label */}
-                      {isAvailable && (
-                        <text
-                          textAnchor="middle"
-                          y={r + 30}
-                          fontSize={5.5}
-                          fontWeight="bold"
-                          fill={zone.isBoss ? "#ff6b8a" : "#00ffe7"}
-                          style={{ pointerEvents: "none", userSelect: "none" }}
-                        >
-                          {zone.isBoss ? "⚔️ FIGHT" : "▶ DEPLOY"}
-                          <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite" />
-                        </text>
-                      )}
-                    </Marker>
-                  );
-                })}
-              </ZoomableGroup>
+                    )}
+                  </Marker>
+                );
+              })}
             </ComposableMap>
           )}
         </div>
@@ -528,7 +480,7 @@ export default function ContinentMapScreen() {
         </motion.div>
       </div>
 
-      {/* Villain Character */}
+      {/* Villain */}
       <VillainCharacter villainName={continent.villain} />
 
       {/* Guide avatar */}
@@ -549,7 +501,7 @@ export default function ContinentMapScreen() {
           <ZoneMissionPanel
             zone={selectedZone}
             continent={continent}
-            onClose={handlePanelClose}
+            onClose={() => setSelectedZone(null)}
             onDeploy={() => {
               setSelectedZone(null);
               navigate(`/world-map/${continentId}/${selectedZone.id}`);
