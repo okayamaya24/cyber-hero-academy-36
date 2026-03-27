@@ -124,8 +124,8 @@ export const CONTINENT_PROJECTIONS: Record<string, { center: [number, number]; s
 /** Zone coordinates per continent — matches continents.ts zone ids */
 export const ZONE_COORDINATES: Record<string, { id: string; lat: number; lng: number }[]> = {
   "north-america": [
-    { id: "hq", lat: 38.9, lng: -77.0 }, // Washington D.C.
-    { id: "password-peak", lat: 47.0, lng: -63.0 }, // Prince Edward Island — far northeast
+    { id: "hq", lat: 32.8, lng: -96.8 }, // Dallas, Texas
+    { id: "password-peak", lat: 40.7, lng: -74.0 }, // New York, USA
     { id: "encrypt-enclave", lat: 51.0, lng: -85.0 }, // Northern Ontario
     { id: "code-canyon", lat: 44.9, lng: -93.1 }, // Minneapolis
     { id: "signal-summit", lat: 39.7, lng: -104.9 }, // Denver
