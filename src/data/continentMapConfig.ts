@@ -113,7 +113,7 @@ export const CONTINENT_COUNTRIES: Record<string, string[]> = {
 
 /** Projection settings per continent — center + scale for ComposableMap */
 export const CONTINENT_PROJECTIONS: Record<string, { center: [number, number]; scale: number }> = {
-  "north-america": { center: [-95, 46], scale: 460 },
+  "north-america": { center: [-90, 44], scale: 420 },
   europe: { center: [15, 52], scale: 650 },
   africa: { center: [22, 2], scale: 360 },
   asia: { center: [90, 35], scale: 300 },
@@ -126,14 +126,14 @@ export const CONTINENT_PROJECTIONS: Record<string, { center: [number, number]; s
 export const ZONE_COORDINATES: Record<string, { id: string; lat: number; lng: number }[]> = {
   "north-america": [
     { id: "hq", lat: 38.9, lng: -77.0 }, // Washington D.C.
-    { id: "password-peak", lat: 44.0, lng: -76.5 }, // Kingston, Ontario
-    { id: "encrypt-enclave", lat: 48.5, lng: -89.0 }, // Thunder Bay, Canada
-    { id: "code-canyon", lat: 41.8, lng: -93.6 }, // Des Moines, USA
-    { id: "signal-summit", lat: 39.7, lng: -104.9 }, // Denver, USA
-    { id: "arctic-archive", lat: 53.5, lng: -113.5 }, // Edmonton, Canada
-    { id: "pixel-port", lat: 34.0, lng: -118.2 }, // Los Angeles, USA
-    { id: "shadow-station", lat: 19.4, lng: -99.1 }, // Mexico City, Mexico
-    { id: "boss-keybreaker", lat: 45.0, lng: -106.0 }, // Montana/Wyoming area
+    { id: "password-peak", lat: 45.5, lng: -73.6 }, // Montreal
+    { id: "encrypt-enclave", lat: 51.0, lng: -85.0 }, // Northern Ontario
+    { id: "code-canyon", lat: 44.9, lng: -93.1 }, // Minneapolis
+    { id: "signal-summit", lat: 39.7, lng: -104.9 }, // Denver
+    { id: "arctic-archive", lat: 56.7, lng: -111.4 }, // Fort McMurray, Canada
+    { id: "pixel-port", lat: 34.0, lng: -118.2 }, // Los Angeles
+    { id: "shadow-station", lat: 23.6, lng: -102.5 }, // Central Mexico
+    { id: "boss-keybreaker", lat: 47.5, lng: -107.0 }, // Montana
   ],
   europe: [
     { id: "phish-lagoon", lat: 51.5, lng: -0.1 },
