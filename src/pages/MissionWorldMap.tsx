@@ -202,13 +202,18 @@ function WorldMapSVG() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        <radialGradient id="mapGlow" cx="45%" cy="45%" r="65%">
-          <stop offset="0%" stopColor="hsl(210 60% 18%)" />
-          <stop offset="100%" stopColor="hsl(220 50% 9%)" />
+        <radialGradient id="mapGlow" cx="50%" cy="45%" r="70%">
+          <stop offset="0%" stopColor="hsl(205 70% 16%)" />
+          <stop offset="100%" stopColor="hsl(222 55% 8%)" />
         </radialGradient>
 
-        <filter id="landGlow" x="-4%" y="-4%" width="108%" height="108%">
-          <feGaussianBlur stdDeviation="0.35" result="blur" />
+        <linearGradient id="landGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="hsl(196 32% 18%)" />
+          <stop offset="100%" stopColor="hsl(210 28% 10%)" />
+        </linearGradient>
+
+        <filter id="landGlow" x="-10%" y="-10%" width="120%" height="120%">
+          <feGaussianBlur stdDeviation="0.45" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
@@ -219,20 +224,17 @@ function WorldMapSVG() {
           <circle cx="0.9" cy="0.9" r="0.07" fill="hsl(195 80% 60% / 0.12)" />
         </pattern>
 
-        <linearGradient id="landGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="hsl(210 40% 26%)" />
-          <stop offset="100%" stopColor="hsl(215 35% 18%)" />
-        </linearGradient>
-
-        <radialGradient id="vig" cx="50%" cy="50%" r="70%">
-          <stop offset="55%" stopColor="transparent" />
-          <stop offset="100%" stopColor="hsl(220 50% 8% / 0.65)" />
+        <radialGradient id="vig" cx="50%" cy="50%" r="72%">
+          <stop offset="58%" stopColor="transparent" />
+          <stop offset="100%" stopColor="hsl(220 50% 6% / 0.7)" />
         </radialGradient>
       </defs>
 
+      {/* Ocean */}
       <rect width="100" height="100" fill="url(#mapGlow)" />
       <rect width="100" height="100" fill="url(#dotGrid)" />
 
+      {/* Grid */}
       {[20, 40, 60, 80].map((v) => (
         <line
           key={`h-${v}`}
@@ -245,7 +247,6 @@ function WorldMapSVG() {
           strokeDasharray="0.5 1"
         />
       ))}
-
       {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((v) => (
         <line
           key={`v-${v}`}
@@ -259,121 +260,119 @@ function WorldMapSVG() {
         />
       ))}
 
+      {/* Main North America silhouette */}
       <path
         d="
-          M 58,89
-          L 52,82
-          L 46,69
-          L 45,67
-          L 43,66
-          L 41,62
-          L 40,58
-          L 40,55
-          L 40,51
-          L 39,48
-          L 41,47
-          L 38,44
-          L 35,38
-          L 31,33
-          L 26,31
-          L 18,31
-          L 16,35
-          L 6,39
-          L 4,25
-          L 2,24
-          L 12,16
-          L 19,18
-          L 30,19
-          L 43,14
-          L 72,6
-          L 84,14
-          L 93,27
-          L 98,43
-          L 96,51
-          L 87,53
-          L 87,56
-          L 84,58
-          L 82,61
-          L 82,66
-          L 80,67
-          L 77,70
-          L 77,72
-          L 78,75
-          L 78,78
-          L 77,80
-          L 76,75
-          L 72,72
-          L 70,73
-          L 65,74
-          L 63,76
-          L 63,78
-          L 63,84
-          L 64,87
-          L 69,88
-          L 70,85
-          L 66,91
-          L 64,92
-          L 61,91
-          L 58,89
+          M 18,61
+          L 22,54
+          L 27,45
+          L 31,36
+          L 36,28
+          L 45,22
+          L 55,19
+          L 64,20
+          L 72,23
+          L 79,21
+          L 86,24
+          L 89,31
+          L 87,39
+          L 82,45
+          L 80,54
+          L 79,63
+          L 77,69
+          L 73,72
+          L 68,74
+          L 62,73
+          L 58,69
+          L 53,68
+          L 48,72
+          L 45,79
+          L 40,87
+          L 35,89
+          L 30,86
+          L 27,79
+          L 24,71
+          L 21,65
           Z
         "
         fill="url(#landGrad)"
-        stroke="hsl(195 70% 50% / 0.5)"
-        strokeWidth="0.15"
+        stroke="hsl(195 65% 45% / 0.35)"
+        strokeWidth="0.18"
         strokeLinejoin="round"
         filter="url(#landGlow)"
       />
 
+      {/* Alaska */}
       <path
         d="
-          M 55,8
-          L 60,7
-          L 65,9
-          L 67,13
-          L 65,16
-          L 60,16
-          L 56,13
+          M 10,38
+          L 14,35
+          L 18,36
+          L 20,39
+          L 18,42
+          L 13,42
+          L 10,40
           Z
         "
-        fill="hsl(215 45% 13%)"
-        opacity="0.85"
+        fill="url(#landGrad)"
+        stroke="hsl(195 65% 45% / 0.25)"
+        strokeWidth="0.12"
       />
 
-      <ellipse cx="67" cy="41" rx="1.6" ry="0.9" fill="hsl(215 45% 13%)" opacity="0.8" />
-      <ellipse cx="69.5" cy="42.5" rx="1.1" ry="0.6" fill="hsl(215 45% 13%)" opacity="0.8" />
-      <ellipse cx="71.8" cy="43.8" rx="0.9" ry="0.5" fill="hsl(215 45% 13%)" opacity="0.8" />
+      {/* Greenland */}
+      <path
+        d="
+          M 48,11
+          L 53,10
+          L 58,11
+          L 60,14
+          L 58,17
+          L 53,17
+          L 49,15
+          Z
+        "
+        fill="hsl(210 32% 13%)"
+        stroke="hsl(195 65% 45% / 0.18)"
+        strokeWidth="0.1"
+      />
 
+      {/* Great Lakes suggestion */}
+      <ellipse cx="63" cy="44" rx="1.7" ry="0.8" fill="hsl(210 42% 11%)" opacity="0.9" />
+      <ellipse cx="65.5" cy="45.3" rx="1.2" ry="0.55" fill="hsl(210 42% 11%)" opacity="0.9" />
+      <ellipse cx="67.6" cy="46.6" rx="0.9" ry="0.45" fill="hsl(210 42% 11%)" opacity="0.9" />
+
+      {/* Labels */}
       <text
-        x="58"
-        y="31"
-        fontSize="1.2"
-        fill="hsl(195 60% 55% / 0.32)"
+        x="55"
+        y="30"
+        fontSize="1.15"
+        fill="hsl(195 60% 55% / 0.26)"
         fontFamily="monospace"
-        letterSpacing="0.4"
+        letterSpacing="0.35"
         textAnchor="middle"
       >
         CANADA
       </text>
 
       <text
-        x="63"
-        y="61"
-        fontSize="1.2"
-        fill="hsl(195 60% 55% / 0.26)"
+        x="58"
+        y="58"
+        fontSize="1.15"
+        fill="hsl(195 60% 55% / 0.22)"
         fontFamily="monospace"
-        letterSpacing="0.4"
+        letterSpacing="0.35"
         textAnchor="middle"
       >
         UNITED STATES
       </text>
 
       <text
-        x="61"
-        y="84"
-        fontSize="1"
-        fill="hsl(195 60% 55% / 0.22)"
+        x="49"
+        y="82"
+        fontSize="0.95"
+        fill="hsl(195 60% 55% / 0.18)"
         fontFamily="monospace"
-        letterSpacing="0.3"
+        letterSpacing="0.25"
         textAnchor="middle"
       >
         MEXICO
