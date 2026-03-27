@@ -126,12 +126,12 @@ export const ZONE_COORDINATES: Record<string, { id: string; lat: number; lng: nu
   "north-america": [
     { id: "hq", lat: 32.8, lng: -96.8 }, // Dallas, Texas
     { id: "password-peak", lat: 40.7, lng: -74.0 }, // New York, USA
-    { id: "encrypt-enclave", lat: 51.0, lng: -85.0 }, // Northern Ontario
+    { id: "encrypt-enclave", lat: 43.7, lng: -79.4 }, // Toronto, Canada
     { id: "code-canyon", lat: 44.9, lng: -93.1 }, // Minneapolis
     { id: "signal-summit", lat: 39.7, lng: -104.9 }, // Denver
-    { id: "arctic-archive", lat: 56.7, lng: -111.4 }, // Fort McMurray, Canada
+    { id: "arctic-archive", lat: 49.2, lng: -123.1 }, // Vancouver, Canada
     { id: "pixel-port", lat: 34.0, lng: -118.2 }, // Los Angeles
-    { id: "shadow-station", lat: 23.6, lng: -102.5 }, // Central Mexico
+    { id: "shadow-station", lat: 19.4, lng: -99.1 }, // Mexico City, Mexico
     { id: "boss-keybreaker", lat: 47.5, lng: -107.0 }, // Montana
   ],
   europe: [
