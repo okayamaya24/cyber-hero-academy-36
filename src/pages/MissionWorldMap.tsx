@@ -42,6 +42,9 @@ type CityNode = {
   isHub?: boolean;
 };
 
+// City coordinates remapped to the corrected North America silhouette.
+// SVG viewBox is 0–100 (origin top-left).
+// West coast runs x≈12–22, east coast diagonals from ~(80,28) to ~(72,80).
 const CITY_NODES: CityNode[] = [
   {
     id: "password-safety",
@@ -50,8 +53,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🔑",
     description: "Forge unbreakable passwords at the summit!",
     hue: 195,
-    x: 79,
-    y: 59,
+    x: 78, // Atlantic seaboard, upper-right
+    y: 55,
   },
   {
     id: "scam-detection",
@@ -60,7 +63,7 @@ const CITY_NODES: CityNode[] = [
     icon: "🎣",
     description: "Catch phishy scams before they catch you!",
     hue: 30,
-    x: 31,
+    x: 21, // Pacific coast, mid-left
     y: 58,
   },
   {
@@ -70,8 +73,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🌐",
     description: "Navigate the web marketplace safely!",
     hue: 175,
-    x: 60,
-    y: 52,
+    x: 58, // Great Lakes / Midwest
+    y: 53,
   },
   {
     id: "personal-info",
@@ -80,8 +83,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🛡️",
     description: "Guard your secrets in the royal palace!",
     hue: 270,
-    x: 29,
-    y: 67,
+    x: 19, // Southern California coast
+    y: 65,
   },
   {
     id: "malware-monsters",
@@ -90,7 +93,7 @@ const CITY_NODES: CityNode[] = [
     icon: "⬇️",
     description: "Defeat malware lurking in the dungeon depths!",
     hue: 0,
-    x: 45,
+    x: 38, // Rocky Mountain interior
     y: 58,
   },
   {
@@ -100,8 +103,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🚷",
     description: "Learn who to trust on the mysterious shore!",
     hue: 45,
-    x: 77,
-    y: 76,
+    x: 69, // Florida peninsula, bottom-right
+    y: 79,
   },
   {
     id: "phishy-messages",
@@ -110,8 +113,8 @@ const CITY_NODES: CityNode[] = [
     icon: "💖",
     description: "Spread kindness and fight cyberbullying!",
     hue: 330,
-    x: 47,
-    y: 84,
+    x: 37, // Mexico interior, narrow funnel zone
+    y: 87,
   },
   {
     id: "malware-maze",
@@ -120,8 +123,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🦠",
     description: "Navigate the maze of malicious software!",
     hue: 120,
-    x: 30,
-    y: 48,
+    x: 19, // Pacific Northwest
+    y: 45,
   },
   {
     id: "firewall-frontier",
@@ -130,8 +133,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🧱",
     description: "Build walls to keep threats out!",
     hue: 210,
-    x: 74,
-    y: 46,
+    x: 73, // Eastern Canada, St. Lawrence
+    y: 40,
   },
   {
     id: "dark-web-den",
@@ -140,8 +143,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🕸️",
     description: "Shine light into the darkest corners!",
     hue: 280,
-    x: 28,
-    y: 44,
+    x: 18, // BC coast, upper-left
+    y: 37,
   },
   {
     id: "encrypt-enclave",
@@ -150,8 +153,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🔐",
     description: "Master the art of secret codes!",
     hue: 160,
-    x: 65,
-    y: 49,
+    x: 65, // Great Lakes, Ontario
+    y: 45,
   },
   {
     id: "cyberguard-academy",
@@ -160,8 +163,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🏠",
     description: "Your home base — begin your mission here!",
     hue: 45,
-    x: 77,
-    y: 67,
+    x: 75, // Mid-Atlantic seaboard
+    y: 60,
     isHub: true,
   },
 ];
@@ -193,6 +196,24 @@ function getStars(score: number, maxScore: number): number {
   return 0;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WorldMapSVG — Corrected North America silhouette
+//
+// All coordinates in viewBox 0 0 100 100 (preserveAspectRatio="none").
+//
+// Landmark positions used:
+//   Alaska      x 5–21,  y 26–37  (separate path)
+//   Greenland   x 74–92, y 5–22   (separate path, darker fill)
+//   N. Canada   wide band x 15–84, y 12–36
+//   West coast  gently curves inward: x≈22→12, y≈36→70
+//   Baja CA     thin spike x 8–14, y 68–89
+//   Mexico      narrows SE, ends ~(42,94)
+//   Gulf coast  concave bite on SE interior y≈68–80
+//   Florida     small stub ~(64–71, 80–93)
+//   East coast  diagonal (83,18)→(72,80)
+//   Hudson Bay  dark polygon ~(48–65, 22–42)
+//   Great Lakes ellipse cluster ~(62–73, 43–48)
+// ─────────────────────────────────────────────────────────────────────────────
 function WorldMapSVG() {
   return (
     <svg
@@ -234,7 +255,7 @@ function WorldMapSVG() {
       <rect width="100" height="100" fill="url(#mapGlow)" />
       <rect width="100" height="100" fill="url(#dotGrid)" />
 
-      {/* Grid */}
+      {/* Grid lines */}
       {[20, 40, 60, 80].map((v) => (
         <line
           key={`h-${v}`}
@@ -260,39 +281,97 @@ function WorldMapSVG() {
         />
       ))}
 
-      {/* Main North America silhouette */}
+      {/* ── Alaska ── */}
+      <path
+        d="M 5,32 L 9,27 L 14,25 L 19,27 L 21,31 L 19,35 L 14,37 L 8,35 Z"
+        fill="url(#landGrad)"
+        stroke="hsl(195 65% 45% / 0.28)"
+        strokeWidth="0.14"
+        strokeLinejoin="round"
+        filter="url(#landGlow)"
+      />
+      <text x="13" y="31" fontSize="0.72" fill="hsl(195 60% 55% / 0.22)" fontFamily="monospace" textAnchor="middle">
+        AK
+      </text>
+
+      {/* ── Greenland ── */}
+      <path
+        d="M 75,7 L 82,5 L 88,7 L 92,12 L 90,19 L 85,22 L 78,20 L 74,15 Z"
+        fill="hsl(210 32% 13%)"
+        stroke="hsl(195 65% 45% / 0.2)"
+        strokeWidth="0.12"
+        strokeLinejoin="round"
+      />
+      <text x="83" y="14" fontSize="0.72" fill="hsl(195 60% 55% / 0.18)" fontFamily="monospace" textAnchor="middle">
+        GL
+      </text>
+
+      {/* ── Main North America silhouette ──
+           Trace: NW coast up → arctic north → NE maritimes →
+           east coast diagonal down → Gulf concavity →
+           Florida → back up west → Mexico funnel → Baja → west coast back up
+      ── */}
       <path
         d="
-          M 18,61
-          L 22,54
-          L 27,45
-          L 31,36
-          L 36,28
-          L 45,22
-          L 55,19
-          L 64,20
-          L 72,23
-          L 79,21
-          L 86,24
-          L 89,31
-          L 87,39
-          L 82,45
-          L 80,54
-          L 79,63
-          L 77,69
-          L 73,72
-          L 68,74
-          L 62,73
-          L 58,69
-          L 53,68
-          L 48,72
-          L 45,79
-          L 40,87
-          L 35,89
-          L 30,86
-          L 27,79
-          L 24,71
-          L 21,65
+          M 15,37
+          L 17,30
+          L 21,23
+          L 28,18
+          L 37,14
+          L 47,12
+          L 57,12
+          L 66,13
+          L 72,12
+          L 78,14
+          L 83,18
+          L 85,24
+          L 83,31
+          L 80,37
+          L 79,42
+          L 76,44
+          L 71,44
+          L 66,44
+          L 63,46
+          L 63,50
+          L 68,52
+          L 76,52
+          L 80,56
+          L 82,62
+          L 82,68
+          L 79,72
+          L 74,75
+          L 71,78
+          L 70,82
+          L 69,86
+          L 67,89
+          L 64,88
+          L 62,84
+          L 62,80
+          L 58,75
+          L 52,72
+          L 46,73
+          L 42,78
+          L 38,85
+          L 35,91
+          L 32,94
+          L 28,92
+          L 27,86
+          L 29,79
+          L 30,73
+          L 27,67
+          L 21,63
+          L 15,61
+          L 13,68
+          L 11,76
+          L 10,84
+          L 12,87
+          L 13,82
+          L 14,74
+          L 13,68
+          L 12,61
+          L 11,53
+          L 11,45
+          L 13,39
           Z
         "
         fill="url(#landGrad)"
@@ -302,50 +381,48 @@ function WorldMapSVG() {
         filter="url(#landGlow)"
       />
 
-      {/* Alaska */}
+      {/* ── Florida peninsula ── */}
       <path
-        d="
-          M 10,38
-          L 14,35
-          L 18,36
-          L 20,39
-          L 18,42
-          L 13,42
-          L 10,40
-          Z
-        "
+        d="M 69,86 L 71,89 L 70,93 L 67,94 L 65,91 L 66,87 Z"
         fill="url(#landGrad)"
-        stroke="hsl(195 65% 45% / 0.25)"
-        strokeWidth="0.12"
+        stroke="hsl(195 65% 45% / 0.3)"
+        strokeWidth="0.13"
+        strokeLinejoin="round"
       />
 
-      {/* Greenland */}
+      {/* ── Baja California ── */}
       <path
-        d="
-          M 48,11
-          L 53,10
-          L 58,11
-          L 60,14
-          L 58,17
-          L 53,17
-          L 49,15
-          Z
-        "
-        fill="hsl(210 32% 13%)"
-        stroke="hsl(195 65% 45% / 0.18)"
-        strokeWidth="0.1"
+        d="M 13,68 L 11,72 L 9,79 L 8,86 L 9,89 L 11,86 L 12,79 L 13,72 Z"
+        fill="url(#landGrad)"
+        stroke="hsl(195 65% 45% / 0.22)"
+        strokeWidth="0.11"
+        strokeLinejoin="round"
       />
 
-      {/* Great Lakes suggestion */}
-      <ellipse cx="63" cy="44" rx="1.7" ry="0.8" fill="hsl(210 42% 11%)" opacity="0.9" />
-      <ellipse cx="65.5" cy="45.3" rx="1.2" ry="0.55" fill="hsl(210 42% 11%)" opacity="0.9" />
-      <ellipse cx="67.6" cy="46.6" rx="0.9" ry="0.45" fill="hsl(210 42% 11%)" opacity="0.9" />
+      {/* ── Hudson Bay (dark inland sea) ── */}
+      <path
+        d="M 50,22 L 58,24 L 64,29 L 65,36 L 61,42 L 55,43 L 49,38 L 47,30 Z"
+        fill="hsl(210 45% 10%)"
+        opacity="0.85"
+      />
 
-      {/* Labels */}
+      {/* ── Great Lakes cluster ── */}
+      {/* Lake Superior */}
+      <ellipse cx="62" cy="44.5" rx="2.4" ry="0.95" fill="hsl(210 42% 11%)" opacity="0.92" />
+      {/* Lake Michigan */}
+      <ellipse cx="65" cy="47" rx="0.7" ry="1.8" fill="hsl(210 42% 11%)" opacity="0.88" />
+      {/* Lake Huron */}
+      <ellipse cx="67.5" cy="46" rx="1.4" ry="0.9" fill="hsl(210 42% 11%)" opacity="0.88" />
+      {/* Lake Erie */}
+      <ellipse cx="70" cy="47.8" rx="1.2" ry="0.5" fill="hsl(210 42% 11%)" opacity="0.85" />
+      {/* Lake Ontario */}
+      <ellipse cx="72" cy="46.8" rx="0.9" ry="0.42" fill="hsl(210 42% 11%)" opacity="0.82" />
+
+      {/* ── Region labels ── */}
       <text
-        x="55"
-        y="30"
-        fontSize="1.15"
+        x="52"
+        y="24"
+        fontSize="1.1"
         fill="hsl(195 60% 55% / 0.26)"
         fontFamily="monospace"
         letterSpacing="0.35"
@@ -355,29 +432,30 @@ function WorldMapSVG() {
       </text>
 
       <text
-        x="58"
-        y="58"
-        fontSize="1.15"
+        x="50"
+        y="61"
+        fontSize="1.1"
         fill="hsl(195 60% 55% / 0.22)"
         fontFamily="monospace"
-        letterSpacing="0.35"
+        letterSpacing="0.3"
         textAnchor="middle"
       >
         UNITED STATES
       </text>
 
       <text
-        x="49"
-        y="82"
-        fontSize="0.95"
+        x="34"
+        y="84"
+        fontSize="0.88"
         fill="hsl(195 60% 55% / 0.18)"
         fontFamily="monospace"
-        letterSpacing="0.25"
+        letterSpacing="0.22"
         textAnchor="middle"
       >
         MEXICO
       </text>
 
+      {/* Vignette */}
       <rect width="100" height="100" fill="url(#vig)" />
     </svg>
   );
@@ -801,7 +879,6 @@ export default function MissionWorldMap() {
     queryKey: ["child", activeChildId],
     queryFn: async () => {
       const { data, error } = await supabase.from("child_profiles").select("*").eq("id", activeChildId!).single();
-
       if (error) throw error;
       return data;
     },
@@ -812,7 +889,6 @@ export default function MissionWorldMap() {
     queryKey: ["mission_progress", activeChildId],
     queryFn: async () => {
       const { data, error } = await supabase.from("mission_progress").select("*").eq("child_id", activeChildId!);
-
       if (error) throw error;
       return data;
     },
@@ -965,6 +1041,7 @@ export default function MissionWorldMap() {
         background: "linear-gradient(160deg, hsl(220 45% 10%), hsl(210 50% 14%), hsl(200 40% 12%))",
       }}
     >
+      {/* Starfield */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {Array.from({ length: 50 }).map((_, i) => (
           <motion.div
@@ -987,6 +1064,7 @@ export default function MissionWorldMap() {
         ))}
       </div>
 
+      {/* Scanlines */}
       <div
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
@@ -996,6 +1074,7 @@ export default function MissionWorldMap() {
       />
 
       <div className="relative z-[2] mx-auto max-w-6xl px-4">
+        {/* Header */}
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-col gap-2">
             <Button
@@ -1017,7 +1096,9 @@ export default function MissionWorldMap() {
 
           <div className="rounded-2xl border border-[hsl(0_80%_60%/0.2)] bg-[hsl(210_40%_14%/0.75)] px-4 py-3 text-sm text-white/80 shadow-lg">
             <p className="font-bold text-[hsl(0_80%_70%)]">⚠ Villain Signal Detected</p>
-            <p className="mt-1 text-xs text-white/60">“You&apos;ll never secure my network chaos!” — The Keybreaker</p>
+            <p className="mt-1 text-xs text-white/60">
+              &quot;You&apos;ll never secure my network chaos!&quot; — The Keybreaker
+            </p>
           </div>
         </div>
 
@@ -1040,6 +1121,7 @@ export default function MissionWorldMap() {
           </p>
         </motion.div>
 
+        {/* Map container */}
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -1050,6 +1132,7 @@ export default function MissionWorldMap() {
           <div className="absolute inset-0 overflow-hidden rounded-2xl border border-[hsl(195_80%_50%/0.2)] shadow-[0_0_60px_hsl(210_60%_15%/0.8),inset_0_0_40px_hsl(210_50%_10%/0.5)]">
             <WorldMapSVG />
 
+            {/* Corner decorations */}
             <div className="absolute left-3 top-3 h-6 w-6 rounded-tl-lg border-l-2 border-t-2 border-[hsl(195_80%_50%/0.4)]" />
             <div className="absolute right-3 top-3 h-6 w-6 rounded-tr-lg border-r-2 border-t-2 border-[hsl(195_80%_50%/0.4)]" />
             <div className="absolute bottom-3 left-3 h-6 w-6 rounded-bl-lg border-b-2 border-l-2 border-[hsl(195_80%_50%/0.4)]" />
@@ -1058,6 +1141,7 @@ export default function MissionWorldMap() {
 
           <MapConnections statuses={nodeStatuses.map((n) => n.status)} hqCompleted={hqCompleted} />
 
+          {/* City nodes */}
           {CITY_NODES.map((node, index) => {
             if (node.isHub) {
               return (
@@ -1259,6 +1343,7 @@ export default function MissionWorldMap() {
           })}
         </motion.div>
 
+        {/* Legend */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
