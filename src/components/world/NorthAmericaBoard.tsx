@@ -1,67 +1,70 @@
-import { useMemo, useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useMemo } from "react";
+import { motion } from "framer-motion";
 import type { ZoneDef } from "@/data/continents";
 
-/* ─── Board node positions as % of container (x, y) ─── */
+/* ─── Node positions as % of container — mapped to real geography ─── */
 const NODE_POSITIONS: Record<string, { x: number; y: number }> = {
-  "hq":              { x: 82, y: 74 },
-  "password-peak":   { x: 75, y: 55 },
-  "encrypt-enclave": { x: 60, y: 38 },
-  "code-canyon":     { x: 45, y: 52 },
-  "signal-summit":   { x: 32, y: 34 },
-  "arctic-archive":  { x: 16, y: 18 },
-  "pixel-port":      { x: 18, y: 62 },
-  "shadow-station":  { x: 40, y: 82 },
-  "boss-keybreaker": { x: 50, y: 12 },
+  "hq":              { x: 72, y: 48 },   // Washington DC area
+  "password-peak":   { x: 75, y: 35 },   // New York area
+  "encrypt-enclave": { x: 68, y: 28 },   // Toronto area
+  "code-canyon":     { x: 48, y: 52 },   // Denver area
+  "signal-summit":   { x: 58, y: 38 },   // Chicago area
+  "arctic-archive":  { x: 28, y: 30 },   // Vancouver area
+  "pixel-port":      { x: 30, y: 48 },   // San Francisco area
+  "shadow-station":  { x: 50, y: 75 },   // Mexico City area
+  "boss-keybreaker": { x: 73, y: 62 },   // Miami / boss fortress
 };
 
 /* ─── Connection path order ─── */
 const PATH_ORDER = [
-  "hq", "password-peak", "encrypt-enclave", "code-canyon",
-  "signal-summit", "arctic-archive", "pixel-port", "shadow-station",
-  "boss-keybreaker",
+  "hq", "password-peak", "encrypt-enclave", "signal-summit",
+  "code-canyon", "pixel-port", "arctic-archive",
+  "shadow-station", "boss-keybreaker",
 ];
 
-/* ─── Terrain / environment layers behind each zone ─── */
-const ZONE_ENVIRONMENTS: Record<string, { emoji: string; label: string; color: string; size: number }> = {
-  "hq":              { emoji: "🏛️", label: "Command", color: "hsl(45 90% 50%)", size: 38 },
-  "password-peak":   { emoji: "⛰️", label: "Peak",    color: "hsl(195 85% 55%)", size: 32 },
-  "encrypt-enclave": { emoji: "🏰", label: "Fortress", color: "hsl(260 60% 55%)", size: 30 },
-  "code-canyon":     { emoji: "🏜️", label: "Canyon",  color: "hsl(30 80% 50%)", size: 28 },
-  "signal-summit":   { emoji: "📡", label: "Tower",   color: "hsl(175 70% 50%)", size: 28 },
-  "arctic-archive":  { emoji: "❄️", label: "Archive", color: "hsl(200 80% 70%)", size: 28 },
-  "pixel-port":      { emoji: "🌆", label: "Port",    color: "hsl(280 60% 55%)", size: 28 },
-  "shadow-station":  { emoji: "🌑", label: "Station", color: "hsl(260 40% 40%)", size: 28 },
-  "boss-keybreaker": { emoji: "💀", label: "Vault",   color: "hsl(0 80% 50%)", size: 36 },
+/* ─── Zone visual config ─── */
+const ZONE_ENVIRONMENTS: Record<string, { emoji: string; label: string; color: string }> = {
+  "hq":              { emoji: "🏛️", label: "Command", color: "hsl(45 90% 50%)" },
+  "password-peak":   { emoji: "🔑", label: "Peak",    color: "hsl(195 85% 55%)" },
+  "encrypt-enclave": { emoji: "🏰", label: "Fortress", color: "hsl(260 60% 55%)" },
+  "code-canyon":     { emoji: "🏜️", label: "Canyon",  color: "hsl(30 80% 50%)" },
+  "signal-summit":   { emoji: "📡", label: "Tower",   color: "hsl(175 70% 50%)" },
+  "arctic-archive":  { emoji: "❄️", label: "Archive", color: "hsl(200 80% 70%)" },
+  "pixel-port":      { emoji: "🌆", label: "Port",    color: "hsl(280 60% 55%)" },
+  "shadow-station":  { emoji: "🌑", label: "Station", color: "hsl(260 40% 40%)" },
+  "boss-keybreaker": { emoji: "💀", label: "Vault",   color: "hsl(0 80% 50%)" },
 };
 
-/* ─── Decorative landmarks scattered across the map ─── */
-const LANDMARKS = [
-  { x: 8, y: 8, emoji: "🌌", size: 22, opacity: 0.2 },
-  { x: 92, y: 12, emoji: "🛰️", size: 18, opacity: 0.25 },
-  { x: 5, y: 45, emoji: "🌲", size: 16, opacity: 0.15 },
-  { x: 10, y: 82, emoji: "🌊", size: 18, opacity: 0.15 },
-  { x: 65, y: 90, emoji: "🌴", size: 16, opacity: 0.15 },
-  { x: 90, y: 90, emoji: "⚡", size: 14, opacity: 0.2 },
-  { x: 30, y: 12, emoji: "🦌", size: 14, opacity: 0.12 },
-  { x: 70, y: 25, emoji: "🏔️", size: 20, opacity: 0.18 },
-  { x: 55, y: 70, emoji: "🌵", size: 16, opacity: 0.15 },
-  { x: 88, y: 45, emoji: "🗽", size: 18, opacity: 0.2 },
-  { x: 28, y: 75, emoji: "🏜️", size: 14, opacity: 0.12 },
-  { x: 48, y: 95, emoji: "🌋", size: 16, opacity: 0.15 },
-  { x: 75, y: 8, emoji: "🛡️", size: 14, opacity: 0.18 },
-  { x: 35, y: 50, emoji: "⚙️", size: 12, opacity: 0.1 },
-];
+/* ─── Realistic North America SVG paths ─── */
+const CONTINENT_MAIN = `
+  M 22,8 L 26,7 L 32,6 L 38,5 L 44,6 L 50,8 L 54,7 L 58,6 L 62,7
+  L 66,9 L 70,8 L 74,10 L 76,13 L 78,17 L 80,22 L 79,26 L 77,30
+  L 76,34 L 75,37 L 74,40 L 73,43 L 74,46 L 75,49 L 74,52
+  L 72,55 L 70,58 L 68,60 L 66,63 L 68,66 L 70,68 L 72,65
+  L 75,63 L 77,66 L 76,70 L 73,72 L 70,73 L 67,72 L 64,70
+  L 62,68 L 60,70 L 57,72 L 54,74 L 52,76 L 50,78 L 48,80
+  L 45,82 L 42,83 L 40,82 L 38,80 L 36,77 L 34,74 L 32,72
+  L 30,70 L 28,68 L 26,64 L 25,60 L 24,56 L 23,52 L 22,48
+  L 21,44 L 20,40 L 19,36 L 18,32 L 18,28 L 19,24 L 20,20
+  L 20,16 L 21,12 Z
+`;
 
-/* ─── Floating particles for ambiance ─── */
+const ALASKA_PATH = `M 10,14 L 14,12 L 18,13 L 20,16 L 18,19 L 15,20 L 12,19 L 10,17 Z`;
+const GREENLAND_PATH = `M 72,4 L 76,3 L 80,4 L 82,7 L 81,10 L 78,11 L 75,10 L 73,7 Z`;
+
+/* Great Lakes */
+const GREAT_LAKES = `M 58,28 Q 60,27 62,28 Q 63,29 62,30 Q 60,31 58,30 Q 57,29 58,28 Z
+  M 63,29 Q 65,28 66,30 Q 66,31 64,31 Q 63,30 63,29 Z`;
+
+/* ─── Floating particles (reduced) ─── */
 function FloatingParticles() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {Array.from({ length: 35 }).map((_, i) => {
-        const size = Math.random() * 3 + 1;
+      {Array.from({ length: 20 }).map((_, i) => {
+        const size = Math.random() * 2 + 1;
         const x = Math.random() * 100;
         const y = Math.random() * 100;
-        const dur = Math.random() * 6 + 4;
+        const dur = Math.random() * 6 + 5;
         const delay = Math.random() * 5;
         return (
           <motion.div
@@ -79,9 +82,8 @@ function FloatingParticles() {
                   : "hsl(45 90% 60%)",
             }}
             animate={{
-              y: [0, -30, 0],
-              opacity: [0, 0.6, 0],
-              scale: [0.5, 1, 0.5],
+              y: [0, -20, 0],
+              opacity: [0, 0.4, 0],
             }}
             transition={{
               repeat: Infinity,
@@ -96,27 +98,6 @@ function FloatingParticles() {
   );
 }
 
-/* ─── Animated energy pulse along the path ─── */
-function PathEnergyPulse({ routePath, completedIndex }: { routePath: string; completedIndex: number }) {
-  if (completedIndex < 0 || !routePath) return null;
-  return (
-    <>
-      {[0, 1, 2].map((i) => (
-        <circle key={i} r="1.5" fill="hsl(195 85% 70%)" opacity="0">
-          <animateMotion
-            path={routePath}
-            dur={`${6 + i * 2}s`}
-            begin={`${i * 2}s`}
-            repeatCount="indefinite"
-          />
-          <animate attributeName="opacity" values="0;0.8;0.8;0" dur={`${6 + i * 2}s`} begin={`${i * 2}s`} repeatCount="indefinite" />
-          <animate attributeName="r" values="1;2.5;1" dur={`${6 + i * 2}s`} begin={`${i * 2}s`} repeatCount="indefinite" />
-        </circle>
-      ))}
-    </>
-  );
-}
-
 interface Props {
   zones: ZoneDef[];
   zoneStatuses: string[];
@@ -124,7 +105,7 @@ interface Props {
 }
 
 export default function NorthAmericaBoard({ zones, zoneStatuses, onZoneClick }: Props) {
-  /* Build SVG path for the glowing route */
+  /* Build SVG path for the route */
   const routePath = useMemo(() => {
     const points = PATH_ORDER.map((id) => {
       const pos = NODE_POSITIONS[id];
@@ -138,13 +119,13 @@ export default function NorthAmericaBoard({ zones, zoneStatuses, onZoneClick }: 
       const prev = points[i - 1];
       const curr = points[i];
       const cpx = (prev.x + curr.x) / 2;
-      const cpy = Math.min(prev.y, curr.y) - 8;
+      const cpy = (prev.y + curr.y) / 2 - 3;
       d += ` Q ${cpx} ${cpy}, ${curr.x} ${curr.y}`;
     }
     return d;
   }, []);
 
-  /* Find furthest completed index for path progress */
+  /* Furthest completed index */
   const completedPathIndex = useMemo(() => {
     let last = -1;
     PATH_ORDER.forEach((id, i) => {
@@ -159,22 +140,18 @@ export default function NorthAmericaBoard({ zones, zoneStatuses, onZoneClick }: 
       className="relative w-full rounded-2xl overflow-hidden border border-primary/15"
       style={{
         aspectRatio: "16/10",
-        maxWidth: "960px",
+        maxWidth: "1000px",
       }}
     >
-      {/* ── Multi-layer background ── */}
+      {/* ── Dark tech background ── */}
       <div className="absolute inset-0" style={{
         background: `
-          radial-gradient(ellipse at 82% 74%, hsl(45 60% 18% / 0.3) 0%, transparent 25%),
-          radial-gradient(ellipse at 50% 12%, hsl(0 60% 15% / 0.4) 0%, transparent 20%),
-          radial-gradient(ellipse at 16% 18%, hsl(200 60% 20% / 0.3) 0%, transparent 20%),
-          radial-gradient(ellipse at 30% 50%, hsl(175 50% 15% / 0.25) 0%, transparent 30%),
-          radial-gradient(ellipse at 50% 50%, hsl(210 55% 16%), hsl(215 50% 10%) 55%, hsl(220 45% 6%))
+          radial-gradient(ellipse at 50% 50%, hsl(215 50% 12%), hsl(220 45% 7%) 70%, hsl(225 40% 4%))
         `,
       }} />
 
-      {/* ── Terrain texture layer ── */}
-      <svg className="absolute inset-0 w-full h-full opacity-[0.06] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+      {/* ── Hex grid texture ── */}
+      <svg className="absolute inset-0 w-full h-full opacity-[0.04] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="hexGrid" width="28" height="48" patternUnits="userSpaceOnUse" patternTransform="scale(1.5)">
             <path d="M14 0 L28 8 L28 24 L14 32 L0 24 L0 8 Z" fill="none" stroke="hsl(195 80% 60%)" strokeWidth="0.5" />
@@ -184,129 +161,94 @@ export default function NorthAmericaBoard({ zones, zoneStatuses, onZoneClick }: 
         <rect width="100%" height="100%" fill="url(#hexGrid)" />
       </svg>
 
-      {/* ── Continent silhouette (stylized) ── */}
-      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+      {/* ── North America continent silhouette ── */}
+      <svg viewBox="0 0 100 90" className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="xMidYMid meet">
         <defs>
-          <linearGradient id="continentFill" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(195 80% 50%)" stopOpacity="0.08" />
-            <stop offset="50%" stopColor="hsl(175 60% 45%)" stopOpacity="0.05" />
-            <stop offset="100%" stopColor="hsl(210 50% 40%)" stopOpacity="0.03" />
+          {/* Regional shading: lighter top (Canada), medium middle (US), darker bottom (Mexico) */}
+          <linearGradient id="continentGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="hsl(200 60% 35%)" stopOpacity="0.14" />
+            <stop offset="40%" stopColor="hsl(210 50% 28%)" stopOpacity="0.10" />
+            <stop offset="75%" stopColor="hsl(220 40% 22%)" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="hsl(225 35% 18%)" stopOpacity="0.06" />
           </linearGradient>
-          <filter id="continentGlow">
-            <feGaussianBlur stdDeviation="2" />
+          <filter id="subtleGlow">
+            <feGaussianBlur stdDeviation="0.8" />
           </filter>
         </defs>
-        <path
-          d="M45,2 L55,3 L65,5 L72,8 L78,5 L85,8 L88,14 L90,22 L88,30 L85,35 L82,42 L80,50 L78,55 L75,58 L72,60 L68,62 L65,60 L60,58 L55,62 L52,68 L48,72 L45,78 L42,82 L38,88 L35,92 L30,95 L25,92 L22,88 L20,82 L18,75 L15,68 L12,60 L10,52 L12,45 L15,38 L18,32 L20,28 L22,22 L25,18 L28,12 L32,8 L38,4 Z"
-          fill="url(#continentFill)"
-          stroke="hsl(195 80% 50%)"
-          strokeWidth="0.3"
-          strokeOpacity="0.15"
-        />
-        {/* Terrain elevation lines */}
-        <path d="M25,30 Q35,22 45,28 Q55,34 65,26" fill="none" stroke="hsl(195 70% 50%)" strokeWidth="0.2" strokeOpacity="0.1" />
-        <path d="M15,50 Q25,42 35,48 Q45,54 55,46" fill="none" stroke="hsl(195 70% 50%)" strokeWidth="0.15" strokeOpacity="0.08" />
-        <path d="M30,70 Q40,62 50,68 Q60,74 70,66" fill="none" stroke="hsl(195 70% 50%)" strokeWidth="0.15" strokeOpacity="0.06" />
-      </svg>
 
-      {/* ── Ambient glow spots per zone ── */}
-      {Object.entries(NODE_POSITIONS).map(([id, pos]) => {
-        const env = ZONE_ENVIRONMENTS[id];
-        if (!env) return null;
-        const zi = zones.findIndex((z) => z.id === id);
-        const isLocked = zi >= 0 && zoneStatuses[zi] === "locked";
-        return (
-          <div
-            key={`glow-${id}`}
-            className="absolute rounded-full blur-[50px] pointer-events-none transition-opacity duration-1000"
-            style={{
-              width: 120,
-              height: 120,
-              left: `${pos.x}%`,
-              top: `${pos.y}%`,
-              transform: "translate(-50%, -50%)",
-              background: env.color,
-              opacity: isLocked ? 0.03 : 0.12,
-            }}
-          />
-        );
-      })}
+        {/* Main continent */}
+        <path
+          d={CONTINENT_MAIN}
+          fill="url(#continentGrad)"
+          stroke="hsl(195 70% 45%)"
+          strokeWidth="0.4"
+          strokeOpacity="0.3"
+        />
+        {/* Coastline highlight (brighter inner stroke) */}
+        <path
+          d={CONTINENT_MAIN}
+          fill="none"
+          stroke="hsl(195 80% 55%)"
+          strokeWidth="0.15"
+          strokeOpacity="0.15"
+          strokeDasharray="2 1"
+        />
+
+        {/* Alaska */}
+        <path
+          d={ALASKA_PATH}
+          fill="hsl(200 60% 30%)"
+          fillOpacity="0.12"
+          stroke="hsl(195 70% 45%)"
+          strokeWidth="0.3"
+          strokeOpacity="0.25"
+        />
+
+        {/* Greenland */}
+        <path
+          d={GREENLAND_PATH}
+          fill="hsl(200 50% 35%)"
+          fillOpacity="0.08"
+          stroke="hsl(195 70% 45%)"
+          strokeWidth="0.3"
+          strokeOpacity="0.2"
+        />
+
+        {/* Great Lakes */}
+        <path
+          d={GREAT_LAKES}
+          fill="hsl(210 60% 40%)"
+          fillOpacity="0.15"
+          stroke="hsl(195 80% 55%)"
+          strokeWidth="0.2"
+          strokeOpacity="0.2"
+        />
+
+        {/* Subtle terrain lines */}
+        <path d="M 30,35 Q 40,32 50,36" fill="none" stroke="hsl(195 50% 40%)" strokeWidth="0.15" strokeOpacity="0.1" />
+        <path d="M 35,50 Q 45,47 55,52" fill="none" stroke="hsl(195 50% 40%)" strokeWidth="0.12" strokeOpacity="0.08" />
+        <path d="M 25,42 Q 32,39 38,44" fill="none" stroke="hsl(195 50% 40%)" strokeWidth="0.12" strokeOpacity="0.06" />
+      </svg>
 
       {/* ── Floating particles ── */}
       <FloatingParticles />
 
-      {/* ── Landmark decorations ── */}
-      {LANDMARKS.map((lm, i) => (
-        <motion.div
-          key={`lm-${i}`}
-          className="absolute pointer-events-none select-none"
-          style={{
-            left: `${lm.x}%`,
-            top: `${lm.y}%`,
-            fontSize: lm.size,
-            transform: "translate(-50%, -50%)",
-            opacity: lm.opacity,
-          }}
-          animate={{ y: [0, -3, 0] }}
-          transition={{ repeat: Infinity, duration: 4 + i * 0.5, ease: "easeInOut" }}
-        >
-          {lm.emoji}
-        </motion.div>
-      ))}
+      {/* ── Route SVG overlay (subdued) ── */}
+      <svg viewBox="0 0 100 90" className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="xMidYMid meet">
+        {/* Background locked path — faint dashed */}
+        <path d={routePath} fill="none" stroke="hsl(210 25% 25%)" strokeWidth="0.4"
+          strokeDasharray="1.5 1.5" strokeLinecap="round" strokeOpacity="0.3" />
 
-      {/* ── Route SVG overlay ── */}
-      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="routeLocked" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(210 30% 35%)" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="hsl(210 30% 25%)" stopOpacity="0.1" />
-          </linearGradient>
-          <linearGradient id="routeActive" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(195 85% 55%)" stopOpacity="0.7" />
-            <stop offset="50%" stopColor="hsl(175 70% 50%)" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="hsl(160 65% 50%)" stopOpacity="0.5" />
-          </linearGradient>
-          <filter id="pathGlow">
-            <feGaussianBlur stdDeviation="1.2" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <filter id="pathGlowStrong">
-            <feGaussianBlur stdDeviation="2" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="blur" />
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        {/* Background locked path — dashed */}
-        <path d={routePath} fill="none" stroke="url(#routeLocked)" strokeWidth="1"
-          strokeDasharray="2 1.5" strokeLinecap="round" />
-
-        {/* Active/completed glow path — thick and glowing */}
+        {/* Completed path — subtle glow */}
         {completedPathIndex >= 0 && (
-          <>
-            <path d={routePath} fill="none" stroke="url(#routeActive)" strokeWidth="1.8"
-              strokeLinecap="round" filter="url(#pathGlowStrong)"
-              strokeDasharray={`${(completedPathIndex + 1) * 14} 200`} />
-            <path d={routePath} fill="none" stroke="hsl(195 90% 70%)" strokeWidth="0.6"
-              strokeLinecap="round" filter="url(#pathGlow)"
-              strokeDasharray={`${(completedPathIndex + 1) * 14} 200`} opacity="0.5" />
-          </>
+          <path d={routePath} fill="none" stroke="hsl(195 70% 45%)" strokeWidth="0.7"
+            strokeLinecap="round" strokeOpacity="0.35"
+            strokeDasharray={`${(completedPathIndex + 1) * 14} 200`} />
         )}
-
-        {/* Energy pulses travelling along the path */}
-        <PathEnergyPulse routePath={routePath} completedIndex={completedPathIndex} />
       </svg>
 
-      {/* ── Segment connection lines ── */}
-      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+      {/* ── Segment connection lines (subtle) ── */}
+      <svg viewBox="0 0 100 90" className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="xMidYMid meet">
         {PATH_ORDER.slice(0, -1).map((fromId, i) => {
           const toId = PATH_ORDER[i + 1];
           const from = NODE_POSITIONS[fromId];
@@ -320,21 +262,21 @@ export default function NorthAmericaBoard({ zones, zoneStatuses, onZoneClick }: 
           const toAvail = toZoneIdx >= 0 && zoneStatuses[toZoneIdx] === "available";
 
           const color = fromDone && toDone
-            ? "hsl(160 65% 50%)"
+            ? "hsl(160 65% 45%)"
             : fromDone && toAvail
-              ? "hsl(195 85% 55%)"
-              : "hsl(210 25% 28%)";
-          const opacity = fromDone ? 0.7 : 0.15;
-          const width = fromDone && toDone ? 0.9 : 0.5;
+              ? "hsl(195 70% 50%)"
+              : "hsl(210 20% 22%)";
+          const opacity = fromDone ? 0.4 : 0.1;
+          const width = fromDone && toDone ? 0.5 : 0.3;
 
           const cpx = (from.x + to.x) / 2;
-          const cpy = Math.min(from.y, to.y) - 8;
+          const cpy = (from.y + to.y) / 2 - 3;
 
           return (
             <path key={`seg-${i}`}
               d={`M ${from.x} ${from.y} Q ${cpx} ${cpy}, ${to.x} ${to.y}`}
               fill="none" stroke={color} strokeWidth={width} strokeOpacity={opacity}
-              strokeLinecap="round" strokeDasharray={fromDone ? "none" : "1.5 1"} />
+              strokeLinecap="round" strokeDasharray={fromDone ? "none" : "1 1"} />
           );
         })}
       </svg>
@@ -347,12 +289,9 @@ export default function NorthAmericaBoard({ zones, zoneStatuses, onZoneClick }: 
         const isLocked = status === "locked";
         const isCompleted = status === "completed";
         const isAvailable = status === "available";
-        const env = ZONE_ENVIRONMENTS[zone.id];
 
-        /* Node sizing */
-        const nodeSize = zone.isHQ ? 58 : zone.isBoss ? 56 : 48;
+        const nodeSize = zone.isHQ ? 52 : zone.isBoss ? 50 : 42;
 
-        /* Colors */
         const bgColor = zone.isHQ
           ? "linear-gradient(135deg, hsl(45 90% 50%), hsl(35 95% 42%))"
           : zone.isBoss
@@ -374,14 +313,14 @@ export default function NorthAmericaBoard({ zones, zoneStatuses, onZoneClick }: 
                 : "hsl(210 20% 28%)";
 
         const glowShadow = zone.isHQ
-          ? "0 0 24px hsl(45 90% 50% / 0.5), 0 0 48px hsl(45 90% 50% / 0.2), 0 4px 16px hsl(0 0% 0% / 0.3)"
+          ? "0 0 16px hsl(45 90% 50% / 0.4), 0 3px 10px hsl(0 0% 0% / 0.3)"
           : zone.isBoss
-            ? "0 0 24px hsl(0 80% 50% / 0.5), 0 0 48px hsl(0 80% 50% / 0.2), 0 4px 16px hsl(0 0% 0% / 0.3)"
+            ? "0 0 16px hsl(0 80% 50% / 0.4), 0 3px 10px hsl(0 0% 0% / 0.3)"
             : isCompleted
-              ? "0 0 20px hsl(160 65% 50% / 0.4), 0 4px 12px hsl(0 0% 0% / 0.3)"
+              ? "0 0 12px hsl(160 65% 50% / 0.3), 0 3px 8px hsl(0 0% 0% / 0.3)"
               : isAvailable
-                ? "0 0 20px hsl(195 85% 55% / 0.45), 0 0 40px hsl(195 85% 55% / 0.15), 0 4px 12px hsl(0 0% 0% / 0.3)"
-                : "0 2px 8px hsl(0 0% 0% / 0.3)";
+                ? "0 0 14px hsl(195 85% 55% / 0.35), 0 3px 8px hsl(0 0% 0% / 0.3)"
+                : "0 2px 6px hsl(0 0% 0% / 0.3)";
 
         return (
           <motion.div
@@ -393,51 +332,23 @@ export default function NorthAmericaBoard({ zones, zoneStatuses, onZoneClick }: 
               transform: "translate(-50%, -50%)",
               zIndex: zone.isHQ || zone.isBoss ? 20 : 10,
             }}
-            initial={{ opacity: 0, scale: 0.3, y: 20 }}
+            initial={{ opacity: 0, scale: 0.3, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ delay: i * 0.08 + 0.3, type: "spring", stiffness: 200, damping: 18 }}
           >
-            {/* Environment base (terrain beneath node) */}
-            {env && !isLocked && (
+            {/* Pulse ring for available */}
+            {isAvailable && (
               <motion.div
-                className="absolute rounded-full pointer-events-none"
+                className="absolute rounded-full"
                 style={{
-                  width: nodeSize + 30,
-                  height: nodeSize + 30,
-                  background: `radial-gradient(circle, ${env.color}15 0%, transparent 70%)`,
-                  border: `1px solid ${env.color}20`,
+                  width: nodeSize + 16,
+                  height: nodeSize + 16,
+                  border: `1.5px solid ${borderColor}`,
+                  opacity: 0,
                 }}
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                animate={{ opacity: [0, 0.3, 0], scale: [1, 1.4, 1.6] }}
+                transition={{ repeat: Infinity, duration: 2.5, ease: "easeOut" }}
               />
-            )}
-
-            {/* Outer pulse rings for non-locked */}
-            {!isLocked && (
-              <>
-                <motion.div
-                  className="absolute rounded-full"
-                  style={{
-                    width: nodeSize + 20,
-                    height: nodeSize + 20,
-                    border: `2px solid ${borderColor}`,
-                    opacity: 0,
-                  }}
-                  animate={{ opacity: [0, 0.35, 0], scale: [1, 1.5, 1.8] }}
-                  transition={{ repeat: Infinity, duration: 2.5, ease: "easeOut" }}
-                />
-                <motion.div
-                  className="absolute rounded-full"
-                  style={{
-                    width: nodeSize + 12,
-                    height: nodeSize + 12,
-                    border: `1px solid ${borderColor}`,
-                    opacity: 0,
-                  }}
-                  animate={{ opacity: [0, 0.2, 0], scale: [1, 1.3, 1.5] }}
-                  transition={{ repeat: Infinity, duration: 2.5, delay: 0.8, ease: "easeOut" }}
-                />
-              </>
             )}
 
             {/* Main node button */}
@@ -449,39 +360,37 @@ export default function NorthAmericaBoard({ zones, zoneStatuses, onZoneClick }: 
                 width: nodeSize,
                 height: nodeSize,
                 background: bgColor,
-                border: `3px solid ${borderColor}`,
+                border: `2.5px solid ${borderColor}`,
                 boxShadow: glowShadow,
                 cursor: isLocked ? "not-allowed" : "pointer",
                 opacity: isLocked ? 0.35 : 1,
               }}
-              whileHover={!isLocked ? { scale: 1.18, rotate: 2 } : {}}
+              whileHover={!isLocked ? { scale: 1.15 } : {}}
               whileTap={!isLocked ? { scale: 0.92 } : {}}
             >
-              <span className="text-xl select-none" style={{ filter: isLocked ? "grayscale(1)" : "none" }}>
+              <span className="text-lg select-none" style={{ filter: isLocked ? "grayscale(1)" : "none" }}>
                 {isLocked ? "🔒" : isCompleted ? "✅" : zone.icon}
               </span>
 
-              {/* Inner highlight ring */}
               {!isLocked && (
-                <div className="absolute inset-[3px] rounded-full border border-white/25 pointer-events-none" />
+                <div className="absolute inset-[2px] rounded-full border border-white/20 pointer-events-none" />
               )}
 
-              {/* Completed sparkle effect */}
               {isCompleted && (
                 <motion.div
-                  className="absolute -top-1 -right-1 text-sm"
-                  animate={{ rotate: [0, 20, -20, 0], scale: [1, 1.2, 1] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="absolute -top-1 -right-1 text-xs"
+                  animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 2.5 }}
                 >
                   ✨
                 </motion.div>
               )}
             </motion.button>
 
-            {/* Label area */}
-            <div className="mt-2 text-center max-w-[100px]">
+            {/* Label */}
+            <div className="mt-1.5 text-center max-w-[90px]">
               <p
-                className="text-[10px] md:text-xs font-bold leading-tight drop-shadow-lg"
+                className="text-[9px] md:text-[11px] font-bold leading-tight drop-shadow-lg"
                 style={{
                   color: isLocked
                     ? "hsl(210 20% 40%)"
@@ -490,28 +399,28 @@ export default function NorthAmericaBoard({ zones, zoneStatuses, onZoneClick }: 
                       : zone.isHQ
                         ? "hsl(45 90% 70%)"
                         : "white",
-                  textShadow: isLocked ? "none" : "0 1px 4px rgba(0,0,0,0.5)",
+                  textShadow: isLocked ? "none" : "0 1px 3px rgba(0,0,0,0.6)",
                 }}
               >
                 {zone.name.replace(" — Cyber Hero Command", "")}
               </p>
               {!isLocked && (
-                <p className="text-[8px] md:text-[9px] mt-0.5" style={{ color: "hsl(195 60% 55% / 0.7)" }}>
+                <p className="text-[7px] md:text-[8px] mt-0.5" style={{ color: "hsl(195 50% 50% / 0.6)" }}>
                   {zone.city}
                 </p>
               )}
             </div>
 
-            {/* Deploy badge for available */}
+            {/* GO badge */}
             {isAvailable && !zone.isHQ && !zone.isBoss && (
               <motion.div
-                className="absolute -top-2 -right-2 rounded-full px-2 py-0.5 text-[8px] font-bold"
+                className="absolute -top-2 -right-2 rounded-full px-1.5 py-0.5 text-[7px] font-bold"
                 style={{
                   background: "hsl(195 85% 50%)",
                   color: "white",
-                  boxShadow: "0 2px 10px hsl(195 85% 50% / 0.5)",
+                  boxShadow: "0 2px 8px hsl(195 85% 50% / 0.4)",
                 }}
-                animate={{ scale: [1, 1.15, 1] }}
+                animate={{ scale: [1, 1.12, 1] }}
                 transition={{ repeat: Infinity, duration: 1.2 }}
               >
                 GO!
@@ -521,13 +430,13 @@ export default function NorthAmericaBoard({ zones, zoneStatuses, onZoneClick }: 
             {/* Boss FIGHT badge */}
             {zone.isBoss && isAvailable && (
               <motion.div
-                className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[8px] font-bold"
+                className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-[7px] font-bold"
                 style={{
                   background: "hsl(0 80% 50%)",
                   color: "white",
-                  boxShadow: "0 2px 12px hsl(0 80% 50% / 0.6)",
+                  boxShadow: "0 2px 10px hsl(0 80% 50% / 0.5)",
                 }}
-                animate={{ y: [-3, 3, -3], scale: [1, 1.05, 1] }}
+                animate={{ y: [-2, 2, -2], scale: [1, 1.05, 1] }}
                 transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
               >
                 ⚔️ FIGHT!
@@ -537,13 +446,13 @@ export default function NorthAmericaBoard({ zones, zoneStatuses, onZoneClick }: 
             {/* HQ start badge */}
             {zone.isHQ && isAvailable && (
               <motion.div
-                className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-[9px] font-bold"
+                className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[8px] font-bold"
                 style={{
                   background: "linear-gradient(135deg, hsl(45 90% 50%), hsl(35 95% 45%))",
                   color: "hsl(210 40% 10%)",
-                  boxShadow: "0 2px 12px hsl(45 90% 50% / 0.6)",
+                  boxShadow: "0 2px 10px hsl(45 90% 50% / 0.5)",
                 }}
-                animate={{ y: [-3, 3, -3] }}
+                animate={{ y: [-2, 2, -2] }}
                 transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
               >
                 ⭐ START HERE!
@@ -553,46 +462,18 @@ export default function NorthAmericaBoard({ zones, zoneStatuses, onZoneClick }: 
         );
       })}
 
-      {/* ── Boss fortress decoration ── */}
-      <div className="absolute pointer-events-none select-none" style={{ left: "50%", top: "2%", transform: "translateX(-50%)" }}>
-        <motion.div
-          className="flex flex-col items-center"
-          animate={{ scale: [1, 1.06, 1], opacity: [0.35, 0.55, 0.35] }}
-          transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-        >
-          <span className="text-3xl">🏰</span>
-          <span className="text-[7px] font-bold mt-0.5" style={{ color: "hsl(0 80% 60% / 0.5)" }}>KEYBREAKER'S DOMAIN</span>
-        </motion.div>
-      </div>
-
-      {/* ── Corner circuit decorations ── */}
-      <svg className="absolute top-0 left-0 w-28 h-28 opacity-[0.1] pointer-events-none" viewBox="0 0 100 100">
+      {/* ── Corner circuit decorations (subtle) ── */}
+      <svg className="absolute top-0 left-0 w-20 h-20 opacity-[0.06] pointer-events-none" viewBox="0 0 100 100">
         <path d="M0 20 L20 20 L20 0" fill="none" stroke="hsl(195 80% 60%)" strokeWidth="1" />
-        <path d="M0 40 L40 40 L40 0" fill="none" stroke="hsl(195 80% 60%)" strokeWidth="0.5" />
-        <path d="M0 55 L30 55 L30 30 L55 30 L55 0" fill="none" stroke="hsl(195 80% 60%)" strokeWidth="0.3" />
-        <circle cx="20" cy="20" r="2.5" fill="hsl(195 80% 60%)" />
-        <circle cx="40" cy="40" r="1.5" fill="hsl(195 80% 60%)" />
-        <circle cx="55" cy="30" r="1" fill="hsl(195 80% 60%)" />
+        <circle cx="20" cy="20" r="2" fill="hsl(195 80% 60%)" />
       </svg>
-      <svg className="absolute bottom-0 right-0 w-28 h-28 opacity-[0.1] pointer-events-none" viewBox="0 0 100 100">
+      <svg className="absolute bottom-0 right-0 w-20 h-20 opacity-[0.06] pointer-events-none" viewBox="0 0 100 100">
         <path d="M100 80 L80 80 L80 100" fill="none" stroke="hsl(195 80% 60%)" strokeWidth="1" />
-        <path d="M100 60 L60 60 L60 100" fill="none" stroke="hsl(195 80% 60%)" strokeWidth="0.5" />
-        <path d="M100 45 L70 45 L70 70 L45 70 L45 100" fill="none" stroke="hsl(195 80% 60%)" strokeWidth="0.3" />
-        <circle cx="80" cy="80" r="2.5" fill="hsl(195 80% 60%)" />
-        <circle cx="60" cy="60" r="1.5" fill="hsl(195 80% 60%)" />
-        <circle cx="70" cy="70" r="1" fill="hsl(195 80% 60%)" />
-      </svg>
-      <svg className="absolute top-0 right-0 w-20 h-20 opacity-[0.06] pointer-events-none" viewBox="0 0 100 100">
-        <path d="M100 20 L80 20 L80 0" fill="none" stroke="hsl(0 70% 55%)" strokeWidth="1" />
-        <circle cx="80" cy="20" r="2" fill="hsl(0 70% 55%)" />
-      </svg>
-      <svg className="absolute bottom-0 left-0 w-20 h-20 opacity-[0.06] pointer-events-none" viewBox="0 0 100 100">
-        <path d="M0 80 L20 80 L20 100" fill="none" stroke="hsl(160 65% 50%)" strokeWidth="1" />
-        <circle cx="20" cy="80" r="2" fill="hsl(160 65% 50%)" />
+        <circle cx="80" cy="80" r="2" fill="hsl(195 80% 60%)" />
       </svg>
 
       {/* ── Scan line overlay ── */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.015]" style={{
+      <div className="absolute inset-0 pointer-events-none opacity-[0.012]" style={{
         background: "repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(195 80% 60%) 2px, hsl(195 80% 60%) 3px)",
       }} />
     </div>
