@@ -257,7 +257,7 @@ export default function ContinentMapScreen() {
     if (zone.isBoss) return { fill: "#ff2d55", stroke: "#ff2d55", glow: "rgba(255,45,85,0.4)" };
     if (status === "completed") return { fill: "#00ff88", stroke: "#00ff88", glow: "rgba(0,255,136,0.35)" };
     if (status === "available") return { fill: "#00ffe7", stroke: "#00ffe7", glow: "rgba(0,255,231,0.35)" };
-    return { fill: "#2a3a5a", stroke: "#3a4a6a", glow: "none" };
+    return { fill: "#2a3a5a", stroke: "#4a6a9a", glow: "none" };
   };
 
   return (
@@ -353,9 +353,9 @@ export default function ContinentMapScreen() {
                     key={`line-${i}`}
                     from={[from.lng, from.lat]}
                     to={[to.lng, to.lat]}
-                    stroke={bothDone ? "hsl(195, 85%, 55%)" : available ? "hsl(195, 85%, 55%)" : "hsl(200, 15%, 40%)"}
-                    strokeWidth={bothDone ? 2 : 1}
-                    strokeOpacity={bothDone ? 0.6 : available ? 0.35 : 0.12}
+                    stroke={bothDone ? "hsl(195, 85%, 55%)" : available ? "hsl(195, 85%, 55%)" : "hsl(200, 25%, 50%)"}
+                    strokeWidth={bothDone ? 2.5 : 1.5}
+                    strokeOpacity={bothDone ? 0.7 : available ? 0.45 : 0.25}
                     strokeDasharray={bothDone ? "none" : available ? "6 4" : "4 3"}
                     strokeLinecap="round"
                   />
@@ -380,7 +380,7 @@ export default function ContinentMapScreen() {
                     onClick={() => handleZoneClick(zone, i)}
                     style={{ cursor: isLocked ? "not-allowed" : "pointer" }}
                   >
-                    {/* Ping ring */}
+                    {/* Ping ring for unlocked zones */}
                     {!isLocked && (
                       <circle r={r + 6} fill="none" stroke={colors.stroke} strokeWidth={1.5} opacity={0.4}>
                         <animate
@@ -398,13 +398,13 @@ export default function ContinentMapScreen() {
                         <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite" />
                       </circle>
                     )}
-                    {/* Main circle */}
+                    {/* Main circle — locked zones are fully visible now */}
                     <circle
                       r={r}
-                      fill={isLocked ? "#1a2540" : colors.fill}
-                      stroke={colors.stroke}
-                      strokeWidth={2}
-                      opacity={isLocked ? 0.35 : 1}
+                      fill={isLocked ? "#2a3a5a" : colors.fill}
+                      stroke={isLocked ? "#4a6a9a" : colors.stroke}
+                      strokeWidth={2.5}
+                      opacity={1}
                     />
                     {/* Icon */}
                     <text
@@ -415,29 +415,29 @@ export default function ContinentMapScreen() {
                     >
                       {isLocked ? "🔒" : isCompleted ? "✅" : zone.icon}
                     </text>
-                    {/* Label */}
+                    {/* Zone name label */}
                     <text
                       textAnchor="middle"
                       y={r + 18}
-                      fontSize={10}
+                      fontSize={11}
                       fontWeight="bold"
-                      fill={isLocked ? "rgba(255,255,255,0.2)" : zone.isBoss ? "#ff6b8a" : "#fff"}
-                      opacity={isLocked ? 0.4 : 0.85}
-                      style={{ pointerEvents: "none", userSelect: "none", textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
+                      fill={isLocked ? "rgba(255,255,255,0.6)" : zone.isBoss ? "#ff6b8a" : "#fff"}
+                      opacity={1}
+                      style={{ pointerEvents: "none", userSelect: "none", textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}
                     >
                       {zone.name}
                     </text>
-                    {/* City */}
+                    {/* City sublabel */}
                     <text
                       textAnchor="middle"
                       y={r + 30}
-                      fontSize={7}
-                      fill="rgba(255,255,255,0.3)"
+                      fontSize={8}
+                      fill={isLocked ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.7)"}
                       style={{ pointerEvents: "none", userSelect: "none" }}
                     >
                       {zone.city}
                     </text>
-                    {/* Action */}
+                    {/* Action label */}
                     {isAvailable && (
                       <text
                         textAnchor="middle"
@@ -463,19 +463,19 @@ export default function ContinentMapScreen() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-white/40"
+          className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-white/60"
         >
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(195_80%_50%)] animate-pulse" /> Available
+            <span className="h-3 w-3 rounded-full bg-[hsl(195_80%_50%)] animate-pulse" /> Available
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(160_65%_50%)]" /> Secured
+            <span className="h-3 w-3 rounded-full bg-[hsl(160_65%_50%)]" /> Secured
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-white/10 border border-white/10" /> Locked
+            <span className="h-3 w-3 rounded-full bg-[#2a3a5a] border border-[#4a6a9a]" /> Locked
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(0_80%_50%)]" /> ⚔️ Boss
+            <span className="h-3 w-3 rounded-full bg-[hsl(0_80%_50%)]" /> ⚔️ Boss
           </span>
         </motion.div>
       </div>
