@@ -371,7 +371,7 @@ export default function ContinentMapScreen() {
                 const isLocked = status === "locked";
                 const isAvailable = status === "available";
                 const isCompleted = status === "completed";
-                const r = zone.isHQ ? 14 : zone.isBoss ? 12 : 9;
+                const r = zone.isHQ ? 20 : zone.isBoss ? 18 : 14;
 
                 return (
                   <Marker
@@ -410,7 +410,7 @@ export default function ContinentMapScreen() {
                     <text
                       textAnchor="middle"
                       dominantBaseline="central"
-                      fontSize={zone.isHQ || zone.isBoss ? 12 : 10}
+                      fontSize={zone.isHQ || zone.isBoss ? 18 : 14}
                       style={{ pointerEvents: "none", userSelect: "none" }}
                     >
                       {isLocked ? "🔒" : isCompleted ? "✅" : zone.icon}
@@ -418,8 +418,8 @@ export default function ContinentMapScreen() {
                     {/* Label */}
                     <text
                       textAnchor="middle"
-                      y={r + 14}
-                      fontSize={7}
+                      y={r + 18}
+                      fontSize={10}
                       fontWeight="bold"
                       fill={isLocked ? "rgba(255,255,255,0.2)" : zone.isBoss ? "#ff6b8a" : "#fff"}
                       opacity={isLocked ? 0.4 : 0.85}
@@ -430,8 +430,8 @@ export default function ContinentMapScreen() {
                     {/* City */}
                     <text
                       textAnchor="middle"
-                      y={r + 22}
-                      fontSize={5}
+                      y={r + 30}
+                      fontSize={7}
                       fill="rgba(255,255,255,0.3)"
                       style={{ pointerEvents: "none", userSelect: "none" }}
                     >
@@ -441,8 +441,8 @@ export default function ContinentMapScreen() {
                     {isAvailable && (
                       <text
                         textAnchor="middle"
-                        y={r + 30}
-                        fontSize={5.5}
+                        y={r + 42}
+                        fontSize={8}
                         fontWeight="bold"
                         fill={zone.isBoss ? "#ff6b8a" : "#00ffe7"}
                         style={{ pointerEvents: "none", userSelect: "none" }}
