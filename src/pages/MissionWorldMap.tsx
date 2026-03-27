@@ -50,8 +50,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🔑",
     description: "Forge unbreakable passwords at the summit!",
     hue: 195,
-    x: 84,
-    y: 58,
+    x: 79,
+    y: 59,
   },
   {
     id: "scam-detection",
@@ -60,8 +60,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🎣",
     description: "Catch phishy scams before they catch you!",
     hue: 30,
-    x: 41,
-    y: 62,
+    x: 31,
+    y: 58,
   },
   {
     id: "safe-websites",
@@ -70,8 +70,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🌐",
     description: "Navigate the web marketplace safely!",
     hue: 175,
-    x: 72,
-    y: 56,
+    x: 60,
+    y: 52,
   },
   {
     id: "personal-info",
@@ -80,7 +80,7 @@ const CITY_NODES: CityNode[] = [
     icon: "🛡️",
     description: "Guard your secrets in the royal palace!",
     hue: 270,
-    x: 45,
+    x: 29,
     y: 67,
   },
   {
@@ -90,8 +90,8 @@ const CITY_NODES: CityNode[] = [
     icon: "⬇️",
     description: "Defeat malware lurking in the dungeon depths!",
     hue: 0,
-    x: 57,
-    y: 59,
+    x: 45,
+    y: 58,
   },
   {
     id: "smart-sharing",
@@ -100,8 +100,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🚷",
     description: "Learn who to trust on the mysterious shore!",
     hue: 45,
-    x: 78,
-    y: 78,
+    x: 77,
+    y: 76,
   },
   {
     id: "phishy-messages",
@@ -110,8 +110,8 @@ const CITY_NODES: CityNode[] = [
     icon: "💖",
     description: "Spread kindness and fight cyberbullying!",
     hue: 330,
-    x: 62,
-    y: 87,
+    x: 47,
+    y: 84,
   },
   {
     id: "malware-maze",
@@ -120,8 +120,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🦠",
     description: "Navigate the maze of malicious software!",
     hue: 120,
-    x: 42,
-    y: 49,
+    x: 30,
+    y: 48,
   },
   {
     id: "firewall-frontier",
@@ -130,8 +130,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🧱",
     description: "Build walls to keep threats out!",
     hue: 210,
-    x: 84,
-    y: 51,
+    x: 74,
+    y: 46,
   },
   {
     id: "dark-web-den",
@@ -140,8 +140,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🕸️",
     description: "Shine light into the darkest corners!",
     hue: 280,
-    x: 41,
-    y: 46,
+    x: 28,
+    y: 44,
   },
   {
     id: "encrypt-enclave",
@@ -150,8 +150,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🔐",
     description: "Master the art of secret codes!",
     hue: 160,
-    x: 79,
-    y: 54,
+    x: 65,
+    y: 49,
   },
   {
     id: "cyberguard-academy",
@@ -160,8 +160,8 @@ const CITY_NODES: CityNode[] = [
     icon: "🏠",
     description: "Your home base — begin your mission here!",
     hue: 45,
-    x: 81,
-    y: 60,
+    x: 77,
+    y: 67,
     isHub: true,
   },
 ];
@@ -409,24 +409,24 @@ function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqC
         const bothDone = aStatus === "completed" && bStatus === "completed";
         const anyUnlocked = aStatus !== "locked" && aStatus !== "gated" && bStatus !== "locked" && bStatus !== "gated";
 
-        let stroke = "hsl(200 20% 50% / 0.07)";
-        let strokeWidth = 0.2;
-        let dashArr = "0.8 0.6";
+        let stroke = "hsl(200 20% 50% / 0.05)";
+        let strokeWidth = 0.16;
+        let dashArr = "0.6 0.7";
         let filterAttr: string | undefined;
 
         if (bothDone) {
-          stroke = "hsl(160 65% 55% / 0.7)";
-          strokeWidth = 0.45;
+          stroke = "hsl(160 65% 55% / 0.45)";
+          strokeWidth = 0.28;
           dashArr = "none";
           filterAttr = "url(#connGlow)";
         } else if (isHQConn) {
-          stroke = hqCompleted ? "hsl(45 90% 55% / 0.5)" : "hsl(45 90% 55% / 0.2)";
-          strokeWidth = 0.3;
-          dashArr = "1.2 0.8";
+          stroke = hqCompleted ? "hsl(45 90% 55% / 0.28)" : "hsl(45 90% 55% / 0.14)";
+          strokeWidth = 0.2;
+          dashArr = "0.9 0.7";
         } else if (anyUnlocked) {
-          stroke = "hsl(195 85% 60% / 0.35)";
-          strokeWidth = 0.25;
-          dashArr = "0.8 0.6";
+          stroke = "hsl(195 85% 60% / 0.2)";
+          strokeWidth = 0.18;
+          dashArr = "0.7 0.6";
         }
 
         const mx = (from.x + to.x) / 2;
@@ -434,7 +434,7 @@ function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqC
         const dx = to.x - from.x;
         const dy = to.y - from.y;
         const len = Math.sqrt(dx * dx + dy * dy) || 1;
-        const off = len * 0.15;
+        const off = len * 0.09;
         const cx = mx + (-dy / len) * off;
         const cy = my + (dx / len) * off;
 
@@ -1045,7 +1045,7 @@ export default function MissionWorldMap() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.6 }}
           className="relative mx-auto w-full"
-          style={{ aspectRatio: "16/10", maxWidth: "980px" }}
+          style={{ aspectRatio: "16/10", maxWidth: "1040px" }}
         >
           <div className="absolute inset-0 overflow-hidden rounded-2xl border border-[hsl(195_80%_50%/0.2)] shadow-[0_0_60px_hsl(210_60%_15%/0.8),inset_0_0_40px_hsl(210_50%_10%/0.5)]">
             <WorldMapSVG />
