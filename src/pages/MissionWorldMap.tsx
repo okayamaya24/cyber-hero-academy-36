@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Star, Zap, Shield, MessageCircle, ChevronRight, Trophy, X, Globe, Radio, ArrowLeft } from "lucide-react";
+import { Lock, Star, Zap, Shield, MessageCircle, ChevronRight, Trophy, X, Globe, Radio } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   MISSIONS,
   getTotalGames,
@@ -13,39 +14,12 @@ import {
   MINI_GAME_META,
   type LearningMode,
 } from "@/data/missions";
+import { getLevelRank } from "@/data/levelTitles";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import { Button } from "@/components/ui/button";
 
-const PROGRESSION_ORDER = [
-  "password-safety",
-  "encrypt-enclave",
-  "safe-websites",
-  "scam-detection",
-  "personal-info",
-  "malware-monsters",
-  "smart-sharing",
-  "phishy-messages",
-  "malware-maze",
-  "firewall-frontier",
-  "dark-web-den",
-] as const;
-
-type CityNode = {
-  id: string;
-  name: string;
-  city: string;
-  icon: string;
-  description: string;
-  hue: number;
-  x: number;
-  y: number;
-  isHub?: boolean;
-};
-
-// City coordinates remapped to the corrected North America silhouette.
-// SVG viewBox is 0–100 (origin top-left).
-// West coast runs x≈12–22, east coast diagonals from ~(80,28) to ~(72,80).
-const CITY_NODES: CityNode[] = [
+/* ─── City node definitions mapped to missions ─────────── */
+const CITY_NODES = [
   {
     id: "password-safety",
     name: "Password Peak",
@@ -53,98 +27,88 @@ const CITY_NODES: CityNode[] = [
     icon: "🔑",
     description: "Forge unbreakable passwords at the summit!",
     hue: 195,
-    x: 78, // Atlantic seaboard, upper-right
-    y: 55,
+    x: 22, y: 38,
   },
   {
     id: "scam-detection",
     name: "Phish Lagoon",
-    city: "San Francisco, USA",
+    city: "London, UK",
     icon: "🎣",
     description: "Catch phishy scams before they catch you!",
     hue: 30,
-    x: 21, // Pacific coast, mid-left
-    y: 58,
+    x: 45, y: 22,
   },
   {
     id: "safe-websites",
     name: "Browse Bazaar",
-    city: "Chicago, USA",
+    city: "Mumbai, India",
     icon: "🌐",
     description: "Navigate the web marketplace safely!",
     hue: 175,
-    x: 58, // Great Lakes / Midwest
-    y: 53,
+    x: 70, y: 45,
   },
   {
     id: "personal-info",
     name: "Privacy Palace",
-    city: "Los Angeles, USA",
+    city: "Dubai, UAE",
     icon: "🛡️",
     description: "Guard your secrets in the royal palace!",
     hue: 270,
-    x: 19, // Southern California coast
-    y: 65,
+    x: 62, y: 42,
   },
   {
     id: "malware-monsters",
     name: "Download Dungeon",
-    city: "Denver, USA",
+    city: "Berlin, Germany",
     icon: "⬇️",
     description: "Defeat malware lurking in the dungeon depths!",
     hue: 0,
-    x: 38, // Rocky Mountain interior
-    y: 58,
+    x: 52, y: 20,
   },
   {
     id: "smart-sharing",
     name: "Stranger Shore",
-    city: "Miami, USA",
+    city: "Lagos, Nigeria",
     icon: "🚷",
     description: "Learn who to trust on the mysterious shore!",
     hue: 45,
-    x: 69, // Florida peninsula, bottom-right
-    y: 79,
+    x: 48, y: 58,
   },
   {
     id: "phishy-messages",
     name: "Kindness Kingdom",
-    city: "Mexico City, Mexico",
+    city: "São Paulo, Brazil",
     icon: "💖",
     description: "Spread kindness and fight cyberbullying!",
     hue: 330,
-    x: 37, // Mexico interior, narrow funnel zone
-    y: 87,
+    x: 28, y: 68,
   },
   {
     id: "malware-maze",
     name: "Malware Maze",
-    city: "Seattle, USA",
+    city: "Sydney, Australia",
     icon: "🦠",
     description: "Navigate the maze of malicious software!",
     hue: 120,
-    x: 19, // Pacific Northwest
-    y: 45,
+    x: 82, y: 72,
   },
   {
     id: "firewall-frontier",
     name: "Firewall Frontier",
-    city: "Montreal, Canada",
+    city: "Seoul, South Korea",
     icon: "🧱",
     description: "Build walls to keep threats out!",
     hue: 210,
-    x: 73, // Eastern Canada, St. Lawrence
-    y: 40,
+    x: 80, y: 28,
   },
   {
     id: "dark-web-den",
     name: "Dark Web Den",
-    city: "Vancouver, Canada",
+    city: "Cairo, Egypt",
     icon: "🕸️",
     description: "Shine light into the darkest corners!",
     hue: 280,
-    x: 18, // BC coast, upper-left
-    y: 37,
+    x: 55, y: 48,
   },
   {
     id: "encrypt-enclave",
@@ -153,323 +117,60 @@ const CITY_NODES: CityNode[] = [
     icon: "🔐",
     description: "Master the art of secret codes!",
     hue: 160,
-    x: 65, // Great Lakes, Ontario
-    y: 45,
+    x: 18, y: 28,
   },
   {
     id: "cyberguard-academy",
     name: "Cyber Hero Command",
-    city: "Washington D.C.",
+    city: "Global HQ",
     icon: "🏠",
     description: "Your home base — begin your mission here!",
     hue: 45,
-    x: 75, // Mid-Atlantic seaboard
-    y: 60,
+    x: 12, y: 50,
     isHub: true,
   },
 ];
 
+// Path connections between nodes (pairs of indices)
 const CONNECTIONS: [number, number][] = [
-  [11, 0],
-  [11, 10],
-  [11, 2],
-  [0, 10],
-  [10, 2],
-  [2, 1],
-  [1, 3],
-  [3, 4],
-  [4, 5],
-  [5, 6],
-  [6, 7],
-  [7, 8],
-  [8, 9],
+  [11, 0],  // HQ to Password Peak
+  [11, 10], // HQ to Encrypt Enclave
+  [11, 1],  // HQ to Phish Lagoon
+  [0, 10],  // Password Peak to Encrypt Enclave
+  [0, 6],   // Password Peak to Kindness Kingdom
+  [1, 4],   // Phish Lagoon to Download Dungeon
+  [1, 5],   // Phish Lagoon to Stranger Shore
+  [3, 9],   // Privacy Palace to Dark Web Den
+  [3, 2],   // Privacy Palace to Browse Bazaar
+  [2, 8],   // Browse Bazaar to Firewall Frontier
+  [2, 7],   // Browse Bazaar to Malware Maze
+  [5, 6],   // Stranger Shore to Kindness Kingdom
 ];
 
 type NodeStatus = "completed" | "unlocked" | "locked" | "gated";
 
 function getStars(score: number, maxScore: number): number {
   if (maxScore === 0) return 0;
-  const ratio = score / maxScore;
-  if (ratio >= 0.9) return 3;
-  if (ratio >= 0.6) return 2;
-  if (ratio > 0) return 1;
+  const r = score / maxScore;
+  if (r >= 0.9) return 3;
+  if (r >= 0.6) return 2;
+  if (r > 0) return 1;
   return 0;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// WorldMapSVG — Corrected North America silhouette
-//
-// All coordinates in viewBox 0 0 100 100 (preserveAspectRatio="none").
-//
-// Landmark positions used:
-//   Alaska      x 5–21,  y 26–37  (separate path)
-//   Greenland   x 74–92, y 5–22   (separate path, darker fill)
-//   N. Canada   wide band x 15–84, y 12–36
-//   West coast  gently curves inward: x≈22→12, y≈36→70
-//   Baja CA     thin spike x 8–14, y 68–89
-//   Mexico      narrows SE, ends ~(42,94)
-//   Gulf coast  concave bite on SE interior y≈68–80
-//   Florida     small stub ~(64–71, 80–93)
-//   East coast  diagonal (83,18)→(72,80)
-//   Hudson Bay  dark polygon ~(48–65, 22–42)
-//   Great Lakes ellipse cluster ~(62–73, 43–48)
-// ─────────────────────────────────────────────────────────────────────────────
-function WorldMapSVG() {
+/* ─── SVG connection paths ───────────────────────────────── */
+function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqCompleted: boolean }) {
   return (
-    <svg
-      className="absolute inset-0 h-full w-full"
-      viewBox="0 0 100 100"
-      preserveAspectRatio="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
       <defs>
-        <radialGradient id="mapGlow" cx="50%" cy="45%" r="70%">
-          <stop offset="0%" stopColor="hsl(205 70% 16%)" />
-          <stop offset="100%" stopColor="hsl(222 55% 8%)" />
-        </radialGradient>
-
-        <linearGradient id="landGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="hsl(196 32% 18%)" />
-          <stop offset="100%" stopColor="hsl(210 28% 10%)" />
-        </linearGradient>
-
-        <filter id="landGlow" x="-10%" y="-10%" width="120%" height="120%">
-          <feGaussianBlur stdDeviation="0.45" result="blur" />
+        <filter id="connGlow">
+          <feGaussianBlur stdDeviation="0.5" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
-
-        <pattern id="dotGrid" width="1.8" height="1.8" patternUnits="userSpaceOnUse">
-          <circle cx="0.9" cy="0.9" r="0.07" fill="hsl(195 80% 60% / 0.12)" />
-        </pattern>
-
-        <radialGradient id="vig" cx="50%" cy="50%" r="72%">
-          <stop offset="58%" stopColor="transparent" />
-          <stop offset="100%" stopColor="hsl(220 50% 6% / 0.7)" />
-        </radialGradient>
-      </defs>
-
-      {/* Ocean */}
-      <rect width="100" height="100" fill="url(#mapGlow)" />
-      <rect width="100" height="100" fill="url(#dotGrid)" />
-
-      {/* Grid lines */}
-      {[20, 40, 60, 80].map((v) => (
-        <line
-          key={`h-${v}`}
-          x1="0"
-          y1={v}
-          x2="100"
-          y2={v}
-          stroke="hsl(195 70% 55% / 0.05)"
-          strokeWidth="0.06"
-          strokeDasharray="0.5 1"
-        />
-      ))}
-      {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((v) => (
-        <line
-          key={`v-${v}`}
-          x1={v}
-          y1="0"
-          x2={v}
-          y2="100"
-          stroke="hsl(195 70% 55% / 0.05)"
-          strokeWidth="0.06"
-          strokeDasharray="0.5 1"
-        />
-      ))}
-
-      {/* ── Alaska ── */}
-      <path
-        d="M 5,32 L 9,27 L 14,25 L 19,27 L 21,31 L 19,35 L 14,37 L 8,35 Z"
-        fill="url(#landGrad)"
-        stroke="hsl(195 65% 45% / 0.28)"
-        strokeWidth="0.14"
-        strokeLinejoin="round"
-        filter="url(#landGlow)"
-      />
-      <text x="13" y="31" fontSize="0.72" fill="hsl(195 60% 55% / 0.22)" fontFamily="monospace" textAnchor="middle">
-        AK
-      </text>
-
-      {/* ── Greenland ── */}
-      <path
-        d="M 75,7 L 82,5 L 88,7 L 92,12 L 90,19 L 85,22 L 78,20 L 74,15 Z"
-        fill="hsl(210 32% 13%)"
-        stroke="hsl(195 65% 45% / 0.2)"
-        strokeWidth="0.12"
-        strokeLinejoin="round"
-      />
-      <text x="83" y="14" fontSize="0.72" fill="hsl(195 60% 55% / 0.18)" fontFamily="monospace" textAnchor="middle">
-        GL
-      </text>
-
-      {/* ── Main North America silhouette ──
-           Trace: NW coast up → arctic north → NE maritimes →
-           east coast diagonal down → Gulf concavity →
-           Florida → back up west → Mexico funnel → Baja → west coast back up
-      ── */}
-      <path
-        d="
-          M 15,37
-          L 17,30
-          L 21,23
-          L 28,18
-          L 37,14
-          L 47,12
-          L 57,12
-          L 66,13
-          L 72,12
-          L 78,14
-          L 83,18
-          L 85,24
-          L 83,31
-          L 80,37
-          L 79,42
-          L 76,44
-          L 71,44
-          L 66,44
-          L 63,46
-          L 63,50
-          L 68,52
-          L 76,52
-          L 80,56
-          L 82,62
-          L 82,68
-          L 79,72
-          L 74,75
-          L 71,78
-          L 70,82
-          L 69,86
-          L 67,89
-          L 64,88
-          L 62,84
-          L 62,80
-          L 58,75
-          L 52,72
-          L 46,73
-          L 42,78
-          L 38,85
-          L 35,91
-          L 32,94
-          L 28,92
-          L 27,86
-          L 29,79
-          L 30,73
-          L 27,67
-          L 21,63
-          L 15,61
-          L 13,68
-          L 11,76
-          L 10,84
-          L 12,87
-          L 13,82
-          L 14,74
-          L 13,68
-          L 12,61
-          L 11,53
-          L 11,45
-          L 13,39
-          Z
-        "
-        fill="url(#landGrad)"
-        stroke="hsl(195 65% 45% / 0.35)"
-        strokeWidth="0.18"
-        strokeLinejoin="round"
-        filter="url(#landGlow)"
-      />
-
-      {/* ── Florida peninsula ── */}
-      <path
-        d="M 69,86 L 71,89 L 70,93 L 67,94 L 65,91 L 66,87 Z"
-        fill="url(#landGrad)"
-        stroke="hsl(195 65% 45% / 0.3)"
-        strokeWidth="0.13"
-        strokeLinejoin="round"
-      />
-
-      {/* ── Baja California ── */}
-      <path
-        d="M 13,68 L 11,72 L 9,79 L 8,86 L 9,89 L 11,86 L 12,79 L 13,72 Z"
-        fill="url(#landGrad)"
-        stroke="hsl(195 65% 45% / 0.22)"
-        strokeWidth="0.11"
-        strokeLinejoin="round"
-      />
-
-      {/* ── Hudson Bay (dark inland sea) ── */}
-      <path
-        d="M 50,22 L 58,24 L 64,29 L 65,36 L 61,42 L 55,43 L 49,38 L 47,30 Z"
-        fill="hsl(210 45% 10%)"
-        opacity="0.85"
-      />
-
-      {/* ── Great Lakes cluster ── */}
-      {/* Lake Superior */}
-      <ellipse cx="62" cy="44.5" rx="2.4" ry="0.95" fill="hsl(210 42% 11%)" opacity="0.92" />
-      {/* Lake Michigan */}
-      <ellipse cx="65" cy="47" rx="0.7" ry="1.8" fill="hsl(210 42% 11%)" opacity="0.88" />
-      {/* Lake Huron */}
-      <ellipse cx="67.5" cy="46" rx="1.4" ry="0.9" fill="hsl(210 42% 11%)" opacity="0.88" />
-      {/* Lake Erie */}
-      <ellipse cx="70" cy="47.8" rx="1.2" ry="0.5" fill="hsl(210 42% 11%)" opacity="0.85" />
-      {/* Lake Ontario */}
-      <ellipse cx="72" cy="46.8" rx="0.9" ry="0.42" fill="hsl(210 42% 11%)" opacity="0.82" />
-
-      {/* ── Region labels ── */}
-      <text
-        x="52"
-        y="24"
-        fontSize="1.1"
-        fill="hsl(195 60% 55% / 0.26)"
-        fontFamily="monospace"
-        letterSpacing="0.35"
-        textAnchor="middle"
-      >
-        CANADA
-      </text>
-
-      <text
-        x="50"
-        y="61"
-        fontSize="1.1"
-        fill="hsl(195 60% 55% / 0.22)"
-        fontFamily="monospace"
-        letterSpacing="0.3"
-        textAnchor="middle"
-      >
-        UNITED STATES
-      </text>
-
-      <text
-        x="34"
-        y="84"
-        fontSize="0.88"
-        fill="hsl(195 60% 55% / 0.18)"
-        fontFamily="monospace"
-        letterSpacing="0.22"
-        textAnchor="middle"
-      >
-        MEXICO
-      </text>
-
-      {/* Vignette */}
-      <rect width="100" height="100" fill="url(#vig)" />
-    </svg>
-  );
-}
-
-function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqCompleted: boolean }) {
-  return (
-    <svg
-      className="pointer-events-none absolute inset-0 z-10 h-full w-full"
-      viewBox="0 0 100 100"
-      preserveAspectRatio="none"
-    >
-      <defs>
-        <filter id="connGlow">
+        <filter id="goldGlow">
           <feGaussianBlur stdDeviation="0.4" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
@@ -477,7 +178,6 @@ function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqC
           </feMerge>
         </filter>
       </defs>
-
       {CONNECTIONS.map(([a, b], i) => {
         const from = CITY_NODES[a];
         const to = CITY_NODES[b];
@@ -487,32 +187,36 @@ function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqC
         const bothDone = aStatus === "completed" && bStatus === "completed";
         const anyUnlocked = aStatus !== "locked" && aStatus !== "gated" && bStatus !== "locked" && bStatus !== "gated";
 
-        let stroke = "hsl(200 20% 50% / 0.05)";
-        let strokeWidth = 0.16;
-        let dashArr = "0.6 0.7";
+        let stroke: string;
+        let dashArr: string;
         let filterAttr: string | undefined;
 
-        if (bothDone) {
-          stroke = "hsl(160 65% 55% / 0.45)";
-          strokeWidth = 0.28;
+        if (isHQConn) {
+          // Gold dashed lines from HQ
+          stroke = hqCompleted ? "hsl(45 90% 55% / 0.4)" : "hsl(45 90% 55% / 0.25)";
+          dashArr = "1.5 1";
+          filterAttr = "url(#goldGlow)";
+        } else if (bothDone) {
+          stroke = "hsl(160 65% 55% / 0.6)";
           dashArr = "none";
           filterAttr = "url(#connGlow)";
-        } else if (isHQConn) {
-          stroke = hqCompleted ? "hsl(45 90% 55% / 0.28)" : "hsl(45 90% 55% / 0.14)";
-          strokeWidth = 0.2;
-          dashArr = "0.9 0.7";
         } else if (anyUnlocked) {
-          stroke = "hsl(195 85% 60% / 0.2)";
-          strokeWidth = 0.18;
-          dashArr = "0.7 0.6";
+          stroke = "hsl(195 85% 60% / 0.3)";
+          dashArr = "1 0.8";
+          filterAttr = undefined;
+        } else {
+          stroke = "hsl(200 15% 40% / 0.08)";
+          dashArr = "1 0.8";
+          filterAttr = undefined;
         }
 
+        // Curved path
         const mx = (from.x + to.x) / 2;
         const my = (from.y + to.y) / 2;
         const dx = to.x - from.x;
         const dy = to.y - from.y;
         const len = Math.sqrt(dx * dx + dy * dy) || 1;
-        const off = len * 0.09;
+        const off = len * 0.12;
         const cx = mx + (-dy / len) * off;
         const cy = my + (dx / len) * off;
 
@@ -522,7 +226,7 @@ function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqC
             d={`M${from.x},${from.y} Q${cx},${cy} ${to.x},${to.y}`}
             fill="none"
             stroke={stroke}
-            strokeWidth={strokeWidth}
+            strokeWidth={bothDone ? 0.5 : 0.3}
             strokeDasharray={dashArr}
             strokeLinecap="round"
             filter={filterAttr}
@@ -533,6 +237,7 @@ function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqC
   );
 }
 
+/* ─── HUD Bar ────────────────────────────────────────────── */
 function HUDBar({
   playerName,
   level,
@@ -550,29 +255,25 @@ function HUDBar({
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[hsl(195_80%_50%/0.2)] bg-[hsl(210_40%_14%/0.85)] px-4 py-2.5 shadow-lg backdrop-blur-md"
+      className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[hsl(195_80%_50%/0.2)] bg-[hsl(210_40%_14%/0.8)] px-4 py-2.5 backdrop-blur-md shadow-lg"
     >
       <div className="flex items-center gap-3 text-xs">
-        <span className="flex items-center gap-1.5 font-bold text-[hsl(195_80%_70%)]">
+        <span className="flex items-center gap-1.5 text-[hsl(195_80%_70%)] font-bold">
           <Globe className="h-3.5 w-3.5" />
           OPERATIVE: <span className="text-white">{playerName}</span>
         </span>
-        <span className="hidden text-[hsl(195_80%_50%/0.3)] sm:inline">|</span>
-        <span className="hidden items-center gap-1 text-[hsl(160_70%_60%)] sm:flex">
+        <span className="hidden sm:inline text-[hsl(195_80%_50%/0.3)]">|</span>
+        <span className="hidden sm:flex items-center gap-1 text-[hsl(160_70%_60%)]">
           <Zap className="h-3.5 w-3.5" />
           LVL {level} · {points} XP
         </span>
       </div>
-
       <div className="flex items-center gap-3 text-xs">
         <span className="flex items-center gap-1 text-[hsl(195_80%_70%)]">
           <Shield className="h-3.5 w-3.5" />
-          ZONES:{" "}
-          <span className="font-bold text-white">
-            {zonesSecured}/{totalZones}
-          </span>
+          ZONES: <span className="font-bold text-white">{zonesSecured}/{totalZones}</span>
         </span>
-        <span className="rounded-full border border-[hsl(45_90%_55%/0.3)] bg-[hsl(45_90%_55%/0.15)] px-2 py-0.5 text-[10px] font-bold text-[hsl(45_90%_65%)]">
+        <span className="rounded-full bg-[hsl(45_90%_55%/0.15)] border border-[hsl(45_90%_55%/0.3)] px-2 py-0.5 text-[10px] font-bold text-[hsl(45_90%_65%)]">
           🛡️ GUARDIAN MODE
         </span>
       </div>
@@ -580,20 +281,22 @@ function HUDBar({
   );
 }
 
+/* ─── Guide messages ─────────────────────────────────── */
 const GUIDE_MESSAGES = {
   idle: [
     "Hey Guardian! Ready to protect the digital world? 🚀",
     "Every zone has secrets to discover! 🔍",
     "You're doing amazing, keep it up! 💪",
-    "Tap the glowing zone to continue! 🎯",
+    "Tap a zone to begin your mission! 🎯",
   ],
   worldSelected: "Let's explore this zone! 🌟",
-  worldLocked: "Finish the current zone to unlock the next one! 🔒",
-  hqGated: "Complete HQ Orientation to unlock your first zone! 🏠",
+  worldLocked: "Complete earlier zones to unlock this one! 🔒",
+  hqGated: "Complete HQ Orientation to unlock zones! 🏠",
   progress: "Great job! Keep going, hero! 🎉",
-  hqComplete: "Amazing work, Guardian! Your first zone is now open! 🌟",
+  hqComplete: "Amazing work, Guardian! Your first zones are now open — choose your mission! 🌟",
 };
 
+/* ─── Guide Character Component ──────────────────────── */
 function GuideCharacter({
   avatarConfig,
   message,
@@ -608,7 +311,7 @@ function GuideCharacter({
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.8 }}
-      className="fixed bottom-24 left-4 z-50 flex flex-col items-start gap-2 md:bottom-8 md:left-6"
+      className="fixed bottom-24 right-4 z-50 flex flex-col items-end gap-2 md:bottom-8 md:right-6"
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -617,10 +320,10 @@ function GuideCharacter({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.85, y: 6 }}
           transition={{ duration: 0.25 }}
-          className="relative max-w-[220px] rounded-2xl rounded-bl-sm border border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_14%/0.9)] px-3 py-2 shadow-lg backdrop-blur-md"
+          className="relative max-w-[200px] rounded-2xl rounded-br-sm border border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_14%/0.9)] px-3 py-2 shadow-lg backdrop-blur-md"
         >
-          <p className="text-xs font-medium leading-snug text-white">{message}</p>
-          <div className="absolute -bottom-1.5 left-4 h-3 w-3 rotate-45 border-b border-r border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_14%/0.9)]" />
+          <p className="text-xs font-medium text-white leading-snug">{message}</p>
+          <div className="absolute -bottom-1.5 right-4 h-3 w-3 rotate-45 bg-[hsl(210_40%_14%/0.9)] border-r border-b border-[hsl(195_80%_50%/0.25)]" />
         </motion.div>
       </AnimatePresence>
 
@@ -628,12 +331,12 @@ function GuideCharacter({
         onClick={onTap}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-[hsl(195_80%_50%/0.5)] bg-[hsl(210_40%_14%/0.9)] shadow-[0_0_20px_hsl(195_85%_50%/0.3)]"
+        className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-[hsl(195_80%_50%/0.5)] bg-[hsl(210_40%_14%/0.9)] shadow-[0_0_20px_hsl(195_85%_50%/0.3)] transition-shadow hover:shadow-[0_0_28px_hsl(195_85%_50%/0.45)]"
       >
-        <motion.div animate={{ y: [0, -2, 0] }} transition={{ repeat: Infinity, duration: 2.5 }}>
+        <motion.div animate={{ y: [0, -2, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}>
           <HeroAvatar avatarConfig={avatarConfig} size={36} fallbackEmoji="🦸" />
         </motion.div>
-        <div className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(195_80%_55%)]">
+        <div className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(195_80%_55%)]">
           <MessageCircle className="h-3 w-3 text-white" />
         </div>
       </motion.button>
@@ -641,6 +344,7 @@ function GuideCharacter({
   );
 }
 
+/* ─── World Detail Panel (preserved) ─────────────────── */
 function WorldDetailPanel({
   world,
   mission,
@@ -658,6 +362,7 @@ function WorldDetailPanel({
   onClose: () => void;
   onStartLevel: (missionId: string, levelIndex: number) => void;
 }) {
+  // HQ special panel
   if (world.isHub) {
     return (
       <motion.div
@@ -676,35 +381,35 @@ function WorldDetailPanel({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[hsl(45_80%_30%)] text-2xl">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl bg-[hsl(45_80%_30%)]">
               🏠
             </div>
             <div className="flex-1">
               <h2 className="text-lg font-bold text-white">CYBER HERO COMMAND // GLOBAL HQ</h2>
               <p className="text-xs text-[hsl(45_90%_65%)]">Your home base and training ground</p>
             </div>
-            <button onClick={onClose} className="rounded-full p-1.5 transition-colors hover:bg-white/10">
+            <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10 transition-colors">
               <X className="h-5 w-5 text-white/50" />
             </button>
           </div>
 
-          <p className="mb-5 text-sm leading-relaxed text-white/70">
-            Welcome, Guardian! Complete your orientation mission to unlock your first cyber zone.
+          <p className="mb-5 text-sm text-white/70 leading-relaxed">
+            Welcome, Guardian! This is your home base. Complete your orientation mission to unlock your first zone and begin protecting the digital world.
           </p>
 
           <div className="mb-5 flex items-center gap-3 rounded-xl border-2 border-[hsl(45_90%_55%/0.3)] bg-[hsl(45_90%_55%/0.08)] p-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[hsl(45_80%_45%/0.2)] text-lg">
               🎯
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-white">OP: GUARDIAN ORIENTATION</p>
               <p className="text-[10px] text-white/40">Difficulty: ◆◇◇◇◇ · TUTORIAL</p>
-              <p className="text-[10px] text-[hsl(45_90%_65%)]">+100 XP · Unlocks: Password Peak</p>
+              <p className="text-[10px] text-[hsl(45_90%_65%)]">+100 XP · Unlocks: Password Peak + Encrypt Enclave</p>
             </div>
           </div>
 
           <Button
-            className="w-full border-0 bg-[hsl(45_90%_50%)] text-sm font-bold text-[hsl(210_40%_10%)] shadow-[0_0_20px_hsl(45_90%_50%/0.3)] hover:bg-[hsl(45_90%_45%)]"
+            className="w-full text-sm font-bold bg-[hsl(45_90%_50%)] hover:bg-[hsl(45_90%_45%)] text-[hsl(210_40%_10%)] border-0 shadow-[0_0_20px_hsl(45_90%_50%/0.3)]"
             onClick={() => onStartLevel("password-safety", 0)}
           >
             🚀 BEGIN ORIENTATION
@@ -721,6 +426,7 @@ function WorldDetailPanel({
   const progressRow = missionProgress.find((p: any) => p.mission_id === mission.id);
   const completedGames = progressRow?.status === "completed" ? totalGames : (progressRow?.current_question ?? 0);
   const levels = getMissionLevels(mission, age, learningMode, completedGames);
+
   const STEP_LABELS = ["Mission 1", "Mission 2", "Boss Battle"];
   const STEP_ICONS = ["🎯", "⚔️", "🐉"];
 
@@ -741,19 +447,14 @@ function WorldDetailPanel({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center gap-3">
-          <div
-            className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl"
-            style={{ background: `hsl(${world.hue} 70% 30%)` }}
-          >
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl" style={{ background: `hsl(${world.hue} 70% 30%)` }}>
             {world.icon}
           </div>
           <div className="flex-1">
             <h2 className="text-lg font-bold text-white">{world.name}</h2>
-            <p className="text-xs text-[hsl(195_60%_60%)]">
-              {world.city} · {world.description}
-            </p>
+            <p className="text-xs text-[hsl(195_60%_60%)]">{world.city} · {world.description}</p>
           </div>
-          <button onClick={onClose} className="rounded-full p-1.5 transition-colors hover:bg-white/10">
+          <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10 transition-colors">
             <X className="h-5 w-5 text-white/50" />
           </button>
         </div>
@@ -767,18 +468,18 @@ function WorldDetailPanel({
         </div>
 
         <div className="space-y-3">
-          {levels.map((levelItem, i) => {
+          {levels.map((level, i) => {
             const levelStart = i * modeConfig.gamesPerLevel;
             const levelEnd = levelStart + modeConfig.gamesPerLevel;
             const levelCompleted = Math.min(Math.max(completedGames - levelStart, 0), modeConfig.gamesPerLevel);
             const levelDone = levelCompleted >= modeConfig.gamesPerLevel;
             const levelActive = completedGames >= levelStart && completedGames < levelEnd;
-            const isLocked = levelItem.locked;
+            const isLocked = level.locked;
             const isBoss = i === levels.length - 1;
 
             return (
               <motion.div
-                key={levelItem.level}
+                key={level.level}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
@@ -792,15 +493,12 @@ function WorldDetailPanel({
                         : "border-white/5 bg-white/[0.03]"
                 }`}
               >
-                <div
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg ${
-                    levelDone ? "bg-[hsl(160_65%_50%/0.2)]" : levelActive ? "bg-[hsl(195_80%_50%/0.2)]" : "bg-white/5"
-                  }`}
-                >
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg ${
+                  levelDone ? "bg-[hsl(160_65%_50%/0.2)]" : levelActive ? "bg-[hsl(195_80%_50%/0.2)]" : "bg-white/5"
+                }`}>
                   {isLocked ? <Lock className="h-4 w-4 text-white/30" /> : <span>{STEP_ICONS[i]}</span>}
                 </div>
-
-                <div className="min-w-0 flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-bold text-white">{STEP_LABELS[i]}</p>
                     {isBoss && !isLocked && (
@@ -810,29 +508,24 @@ function WorldDetailPanel({
                     )}
                   </div>
                   <p className="text-[10px] text-white/40">
-                    {levelItem.name} · {levelCompleted}/{modeConfig.gamesPerLevel} games
+                    {level.name} · {levelCompleted}/{modeConfig.gamesPerLevel} games
                   </p>
                   <div className="mt-1 flex gap-1">
-                    {levelItem.miniGameTypes.slice(0, 3).map((type, j) => (
+                    {level.miniGameTypes.slice(0, 3).map((type, j) => (
                       <span key={j} className="text-[10px]" title={MINI_GAME_META[type].label}>
                         {MINI_GAME_META[type].emoji}
                       </span>
                     ))}
                   </div>
                 </div>
-
                 {levelDone ? (
                   <div className="flex items-center gap-1 text-[hsl(160_65%_55%)]">
                     <Trophy className="h-4 w-4" />
                     <span className="text-xs font-bold">Done</span>
                   </div>
                 ) : levelActive ? (
-                  <Button
-                    size="sm"
-                    className="border-0 bg-[hsl(195_80%_50%)] text-xs text-white hover:bg-[hsl(195_80%_45%)]"
-                    onClick={() => onStartLevel(mission.id, i)}
-                  >
-                    {completedGames > 0 ? "Continue" : isBoss ? "Fight!" : "Deploy"}
+                  <Button size="sm" className="text-xs bg-[hsl(195_80%_50%)] hover:bg-[hsl(195_80%_45%)] text-white border-0" onClick={() => onStartLevel(mission.id, i)}>
+                    {completedGames > 0 ? "Continue" : isBoss ? "Fight!" : "Deploy"}{" "}
                     <ChevronRight className="ml-1 h-3 w-3" />
                   </Button>
                 ) : isLocked ? (
@@ -844,9 +537,7 @@ function WorldDetailPanel({
         </div>
 
         <div className="mt-4 flex items-center justify-between text-xs text-white/40">
-          <span>
-            {completedGames}/{totalGames} games completed
-          </span>
+          <span>{completedGames}/{totalGames} games completed</span>
           {progressRow?.status === "completed" && (
             <span className="flex items-center gap-1 font-bold text-[hsl(160_65%_55%)]">
               <Trophy className="h-3.5 w-3.5" /> Zone Secured!
@@ -858,11 +549,11 @@ function WorldDetailPanel({
   );
 }
 
+/* ─── Main Component ─────────────────────────────────── */
 export default function MissionWorldMap() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
   const [guideMessage, setGuideMessage] = useState(GUIDE_MESSAGES.idle[0]);
   const [idleIndex, setIdleIndex] = useState(0);
   const [selectedWorld, setSelectedWorld] = useState<(typeof CITY_NODES)[number] | null>(null);
@@ -896,82 +587,76 @@ export default function MissionWorldMap() {
   });
 
   const hqCompleted = !!(child as any)?.hq_completed;
+
   const learningMode = ((child as any)?.learning_mode as LearningMode) || "standard";
   const level = child?.level ?? 1;
   const points = child?.points ?? 0;
-  const avatarConfig = (child?.avatar_config as Record<string, any> | null) ?? null;
+  const rank = getLevelRank(level);
+  const avatarConfig = child?.avatar_config as Record<string, any> | null;
   const hasAvatar = !!avatarConfig?.heroSrc;
   const age = child?.age ?? 7;
   const playerName = child?.name ?? "Guardian";
 
   useEffect(() => {
-    if (child && !hasAvatar) {
-      navigate("/edit-avatar");
-    }
+    if (child && !hasAvatar) navigate("/edit-avatar");
   }, [child, hasAvatar, navigate]);
 
-  const missionIds = useMemo(() => new Set(MISSIONS.map((m) => m.id)), []);
+  // Map mission IDs that actually exist
+  const missionIds = new Set(MISSIONS.map((m) => m.id));
 
   const nodeStatuses = useMemo(() => {
     const expectedTotal = getTotalGames(learningMode);
+    // Original 7 missions in sequential order
+    const sequentialIds = [
+      "password-safety", "scam-detection", "safe-websites",
+      "personal-info", "malware-monsters", "smart-sharing", "phishy-messages",
+    ];
 
     return CITY_NODES.map((node) => {
-      if (node.isHub) {
-        return { status: "unlocked" as const, stars: 0 };
-      }
+      if (node.isHub) return { status: "unlocked" as const, stars: 0 };
 
-      if (!missionIds.has(node.id)) {
-        return { status: "locked" as const, stars: 0 };
-      }
-
+      // If HQ not completed, gate everything
       if (!hqCompleted) {
-        if (node.id === PROGRESSION_ORDER[0]) {
+        // Show Password Peak and Encrypt Enclave as "gated" (amber hint)
+        if (node.id === "password-safety" || node.id === "encrypt-enclave") {
           return { status: "gated" as const, stars: 0 };
         }
         return { status: "locked" as const, stars: 0 };
       }
 
+      if (!missionIds.has(node.id) && !node.isHub) return { status: "locked" as const, stars: 0 };
+
+      const seqIndex = sequentialIds.indexOf(node.id);
       const progress = missionProgress.find(
         (p: any) => p.mission_id === node.id && (p.max_score ?? expectedTotal) === expectedTotal,
       );
 
       if (progress?.status === "completed") {
-        return {
-          status: "completed" as const,
-          stars: getStars(progress.score ?? expectedTotal, progress.max_score ?? expectedTotal),
-        };
+        return { status: "completed" as const, stars: getStars(progress.score, progress.max_score) };
       }
 
-      const currentIndex = PROGRESSION_ORDER.indexOf(node.id as (typeof PROGRESSION_ORDER)[number]);
+      // First mission always unlocked after HQ
+      if (seqIndex === 0) return { status: "unlocked" as const, stars: 0 };
 
-      if (currentIndex === -1) {
-        return { status: "locked" as const, stars: 0 };
+      // Sequential unlock
+      if (seqIndex > 0) {
+        const prevId = sequentialIds[seqIndex - 1];
+        const prevDone = missionProgress.find((p: any) => p.mission_id === prevId && p.status === "completed");
+        return { status: prevDone ? ("unlocked" as const) : ("locked" as const), stars: 0 };
       }
 
-      if (currentIndex === 0) {
-        return { status: "unlocked" as const, stars: 0 };
-      }
-
-      const previousMissionId = PROGRESSION_ORDER[currentIndex - 1];
-      const previousCompleted = missionProgress.some(
-        (p: any) => p.mission_id === previousMissionId && p.status === "completed",
-      );
-
-      return {
-        status: previousCompleted ? ("unlocked" as const) : ("locked" as const),
-        stars: 0,
-      };
+      return { status: "locked" as const, stars: 0 };
     });
-  }, [missionProgress, learningMode, hqCompleted, missionIds]);
+  }, [missionProgress, learningMode, hqCompleted]);
 
   const completedCount = nodeStatuses.filter((n) => n.status === "completed").length;
-  const totalPlayable = CITY_NODES.filter((n) => !n.isHub && missionIds.has(n.id)).length;
+  const totalPlayable = CITY_NODES.filter((n) => missionIds.has(n.id)).length;
 
   useEffect(() => {
-    if (!hqCompleted) {
-      setGuideMessage("Hey Guardian! Start at HQ to begin your journey! 🏠");
-    } else if (completedCount > 0 && completedCount < totalPlayable) {
+    if (hqCompleted && completedCount > 0 && completedCount < totalPlayable) {
       setGuideMessage(GUIDE_MESSAGES.progress);
+    } else if (!hqCompleted) {
+      setGuideMessage("Hey Guardian! Start at HQ to begin your journey! 🏠");
     }
   }, [completedCount, totalPlayable, hqCompleted]);
 
@@ -991,43 +676,39 @@ export default function MissionWorldMap() {
       setSelectedWorld(node);
       return;
     }
-
     const { status } = nodeStatuses[index];
-
     if (status === "gated") {
       setGuideMessage(GUIDE_MESSAGES.hqGated);
       return;
     }
-
     if (status === "locked") {
       setGuideMessage(GUIDE_MESSAGES.worldLocked);
       return;
     }
-
     setGuideMessage(GUIDE_MESSAGES.worldSelected);
     setSelectedWorld(node);
   };
 
   const handleHQComplete = async () => {
     if (!activeChildId) return;
-
+    // Mark HQ as completed
     await supabase
       .from("child_profiles")
       .update({ hq_completed: true } as any)
       .eq("id", activeChildId);
-
+    // Refresh child data
     queryClient.invalidateQueries({ queryKey: ["child", activeChildId] });
     setSelectedWorld(null);
     setGuideMessage(GUIDE_MESSAGES.hqComplete);
   };
 
   const handleStartLevel = (missionId: string, _levelIndex: number) => {
+    // If starting from HQ orientation, mark HQ as completed first
     if (selectedWorld?.isHub) {
-      void handleHQComplete();
+      handleHQComplete();
       navigate(`/missions?mission=${missionId}`);
       return;
     }
-
     setSelectedWorld(null);
     navigate(`/missions?mission=${missionId}`);
   };
@@ -1036,10 +717,8 @@ export default function MissionWorldMap() {
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden pb-24 pt-20"
-      style={{
-        background: "linear-gradient(160deg, hsl(220 45% 10%), hsl(210 50% 14%), hsl(200 40% 12%))",
-      }}
+      className="min-h-screen pb-24 pt-20 relative overflow-hidden"
+      style={{ background: "linear-gradient(160deg, hsl(220 45% 10%), hsl(210 50% 14%), hsl(200 40% 12%))" }}
     >
       {/* Starfield */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -1055,53 +734,21 @@ export default function MissionWorldMap() {
               opacity: Math.random() * 0.5 + 0.05,
             }}
             animate={{ opacity: [0.05, 0.4, 0.05] }}
-            transition={{
-              repeat: Infinity,
-              duration: Math.random() * 4 + 2,
-              delay: Math.random() * 3,
-            }}
+            transition={{ repeat: Infinity, duration: Math.random() * 4 + 2, delay: Math.random() * 3 }}
           />
         ))}
       </div>
 
-      {/* Scanlines */}
+      {/* Scanline overlay */}
       <div
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
-          background:
-            "repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(195 80% 60% / 0.015) 2px, hsl(195 80% 60% / 0.015) 4px)",
+          background: "repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(195 80% 60% / 0.015) 2px, hsl(195 80% 60% / 0.015) 4px)",
         }}
       />
 
       <div className="relative z-[2] mx-auto max-w-6xl px-4">
-        {/* Header */}
-        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-col gap-2">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/world-select")}
-              className="w-fit rounded-full border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_14%/0.65)] text-white hover:bg-[hsl(210_40%_18%/0.9)]"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to World Select
-            </Button>
-
-            <div>
-              <h1 className="text-2xl font-black tracking-tight text-white md:text-3xl">
-                🌎 North America — <span className="text-[hsl(45_90%_65%)]">The Keybreaker&apos;s Domain</span>
-              </h1>
-              <p className="mt-1 text-sm text-[hsl(195_60%_70%/0.8)]">Finish each zone to unlock the next one.</p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-[hsl(0_80%_60%/0.2)] bg-[hsl(210_40%_14%/0.75)] px-4 py-3 text-sm text-white/80 shadow-lg">
-            <p className="font-bold text-[hsl(0_80%_70%)]">⚠ Villain Signal Detected</p>
-            <p className="mt-1 text-xs text-white/60">
-              &quot;You&apos;ll never secure my network chaos!&quot; — The Keybreaker
-            </p>
-          </div>
-        </div>
-
+        {/* HUD Bar */}
         <HUDBar
           playerName={playerName}
           level={level}
@@ -1110,38 +757,45 @@ export default function MissionWorldMap() {
           totalZones={totalPlayable}
         />
 
+        {/* Certificate banner */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
           className="mb-3 text-center"
         >
-          <p className="text-xs font-medium text-[hsl(45_90%_65%/0.7)]">
+          <p className="text-xs text-[hsl(45_90%_65%/0.7)] font-medium">
             🏆 Secure all zones to earn your Cyber Guardian Certificate!
           </p>
         </motion.div>
 
-        {/* Map container */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="relative mx-auto w-full"
-          style={{ aspectRatio: "16/10", maxWidth: "1040px" }}
-        >
-          <div className="absolute inset-0 overflow-hidden rounded-2xl border border-[hsl(195_80%_50%/0.2)] shadow-[0_0_60px_hsl(210_60%_15%/0.8),inset_0_0_40px_hsl(210_50%_10%/0.5)]">
-            <WorldMapSVG />
+        {/* ─── THE MAP ─────────────────────────────────── */}
+        <div className="relative mx-auto w-full" style={{ aspectRatio: "16/10", maxWidth: "900px" }}>
+          <div
+            className="absolute inset-0 rounded-2xl border border-[hsl(195_80%_50%/0.15)] overflow-hidden shadow-2xl"
+            style={{
+              background: "radial-gradient(ellipse at 50% 45%, hsl(210 50% 16% / 0.95), hsl(220 45% 10%))",
+            }}
+          >
+            {/* Grid */}
+            <div
+              className="absolute inset-0 opacity-[0.06]"
+              style={{
+                backgroundImage: "radial-gradient(circle, hsl(195 80% 60%) 0.5px, transparent 0.5px)",
+                backgroundSize: "24px 24px",
+              }}
+            />
 
-            {/* Corner decorations */}
-            <div className="absolute left-3 top-3 h-6 w-6 rounded-tl-lg border-l-2 border-t-2 border-[hsl(195_80%_50%/0.4)]" />
-            <div className="absolute right-3 top-3 h-6 w-6 rounded-tr-lg border-r-2 border-t-2 border-[hsl(195_80%_50%/0.4)]" />
-            <div className="absolute bottom-3 left-3 h-6 w-6 rounded-bl-lg border-b-2 border-l-2 border-[hsl(195_80%_50%/0.4)]" />
-            <div className="absolute bottom-3 right-3 h-6 w-6 rounded-br-lg border-b-2 border-r-2 border-[hsl(195_80%_50%/0.4)]" />
+            {/* Soft globe hint */}
+            <div className="absolute inset-[10%] rounded-full border border-[hsl(195_80%_50%/0.06)]" />
+            <div className="absolute inset-[20%] rounded-full border border-[hsl(195_80%_50%/0.04)]" />
+            <div className="absolute top-[45%] left-0 right-0 h-px bg-[hsl(195_80%_50%/0.04)]" />
+            <div className="absolute top-0 bottom-0 left-[50%] w-px bg-[hsl(195_80%_50%/0.04)]" />
           </div>
 
           <MapConnections statuses={nodeStatuses.map((n) => n.status)} hqCompleted={hqCompleted} />
 
-          {/* City nodes */}
+          {/* City Nodes */}
           {CITY_NODES.map((node, index) => {
             if (node.isHub) {
               return (
@@ -1149,22 +803,20 @@ export default function MissionWorldMap() {
                   key={node.id}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ delay: 0.3, type: "spring", stiffness: 220 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                   className="absolute z-20"
-                  style={{
-                    top: `${node.y}%`,
-                    left: `${node.x}%`,
-                    transform: "translate(-50%, -50%)",
-                  }}
+                  style={{ top: `${node.y}%`, left: `${node.x}%`, transform: "translate(-50%, -50%)" }}
                 >
+                  {/* "Start here!" floating arrow — only before first HQ click */}
                   {!hqCompleted && !hasClickedHQ && (
                     <motion.div
-                      animate={{ x: [0, 6, 0] }}
-                      transition={{ repeat: Infinity, duration: 1.2 }}
-                      className="absolute -right-32 top-1/2 z-30 flex -translate-y-1/2 items-center gap-1 whitespace-nowrap"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1, x: [0, 6, 0] }}
+                      transition={{ x: { repeat: Infinity, duration: 1.2, ease: "easeInOut" }, opacity: { duration: 0.5 } }}
+                      className="absolute -right-28 top-1/2 -translate-y-1/2 flex items-center gap-1 z-30"
                     >
-                      <span className="text-lg text-[hsl(45_90%_60%)]">→</span>
-                      <span className="rounded-full border border-[hsl(45_90%_55%/0.4)] bg-[hsl(45_90%_55%/0.2)] px-2.5 py-1 text-[10px] font-bold text-[hsl(45_90%_70%)]">
+                      <span className="text-[hsl(45_90%_60%)] text-lg">→</span>
+                      <span className="rounded-full bg-[hsl(45_90%_55%/0.2)] border border-[hsl(45_90%_55%/0.4)] px-2.5 py-1 text-[10px] font-bold text-[hsl(45_90%_70%)] whitespace-nowrap shadow-[0_0_12px_hsl(45_90%_55%/0.2)]">
                         Start here!
                       </span>
                     </motion.div>
@@ -1172,37 +824,47 @@ export default function MissionWorldMap() {
 
                   <motion.button
                     onClick={() => handleNodeClick(node, index)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.92 }}
-                    className="flex cursor-pointer flex-col items-center"
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.94 }}
+                    className="flex flex-col items-center cursor-pointer"
                   >
+                    {/* Outer gold pulse ring */}
                     <motion.div
-                      animate={{ scale: [1, 1.7, 1], opacity: [0.4, 0, 0.4] }}
-                      transition={{ repeat: Infinity, duration: 3.5 }}
-                      className="absolute -inset-4 rounded-full border-2 border-[hsl(45_90%_55%/0.5)]"
+                      animate={{ scale: [1, 1.6, 1], opacity: [0.4, 0, 0.4] }}
+                      transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
+                      className="absolute -inset-3 md:-inset-4 rounded-full border-2 border-[hsl(45_90%_55%/0.5)]"
                     />
                     <motion.div
-                      animate={{ scale: [1, 1.35, 1], opacity: [0.25, 0, 0.25] }}
-                      transition={{ repeat: Infinity, duration: 2.5, delay: 0.5 }}
-                      className="absolute -inset-2 rounded-full border border-[hsl(45_90%_55%/0.3)]"
+                      animate={{ scale: [1, 1.3, 1], opacity: [0.25, 0, 0.25] }}
+                      transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut", delay: 0.5 }}
+                      className="absolute -inset-1.5 md:-inset-2 rounded-full border border-[hsl(45_90%_55%/0.3)]"
                     />
 
+                    {/* Beckoning shimmer for pre-HQ state */}
+                    {!hqCompleted && (
+                      <motion.div
+                        animate={{ scale: [1, 1.15, 1], opacity: [0.6, 0.3, 0.6] }}
+                        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                        className="absolute -inset-1 rounded-full bg-[hsl(45_90%_55%/0.1)]"
+                      />
+                    )}
+
+                    {/* Node circle — 1.4x larger */}
                     <div
-                      className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-[hsl(45_90%_55%/0.7)] shadow-[0_0_32px_hsl(45_90%_55%/0.4)] backdrop-blur-md md:h-[68px] md:w-[68px]"
-                      style={{
-                        background: "radial-gradient(circle, hsl(45 85% 45% / 0.35), hsl(35 50% 18% / 0.9))",
-                      }}
+                      className="relative flex h-14 w-14 md:h-[68px] md:w-[68px] items-center justify-center rounded-full border-2 border-[hsl(45_90%_55%/0.6)] shadow-[0_0_30px_hsl(45_90%_55%/0.35)] backdrop-blur-md"
+                      style={{ background: "radial-gradient(circle, hsl(45 85% 45% / 0.3), hsl(35 50% 18% / 0.9))" }}
                     >
-                      <span className="text-2xl drop-shadow-md md:text-3xl">🏠</span>
+                      <span className="text-2xl md:text-3xl drop-shadow-md">🏠</span>
                     </div>
 
-                    <div className="mt-1.5 rounded-full border border-[hsl(45_90%_55%/0.3)] bg-[hsl(45_90%_55%/0.15)] px-2.5 py-0.5 backdrop-blur-sm">
-                      <p className="whitespace-nowrap text-[8px] font-bold tracking-wide text-[hsl(45_90%_75%)] md:text-[10px]">
+                    {/* Label */}
+                    <div className="mt-1.5 rounded-full bg-[hsl(45_90%_55%/0.15)] px-2.5 py-0.5 border border-[hsl(45_90%_55%/0.25)]">
+                      <p className="text-[8px] md:text-[10px] font-bold text-[hsl(45_90%_70%)] whitespace-nowrap tracking-wide">
                         HQ — Cyber Hero Command
                       </p>
                     </div>
-                    <p className="mt-0.5 whitespace-nowrap text-[6px] text-[hsl(45_90%_60%/0.6)] md:text-[8px]">
-                      {node.city}
+                    <p className="mt-0.5 text-[6px] md:text-[7px] text-[hsl(45_90%_60%/0.6)] whitespace-nowrap">
+                      {hqCompleted ? "Home Base" : "Begin your mission here"}
                     </p>
                   </motion.button>
                 </motion.div>
@@ -1218,130 +880,111 @@ export default function MissionWorldMap() {
             return (
               <motion.div
                 key={node.id}
-                initial={{ opacity: 0, scale: 0.4 }}
+                initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.35 + index * 0.05, type: "spring", stiffness: 200 }}
+                transition={{ delay: 0.3 + index * 0.06, type: "spring", stiffness: 180 }}
                 className="absolute z-10"
-                style={{
-                  top: `${node.y}%`,
-                  left: `${node.x}%`,
-                  transform: "translate(-50%, -50%)",
-                }}
+                style={{ top: `${node.y}%`, left: `${node.x}%`, transform: "translate(-50%, -50%)" }}
               >
                 <motion.button
                   onClick={() => handleNodeClick(node, index)}
                   disabled={!isClickable}
-                  whileHover={isClickable ? { scale: 1.15 } : {}}
-                  whileTap={isClickable ? { scale: 0.92 } : {}}
+                  whileHover={isClickable ? { scale: 1.12 } : {}}
+                  whileTap={isClickable ? { scale: 0.93 } : {}}
                   className={`group relative flex flex-col items-center transition-all ${
-                    status === "locked"
-                      ? "cursor-not-allowed opacity-25"
-                      : isGated
-                        ? "cursor-not-allowed opacity-45"
-                        : "cursor-pointer"
+                    status === "locked" ? "opacity-30 cursor-not-allowed" : isGated ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                   }`}
+                  title={isGated ? "Complete HQ Orientation to unlock" : undefined}
                 >
+                  {/* Ping ring for current target */}
                   {isCurrentTarget && (
                     <motion.div
-                      animate={{ scale: [1, 1.6, 1], opacity: [0.5, 0, 0.5] }}
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
                       transition={{ repeat: Infinity, duration: 2 }}
-                      className="absolute -inset-2.5 rounded-full border border-[hsl(195_80%_50%/0.6)]"
+                      className="absolute -inset-2 rounded-full border border-[hsl(195_80%_50%/0.5)]"
                     />
                   )}
 
+                  {/* Amber outline pulse for gated nodes */}
                   {isGated && (
                     <motion.div
-                      animate={{ opacity: [0.3, 0.65, 0.3] }}
+                      animate={{ opacity: [0.3, 0.6, 0.3] }}
                       transition={{ repeat: Infinity, duration: 2.5 }}
-                      className="absolute -inset-1.5 rounded-full border border-[hsl(45_90%_55%/0.45)]"
+                      className="absolute -inset-1.5 rounded-full border border-[hsl(45_90%_55%/0.4)]"
                     />
                   )}
 
+                  {/* Node circle */}
                   <div
-                    className={`relative flex h-10 w-10 items-center justify-center rounded-full border-2 text-base shadow-lg transition-all duration-200 md:h-11 md:w-11 md:text-lg ${
+                    className={`relative flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full border-2 text-lg md:text-xl transition-all duration-200 ${
                       status === "completed"
-                        ? "border-[hsl(160_65%_50%/0.7)] shadow-[0_0_20px_hsl(160_65%_50%/0.4)]"
+                        ? `border-[hsl(160_65%_50%/0.6)] shadow-[0_0_18px_hsl(160_65%_50%/0.35)]`
                         : status === "unlocked"
-                          ? "border-white/30"
+                          ? `border-[hsl(${node.hue}_70%_55%/0.6)] shadow-[0_0_18px_hsl(${node.hue}_70%_55%/0.25)] hover:shadow-[0_0_25px_hsl(${node.hue}_70%_55%/0.4)]`
                           : isGated
-                            ? "border-[hsl(45_90%_55%/0.35)]"
-                            : "border-white/10"
-                    } ${isCurrentTarget ? "scale-110 ring-4 ring-[hsl(195_80%_50%/0.35)]" : ""}`}
+                            ? "border-[hsl(45_90%_55%/0.3)] shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                            : "border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                    }`}
                     style={{
-                      background:
-                        status === "locked"
-                          ? "hsl(220 30% 16%)"
-                          : isGated
-                            ? "hsl(35 28% 16%)"
-                            : `radial-gradient(circle at 35% 35%, hsl(${node.hue} 65% 38%), hsl(${node.hue} 50% 18%))`,
-                      boxShadow: status === "unlocked" ? `0 0 18px hsl(${node.hue} 70% 55% / 0.3)` : undefined,
+                      background: status === "locked"
+                        ? "hsl(220 30% 18%)"
+                        : isGated
+                          ? "hsl(35 30% 18%)"
+                          : `radial-gradient(circle, hsl(${node.hue} 60% 35%), hsl(${node.hue} 50% 20%))`,
                     }}
                   >
                     {status === "locked" || isGated ? (
-                      <Lock className={`h-3.5 w-3.5 ${isGated ? "text-[hsl(45_90%_55%/0.5)]" : "text-white/25"}`} />
+                      <Lock className={`h-4 w-4 ${isGated ? "text-[hsl(45_90%_55%/0.4)]" : "text-white/20"}`} />
                     ) : status === "completed" ? (
                       <span className="text-sm">✅</span>
                     ) : (
-                      <span className="drop-shadow-sm">{node.icon}</span>
-                    )}
-
-                    {(status === "unlocked" || status === "completed") && (
-                      <div className="absolute left-2 top-1 h-1 w-2 rotate-[-30deg] rounded-full bg-white/25" />
+                      <span className="drop-shadow-md">{node.icon}</span>
                     )}
                   </div>
 
+                  {/* Stars */}
                   {status === "completed" && stars > 0 && (
                     <div className="mt-0.5 flex gap-0.5">
                       {[1, 2, 3].map((s) => (
                         <Star
                           key={s}
-                          className={`h-2.5 w-2.5 ${
-                            s <= stars ? "fill-[hsl(45_90%_60%)] text-[hsl(45_90%_60%)]" : "text-white/15"
-                          }`}
+                          className={`h-2.5 w-2.5 ${s <= stars ? "text-[hsl(45_90%_60%)] fill-[hsl(45_90%_60%)]" : "text-white/15"}`}
                         />
                       ))}
                     </div>
                   )}
 
-                  <div
-                    className={`mt-1 max-w-[80px] rounded-md px-1.5 py-0.5 backdrop-blur-sm ${
-                      status === "locked" || isGated ? "bg-black/20" : "bg-[hsl(210_40%_12%/0.85)]"
-                    }`}
-                  >
-                    <p
-                      className={`text-center text-[7px] font-bold leading-tight tracking-wide md:text-[9px] ${
-                        status === "locked"
-                          ? "text-white/20"
-                          : isGated
-                            ? "text-[hsl(45_90%_55%/0.45)]"
-                            : "text-white/85"
-                      }`}
-                    >
+                  {/* Label */}
+                  <div className={`mt-1 rounded-md px-1.5 py-0.5 backdrop-blur-sm ${
+                    status === "locked" || isGated ? "bg-white/[0.03]" : "bg-[hsl(210_40%_14%/0.8)]"
+                  }`}>
+                    <p className={`text-[7px] md:text-[9px] font-bold leading-tight whitespace-nowrap tracking-wide ${
+                      status === "locked" ? "text-white/20" : isGated ? "text-[hsl(45_90%_55%/0.4)]" : "text-white/80"
+                    }`}>
                       {node.name}
                     </p>
-                    <p
-                      className={`text-center text-[5px] leading-tight md:text-[6px] ${
-                        status === "locked" || isGated ? "text-white/10" : "text-white/35"
-                      }`}
-                    >
+                    <p className={`text-[6px] md:text-[7px] leading-tight whitespace-nowrap ${
+                      status === "locked" || isGated ? "text-white/10" : "text-white/30"
+                    }`}>
                       {node.city}
                     </p>
                   </div>
 
+                  {/* Play indicator */}
                   {isCurrentTarget && (
                     <motion.span
                       animate={{ opacity: [0.6, 1, 0.6] }}
                       transition={{ repeat: Infinity, duration: 1.5 }}
-                      className="mt-0.5 text-[7px] font-bold tracking-widest text-[hsl(195_80%_65%)] md:text-[8px]"
+                      className="mt-0.5 text-[7px] md:text-[9px] font-bold text-[hsl(195_80%_60%)] tracking-widest"
                     >
-                      🚀 START HERE
+                      ▶ DEPLOY
                     </motion.span>
                   )}
                 </motion.button>
               </motion.div>
             );
           })}
-        </motion.div>
+        </div>
 
         {/* Legend */}
         <motion.div
@@ -1351,28 +994,27 @@ export default function MissionWorldMap() {
           className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-white/40"
         >
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(45_90%_55%)] shadow-[0_0_6px_hsl(45_90%_55%/0.5)]" />⭐ HQ
+            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(45_90%_55%)] shadow-[0_0_6px_hsl(45_90%_55%/0.5)]" /> ⭐ HQ
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[hsl(195_80%_50%)]" />
-            🔵 Available
+            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(195_80%_50%)] animate-pulse" /> 🔵 Available
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(160_65%_50%)]" />
-            🟢 Secured
+            <span className="h-2.5 w-2.5 rounded-full bg-[hsl(160_65%_50%)]" /> 🟢 Secured
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full border border-white/10 bg-white/10" />⚫ Locked
+            <span className="h-2.5 w-2.5 rounded-full bg-white/10 border border-white/10" /> ⚫ Locked
           </span>
           <span className="flex items-center gap-1.5">
-            <Radio className="h-3 w-3 text-[hsl(45_90%_60%)]" />
-            📶 Coming Soon
+            <Radio className="h-3 w-3 text-[hsl(45_90%_60%)]" /> 📶 Coming Soon
           </span>
         </motion.div>
       </div>
 
+      {/* Guide Character */}
       <GuideCharacter avatarConfig={avatarConfig} message={guideMessage} onTap={cycleIdleMessage} />
 
+      {/* World Detail Panel */}
       <AnimatePresence>
         {selectedWorld && (
           <WorldDetailPanel

@@ -24,7 +24,6 @@ import {
   CONTINENT_PROJECTIONS,
   ZONE_COORDINATES,
 } from "@/data/continentMapConfig";
-import NorthAmericaBoard from "@/components/world/NorthAmericaBoard";
 
 /* ─── Villain Taunts ─────────────────────────────────────── */
 const VILLAIN_TAUNTS: Record<string, string[]> = {
@@ -215,130 +214,167 @@ export default function ContinentMapScreen() {
           </h1>
         </motion.div>
 
-        {/* ─── MAP AREA ─────────────────── */}
-        {continentId === "north-america" ? (
-          <div className="mx-auto" style={{ maxWidth: "960px" }}>
-            <NorthAmericaBoard
-              zones={continent.zones}
-              zoneStatuses={zoneStatuses}
-              onZoneClick={handleZoneClick}
-            />
-          </div>
-        ) : (
-          <div className="relative mx-auto w-full rounded-2xl border border-[hsl(195_80%_50%/0.15)] overflow-hidden shadow-2xl"
-            style={{
-              aspectRatio: "16/10",
-              maxWidth: "900px",
-              background: isAntarctica
-                ? "radial-gradient(ellipse at 50% 45%, #0a1f3a, #050d1a)"
-                : "radial-gradient(ellipse at 50% 45%, #0d1f37, #050d1a)",
-            }}>
+        {/* ─── REAL SVG CONTINENT MAP ─────────────────── */}
+        <div className="relative mx-auto w-full rounded-2xl border border-[hsl(195_80%_50%/0.15)] overflow-hidden shadow-2xl"
+          style={{
+            aspectRatio: "16/10",
+            maxWidth: "900px",
+            background: isAntarctica
+              ? "radial-gradient(ellipse at 50% 45%, #0a1f3a, #050d1a)"
+              : "radial-gradient(ellipse at 50% 45%, #0d1f37, #050d1a)",
+          }}>
 
-            {/* Dot grid overlay */}
-            <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{
-              backgroundImage: "radial-gradient(circle, hsl(195 80% 60%) 0.5px, transparent 0.5px)",
-              backgroundSize: "24px 24px",
-            }} />
+          {/* Dot grid overlay */}
+          <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{
+            backgroundImage: "radial-gradient(circle, hsl(195 80% 60%) 0.5px, transparent 0.5px)",
+            backgroundSize: "24px 24px",
+          }} />
 
-            {projection && (
-              <ComposableMap
-                projection="geoMercator"
-                projectionConfig={{ center: projection.center, scale: projection.scale }}
-                style={{ width: "100%", height: "100%" }}
-              >
-                <Geographies geography={GEO_URL}>
-                  {({ geographies }) =>
-                    geographies
-                      .filter((geo) => countryCodes.includes(geo.id))
-                      .map((geo) => (
-                        <Geography
-                          key={geo.rsmKey}
-                          geography={geo}
-                          fill="#0d2137"
-                          stroke="#1a4a6a"
-                          strokeWidth={0.5}
-                          style={{
-                            default: { outline: "none" },
-                            hover: { fill: "#0a3a5a", outline: "none" },
-                            pressed: { outline: "none" },
-                          }}
-                        />
-                      ))
-                  }
-                </Geographies>
+          {projection && (
+            <ComposableMap
+              projection="geoMercator"
+              projectionConfig={{ center: projection.center, scale: projection.scale }}
+              style={{ width: "100%", height: "100%" }}
+            >
+              {/* Country polygons */}
+              <Geographies geography={GEO_URL}>
+                {({ geographies }) =>
+                  geographies
+                    .filter((geo) => countryCodes.includes(geo.id))
+                    .map((geo) => (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        fill="#0d2137"
+                        stroke="#1a4a6a"
+                        strokeWidth={0.5}
+                        style={{
+                          default: { outline: "none" },
+                          hover: { fill: "#0a3a5a", outline: "none" },
+                          pressed: { outline: "none" },
+                        }}
+                      />
+                    ))
+                }
+              </Geographies>
 
-                {zoneCoords.slice(0, -1).map((from, i) => {
-                  const to = zoneCoords[i + 1];
-                  const fromStatus = zoneStatuses[i];
-                  const toStatus = zoneStatuses[i + 1];
-                  const bothDone = fromStatus === "completed" && toStatus === "completed";
-                  const available = fromStatus === "completed" && toStatus !== "locked";
-                  return (
-                    <Line key={`line-${i}`} from={[from.lng, from.lat]} to={[to.lng, to.lat]}
-                      stroke={bothDone ? "hsl(195,85%,55%)" : available ? "hsl(195,85%,55%)" : "hsl(200,15%,40%)"}
-                      strokeWidth={bothDone ? 2 : 1}
-                      strokeOpacity={bothDone ? 0.6 : available ? 0.35 : 0.12}
-                      strokeDasharray={bothDone ? "none" : available ? "6 4" : "4 3"}
-                      strokeLinecap="round" />
-                  );
-                })}
+              {/* Connection lines between zones */}
+              {zoneCoords.slice(0, -1).map((from, i) => {
+                const to = zoneCoords[i + 1];
+                const fromStatus = zoneStatuses[i];
+                const toStatus = zoneStatuses[i + 1];
+                const bothDone = fromStatus === "completed" && toStatus === "completed";
+                const available = fromStatus === "completed" && toStatus !== "locked";
+                return (
+                  <Line
+                    key={`line-${i}`}
+                    from={[from.lng, from.lat]}
+                    to={[to.lng, to.lat]}
+                    stroke={bothDone ? "hsl(195, 85%, 55%)" : available ? "hsl(195, 85%, 55%)" : "hsl(200, 15%, 40%)"}
+                    strokeWidth={bothDone ? 2 : 1}
+                    strokeOpacity={bothDone ? 0.6 : available ? 0.35 : 0.12}
+                    strokeDasharray={bothDone ? "none" : available ? "6 4" : "4 3"}
+                    strokeLinecap="round"
+                  />
+                );
+              })}
 
-                {continent.zones.map((zone, i) => {
-                  const coord = zoneCoords.find((c) => c.id === zone.id);
-                  if (!coord) return null;
-                  const status = zoneStatuses[i] || "locked";
-                  const colors = markerColors(zone, status);
-                  const isLocked = status === "locked";
-                  const isAvailable = status === "available";
-                  const isCompleted = status === "completed";
-                  const r = zone.isHQ ? 14 : zone.isBoss ? 12 : 9;
-                  return (
-                    <Marker key={zone.id} coordinates={[coord.lng, coord.lat]}
-                      onClick={() => handleZoneClick(zone, i)}
-                      style={{ cursor: isLocked ? "not-allowed" : "pointer" }}>
-                      {!isLocked && (
-                        <circle r={r + 6} fill="none" stroke={colors.stroke} strokeWidth={1.5} opacity={0.4}>
-                          <animate attributeName="r" values={`${r+2};${r+14};${r+2}`} dur="2s" repeatCount="indefinite" />
-                          <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite" />
-                        </circle>
-                      )}
-                      {!isLocked && (
-                        <circle r={r + 3} fill={colors.glow} opacity={0.3}>
-                          <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite" />
-                        </circle>
-                      )}
-                      <circle r={r} fill={isLocked ? "#1a2540" : colors.fill} stroke={colors.stroke}
-                        strokeWidth={2} opacity={isLocked ? 0.35 : 1} />
-                      <text textAnchor="middle" dominantBaseline="central"
-                        fontSize={zone.isHQ || zone.isBoss ? 12 : 10}
-                        style={{ pointerEvents: "none", userSelect: "none" }}>
-                        {isLocked ? "🔒" : isCompleted ? "✅" : zone.icon}
+              {/* Zone markers */}
+              {continent.zones.map((zone, i) => {
+                const coord = zoneCoords.find((c) => c.id === zone.id);
+                if (!coord) return null;
+                const status = zoneStatuses[i] || "locked";
+                const colors = markerColors(zone, status);
+                const isLocked = status === "locked";
+                const isAvailable = status === "available";
+                const isCompleted = status === "completed";
+                const r = zone.isHQ ? 14 : zone.isBoss ? 12 : 9;
+
+                return (
+                  <Marker
+                    key={zone.id}
+                    coordinates={[coord.lng, coord.lat]}
+                    onClick={() => handleZoneClick(zone, i)}
+                    style={{ cursor: isLocked ? "not-allowed" : "pointer" }}
+                  >
+                    {/* Ping ring for available zones */}
+                    {!isLocked && (
+                      <circle r={r + 6} fill="none" stroke={colors.stroke} strokeWidth={1.5} opacity={0.4}>
+                        <animate attributeName="r" values={`${r + 2};${r + 14};${r + 2}`} dur="2s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite" />
+                      </circle>
+                    )}
+
+                    {/* Glow */}
+                    {!isLocked && (
+                      <circle r={r + 3} fill={colors.glow} opacity={0.3}>
+                        <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite" />
+                      </circle>
+                    )}
+
+                    {/* Main circle */}
+                    <circle
+                      r={r}
+                      fill={isLocked ? "#1a2540" : colors.fill}
+                      stroke={colors.stroke}
+                      strokeWidth={2}
+                      opacity={isLocked ? 0.35 : 1}
+                    />
+
+                    {/* Icon text */}
+                    <text
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize={zone.isHQ || zone.isBoss ? 12 : 10}
+                      style={{ pointerEvents: "none", userSelect: "none" }}
+                    >
+                      {isLocked ? "🔒" : isCompleted ? "✅" : zone.icon}
+                    </text>
+
+                    {/* Label */}
+                    <text
+                      textAnchor="middle"
+                      y={r + 14}
+                      fontSize={7}
+                      fontWeight="bold"
+                      fill={isLocked ? "rgba(255,255,255,0.2)" : zone.isBoss ? "#ff6b8a" : "#fff"}
+                      opacity={isLocked ? 0.4 : 0.85}
+                      style={{ pointerEvents: "none", userSelect: "none", textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
+                    >
+                      {zone.name}
+                    </text>
+
+                    {/* City sublabel */}
+                    <text
+                      textAnchor="middle"
+                      y={r + 22}
+                      fontSize={5}
+                      fill="rgba(255,255,255,0.3)"
+                      style={{ pointerEvents: "none", userSelect: "none" }}
+                    >
+                      {zone.city}
+                    </text>
+
+                    {/* Action label */}
+                    {isAvailable && (
+                      <text
+                        textAnchor="middle"
+                        y={r + 30}
+                        fontSize={5.5}
+                        fontWeight="bold"
+                        fill={zone.isBoss ? "#ff6b8a" : "#00ffe7"}
+                        style={{ pointerEvents: "none", userSelect: "none" }}
+                      >
+                        {zone.isBoss ? "⚔️ FIGHT" : "▶ DEPLOY"}
+                        <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite" />
                       </text>
-                      <text textAnchor="middle" y={r + 14} fontSize={7} fontWeight="bold"
-                        fill={isLocked ? "rgba(255,255,255,0.2)" : zone.isBoss ? "#ff6b8a" : "#fff"}
-                        opacity={isLocked ? 0.4 : 0.85}
-                        style={{ pointerEvents: "none", userSelect: "none" }}>
-                        {zone.name}
-                      </text>
-                      <text textAnchor="middle" y={r + 22} fontSize={5} fill="rgba(255,255,255,0.3)"
-                        style={{ pointerEvents: "none", userSelect: "none" }}>
-                        {zone.city}
-                      </text>
-                      {isAvailable && (
-                        <text textAnchor="middle" y={r + 30} fontSize={5.5} fontWeight="bold"
-                          fill={zone.isBoss ? "#ff6b8a" : "#00ffe7"}
-                          style={{ pointerEvents: "none", userSelect: "none" }}>
-                          {zone.isBoss ? "⚔️ FIGHT" : "▶ DEPLOY"}
-                          <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite" />
-                        </text>
-                      )}
-                    </Marker>
-                  );
-                })}
-              </ComposableMap>
-            )}
-          </div>
-        )}
+                    )}
+                  </Marker>
+                );
+              })}
+            </ComposableMap>
+          )}
+        </div>
 
         {/* Legend */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
