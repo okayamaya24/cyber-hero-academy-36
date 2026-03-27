@@ -1,5 +1,4 @@
 /* ─── Geographic config for react-simple-maps continent rendering ─── */
-
 export const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 /** ISO-3166-1 numeric country codes per continent */
@@ -126,7 +125,7 @@ export const CONTINENT_PROJECTIONS: Record<string, { center: [number, number]; s
 export const ZONE_COORDINATES: Record<string, { id: string; lat: number; lng: number }[]> = {
   "north-america": [
     { id: "hq", lat: 38.9, lng: -77.0 }, // Washington D.C.
-    { id: "password-peak", lat: 45.5, lng: -73.6 }, // Montreal
+    { id: "password-peak", lat: 42.4, lng: -71.1 }, // Boston — clear of HQ
     { id: "encrypt-enclave", lat: 51.0, lng: -85.0 }, // Northern Ontario
     { id: "code-canyon", lat: 44.9, lng: -93.1 }, // Minneapolis
     { id: "signal-summit", lat: 39.7, lng: -104.9 }, // Denver
