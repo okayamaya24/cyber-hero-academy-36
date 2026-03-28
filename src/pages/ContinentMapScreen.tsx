@@ -460,6 +460,8 @@ export default function ContinentMapScreen() {
                     key={zone.id}
                     coordinates={[coord.lng, coord.lat]}
                     onClick={() => handleZoneClick(zone, i)}
+                    onMouseEnter={() => setHoveredNodeStatus(zone.isBoss ? "boss" : status)}
+                    onMouseLeave={() => setHoveredNodeStatus(null)}
                     style={{ cursor: isLocked ? "not-allowed" : "pointer" }}
                   >
                     {/* Ping ring for unlocked zones */}
