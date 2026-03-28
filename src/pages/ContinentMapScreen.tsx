@@ -230,13 +230,28 @@ export default function ContinentMapScreen() {
 
   const zoneStatuses = useMemo(() => {
     if (!continent) return [];
+
+    const nonBossZones = continent.zones.filter((z) => !z.isBoss);
+    const allNonBossCompleted = nonBossZones.every((z) => {
+      const progress = zoneProgress.find((p: any) => p.zone_id === z.id);
+      return progress?.status === "completed";
+    });
+
     return continent.zones.map((zone, i) => {
       const progress = zoneProgress.find((p: any) => p.zone_id === zone.id);
       if (progress?.status === "completed") return "completed";
+
+      // Boss zone: only unlock when ALL other zones are completed
+      if (zone.isBoss) return allNonBossCompleted ? "available" : "locked";
+
+      // First zone always available
       if (i === 0) return "available";
+
+      // All others: unlock when previous zone is completed
       const prevZone = continent.zones[i - 1];
       const prevProgress = zoneProgress.find((p: any) => p.zone_id === prevZone.id);
       if (prevProgress?.status === "completed") return "available";
+
       return "locked";
     });
   }, [continent, zoneProgress]);
