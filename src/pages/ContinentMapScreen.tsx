@@ -61,36 +61,102 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
 };
 
 /* ─── Villain Character ─────────────────────────────────── */
-function VillainCharacter({ villainName }: { villainName: string }) {
+import keybreakerImg from "@/assets/villains/keybreaker.png";
+
+interface VillainCharacterProps {
+  villainName: string;
+  hoveredNodeStatus?: string | null;
+}
+
+function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterProps) {
   const taunts = VILLAIN_TAUNTS[villainName] || ["..."];
   const [tauntIdx, setTauntIdx] = useState(0);
+  const isKeybreaker = villainName === "The Keybreaker";
 
   useEffect(() => {
+    if (hoveredNodeStatus) return; // pause cycling when hovering a node
     const interval = setInterval(() => setTauntIdx((i) => (i + 1) % taunts.length), 8000);
     return () => clearInterval(interval);
-  }, [taunts.length]);
+  }, [taunts.length, hoveredNodeStatus]);
+
+  // Dynamic text based on hovered node status
+  const bubbleText = hoveredNodeStatus === "locked"
+    ? "Too weak. I broke that instantly."
+    : hoveredNodeStatus === "available"
+    ? "Let's see if you're actually secure."
+    : hoveredNodeStatus === "completed"
+    ? "Hmm… not bad."
+    : hoveredNodeStatus === "boss"
+    ? "You'll never break my code!"
+    : taunts[tauntIdx];
+
+  const bubbleKey = hoveredNodeStatus || `idle-${tauntIdx}`;
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 20 }}
+      initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.5 }}
-      className="fixed bottom-6 right-4 z-50 flex flex-col items-end gap-2 md:bottom-8 md:right-6"
+      transition={{ delay: 0.6, duration: 0.5 }}
+      className="fixed bottom-4 right-3 z-50 flex flex-col items-end gap-1 md:bottom-6 md:right-5"
     >
+      {/* Speech bubble */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={tauntIdx}
-          initial={{ opacity: 0, scale: 0.85, y: 4 }}
+          key={bubbleKey}
+          initial={{ opacity: 0, scale: 0.85, y: 6 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.85, y: 4 }}
-          className="relative max-w-[200px] rounded-xl rounded-br-sm border border-[hsl(0_80%_55%/0.25)] bg-[hsl(0_40%_14%/0.9)] px-3 py-2 shadow-lg backdrop-blur-md"
+          exit={{ opacity: 0, scale: 0.85, y: 6 }}
+          transition={{ duration: 0.3 }}
+          className="relative mr-4 max-w-[190px] md:max-w-[220px] rounded-xl rounded-br-sm px-3 py-2 shadow-xl backdrop-blur-md"
+          style={{
+            background: "hsla(210, 40%, 10%, 0.88)",
+            border: "1px solid hsla(140, 80%, 50%, 0.3)",
+            boxShadow: "0 0 18px hsla(140, 80%, 50%, 0.15), inset 0 0 12px hsla(140, 80%, 50%, 0.05)",
+          }}
         >
-          <p className="text-[10px] text-[hsl(0_80%_70%)] italic leading-snug">"{taunts[tauntIdx]}"</p>
-          <div className="absolute -bottom-1.5 right-6 h-3 w-3 rotate-45 bg-[hsl(0_40%_14%/0.9)] border-r border-b border-[hsl(0_80%_55%/0.25)]" />
+          <p className="text-[11px] md:text-xs font-medium italic leading-snug" style={{ color: "hsl(140, 80%, 70%)" }}>
+            "{bubbleText}"
+          </p>
+          {/* Tail */}
+          <div
+            className="absolute -bottom-1.5 right-5 h-3 w-3 rotate-45"
+            style={{
+              background: "hsla(210, 40%, 10%, 0.88)",
+              borderRight: "1px solid hsla(140, 80%, 50%, 0.3)",
+              borderBottom: "1px solid hsla(140, 80%, 50%, 0.3)",
+            }}
+          />
         </motion.div>
       </AnimatePresence>
-      <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}>
-        <VillainSprite villainName={villainName} size={80} menacing />
+
+      {/* Villain image */}
+      <motion.div
+        animate={{ y: [0, -6, 0] }}
+        transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
+        whileHover={{ scale: 1.08 }}
+        className="relative cursor-default"
+      >
+        {/* Glow pulse */}
+        <motion.div
+          className="absolute inset-0 rounded-full pointer-events-none"
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+          style={{
+            background: "radial-gradient(circle, hsla(140, 85%, 50%, 0.25) 0%, transparent 70%)",
+            filter: "blur(12px)",
+            transform: "scale(1.3)",
+          }}
+        />
+        {isKeybreaker ? (
+          <img
+            src={keybreakerImg}
+            alt="The Keybreaker"
+            className="relative z-10 w-[100px] h-auto md:w-[130px] drop-shadow-[0_0_16px_hsla(140,85%,50%,0.35)]"
+            draggable={false}
+          />
+        ) : (
+          <VillainSprite villainName={villainName} size={90} menacing />
+        )}
       </motion.div>
     </motion.div>
   );
