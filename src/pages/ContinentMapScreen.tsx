@@ -565,7 +565,7 @@ export default function ContinentMapScreen() {
       </div>
 
       {/* Villain */}
-      <VillainCharacter villainName={continent.villain} />
+      <VillainCharacter villainName={continent.villain} hoveredNodeStatus={hoveredNodeStatus} />
 
       {/* Guide avatar */}
       <motion.div
