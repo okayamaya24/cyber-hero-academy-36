@@ -74,21 +74,21 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
   const isKeybreaker = villainName === "The Keybreaker";
 
   useEffect(() => {
-    if (hoveredNodeStatus) return; // pause cycling when hovering a node
+    if (hoveredNodeStatus) return;
     const interval = setInterval(() => setTauntIdx((i) => (i + 1) % taunts.length), 8000);
     return () => clearInterval(interval);
   }, [taunts.length, hoveredNodeStatus]);
 
-  // Dynamic text based on hovered node status
-  const bubbleText = hoveredNodeStatus === "locked"
-    ? "Too weak. I broke that instantly."
-    : hoveredNodeStatus === "available"
-    ? "Let's see if you're actually secure."
-    : hoveredNodeStatus === "completed"
-    ? "Hmm… not bad."
-    : hoveredNodeStatus === "boss"
-    ? "You'll never break my code!"
-    : taunts[tauntIdx];
+  const bubbleText =
+    hoveredNodeStatus === "locked"
+      ? "Too weak. I broke that instantly."
+      : hoveredNodeStatus === "available"
+        ? "Let's see if you're actually secure."
+        : hoveredNodeStatus === "completed"
+          ? "Hmm… not bad."
+          : hoveredNodeStatus === "boss"
+            ? "You'll never break my code!"
+            : taunts[tauntIdx];
 
   const bubbleKey = hoveredNodeStatus || `idle-${tauntIdx}`;
 
@@ -97,9 +97,8 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
       initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.6, duration: 0.5 }}
-      className="fixed bottom-4 right-3 z-50 flex flex-col items-end gap-1 md:bottom-6 md:right-5"
+      className="absolute bottom-2 right-2 z-20 flex flex-col items-end gap-1 md:bottom-3 md:right-3"
     >
-      {/* Speech bubble */}
       <AnimatePresence mode="wait">
         <motion.div
           key={bubbleKey}
@@ -107,7 +106,7 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.85, y: 6 }}
           transition={{ duration: 0.3 }}
-          className="relative mr-4 max-w-[190px] md:max-w-[220px] rounded-xl rounded-br-sm px-3 py-2 shadow-xl backdrop-blur-md"
+          className="relative mr-2 mb-1 max-w-[170px] md:mr-3 md:max-w-[210px] rounded-xl rounded-br-sm px-3 py-2 shadow-xl backdrop-blur-md"
           style={{
             background: "hsla(210, 40%, 10%, 0.88)",
             border: "1px solid hsla(140, 80%, 50%, 0.3)",
@@ -117,7 +116,6 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
           <p className="text-[11px] md:text-xs font-medium italic leading-snug" style={{ color: "hsl(140, 80%, 70%)" }}>
             "{bubbleText}"
           </p>
-          {/* Tail */}
           <div
             className="absolute -bottom-1.5 right-5 h-3 w-3 rotate-45"
             style={{
@@ -129,14 +127,12 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
         </motion.div>
       </AnimatePresence>
 
-      {/* Villain image */}
       <motion.div
         animate={{ y: [0, -6, 0] }}
         transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
         whileHover={{ scale: 1.08 }}
         className="relative cursor-default"
       >
-        {/* Glow pulse */}
         <motion.div
           className="absolute inset-0 rounded-full pointer-events-none"
           animate={{ opacity: [0.3, 0.6, 0.3] }}
@@ -151,11 +147,11 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
           <img
             src={keybreakerImg}
             alt="The Keybreaker"
-            className="relative z-10 w-[100px] h-auto md:w-[130px] drop-shadow-[0_0_16px_hsla(140,85%,50%,0.35)]"
+            className="relative z-10 w-[130px] h-auto md:w-[165px] drop-shadow-[0_0_16px_hsla(140,85%,50%,0.35)]"
             draggable={false}
           />
         ) : (
-          <VillainSprite villainName={villainName} size={90} menacing />
+          <VillainSprite villainName={villainName} size={120} menacing />
         )}
       </motion.div>
     </motion.div>
@@ -308,13 +304,10 @@ export default function ContinentMapScreen() {
       const progress = zoneProgress.find((p: any) => p.zone_id === zone.id);
       if (progress?.status === "completed") return "completed";
 
-      // Boss zone: only unlock when ALL other zones are completed
       if (zone.isBoss) return allNonBossCompleted ? "available" : "locked";
 
-      // First zone always available
       if (i === 0) return "available";
 
-      // All others: unlock when previous zone is completed
       const prevZone = continent.zones[i - 1];
       const prevProgress = zoneProgress.find((p: any) => p.zone_id === prevZone.id);
       if (prevProgress?.status === "completed") return "available";
@@ -357,7 +350,6 @@ export default function ContinentMapScreen() {
       />
 
       <div className="relative z-[2] mx-auto max-w-6xl px-4">
-        {/* Back button */}
         <motion.button
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
@@ -367,7 +359,6 @@ export default function ContinentMapScreen() {
           <ChevronLeft className="h-4 w-4" /> BACK TO WORLD SELECT
         </motion.button>
 
-        {/* Continent Header */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
           <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">
             {continent.emoji} {continent.name.toUpperCase()} —{" "}
@@ -375,7 +366,6 @@ export default function ContinentMapScreen() {
           </h1>
         </motion.div>
 
-        {/* ─── MAP ─────────────────────────────────────── */}
         <div
           className="relative mx-auto w-full rounded-2xl border border-[hsl(195_80%_50%/0.15)] overflow-hidden shadow-2xl"
           style={{
@@ -386,7 +376,6 @@ export default function ContinentMapScreen() {
               : "radial-gradient(ellipse at 50% 45%, #0d1f37, #050d1a)",
           }}
         >
-          {/* Dot grid overlay */}
           <div
             className="absolute inset-0 opacity-[0.06] pointer-events-none"
             style={{
@@ -401,7 +390,6 @@ export default function ContinentMapScreen() {
               projectionConfig={{ center: projection.center, scale: projection.scale }}
               style={{ width: "100%", height: "100%" }}
             >
-              {/* Country polygons */}
               <Geographies geography={GEO_URL}>
                 {({ geographies }) =>
                   geographies
@@ -423,7 +411,6 @@ export default function ContinentMapScreen() {
                 }
               </Geographies>
 
-              {/* Connection lines between zones */}
               {zoneCoords.slice(0, -1).map((from, i) => {
                 const to = zoneCoords[i + 1];
                 const fromStatus = zoneStatuses[i];
@@ -444,7 +431,6 @@ export default function ContinentMapScreen() {
                 );
               })}
 
-              {/* Zone markers */}
               {continent.zones.map((zone, i) => {
                 const coord = zoneCoords.find((c) => c.id === zone.id);
                 if (!coord) return null;
@@ -464,7 +450,6 @@ export default function ContinentMapScreen() {
                     onMouseLeave={() => setHoveredNodeStatus(null)}
                     style={{ cursor: isLocked ? "not-allowed" : "pointer" }}
                   >
-                    {/* Ping ring for unlocked zones */}
                     {!isLocked && (
                       <circle r={r + 6} fill="none" stroke={colors.stroke} strokeWidth={1.5} opacity={0.4}>
                         <animate
@@ -476,13 +461,13 @@ export default function ContinentMapScreen() {
                         <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite" />
                       </circle>
                     )}
-                    {/* Glow */}
+
                     {!isLocked && (
                       <circle r={r + 3} fill={colors.glow} opacity={0.3}>
                         <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite" />
                       </circle>
                     )}
-                    {/* Main circle — locked zones are fully visible now */}
+
                     <circle
                       r={r}
                       fill={isLocked ? "#2a3a5a" : colors.fill}
@@ -490,7 +475,7 @@ export default function ContinentMapScreen() {
                       strokeWidth={2.5}
                       opacity={1}
                     />
-                    {/* Icon */}
+
                     <text
                       textAnchor="middle"
                       dominantBaseline="central"
@@ -499,7 +484,7 @@ export default function ContinentMapScreen() {
                     >
                       {isLocked ? "🔒" : isCompleted ? "✅" : zone.icon}
                     </text>
-                    {/* Zone name label */}
+
                     <text
                       textAnchor="middle"
                       y={r + 18}
@@ -511,7 +496,7 @@ export default function ContinentMapScreen() {
                     >
                       {zone.name}
                     </text>
-                    {/* City sublabel */}
+
                     <text
                       textAnchor="middle"
                       y={r + 30}
@@ -521,7 +506,7 @@ export default function ContinentMapScreen() {
                     >
                       {zone.city}
                     </text>
-                    {/* Action label */}
+
                     {isAvailable && (
                       <text
                         textAnchor="middle"
@@ -540,9 +525,10 @@ export default function ContinentMapScreen() {
               })}
             </ComposableMap>
           )}
+
+          <VillainCharacter villainName={continent.villain} hoveredNodeStatus={hoveredNodeStatus} />
         </div>
 
-        {/* Legend */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -564,10 +550,6 @@ export default function ContinentMapScreen() {
         </motion.div>
       </div>
 
-      {/* Villain */}
-      <VillainCharacter villainName={continent.villain} hoveredNodeStatus={hoveredNodeStatus} />
-
-      {/* Guide avatar */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -579,7 +561,6 @@ export default function ContinentMapScreen() {
         </div>
       </motion.div>
 
-      {/* Zone Panel */}
       <AnimatePresence>
         {selectedZone && continent && (
           <ZoneMissionPanel
