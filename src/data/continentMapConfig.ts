@@ -135,13 +135,13 @@ export const ZONE_COORDINATES: Record<string, { id: string; lat: number; lng: nu
     { id: "boss-keybreaker", lat: 47.5, lng: -107.0 }, // Montana
   ],
   europe: [
-    { id: "phish-lagoon", lat: 51.5, lng: -0.1 },
-    { id: "download-dungeon", lat: 52.5, lng: 13.4 },
-    { id: "code-castle", lat: 48.9, lng: 2.3 },
-    { id: "wifi-watch", lat: 52.4, lng: 4.9 },
-    { id: "data-fortress", lat: 47.4, lng: 8.5 },
-    { id: "cyber-citadel", lat: 40.4, lng: -3.7 },
-    { id: "boss-phisher", lat: 56.0, lng: 3.0 },
+    { id: "phish-lagoon", lat: 51.5, lng: -0.1 }, // London, UK
+    { id: "download-dungeon", lat: 52.5, lng: 13.4 }, // Berlin, Germany
+    { id: "code-castle", lat: 48.9, lng: 2.3 }, // Paris, France
+    { id: "wifi-watch", lat: 59.9, lng: 10.7 }, // Oslo, Norway
+    { id: "data-fortress", lat: 47.4, lng: 19.0 }, // Budapest, Hungary
+    { id: "cyber-citadel", lat: 40.4, lng: -3.7 }, // Madrid, Spain
+    { id: "boss-phisher", lat: 41.9, lng: 12.5 }, // Rome, Italy
   ],
   africa: [
     { id: "stranger-shore", lat: 6.5, lng: 3.4 },
