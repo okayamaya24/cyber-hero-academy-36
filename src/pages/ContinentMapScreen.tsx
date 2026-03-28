@@ -97,7 +97,7 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
       initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.6, duration: 0.5 }}
-      className="relative z-10 w-[160px] h-auto md:w-[200px] drop-shadow-[0_0_18px_hsla(140,85%,50%,0.4)]"
+      className="absolute bottom-5 right-5 z-20 flex flex-col items-end gap-1 md:bottom-6 md:right-6"
     >
       <AnimatePresence mode="wait">
         <motion.div
