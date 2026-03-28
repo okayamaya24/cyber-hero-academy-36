@@ -113,7 +113,7 @@ export const CONTINENT_COUNTRIES: Record<string, string[]> = {
 /** Projection settings per continent — center + scale for ComposableMap */
 export const CONTINENT_PROJECTIONS: Record<string, { center: [number, number]; scale: number }> = {
   "north-america": { center: [-93, 37], scale: 580 },
-  europe: { center: [12, 52], scale: 1100 },
+  europe: { center: [10, 50], scale: 750 },
   africa: { center: [22, 2], scale: 360 },
   asia: { center: [90, 35], scale: 300 },
   "south-america": { center: [-60, -15], scale: 400 },
