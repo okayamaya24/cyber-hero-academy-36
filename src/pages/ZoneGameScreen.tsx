@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { getContinentById } from "@/data/continents";
 import { getZoneGames, getBossBattle } from "@/data/zoneGames";
 import { getAgeTier, getPointsPerCorrect } from "@/data/missions";
 import { getNextZone } from "@/data/zoneOrder";
+import { getZoneNarration } from "@/data/zoneNarrations";
 import StarfieldBackground from "@/components/world/StarfieldBackground";
 import VillainSprite from "@/components/world/VillainSprite";
 import ZoneQuizGame from "@/components/minigames/ZoneQuizGame";
@@ -17,6 +18,10 @@ import CrosswordGame from "@/components/training/CrosswordGame";
 import ZoneDragDropGame, { CONVEYOR_ZONES } from "@/components/minigames/ZoneDragDropGame";
 import MiniGamePlaceholder from "@/components/minigames/MiniGamePlaceholder";
 import BossBattleScreen from "@/components/minigames/BossBattleScreen";
+import ZoneCutsceneIntro from "@/components/zone/ZoneCutsceneIntro";
+import ZoneStoryPanel from "@/components/zone/ZoneStoryPanel";
+import ZoneCompleteScreen from "@/components/zone/ZoneCompleteScreen";
+import BossUnlockedCutscene from "@/components/zone/BossUnlockedCutscene";
 import { Button } from "@/components/ui/button";
 
 const GAME_TABS = [
@@ -25,6 +30,8 @@ const GAME_TABS = [
   { key: "puzzle", label: "Puzzle", icon: "🧩" },
   { key: "dragdrop", label: "Drag & Drop", icon: "🎯" },
 ];
+
+type AdventurePhase = "cutscene" | "playing" | "story_panel" | "complete" | "boss_unlocked";
 
 export default function ZoneGameScreen() {
   const { continentId, zoneId } = useParams<{ continentId: string; zoneId: string }>();
@@ -38,15 +45,25 @@ export default function ZoneGameScreen() {
   const isHQ = zone?.isHQ;
   const gameContent = isBoss ? null : getZoneGames(zoneId || "");
   const bossContent = isBoss ? getBossBattle(zoneId || "") : null;
+  const narration = getZoneNarration(zoneId || "");
 
+  const [phase, setPhase] = useState<AdventurePhase>("cutscene");
   const [activeTab, setActiveTab] = useState(0);
   const [completedGames, setCompletedGames] = useState<Set<number>>(new Set());
+  const [totalMistakes, setTotalMistakes] = useState(0);
+  const [pendingNextTab, setPendingNextTab] = useState<number | null>(null);
+  const [bossZoneForUnlock, setBossZoneForUnlock] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) navigate("/login");
     else if (!activeChildId) navigate("/select-child");
     else if (!continent || !zone) navigate("/world-map");
   }, [user, activeChildId, continent, zone, navigate]);
+
+  // Skip cutscene for boss zones
+  useEffect(() => {
+    if (isBoss) setPhase("playing");
+  }, [isBoss]);
 
   const { data: child } = useQuery({
     queryKey: ["child", activeChildId],
@@ -57,7 +74,6 @@ export default function ZoneGameScreen() {
     enabled: !!activeChildId,
   });
 
-  // Load existing game progress for this zone
   const { data: existingProgress = [] } = useQuery({
     queryKey: ["zone_game_progress", activeChildId, zoneId],
     queryFn: async () => {
@@ -71,7 +87,6 @@ export default function ZoneGameScreen() {
     enabled: !!activeChildId && !!zoneId,
   });
 
-  // Initialize completed games from DB
   useEffect(() => {
     const done = new Set<number>();
     existingProgress.forEach((p: any) => {
@@ -82,17 +97,25 @@ export default function ZoneGameScreen() {
         if (p.mission_id.endsWith("_dragdrop")) done.add(3);
       }
     });
-    if (done.size > 0) setCompletedGames(done);
+    if (done.size > 0) {
+      setCompletedGames(done);
+      setPhase("playing"); // skip cutscene if resuming
+    }
   }, [existingProgress]);
 
   const ageTier = child ? getAgeTier(child.age) : "defender" as const;
   const pointsPerGame = getPointsPerCorrect(ageTier) * 5;
+  const XP_PER_ZONE = 100;
 
-  /** Mark current zone as completed and unlock the next zone in sequence */
+  const computeStars = useCallback((mistakes: number) => {
+    if (mistakes === 0) return 3;
+    if (mistakes === 1) return 2;
+    return 1;
+  }, []);
+
   const handleZoneComplete = async (stars: number) => {
     if (!activeChildId || !zoneId || !continentId) return;
 
-    // Step 1: Mark current zone as completed
     await supabase.from("zone_progress").upsert({
       child_id: activeChildId,
       continent_id: continentId,
@@ -103,14 +126,17 @@ export default function ZoneGameScreen() {
       stars_earned: stars,
     }, { onConflict: "child_id,zone_id" });
 
-    // Step 2: If this is HQ, mark hq_completed on child profile
     if (isHQ) {
-      await supabase.from("child_profiles").update({
-        hq_completed: true,
-      }).eq("id", activeChildId);
+      await supabase.from("child_profiles").update({ hq_completed: true }).eq("id", activeChildId);
     }
 
-    // Step 3: Unlock the next zone in sequence
+    // Award flat XP
+    if (child) {
+      const newPoints = (child.points || 0) + XP_PER_ZONE;
+      const newLevel = Math.floor(newPoints / 500) + 1;
+      await supabase.from("child_profiles").update({ points: newPoints, level: newLevel }).eq("id", activeChildId);
+    }
+
     const nextZoneId = getNextZone(continentId, zoneId);
     if (nextZoneId) {
       await supabase.from("zone_progress").upsert({
@@ -122,9 +148,14 @@ export default function ZoneGameScreen() {
         total_games: 4,
         stars_earned: 0,
       }, { onConflict: "child_id,zone_id" });
+
+      // Check if next zone is the boss (all regular zones done)
+      const bossZone = continent?.zones.find((z) => z.isBoss);
+      if (bossZone && nextZoneId === bossZone.id) {
+        setBossZoneForUnlock(bossZone.id);
+      }
     }
 
-    // Step 4: Invalidate all relevant queries so the map re-fetches
     queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
     queryClient.invalidateQueries({ queryKey: ["child"] });
   };
@@ -132,10 +163,12 @@ export default function ZoneGameScreen() {
   const handleGameComplete = async (gameIndex: number, passed: boolean, stars: number) => {
     if (!activeChildId || !zoneId) return;
 
+    const mistakes = stars === 3 ? 0 : stars === 2 ? 1 : 2;
+    setTotalMistakes((prev) => prev + mistakes);
+
     const gameKeys = ["quiz", "mini", "puzzle", "dragdrop"];
     const missionId = `zone_${zoneId}_${gameKeys[gameIndex]}`;
 
-    // Save progress
     await supabase.from("mission_progress").upsert({
       child_id: activeChildId,
       mission_id: missionId,
@@ -147,45 +180,44 @@ export default function ZoneGameScreen() {
       completed_at: new Date().toISOString(),
     }, { onConflict: "child_id,mission_id" });
 
-    // Award XP
-    const xp = stars * getPointsPerCorrect(ageTier);
-    if (child) {
-      const newPoints = (child.points || 0) + xp;
-      const newLevel = Math.floor(newPoints / 500) + 1;
-      await supabase.from("child_profiles").update({
-        points: newPoints,
-        level: newLevel,
-      }).eq("id", activeChildId);
-    }
-
     const newCompleted = new Set(completedGames);
     newCompleted.add(gameIndex);
     setCompletedGames(newCompleted);
 
-    // If all 4 done, mark zone completed and unlock next
     if (newCompleted.size >= 4) {
-      await handleZoneComplete(stars);
-
-      // Navigate back to continent map after delay
-      setTimeout(() => navigate(`/world-map/${continentId}`), 2000);
+      // All games done — show complete screen
+      const finalStars = computeStars(totalMistakes + mistakes);
+      await handleZoneComplete(finalStars);
+      setPhase("complete");
     } else {
-      // Advance to next uncompleted tab
+      // Find next uncompleted tab and show story panel
+      let nextTab = gameIndex;
       for (let i = gameIndex + 1; i < 4; i++) {
         if (!newCompleted.has(i)) {
-          setActiveTab(i);
+          nextTab = i;
           break;
         }
       }
+      setPendingNextTab(nextTab);
+      setPhase("story_panel");
     }
+
     queryClient.invalidateQueries({ queryKey: ["child", activeChildId] });
   };
+
+  const handleStoryPanelContinue = useCallback(() => {
+    if (pendingNextTab !== null) {
+      setActiveTab(pendingNextTab);
+      setPendingNextTab(null);
+    }
+    setPhase("playing");
+  }, [pendingNextTab]);
 
   const handleBossComplete = async (won: boolean, stars: number) => {
     if (!activeChildId || !zoneId || !continentId) return;
 
     const isFinalBoss = zoneId === "boss-shadowbyte";
 
-    // Mark boss zone completed
     await supabase.from("zone_progress").upsert({
       child_id: activeChildId,
       continent_id: continentId,
@@ -196,7 +228,6 @@ export default function ZoneGameScreen() {
       stars_earned: stars,
     }, { onConflict: "child_id,zone_id" });
 
-    // Mark continent boss defeated
     await supabase.from("continent_progress").upsert({
       child_id: activeChildId,
       continent_id: continentId,
@@ -205,7 +236,6 @@ export default function ZoneGameScreen() {
       completed_at: new Date().toISOString(),
     }, { onConflict: "child_id,continent_id" });
 
-    // Update child profile
     if (child) {
       const updates: any = {
         villains_defeated: (child.villains_defeated || 0) + 1,
@@ -229,6 +259,80 @@ export default function ZoneGameScreen() {
   };
 
   if (!continent || !zone) return null;
+
+  // ─── Cutscene Intro ──────────────────────────
+  if (phase === "cutscene" && !isBoss) {
+    return (
+      <AnimatePresence>
+        <ZoneCutsceneIntro
+          villainName={continent.villain}
+          zoneName={zone.name}
+          zoneIcon={zone.icon}
+          storyNarration={narration.intro}
+          villainTaunt={narration.villainTaunts[0] || continent.villainTaunt}
+          onStart={() => setPhase("playing")}
+        />
+      </AnimatePresence>
+    );
+  }
+
+  // ─── Story Panel Between Games ────────────────
+  if (phase === "story_panel") {
+    const gamesDone = completedGames.size;
+    return (
+      <AnimatePresence>
+        <div className="min-h-screen relative" style={{ background: "#050a14" }}>
+          <StarfieldBackground />
+          <ZoneStoryPanel
+            villainName={continent.villain}
+            narration={narration.afterGame[Math.min(gamesDone - 1, narration.afterGame.length - 1)] || "Keep going, Guardian!"}
+            villainTaunt={narration.villainTaunts[Math.min(gamesDone, narration.villainTaunts.length - 1)] || "You won't win!"}
+            gameIndex={gamesDone}
+            onContinue={handleStoryPanelContinue}
+          />
+        </div>
+      </AnimatePresence>
+    );
+  }
+
+  // ─── Zone Complete Screen ─────────────────────
+  if (phase === "complete") {
+    const finalStars = computeStars(totalMistakes);
+    return (
+      <AnimatePresence>
+        <ZoneCompleteScreen
+          zoneName={zone.name}
+          zoneIcon={zone.icon}
+          villainName={continent.villain}
+          stars={finalStars}
+          xpEarned={XP_PER_ZONE}
+          onBackToMap={() => {
+            if (bossZoneForUnlock) {
+              setPhase("boss_unlocked" as AdventurePhase);
+            } else {
+              navigate(`/world-map/${continentId}`);
+            }
+          }}
+        />
+      </AnimatePresence>
+    );
+  }
+
+  // ─── Boss Unlocked Cutscene ───────────────────
+  if (phase === "boss_unlocked" && bossZoneForUnlock) {
+    const bossZone = continent.zones.find((z) => z.id === bossZoneForUnlock);
+    return (
+      <AnimatePresence>
+        <BossUnlockedCutscene
+          villainName={continent.villain}
+          bossZoneName={bossZone?.name || "Boss Vault"}
+          villainTaunt={continent.villainTaunt}
+          onFaceBoss={() => navigate(`/zone/${continentId}/${bossZoneForUnlock}`)}
+          onReturnToMap={() => navigate(`/world-map/${continentId}`)}
+        />
+      </AnimatePresence>
+    );
+  }
 
   // ─── Boss Battle ─────────────────────────────
   if (isBoss && bossContent) {
@@ -333,7 +437,6 @@ export default function ZoneGameScreen() {
 
         {/* Game Content */}
         <div className="rounded-2xl border border-[hsl(195_80%_50%/0.15)] bg-[hsl(210_40%_12%/0.8)] backdrop-blur-md min-h-[400px]">
-          {/* Tab 0: Quiz */}
           {activeTab === 0 && !completedGames.has(0) && (
             <ZoneQuizGame
               title={gameContent.quiz.title}
@@ -345,7 +448,6 @@ export default function ZoneGameScreen() {
             <CompletedState label="Story Quiz" onReplay={() => { setCompletedGames((s) => { const n = new Set(s); n.delete(0); return n; }); }} />
           )}
 
-          {/* Tab 1: Mini Game */}
           {activeTab === 1 && !completedGames.has(1) && (
             <MiniGamePlaceholder
               type={gameContent.miniGame.type}
@@ -358,7 +460,6 @@ export default function ZoneGameScreen() {
             <CompletedState label="Mini Game" onReplay={() => { setCompletedGames((s) => { const n = new Set(s); n.delete(1); return n; }); }} />
           )}
 
-          {/* Tab 2: Word Search or Crossword */}
           {activeTab === 2 && !completedGames.has(2) && gameContent.wordSearch && (
             <div className="p-4">
               <WordSearchGame
@@ -391,7 +492,6 @@ export default function ZoneGameScreen() {
             <CompletedState label={puzzleLabel} onReplay={() => { setCompletedGames((s) => { const n = new Set(s); n.delete(2); return n; }); }} />
           )}
 
-          {/* Tab 3: Drag & Drop */}
           {activeTab === 3 && !completedGames.has(3) && (
             <ZoneDragDropGame
               items={gameContent.dragDrop.items}
@@ -405,7 +505,6 @@ export default function ZoneGameScreen() {
           )}
         </div>
 
-        {/* Dev force-complete button */}
         {import.meta.env.DEV && (
           <button
             onClick={async () => {
