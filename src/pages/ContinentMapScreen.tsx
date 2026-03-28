@@ -256,6 +256,7 @@ export default function ContinentMapScreen() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
   const [selectedZone, setSelectedZone] = useState<ZoneDef | null>(null);
+  const [hoveredNodeStatus, setHoveredNodeStatus] = useState<string | null>(null);
 
   const continent = getContinentById(continentId || "");
 
