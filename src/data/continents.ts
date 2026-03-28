@@ -138,7 +138,6 @@ export const CONTINENTS: ContinentDef[] = [
       { id: "data-fortress",    name: "Data Fortress",     icon: "🏰", city: "Budapest, Hungary",    lat: 47.4, lng: 19.0 },
       { id: "cyber-citadel",    name: "Cyber Citadel",     icon: "🛡️", city: "Madrid, Spain",        lat: 40.4, lng: -3.7 },
       { id: "boss-phisher",     name: "Phisher King's Lair", icon: "⚔️", city: "Rome, Italy",       lat: 41.9, lng: 12.5, isBoss: true },
-      },
     ],
   },
   {
