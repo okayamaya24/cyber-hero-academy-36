@@ -147,7 +147,7 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
           <img
             src={keybreakerImg}
             alt="The Keybreaker"
-            className="relative z-10 w-[130px] h-auto md:w-[165px] drop-shadow-[0_0_16px_hsla(140,85%,50%,0.35)]"
+            className="relative z-10 w-[150px] h-auto md:w-[190px] drop-shadow-[0_0_16px_hsla(140,85%,50%,0.35)]"
             draggable={false}
           />
         ) : (
