@@ -24,9 +24,9 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
   ],
   "The Phisher King": [
     "Click the link... I dare you! 🎣",
+    "A prize is waiting just for you!",
     "Every email is a trap!",
-    "Your inbox belongs to ME!",
-    "Can you spot the fake? I think not!",
+    "Open the message... if you trust me.",
   ],
   "The Troll Lord": [
     "I'll make everyone feel bad!",
@@ -62,6 +62,17 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
 
 /* ─── Villain Character ─────────────────────────────────── */
 import keybreakerImg from "@/assets/villains/keybreaker.png";
+import phisherKingImg from "@/assets/villains/phisher-king.png";
+
+const VILLAIN_ASSETS: Record<string, { img: string; hue: number; glowHsl: string; textHsl: string; borderHsl: string }> = {
+  "The Keybreaker": { img: keybreakerImg, hue: 140, glowHsl: "140, 85%, 50%", textHsl: "hsl(140, 80%, 70%)", borderHsl: "hsla(140, 80%, 50%, 0.3)" },
+  "The Phisher King": { img: phisherKingImg, hue: 195, glowHsl: "195, 85%, 50%", textHsl: "hsl(195, 80%, 70%)", borderHsl: "hsla(195, 80%, 50%, 0.3)" },
+};
+
+const VILLAIN_DYNAMIC_TAUNTS: Record<string, { locked: string; available: string; completed: string; boss: string }> = {
+  "The Keybreaker": { locked: "Too weak. I broke that instantly.", available: "Let's see if you're actually secure.", completed: "Hmm… not bad.", boss: "You'll never break my code!" },
+  "The Phisher King": { locked: "Locked out? Maybe this email can help...", available: "Go ahead... click something.", completed: "You spotted that one... impressive.", boss: "One click is all I need!" },
+};
 
 interface VillainCharacterProps {
   villainName: string;
@@ -71,7 +82,8 @@ interface VillainCharacterProps {
 function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterProps) {
   const taunts = VILLAIN_TAUNTS[villainName] || ["..."];
   const [tauntIdx, setTauntIdx] = useState(0);
-  const isKeybreaker = villainName === "The Keybreaker";
+  const asset = VILLAIN_ASSETS[villainName];
+  const dynamicTaunts = VILLAIN_DYNAMIC_TAUNTS[villainName];
 
   useEffect(() => {
     if (hoveredNodeStatus) return;
@@ -79,18 +91,15 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
     return () => clearInterval(interval);
   }, [taunts.length, hoveredNodeStatus]);
 
-  const bubbleText =
-    hoveredNodeStatus === "locked"
-      ? "Too weak. I broke that instantly."
-      : hoveredNodeStatus === "available"
-        ? "Let's see if you're actually secure."
-        : hoveredNodeStatus === "completed"
-          ? "Hmm… not bad."
-          : hoveredNodeStatus === "boss"
-            ? "You'll never break my code!"
-            : taunts[tauntIdx];
+  const bubbleText = hoveredNodeStatus && dynamicTaunts
+    ? dynamicTaunts[hoveredNodeStatus as keyof typeof dynamicTaunts] || taunts[tauntIdx]
+    : taunts[tauntIdx];
 
   const bubbleKey = hoveredNodeStatus || `idle-${tauntIdx}`;
+
+  const glowHsl = asset?.glowHsl || "140, 85%, 50%";
+  const textColor = asset?.textHsl || "hsl(140, 80%, 70%)";
+  const borderColor = asset?.borderHsl || "hsla(140, 80%, 50%, 0.3)";
 
   return (
     <motion.div
@@ -109,19 +118,19 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
           className="relative mr-2 mb-1 max-w-[170px] md:mr-3 md:max-w-[210px] rounded-xl rounded-br-sm px-3 py-2 shadow-xl backdrop-blur-md"
           style={{
             background: "hsla(210, 40%, 10%, 0.88)",
-            border: "1px solid hsla(140, 80%, 50%, 0.3)",
-            boxShadow: "0 0 18px hsla(140, 80%, 50%, 0.15), inset 0 0 12px hsla(140, 80%, 50%, 0.05)",
+            border: `1px solid ${borderColor}`,
+            boxShadow: `0 0 18px hsla(${glowHsl.split(",")[0]}, 80%, 50%, 0.15), inset 0 0 12px hsla(${glowHsl.split(",")[0]}, 80%, 50%, 0.05)`,
           }}
         >
-          <p className="text-[11px] md:text-xs font-medium italic leading-snug" style={{ color: "hsl(140, 80%, 70%)" }}>
+          <p className="text-[11px] md:text-xs font-medium italic leading-snug" style={{ color: textColor }}>
             "{bubbleText}"
           </p>
           <div
             className="absolute -bottom-1.5 right-5 h-3 w-3 rotate-45"
             style={{
               background: "hsla(210, 40%, 10%, 0.88)",
-              borderRight: "1px solid hsla(140, 80%, 50%, 0.3)",
-              borderBottom: "1px solid hsla(140, 80%, 50%, 0.3)",
+              borderRight: `1px solid ${borderColor}`,
+              borderBottom: `1px solid ${borderColor}`,
             }}
           />
         </motion.div>
@@ -138,16 +147,17 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
           animate={{ opacity: [0.3, 0.6, 0.3] }}
           transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
           style={{
-            background: "radial-gradient(circle, hsla(140, 85%, 50%, 0.25) 0%, transparent 70%)",
+            background: `radial-gradient(circle, hsla(${glowHsl}, 0.25) 0%, transparent 70%)`,
             filter: "blur(12px)",
             transform: "scale(1.3)",
           }}
         />
-        {isKeybreaker ? (
+        {asset ? (
           <img
-            src={keybreakerImg}
-            alt="The Keybreaker"
-            className="relative z-10 w-[150px] h-auto md:w-[190px] drop-shadow-[0_0_16px_hsla(140,85%,50%,0.35)]"
+            src={asset.img}
+            alt={villainName}
+            className="relative z-10 w-[150px] h-auto md:w-[190px]"
+            style={{ filter: `drop-shadow(0 0 16px hsla(${glowHsl}, 0.35))` }}
             draggable={false}
           />
         ) : (
