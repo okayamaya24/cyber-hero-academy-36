@@ -2,9 +2,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import MaintenanceGate from "@/components/MaintenanceGate";
 import { Navbar } from "@/components/Navbar";
+import ProtectedAdminRoute from "@/components/ProtectedAdminRoute";
+
+// Existing Cyber Hero pages
 import HomePage from "./pages/HomePage";
 import KidDashboard from "./pages/KidDashboard";
 import MissionsPage from "./pages/MissionsPage";
@@ -22,6 +26,21 @@ import EditAvatarPage from "./pages/EditAvatarPage";
 import ProtectedParentRoute from "./components/ProtectedParentRoute";
 import NotFound from "./pages/NotFound";
 
+// Admin portal pages
+import AdminGamesPage from "./pages/admin/AdminGamesPage";
+import AdminEventsPage from "./pages/admin/AdminEventsPage";
+import AdminBadgesPage from "./pages/admin/AdminBadgesPage";
+import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+
+// Dashboard portal pages
+import MyKidsPage from "./pages/portal/MyKidsPage";
+import KidProfilePage from "./pages/portal/KidProfilePage";
+import AccountPage from "./pages/portal/AccountPage";
+import ChangePasswordPage from "./pages/portal/ChangePasswordPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -31,24 +50,46 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/select-child" element={<ChildSelectPage />} />
-            <Route path="/create-child" element={<CreateChildPage />} />
-            <Route path="/dashboard" element={<KidDashboard />} />
-            <Route path="/missions" element={<MissionsPage />} />
-            <Route path="/world-map" element={<WorldSelectScreen />} />
-            <Route path="/world-map/:continentId" element={<ContinentMapScreen />} />
-            <Route path="/world-map/:continentId/:zoneId" element={<ZoneGameScreen />} />
-            <Route path="/edit-avatar" element={<EditAvatarPage />} />
-            <Route path="/for-parents" element={<ForParentsPage />} />
-            <Route path="/parent-dashboard" element={<ProtectedParentRoute><ParentDashboard /></ProtectedParentRoute>} />
-            <Route path="/certificate" element={<CertificatePage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <MaintenanceGate>
+            <Routes>
+              {/* Public pages with Navbar */}
+              <Route path="/" element={<><Navbar /><HomePage /></>} />
+              <Route path="/signup" element={<><Navbar /><SignupPage /></>} />
+              <Route path="/login" element={<><Navbar /><LoginPage /></>} />
+              <Route path="/for-parents" element={<><Navbar /><ForParentsPage /></>} />
+
+              {/* Existing Cyber Hero routes (with Navbar) */}
+              <Route path="/select-child" element={<><Navbar /><ChildSelectPage /></>} />
+              <Route path="/create-child" element={<><Navbar /><CreateChildPage /></>} />
+              <Route path="/dashboard" element={<><Navbar /><KidDashboard /></>} />
+              <Route path="/missions" element={<><Navbar /><MissionsPage /></>} />
+              <Route path="/world-map" element={<><Navbar /><WorldSelectScreen /></>} />
+              <Route path="/world-map/:continentId" element={<><Navbar /><ContinentMapScreen /></>} />
+              <Route path="/world-map/:continentId/:zoneId" element={<><Navbar /><ZoneGameScreen /></>} />
+              <Route path="/edit-avatar" element={<><Navbar /><EditAvatarPage /></>} />
+              <Route path="/parent-dashboard" element={<><Navbar /><ProtectedParentRoute><ParentDashboard /></ProtectedParentRoute></>} />
+              <Route path="/certificate" element={<><Navbar /><CertificatePage /></>} />
+
+              {/* Admin Portal (no Navbar - has own sidebar) */}
+              {/* Creator account must be manually inserted into Supabase with role = 'creator'. No public signup flow for this role. */}
+              <Route path="/admin-portal" element={<Navigate to="/admin-portal/games" replace />} />
+              <Route path="/admin-portal/games" element={<ProtectedAdminRoute><AdminGamesPage /></ProtectedAdminRoute>} />
+              <Route path="/admin-portal/events" element={<ProtectedAdminRoute><AdminEventsPage /></ProtectedAdminRoute>} />
+              <Route path="/admin-portal/badges" element={<ProtectedAdminRoute><AdminBadgesPage /></ProtectedAdminRoute>} />
+              <Route path="/admin-portal/categories" element={<ProtectedAdminRoute><AdminCategoriesPage /></ProtectedAdminRoute>} />
+              <Route path="/admin-portal/users" element={<ProtectedAdminRoute><AdminUsersPage /></ProtectedAdminRoute>} />
+              <Route path="/admin-portal/analytics" element={<ProtectedAdminRoute><AdminAnalyticsPage /></ProtectedAdminRoute>} />
+              <Route path="/admin-portal/settings" element={<ProtectedAdminRoute><AdminSettingsPage /></ProtectedAdminRoute>} />
+
+              {/* Dashboard Portal (no Navbar - has own sidebar) */}
+              <Route path="/portal" element={<MyKidsPage />} />
+              <Route path="/portal/kids/:id" element={<KidProfilePage />} />
+              <Route path="/portal/account" element={<AccountPage />} />
+              <Route path="/portal/password" element={<ChangePasswordPage />} />
+
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </MaintenanceGate>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

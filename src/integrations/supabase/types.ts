@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          earned_count: number | null
+          icon: string | null
+          id: string
+          name: string
+          trigger_condition: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          earned_count?: number | null
+          icon?: string | null
+          id?: string
+          name: string
+          trigger_condition?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          earned_count?: number | null
+          icon?: string | null
+          id?: string
+          name?: string
+          trigger_condition?: string | null
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       child_profiles: {
         Row: {
           age: number
@@ -188,6 +239,198 @@ export type Database = {
           },
         ]
       }
+      events: {
+        Row: {
+          badge_id: string | null
+          created_at: string | null
+          description: string | null
+          display_day: string | null
+          display_month: string | null
+          double_xp: boolean | null
+          end_date: string | null
+          id: string
+          name: string
+          start_date: string | null
+          status: string | null
+        }
+        Insert: {
+          badge_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_day?: string | null
+          display_month?: string | null
+          double_xp?: boolean | null
+          end_date?: string | null
+          id?: string
+          name: string
+          start_date?: string | null
+          status?: string | null
+        }
+        Update: {
+          badge_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_day?: string | null
+          display_month?: string | null
+          double_xp?: boolean | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          start_date?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_sessions: {
+        Row: {
+          completed_at: string | null
+          duration_seconds: number | null
+          game_id: string | null
+          id: string
+          kid_id: string
+          score: number | null
+          started_at: string | null
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          duration_seconds?: number | null
+          game_id?: string | null
+          id?: string
+          kid_id: string
+          score?: number | null
+          started_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          duration_seconds?: number | null
+          game_id?: string | null
+          id?: string
+          kid_id?: string
+          score?: number | null
+          started_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_sessions_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_sessions_kid_id_fkey"
+            columns: ["kid_id"]
+            isOneToOne: false
+            referencedRelation: "kids"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          age_range: string | null
+          category_id: string | null
+          completions_count: number | null
+          created_at: string | null
+          description: string | null
+          featured: boolean | null
+          icon: string | null
+          id: string
+          name: string
+          players_count: number | null
+          publish_date: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          age_range?: string | null
+          category_id?: string | null
+          completions_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          featured?: boolean | null
+          icon?: string | null
+          id?: string
+          name: string
+          players_count?: number | null
+          publish_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          age_range?: string | null
+          category_id?: string | null
+          completions_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          featured?: boolean | null
+          icon?: string | null
+          id?: string
+          name?: string
+          players_count?: number | null
+          publish_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "games_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kids: {
+        Row: {
+          age: number | null
+          avatar_color: string | null
+          created_at: string | null
+          id: string
+          name: string
+          parent_id: string
+          username: string | null
+        }
+        Insert: {
+          age?: number | null
+          avatar_color?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+          parent_id: string
+          username?: string | null
+        }
+        Update: {
+          age?: number | null
+          avatar_color?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          parent_id?: string
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kids_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mission_progress: {
         Row: {
           child_id: string
@@ -241,31 +484,55 @@ export type Database = {
           },
         ]
       }
+      platform_settings: {
+        Row: {
+          key: string
+          value: boolean | null
+        }
+        Insert: {
+          key: string
+          value?: boolean | null
+        }
+        Update: {
+          key?: string
+          value?: boolean | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          account_type: string | null
           created_at: string
           display_name: string
           email: string | null
           id: string
           parent_pin: string
+          plan: string | null
+          role: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          account_type?: string | null
           created_at?: string
           display_name?: string
           email?: string | null
           id?: string
           parent_pin?: string
+          plan?: string | null
+          role?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          account_type?: string | null
           created_at?: string
           display_name?: string
           email?: string | null
           id?: string
           parent_pin?: string
+          plan?: string | null
+          role?: string
           updated_at?: string
           user_id?: string
         }
@@ -323,7 +590,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_creator: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
