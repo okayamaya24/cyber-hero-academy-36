@@ -24,9 +24,9 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
   ],
   "The Phisher King": [
     "Click the link... I dare you! 🎣",
+    "A prize is waiting just for you!",
     "Every email is a trap!",
-    "Your inbox belongs to ME!",
-    "Can you spot the fake? I think not!",
+    "Open the message... if you trust me.",
   ],
   "The Troll Lord": [
     "I'll make everyone feel bad!",
