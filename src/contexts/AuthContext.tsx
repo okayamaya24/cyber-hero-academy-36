@@ -20,6 +20,8 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
   activeChildId: null,
   setActiveChildId: () => {},
+  parentUnlocked: false,
+  setParentUnlocked: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
