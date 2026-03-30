@@ -18,6 +18,16 @@ export default function ChildSelectPage() {
   const { data: children = [], isLoading } = useQuery({
     queryKey: ["children", user?.id],
     queryFn: async () => {
+      // First check if this user IS a child profile themselves
+      const { data: selfData } = await supabase
+        .from("child_profiles")
+        .select("*")
+        .eq("id", user!.id)
+        .single();
+      if (selfData) {
+        return [selfData] as ChildProfile[];
+      }
+      // Otherwise fetch children linked to this parent
       const { data, error } = await supabase
         .from("child_profiles")
         .select("*")
@@ -25,6 +35,7 @@ export default function ChildSelectPage() {
         .order("created_at");
       if (error) throw error;
       return data as ChildProfile[];
+    },
     },
     enabled: !!user,
   });
