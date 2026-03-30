@@ -5,54 +5,70 @@ import DashboardLayout from "@/components/portal/DashboardLayout";
 import { useAccountType } from "@/hooks/useAccountType";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft } from "lucide-react";
-
-const colorMap: Record<string, string> = {
-  blue: "bg-blue-500", green: "bg-green-500", purple: "bg-purple-500", orange: "bg-orange-500",
-  pink: "bg-pink-500", red: "bg-red-500", teal: "bg-teal-500", yellow: "bg-yellow-500",
-};
-
-const statusColors: Record<string, string> = {
-  completed: "bg-green-100 text-green-800",
-  in_progress: "bg-blue-100 text-blue-800",
-};
+import { ArrowLeft, Star, Award, CheckCircle2, Flame, Trophy } from "lucide-react";
+import { MISSIONS } from "@/data/missions";
+import HeroAvatar from "@/components/avatar/HeroAvatar";
+import { motion } from "framer-motion";
+import { useMemo } from "react";
 
 export default function KidProfilePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { terms } = useAccountType();
 
-  const { data: kid, isLoading: kidLoading } = useQuery({
-    queryKey: ["kid", id],
+  // Pull from child_profiles (existing game data)
+  const { data: child, isLoading: childLoading } = useQuery({
+    queryKey: ["child", id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("kids").select("*").eq("id", id!).single();
+      const { data, error } = await supabase.from("child_profiles").select("*").eq("id", id!).single();
       if (error) throw error;
-      return data as any;
+      return data;
     },
     enabled: !!id,
   });
 
-  const { data: sessions, isLoading: sessionsLoading } = useQuery({
-    queryKey: ["kid-sessions", id],
+  const { data: missionProgress = [] } = useQuery({
+    queryKey: ["mission_progress", id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("game_sessions")
-        .select("*, games(name, icon)")
-        .eq("kid_id", id!)
-        .order("started_at", { ascending: false });
+      const { data, error } = await supabase.from("mission_progress").select("*").eq("child_id", id!);
       if (error) throw error;
-      return data as any[];
+      return data;
     },
     enabled: !!id,
   });
 
-  const completed = sessions?.filter((s: any) => s.status === "completed") ?? [];
-  const totalDuration = sessions?.reduce((a: number, s: any) => a + (s.duration_seconds ?? 0), 0) ?? 0;
-  const hours = Math.floor(totalDuration / 3600);
-  const mins = Math.round((totalDuration % 3600) / 60);
-  const avgSession = completed.length > 0 ? Math.round(completed.reduce((a: number, s: any) => a + (s.duration_seconds ?? 0), 0) / completed.length / 60) : 0;
-  const getInitials = (name: string) => name?.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2) || "?";
+  const { data: earnedBadges = [] } = useQuery({
+    queryKey: ["earned_badges", id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("earned_badges").select("*").eq("child_id", id!);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  const completedMissions = missionProgress.filter((m) => m.status === "completed");
+  const totalStars = useMemo(() => completedMissions.reduce((acc, m) => {
+    const ratio = m.max_score > 0 ? m.score / m.max_score : 0;
+    return acc + (ratio >= 0.9 ? 3 : ratio >= 0.7 ? 2 : 1);
+  }, 0), [completedMissions]);
+
+  const summary = useMemo(() => {
+    let strongestTopic = "—";
+    let needsReviewTopic = "—";
+    let bestScore = -1;
+    let worstScore = Infinity;
+    for (const m of missionProgress) {
+      const mission = MISSIONS.find((mi) => mi.id === m.mission_id);
+      if (!mission) continue;
+      const ratio = m.max_score > 0 ? m.score / m.max_score : 0;
+      if (ratio > bestScore) { bestScore = ratio; strongestTopic = mission.title; }
+      if (ratio < worstScore) { worstScore = ratio; needsReviewTopic = mission.title; }
+    }
+    return { strongestTopic, needsReviewTopic };
+  }, [missionProgress]);
 
   return (
     <DashboardLayout>
@@ -60,59 +76,107 @@ export default function KidProfilePage() {
         <ArrowLeft className="mr-1.5 h-4 w-4" /> Back to {terms.kidsLabel}
       </Button>
 
-      {kidLoading ? (
-        <Skeleton className="h-32 w-full rounded-xl" />
-      ) : kid ? (
-        <>
+      {childLoading ? (
+        <Skeleton className="h-32 w-full rounded-2xl" />
+      ) : child ? (
+        <div className="space-y-6">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className={`flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold text-white ${colorMap[kid.avatar_color] ?? "bg-blue-500"}`}>
-              {getInitials(kid.name)}
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">{kid.name}</h1>
-              <p className="text-muted-foreground">Age {kid.age ?? "?"}</p>
+          <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <HeroAvatar
+              avatarConfig={(child as any).avatar_config as Record<string, any> | null}
+              size={72}
+              fallbackEmoji={child.avatar}
+            />
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl font-bold text-foreground">{child.name}</h1>
+                <Badge variant="secondary" className="border-0">Level {child.level}</Badge>
+                <span className="text-sm text-muted-foreground">Age {child.age}</span>
+              </div>
+              {child.last_activity_date && (
+                <p className="text-xs text-muted-foreground mt-1">Last active: {new Date(child.last_activity_date).toLocaleDateString()}</p>
+              )}
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-5 gap-3 mb-6">
+          {/* Stats Row */}
+          <div className="grid grid-cols-5 gap-3">
             {[
-              { label: "Sessions", value: sessions?.length ?? 0 },
-              { label: "Time Spent", value: `${hours}h ${mins}m` },
-              { label: "Completed", value: completed.length },
-              { label: "Badges", value: 0 },
-              { label: "Avg. Session", value: `${avgSession}m` },
+              { label: "Points", value: child.points, icon: Star, color: "text-primary" },
+              { label: "Badges", value: earnedBadges.length, icon: Award, color: "text-accent" },
+              { label: "Streak", value: child.streak, icon: Flame, color: "text-destructive" },
+              { label: "Missions", value: completedMissions.length, icon: CheckCircle2, color: "text-secondary" },
+              { label: "Stars", value: totalStars, icon: Trophy, color: "text-accent" },
             ].map((s) => (
-              <div key={s.label} className="rounded-xl border border-border bg-card p-3 text-center">
-                <p className="text-xs text-muted-foreground">{s.label}</p>
+              <div key={s.label} className="rounded-2xl border border-border bg-card p-3 text-center shadow-sm">
+                <s.icon className={`mx-auto mb-1 h-5 w-5 ${s.color}`} />
                 <p className="text-lg font-bold text-foreground">{s.value}</p>
+                <p className="text-[10px] text-muted-foreground">{s.label}</p>
               </div>
             ))}
           </div>
 
-          {/* Activity log */}
-          <div className="rounded-xl border border-border bg-card p-5">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Game Activity</h2>
-            {sessionsLoading ? (
-              <div className="space-y-2">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
-            ) : (sessions ?? []).length === 0 ? (
-              <p className="text-muted-foreground text-sm text-center py-6">No games played yet.</p>
+          {/* Strongest vs Needs Review */}
+          <div className="flex gap-3">
+            <div className="flex-1 rounded-2xl bg-secondary/10 p-4 text-center">
+              <p className="text-xs text-muted-foreground mb-1">Strongest Topic</p>
+              <p className="font-semibold text-secondary text-sm">{summary.strongestTopic}</p>
+            </div>
+            <div className="flex-1 rounded-2xl bg-destructive/5 p-4 text-center">
+              <p className="text-xs text-muted-foreground mb-1">Needs Review</p>
+              <p className="font-semibold text-destructive text-sm">{summary.needsReviewTopic}</p>
+            </div>
+          </div>
+
+          {/* Mission Progress */}
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Mission Progress</h2>
+            <div className="space-y-3">
+              {MISSIONS.map((m) => {
+                const Icon = m.icon;
+                const progress = missionProgress.find((p) => p.mission_id === m.id);
+                const status = progress?.status || "not started";
+                const pct = progress && progress.max_score > 0 ? Math.round((progress.score / progress.max_score) * 100) : 0;
+                return (
+                  <div key={m.id} className="flex items-center gap-3">
+                    <Icon className={`h-5 w-5 shrink-0 ${m.color}`} />
+                    <span className="text-sm font-medium text-foreground flex-1 min-w-0 truncate">{m.title}</span>
+                    <Progress value={status === "completed" ? 100 : pct} className="h-2 w-24" />
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] whitespace-nowrap ${
+                        status === "completed" ? "border-secondary text-secondary" :
+                        status === "in_progress" ? "border-primary text-primary" :
+                        "border-muted-foreground text-muted-foreground"
+                      }`}
+                    >
+                      {status === "completed" ? "Completed" : status === "in_progress" ? "In Progress" : "Not Started"}
+                    </Badge>
+                    {status === "completed" && <span className="text-xs font-medium text-foreground">{pct}%</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Badges Earned */}
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Badges Earned ({earnedBadges.length})</h2>
+            {earnedBadges.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No badges earned yet.</p>
             ) : (
-              <div className="space-y-2">
-                {(sessions ?? []).map((s: any) => (
-                  <div key={s.id} className="flex items-center gap-3 rounded-lg p-2 hover:bg-muted/50">
-                    <span className="text-xl">{s.games?.icon ?? "🎮"}</span>
-                    <span className="flex-1 text-sm font-medium text-foreground">{s.games?.name ?? "Unknown Game"}</span>
-                    <span className="text-xs text-muted-foreground">{new Date(s.started_at).toLocaleDateString()}</span>
-                    <Badge className={statusColors[s.status] ?? "bg-gray-100 text-gray-600"}>{s.status === "completed" ? "Completed" : "In Progress"}</Badge>
-                    {s.score != null && <span className="text-xs font-medium text-foreground">{s.score}%</span>}
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+                {earnedBadges.map((b) => (
+                  <div key={b.id} className="rounded-xl border border-border bg-muted/30 p-3 text-center">
+                    <span className="text-2xl">{b.badge_icon}</span>
+                    <p className="text-xs font-semibold text-foreground mt-1 truncate">{b.badge_name}</p>
+                    <p className="text-[9px] text-muted-foreground">{new Date(b.earned_at).toLocaleDateString()}</p>
                   </div>
                 ))}
               </div>
             )}
           </div>
-        </>
+        </div>
       ) : (
         <p className="text-muted-foreground text-center py-10">{terms.kidSingular} not found.</p>
       )}
