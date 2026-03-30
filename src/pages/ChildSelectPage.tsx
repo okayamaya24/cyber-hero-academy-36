@@ -19,11 +19,7 @@ export default function ChildSelectPage() {
     queryKey: ["children", user?.id],
     queryFn: async () => {
       // First check if this user IS a child profile themselves
-      const { data: selfData } = await supabase
-        .from("child_profiles")
-        .select("*")
-        .eq("id", user!.id)
-        .single();
+      const { data: selfData } = await supabase.from("child_profiles").select("*").eq("id", user!.id).single();
       if (selfData) {
         return [selfData] as ChildProfile[];
       }
@@ -35,7 +31,6 @@ export default function ChildSelectPage() {
         .order("created_at");
       if (error) throw error;
       return data as ChildProfile[];
-    },
     },
     enabled: !!user,
   });
@@ -56,11 +51,7 @@ export default function ChildSelectPage() {
   if (children.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md text-center"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md text-center">
           <Gamepad2 className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
           <h1 className="text-2xl font-bold">No Heroes Yet!</h1>
           <p className="mt-2 text-muted-foreground">
@@ -83,9 +74,7 @@ export default function ChildSelectPage() {
       >
         <Shield className="mx-auto mb-4 h-12 w-12 text-primary" />
         <h1 className="text-3xl font-bold">Who's Playing?</h1>
-        <p className="mt-2 mb-8 text-muted-foreground">
-          Choose your Cyber Hero profile
-        </p>
+        <p className="mt-2 mb-8 text-muted-foreground">Choose your Cyber Hero profile</p>
 
         <div className="grid grid-cols-2 gap-4">
           {children.map((child) => (
