@@ -9,6 +9,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   activeChildId: string | null;
   setActiveChildId: (id: string | null) => void;
+  parentUnlocked: boolean;
+  setParentUnlocked: (v: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
