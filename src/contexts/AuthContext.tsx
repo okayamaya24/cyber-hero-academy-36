@@ -27,6 +27,7 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [parentUnlocked, setParentUnlocked] = useState(false);
 
   const [activeChildId, setActiveChildId] = useState<string | null>(() => {
     return localStorage.getItem("cyber_hero_active_child");
