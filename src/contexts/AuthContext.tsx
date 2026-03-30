@@ -34,16 +34,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
+    const checkKidRole = async (session: Session | null) => {
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .single();
+        if (profile?.role === "kid") {
+          handleSetActiveChildId(session.user.id);
+        }
+      }
+      setSession(session);
+      setLoading(false);
+    };
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setLoading(false);
+      checkKidRole(session);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
+      checkKidRole(session);
     });
 
     return () => subscription.unsubscribe();
