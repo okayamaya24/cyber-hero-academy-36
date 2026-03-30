@@ -74,6 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signOut,
         activeChildId,
         setActiveChildId: handleSetActiveChildId,
+        parentUnlocked,
+        setParentUnlocked,
       }}
     >
       {children}
