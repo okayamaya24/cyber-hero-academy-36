@@ -134,7 +134,7 @@ export default function MyKidsPage() {
               <div
                 key={k.id}
                 className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 cursor-pointer hover:border-primary/30 transition-colors group"
-                onClick={() => navigate(`/portal/kids/${k.id}`)}
+                onClick={() => navigate(`/dashboard/kids/${k.id}`)}
               >
                 <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white ${colorMap[k.avatar_color] ?? "bg-blue-500"}`}>
                   {getInitials(k.name)}
