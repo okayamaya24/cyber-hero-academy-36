@@ -34,6 +34,9 @@ import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import AdminLevelManagerPage from "./pages/admin/AdminLevelManagerPage";
+import AdminAnnouncementsPage from "./pages/admin/AdminAnnouncementsPage";
+import AdminEmailCenterPage from "./pages/admin/AdminEmailCenterPage";
 
 // Dashboard portal pages
 import MyKidsPage from "./pages/portal/MyKidsPage";
@@ -61,7 +64,7 @@ const App = () => (
               {/* Existing Cyber Hero routes (with Navbar) */}
               <Route path="/select-child" element={<><Navbar /><ChildSelectPage /></>} />
               <Route path="/create-child" element={<><Navbar /><CreateChildPage /></>} />
-              <Route path="/dashboard" element={<><Navbar /><KidDashboard /></>} />
+              <Route path="/kid-dashboard" element={<><Navbar /><KidDashboard /></>} />
               <Route path="/missions" element={<><Navbar /><MissionsPage /></>} />
               <Route path="/world-map" element={<><Navbar /><WorldSelectScreen /></>} />
               <Route path="/world-map/:continentId" element={<><Navbar /><ContinentMapScreen /></>} />
@@ -77,15 +80,22 @@ const App = () => (
               <Route path="/admin-portal/events" element={<ProtectedAdminRoute><AdminEventsPage /></ProtectedAdminRoute>} />
               <Route path="/admin-portal/badges" element={<ProtectedAdminRoute><AdminBadgesPage /></ProtectedAdminRoute>} />
               <Route path="/admin-portal/categories" element={<ProtectedAdminRoute><AdminCategoriesPage /></ProtectedAdminRoute>} />
+              <Route path="/admin-portal/levels" element={<ProtectedAdminRoute><AdminLevelManagerPage /></ProtectedAdminRoute>} />
+              <Route path="/admin-portal/announcements" element={<ProtectedAdminRoute><AdminAnnouncementsPage /></ProtectedAdminRoute>} />
+              <Route path="/admin-portal/emails" element={<ProtectedAdminRoute><AdminEmailCenterPage /></ProtectedAdminRoute>} />
               <Route path="/admin-portal/users" element={<ProtectedAdminRoute><AdminUsersPage /></ProtectedAdminRoute>} />
               <Route path="/admin-portal/analytics" element={<ProtectedAdminRoute><AdminAnalyticsPage /></ProtectedAdminRoute>} />
               <Route path="/admin-portal/settings" element={<ProtectedAdminRoute><AdminSettingsPage /></ProtectedAdminRoute>} />
 
-              {/* Dashboard Portal (no Navbar - has own sidebar) */}
-              <Route path="/portal" element={<MyKidsPage />} />
-              <Route path="/portal/kids/:id" element={<KidProfilePage />} />
-              <Route path="/portal/account" element={<AccountPage />} />
-              <Route path="/portal/password" element={<ChangePasswordPage />} />
+              {/* Dashboard Portal (no Navbar - has own sidebar) — family & school roles */}
+              <Route path="/dashboard" element={<MyKidsPage />} />
+              <Route path="/dashboard/kids/:id" element={<KidProfilePage />} />
+              <Route path="/dashboard/account" element={<AccountPage />} />
+              <Route path="/dashboard/password" element={<ChangePasswordPage />} />
+
+              {/* Legacy portal routes redirect to new dashboard paths */}
+              <Route path="/portal" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/portal/*" element={<Navigate to="/dashboard" replace />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

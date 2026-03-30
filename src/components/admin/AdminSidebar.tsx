@@ -10,6 +10,9 @@ import {
   Settings,
   Shield,
   LogOut,
+  Layers,
+  Megaphone,
+  Mail,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -17,10 +20,18 @@ const sections = [
   {
     title: "CMS",
     items: [
-      { label: "Games", to: "/admin-portal/games", icon: Gamepad2 },
+      { label: "Missions / Games", to: "/admin-portal/games", icon: Gamepad2 },
       { label: "Special Events", to: "/admin-portal/events", icon: CalendarDays },
       { label: "Badges", to: "/admin-portal/badges", icon: Award },
       { label: "Categories", to: "/admin-portal/categories", icon: FolderOpen },
+    ],
+  },
+  {
+    title: "Controls",
+    items: [
+      { label: "Level Manager", to: "/admin-portal/levels", icon: Layers },
+      { label: "Announcements", to: "/admin-portal/announcements", icon: Megaphone },
+      { label: "Email Center", to: "/admin-portal/emails", icon: Mail },
     ],
   },
   {
@@ -38,13 +49,13 @@ export function AdminSidebar() {
   const { signOut } = useAuth();
 
   return (
-    <aside className="flex w-[220px] flex-col border-r border-border bg-card">
+    <aside className="flex w-[210px] flex-col border-r border-border bg-card min-h-screen">
       <div className="flex h-16 items-center gap-2 border-b border-border px-5">
         <Shield className="h-6 w-6 text-primary" />
         <span className="text-lg font-bold text-foreground">Admin</span>
       </div>
 
-      <nav className="flex-1 space-y-6 px-3 py-4">
+      <nav className="flex-1 space-y-5 px-3 py-4 overflow-y-auto">
         {sections.map((section) => (
           <div key={section.title}>
             <p className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
