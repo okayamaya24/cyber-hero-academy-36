@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          body: string
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          sent_at: string | null
+          target_audience: string | null
+          target_grade_max: number | null
+          target_grade_min: number | null
+          title: string
+        }
+        Insert: {
+          body: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          sent_at?: string | null
+          target_audience?: string | null
+          target_grade_max?: number | null
+          target_grade_min?: number | null
+          title: string
+        }
+        Update: {
+          body?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          sent_at?: string | null
+          target_audience?: string | null
+          target_grade_max?: number | null
+          target_grade_min?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           active: boolean | null
@@ -239,6 +275,39 @@ export type Database = {
           },
         ]
       }
+      email_log: {
+        Row: {
+          body: string
+          id: string
+          recipient_email: string | null
+          recipient_type: string | null
+          sent_at: string | null
+          sent_by: string | null
+          status: string | null
+          subject: string
+        }
+        Insert: {
+          body: string
+          id?: string
+          recipient_email?: string | null
+          recipient_type?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string | null
+          subject: string
+        }
+        Update: {
+          body?: string
+          id?: string
+          recipient_email?: string | null
+          recipient_type?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string | null
+          subject?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           badge_id: string | null
@@ -347,6 +416,9 @@ export type Database = {
           featured: boolean | null
           icon: string | null
           id: string
+          locked: boolean | null
+          max_grade: number | null
+          min_grade: number | null
           name: string
           players_count: number | null
           publish_date: string | null
@@ -362,6 +434,9 @@ export type Database = {
           featured?: boolean | null
           icon?: string | null
           id?: string
+          locked?: boolean | null
+          max_grade?: number | null
+          min_grade?: number | null
           name: string
           players_count?: number | null
           publish_date?: string | null
@@ -377,6 +452,9 @@ export type Database = {
           featured?: boolean | null
           icon?: string | null
           id?: string
+          locked?: boolean | null
+          max_grade?: number | null
+          min_grade?: number | null
           name?: string
           players_count?: number | null
           publish_date?: string | null
@@ -389,6 +467,38 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kid_progress: {
+        Row: {
+          game_id: string | null
+          id: string
+          kid_id: string
+          last_updated: string | null
+          progress_data: Json | null
+        }
+        Insert: {
+          game_id?: string | null
+          id?: string
+          kid_id: string
+          last_updated?: string | null
+          progress_data?: Json | null
+        }
+        Update: {
+          game_id?: string | null
+          id?: string
+          kid_id?: string
+          last_updated?: string | null
+          progress_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kid_progress_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
             referencedColumns: ["id"]
           },
         ]
@@ -484,6 +594,27 @@ export type Database = {
           },
         ]
       }
+      parent_kid_links: {
+        Row: {
+          created_at: string | null
+          id: string
+          kid_id: string
+          parent_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          kid_id: string
+          parent_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          kid_id?: string
+          parent_id?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           key: string
@@ -505,6 +636,7 @@ export type Database = {
           created_at: string
           display_name: string
           email: string | null
+          grade_level: string | null
           id: string
           parent_pin: string
           plan: string | null
@@ -517,6 +649,7 @@ export type Database = {
           created_at?: string
           display_name?: string
           email?: string | null
+          grade_level?: string | null
           id?: string
           parent_pin?: string
           plan?: string | null
@@ -529,6 +662,7 @@ export type Database = {
           created_at?: string
           display_name?: string
           email?: string | null
+          grade_level?: string | null
           id?: string
           parent_pin?: string
           plan?: string | null

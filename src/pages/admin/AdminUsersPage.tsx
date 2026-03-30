@@ -7,13 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Search, Eye } from "lucide-react";
+import { Search, Eye, RotateCcw } from "lucide-react";
 
 const tabs = [
   { label: "All", value: "all" },
-  { label: "Family", value: "family" },
-  { label: "School", value: "school" },
+  { label: "Families", value: "family" },
+  { label: "Schools", value: "school" },
+  { label: "Kids", value: "kid" },
 ];
 
 export default function AdminUsersPage() {
@@ -21,6 +23,8 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all");
   const [viewUser, setViewUser] = useState<any>(null);
+  const [resetId, setResetId] = useState<string | null>(null);
+  const [resetName, setResetName] = useState("");
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["admin-users"],
@@ -31,20 +35,26 @@ export default function AdminUsersPage() {
     },
   });
 
-  const { data: kidCounts } = useQuery({
-    queryKey: ["admin-kid-counts"],
+  const { data: kidLinks } = useQuery({
+    queryKey: ["admin-kid-links"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("kids").select("parent_id");
+      const { data, error } = await supabase.from("parent_kid_links").select("*");
       if (error) throw error;
-      const counts: Record<string, number> = {};
-      (data as any[]).forEach((k) => { counts[k.parent_id] = (counts[k.parent_id] || 0) + 1; });
-      return counts;
+      return data as any[];
+    },
+  });
+
+  const { data: gameSessions } = useQuery({
+    queryKey: ["admin-game-sessions-stats"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("game_sessions").select("kid_id, status, duration_seconds");
+      if (error) throw error;
+      return data as any[];
     },
   });
 
   const suspendMutation = useMutation({
     mutationFn: async ({ id, suspended }: { id: string; suspended: boolean }) => {
-      // We use a simple plan field to mark suspended status
       const { error } = await supabase.from("profiles").update({ plan: suspended ? "suspended" : "free" } as any).eq("id", id);
       if (error) throw error;
     },
@@ -54,16 +64,46 @@ export default function AdminUsersPage() {
     },
   });
 
+  const resetProgressMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      // Delete game_sessions and kid_progress for this user
+      await supabase.from("game_sessions").delete().eq("kid_id", userId);
+      await supabase.from("kid_progress").delete().eq("kid_id", userId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-game-sessions-stats"] });
+      setResetId(null);
+      toast.success("Progress reset successfully.");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  // Compute kid counts per parent
+  const kidCountsByParent: Record<string, number> = {};
+  (kidLinks ?? []).forEach((l: any) => {
+    kidCountsByParent[l.parent_id] = (kidCountsByParent[l.parent_id] || 0) + 1;
+  });
+
+  // Compute session stats per kid
+  const sessionStatsByKid: Record<string, { completed: number; total: number; duration: number }> = {};
+  (gameSessions ?? []).forEach((s: any) => {
+    if (!sessionStatsByKid[s.kid_id]) sessionStatsByKid[s.kid_id] = { completed: 0, total: 0, duration: 0 };
+    sessionStatsByKid[s.kid_id].total++;
+    if (s.status === "completed") sessionStatsByKid[s.kid_id].completed++;
+    sessionStatsByKid[s.kid_id].duration += s.duration_seconds ?? 0;
+  });
+
   const filtered = (profiles ?? []).filter((p: any) => {
-    if (tab !== "all" && p.account_type !== tab) return false;
+    if (tab !== "all" && p.role !== tab) return false;
     if (search && !(p.display_name || "").toLowerCase().includes(search.toLowerCase()) && !(p.email || "").toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
   const stats = {
-    families: profiles?.filter((p: any) => p.account_type === "family").length ?? 0,
-    schools: profiles?.filter((p: any) => p.account_type === "school").length ?? 0,
-    totalKids: Object.values(kidCounts ?? {}).reduce((a: number, b: any) => a + b, 0) as number,
+    families: profiles?.filter((p: any) => p.role === "family").length ?? 0,
+    schools: profiles?.filter((p: any) => p.role === "school").length ?? 0,
+    kids: profiles?.filter((p: any) => p.role === "kid").length ?? 0,
+    total: profiles?.length ?? 0,
   };
 
   const getInitials = (name: string) => name?.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2) || "?";
@@ -76,8 +116,8 @@ export default function AdminUsersPage() {
         {[
           { label: "Total Families", value: stats.families },
           { label: "Total Schools", value: stats.schools },
-          { label: "Total Kids", value: stats.totalKids },
-          { label: "Total Accounts", value: profiles?.length ?? 0 },
+          { label: "Total Kids", value: stats.kids },
+          { label: "Total Accounts", value: stats.total },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-border bg-card p-4">
             <p className="text-sm text-muted-foreground">{s.label}</p>
@@ -109,6 +149,7 @@ export default function AdminUsersPage() {
         <div className="space-y-2">
           {filtered.map((p: any) => {
             const suspended = p.plan === "suspended";
+            const kidStats = sessionStatsByKid[p.user_id];
             return (
               <div key={p.id} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 group">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
@@ -116,11 +157,18 @@ export default function AdminUsersPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-foreground truncate">{p.display_name || "No name"}</p>
-                  <p className="text-xs text-muted-foreground">{p.account_type} · {kidCounts?.[p.id] ?? 0} kids · Joined {new Date(p.created_at).toLocaleDateString()}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {p.role} · {p.role === "kid" ? `${kidStats?.completed ?? 0} missions completed` : `${kidCountsByParent[p.user_id] ?? 0} kids`} · Joined {new Date(p.created_at).toLocaleDateString()}
+                  </p>
                 </div>
                 <Badge className={suspended ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}>{suspended ? "Suspended" : "Active"}</Badge>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button size="sm" variant="ghost" onClick={() => setViewUser(p)}><Eye className="h-3.5 w-3.5" /></Button>
+                  {p.role === "kid" && (
+                    <Button size="sm" variant="ghost" className="text-destructive" onClick={() => { setResetId(p.user_id); setResetName(p.display_name); }}>
+                      <RotateCcw className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
                   <Button size="sm" variant="ghost" onClick={() => suspendMutation.mutate({ id: p.id, suspended: !suspended })}>
                     {suspended ? "Unsuspend" : "Suspend"}
                   </Button>
@@ -131,6 +179,7 @@ export default function AdminUsersPage() {
         </div>
       )}
 
+      {/* User detail panel */}
       <Sheet open={!!viewUser} onOpenChange={() => setViewUser(null)}>
         <SheetContent>
           <SheetHeader><SheetTitle>User Details</SheetTitle></SheetHeader>
@@ -144,15 +193,50 @@ export default function AdminUsersPage() {
                 </div>
               </div>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Account Type</span><span className="font-medium text-foreground capitalize">{viewUser.account_type}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Role</span><span className="font-medium text-foreground capitalize">{viewUser.role}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Account Type</span><span className="font-medium text-foreground capitalize">{viewUser.account_type ?? "—"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Grade Level</span><span className="font-medium text-foreground">{viewUser.grade_level ?? "—"}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Plan</span><span className="font-medium text-foreground">{viewUser.plan}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Kids</span><span className="font-medium text-foreground">{kidCounts?.[viewUser.id] ?? 0}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Joined</span><span className="font-medium text-foreground">{new Date(viewUser.created_at).toLocaleDateString()}</span></div>
+                {viewUser.role === "kid" && (
+                  <>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Missions Completed</span><span className="font-medium text-foreground">{sessionStatsByKid[viewUser.user_id]?.completed ?? 0}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Total Sessions</span><span className="font-medium text-foreground">{sessionStatsByKid[viewUser.user_id]?.total ?? 0}</span></div>
+                  </>
+                )}
               </div>
+              {viewUser.role === "kid" && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => { setResetId(viewUser.user_id); setResetName(viewUser.display_name); setViewUser(null); }}
+                >
+                  <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reset Progress
+                </Button>
+              )}
             </div>
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Reset progress confirm */}
+      <AlertDialog open={!!resetId} onOpenChange={() => setResetId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Progress?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently reset all of {resetName}'s progress. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground" onClick={() => resetId && resetProgressMutation.mutate(resetId)}>
+              Reset Progress
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }

@@ -10,22 +10,24 @@ export function DashboardSidebar() {
   const { terms } = useAccountType();
 
   const items = [
-    { label: terms.kidsLabel, to: "/portal", icon: Users },
-    { label: "Account", to: "/portal/account", icon: UserCircle },
-    { label: "Change Password", to: "/portal/password", icon: KeyRound },
+    { label: terms.kidsLabel, to: "/dashboard", icon: Users },
+    { label: "Account", to: "/dashboard/account", icon: UserCircle },
+    { label: "Change Password", to: "/dashboard/password", icon: KeyRound },
   ];
 
   return (
     <aside className="flex w-[220px] flex-col border-r border-border bg-card">
       <div className="flex h-16 items-center gap-2 border-b border-border px-5">
         <Shield className="h-6 w-6 text-primary" />
-        <span className="text-lg font-bold text-foreground">{terms.portalTitle}</span>
+        <span className="text-lg font-bold text-foreground truncate">{terms.portalTitle}</span>
       </div>
 
       <nav className="flex-1 px-3 py-4">
         <ul className="space-y-0.5">
           {items.map((item) => {
-            const active = location.pathname === item.to;
+            const active = item.to === "/dashboard"
+              ? location.pathname === "/dashboard"
+              : location.pathname.startsWith(item.to);
             return (
               <li key={item.to}>
                 <Link

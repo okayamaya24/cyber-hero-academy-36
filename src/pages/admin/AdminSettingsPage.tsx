@@ -34,7 +34,7 @@ export default function AdminSettingsPage() {
   };
 
   const handleUpdatePassword = async () => {
-    if (!emailForm.password || emailForm.password.length < 6) { toast.error("Password must be at least 6 characters."); return; }
+    if (!emailForm.password || emailForm.password.length < 8) { toast.error("Password must be at least 8 characters."); return; }
     setSavingAuth(true);
     const { error } = await supabase.auth.updateUser({ password: emailForm.password });
     setSavingAuth(false);

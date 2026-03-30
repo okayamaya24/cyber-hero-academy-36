@@ -11,8 +11,6 @@ interface AuthContextType {
   setActiveChildId: (id: string | null) => void;
   parentUnlocked: boolean;
   setParentUnlocked: (v: boolean) => void;
-  justLoggedIn: boolean;
-  setJustLoggedIn: (v: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,15 +22,12 @@ const AuthContext = createContext<AuthContextType>({
   setActiveChildId: () => {},
   parentUnlocked: false,
   setParentUnlocked: () => {},
-  justLoggedIn: false,
-  setJustLoggedIn: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [parentUnlocked, setParentUnlocked] = useState(false);
-  const [justLoggedIn, setJustLoggedIn] = useState(false);
 
   const [activeChildId, setActiveChildId] = useState<string | null>(() => {
     return localStorage.getItem("cyber_hero_active_child");
@@ -56,7 +51,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleSetActiveChildId = (id: string | null) => {
     setActiveChildId(id);
-
     if (id) {
       localStorage.setItem("cyber_hero_active_child", id);
     } else {
@@ -66,14 +60,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     handleSetActiveChildId(null);
-
     setParentUnlocked(false);
-    setJustLoggedIn(false);
-
     await supabase.auth.signOut();
-
-    // redirect to homepage
-    window.location.href = "/";
+    window.location.href = "/login";
   };
 
   return (
@@ -87,8 +76,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setActiveChildId: handleSetActiveChildId,
         parentUnlocked,
         setParentUnlocked,
-        justLoggedIn,
-        setJustLoggedIn,
       }}
     >
       {children}

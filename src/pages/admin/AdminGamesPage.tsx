@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/com
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Search, Pencil, Trash2, Eye, EyeOff, Archive } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Eye, EyeOff, Archive, Lock, Unlock } from "lucide-react";
 
 type GameStatus = "draft" | "live" | "scheduled" | "archived";
 
@@ -24,7 +24,7 @@ const statusColors: Record<string, string> = {
   archived: "bg-gray-100 text-gray-600",
 };
 
-const tabs: { label: string; value: string }[] = [
+const tabs = [
   { label: "All", value: "all" },
   { label: "Live", value: "live" },
   { label: "Draft", value: "draft" },
@@ -37,13 +37,16 @@ interface GameForm {
   description: string;
   icon: string;
   age_range: string;
+  min_grade: string;
+  max_grade: string;
   category_id: string;
   featured: boolean;
+  locked: boolean;
   publish_date: string;
 }
 
-const emptyForm: GameForm = { name: "", description: "", icon: "🎮", age_range: "", category_id: "", featured: false, publish_date: "" };
-const emojiOptions = ["🎮", "🧩", "📚", "🔢", "🎨", "🧪", "💻", "🌍", "⭐", "🏆"];
+const emptyForm: GameForm = { name: "", description: "", icon: "🛡️", age_range: "", min_grade: "", max_grade: "", category_id: "", featured: false, locked: false, publish_date: "" };
+const emojiOptions = ["🛡️", "🔒", "🧩", "📚", "💻", "🌐", "🔑", "🎯", "⭐", "🏆"];
 
 export default function AdminGamesPage() {
   const queryClient = useQueryClient();
@@ -79,8 +82,11 @@ export default function AdminGamesPage() {
         description: form.description || null,
         icon: form.icon,
         age_range: form.age_range || null,
+        min_grade: form.min_grade ? parseInt(form.min_grade) : null,
+        max_grade: form.max_grade ? parseInt(form.max_grade) : null,
         category_id: form.category_id || null,
         featured: form.featured,
+        locked: form.locked,
         publish_date: form.publish_date || null,
         status,
       };
@@ -95,7 +101,7 @@ export default function AdminGamesPage() {
     onSuccess: (_, { status }) => {
       queryClient.invalidateQueries({ queryKey: ["admin-games"] });
       setDrawerOpen(false);
-      toast.success(editingId ? "Game updated!" : status === "live" ? "Game created & published!" : "Game saved as draft!");
+      toast.success(editingId ? "Mission updated!" : status === "live" ? "Mission created & published!" : "Mission saved as draft!");
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -107,7 +113,18 @@ export default function AdminGamesPage() {
     },
     onSuccess: (_, { status }) => {
       queryClient.invalidateQueries({ queryKey: ["admin-games"] });
-      toast.success(status === "live" ? "Game is now live!" : status === "draft" ? "Game unpublished." : "Game archived.");
+      toast.success(status === "live" ? "Mission is now live!" : status === "draft" ? "Mission unpublished." : "Mission archived.");
+    },
+  });
+
+  const lockMutation = useMutation({
+    mutationFn: async ({ id, locked }: { id: string; locked: boolean }) => {
+      const { error } = await supabase.from("games").update({ locked } as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_, { locked }) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-games"] });
+      toast.success(locked ? "Mission locked." : "Mission unlocked.");
     },
   });
 
@@ -119,7 +136,7 @@ export default function AdminGamesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-games"] });
       setDeleteId(null);
-      toast.success("Game deleted.");
+      toast.success("Mission deleted.");
     },
   });
 
@@ -139,18 +156,35 @@ export default function AdminGamesPage() {
   const openNew = () => { setEditingId(null); setForm(emptyForm); setDrawerOpen(true); };
   const openEdit = (g: any) => {
     setEditingId(g.id);
-    setForm({ name: g.name, description: g.description ?? "", icon: g.icon ?? "🎮", age_range: g.age_range ?? "", category_id: g.category_id ?? "", featured: g.featured ?? false, publish_date: g.publish_date ? g.publish_date.split("T")[0] : "" });
+    setForm({
+      name: g.name,
+      description: g.description ?? "",
+      icon: g.icon ?? "🛡️",
+      age_range: g.age_range ?? "",
+      min_grade: g.min_grade?.toString() ?? "",
+      max_grade: g.max_grade?.toString() ?? "",
+      category_id: g.category_id ?? "",
+      featured: g.featured ?? false,
+      locked: g.locked ?? false,
+      publish_date: g.publish_date ? g.publish_date.split("T")[0] : "",
+    });
     setDrawerOpen(true);
+  };
+
+  const gradeLabel = (g: any) => {
+    if (g.min_grade != null && g.max_grade != null) return `Grades ${g.min_grade}–${g.max_grade}`;
+    if (g.min_grade != null) return `Grade ${g.min_grade}+`;
+    if (g.age_range) return g.age_range;
+    return "All levels";
   };
 
   return (
     <AdminLayout>
-      <h1 className="text-2xl font-bold text-foreground mb-6">Games</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-6">Missions / Games</h1>
 
-      {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Total Games", value: stats.total },
+          { label: "Total", value: stats.total },
           { label: "Live", value: stats.live },
           { label: "Draft", value: stats.draft },
           { label: "Archived", value: stats.archived },
@@ -162,16 +196,14 @@ export default function AdminGamesPage() {
         ))}
       </div>
 
-      {/* Search + New */}
       <div className="flex items-center gap-3 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search games..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          <Input placeholder="Search missions..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
-        <Button onClick={openNew}><Plus className="mr-1.5 h-4 w-4" /> New Game</Button>
+        <Button onClick={openNew}><Plus className="mr-1.5 h-4 w-4" /> New Mission</Button>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-1 mb-4">
         {tabs.map((t) => (
           <button key={t.value} onClick={() => setTab(t.value)} className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${tab === t.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
@@ -180,13 +212,12 @@ export default function AdminGamesPage() {
         ))}
       </div>
 
-      {/* List */}
       {isLoading ? (
         <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}</div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-muted-foreground mb-3">No games yet</p>
-          <Button variant="outline" onClick={openNew}><Plus className="mr-1.5 h-4 w-4" /> Create your first game</Button>
+          <p className="text-muted-foreground mb-3">No missions yet</p>
+          <Button variant="outline" onClick={openNew}><Plus className="mr-1.5 h-4 w-4" /> Create your first mission</Button>
         </div>
       ) : (
         <div className="space-y-2">
@@ -197,9 +228,10 @@ export default function AdminGamesPage() {
                 <div className="flex items-center gap-2">
                   <p className="font-semibold text-foreground truncate">{g.name}</p>
                   {g.featured && <Badge variant="secondary" className="text-xs">Featured</Badge>}
+                  {g.locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {g.categories?.name ?? "No category"} · {g.age_range || "All ages"}
+                  {g.categories?.name ?? "No category"} · {gradeLabel(g)}
                   {g.status === "live" && g.players_count > 0 && ` · ${g.players_count} players`}
                 </p>
               </div>
@@ -212,6 +244,9 @@ export default function AdminGamesPage() {
                 {g.status === "live" && (
                   <Button size="sm" variant="ghost" onClick={() => statusMutation.mutate({ id: g.id, status: "draft" })}><EyeOff className="h-3.5 w-3.5" /></Button>
                 )}
+                <Button size="sm" variant="ghost" onClick={() => lockMutation.mutate({ id: g.id, locked: !g.locked })}>
+                  {g.locked ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
+                </Button>
                 {(g.status === "live" || g.status === "draft") && (
                   <Button size="sm" variant="ghost" onClick={() => statusMutation.mutate({ id: g.id, status: "archived" })}><Archive className="h-3.5 w-3.5" /></Button>
                 )}
@@ -222,12 +257,11 @@ export default function AdminGamesPage() {
         </div>
       )}
 
-      {/* Drawer */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetContent className="sm:max-w-lg overflow-y-auto">
-          <SheetHeader><SheetTitle>{editingId ? "Edit Game" : "New Game"}</SheetTitle></SheetHeader>
+          <SheetHeader><SheetTitle>{editingId ? "Edit Mission" : "New Mission"}</SheetTitle></SheetHeader>
           <div className="mt-6 space-y-5">
-            <div><Label>Game Name *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Math Blaster" /></div>
+            <div><Label>Mission Name *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Password Power" /></div>
             <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
             <div>
               <Label>Icon</Label>
@@ -238,6 +272,10 @@ export default function AdminGamesPage() {
               </div>
             </div>
             <div><Label>Age Range</Label><Input value={form.age_range} onChange={(e) => setForm({ ...form, age_range: e.target.value })} placeholder="e.g. 6–9" /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Min Grade</Label><Input type="number" value={form.min_grade} onChange={(e) => setForm({ ...form, min_grade: e.target.value })} placeholder="e.g. 1" /></div>
+              <div><Label>Max Grade</Label><Input type="number" value={form.max_grade} onChange={(e) => setForm({ ...form, max_grade: e.target.value })} placeholder="e.g. 5" /></div>
+            </div>
             <div>
               <Label>Category</Label>
               <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}>
@@ -248,6 +286,10 @@ export default function AdminGamesPage() {
             <div className="flex items-center justify-between">
               <Label>Featured</Label>
               <Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label>Locked</Label>
+              <Switch checked={form.locked} onCheckedChange={(v) => setForm({ ...form, locked: v })} />
             </div>
             <div><Label>Publish Date</Label><Input type="date" value={form.publish_date} onChange={(e) => setForm({ ...form, publish_date: e.target.value })} /></div>
           </div>
@@ -261,11 +303,10 @@ export default function AdminGamesPage() {
         </SheetContent>
       </Sheet>
 
-      {/* Delete confirm */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this game?</AlertDialogTitle>
+            <AlertDialogTitle>Delete this mission?</AlertDialogTitle>
             <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

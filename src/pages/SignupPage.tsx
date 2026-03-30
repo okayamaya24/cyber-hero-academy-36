@@ -29,7 +29,7 @@ export default function SignupPage() {
     e.preventDefault();
     if (!form.name.trim()) { toast.error("Please enter your name."); return; }
     if (!form.email.trim()) { toast.error("Please enter your email."); return; }
-    if (form.password.length < 6) { toast.error("Password must be at least 6 characters."); return; }
+    if (form.password.length < 8) { toast.error("Password must be at least 8 characters."); return; }
     if (form.password !== form.confirmPassword) { toast.error("Passwords do not match."); return; }
     if (!agreeTerms) { toast.error("Please agree to the Terms."); return; }
 
@@ -51,7 +51,7 @@ export default function SignupPage() {
       toast.error(error.message);
     } else {
       toast.success("Account created! Welcome aboard.");
-      navigate("/portal");
+      navigate("/dashboard");
     }
   };
 
@@ -67,7 +67,6 @@ export default function SignupPage() {
         </div>
 
         <form onSubmit={handleSignup} className="space-y-5 rounded-2xl border border-border bg-card p-7 shadow-card">
-          {/* Account Type Selector */}
           <div>
             <Label className="text-sm font-semibold">Account Type</Label>
             <div className="grid grid-cols-2 gap-3 mt-2">
@@ -109,7 +108,7 @@ export default function SignupPage() {
 
           <div className="space-y-1.5">
             <Label htmlFor="password" className="flex items-center gap-2 text-sm font-semibold text-foreground"><LockIcon className="h-4 w-4 text-primary" /> Password</Label>
-            <Input id="password" type="password" placeholder="At least 6 characters" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} autoComplete="new-password" />
+            <Input id="password" type="password" placeholder="At least 8 characters" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} autoComplete="new-password" />
           </div>
 
           <div className="space-y-1.5">

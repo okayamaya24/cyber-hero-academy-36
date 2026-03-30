@@ -56,7 +56,7 @@ export default function KidProfilePage() {
 
   return (
     <DashboardLayout>
-      <Button variant="ghost" size="sm" onClick={() => navigate("/portal")} className="mb-4">
+      <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="mb-4">
         <ArrowLeft className="mr-1.5 h-4 w-4" /> Back to {terms.kidsLabel}
       </Button>
 
