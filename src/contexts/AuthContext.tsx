@@ -60,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     handleSetActiveChildId(null);
+    setParentUnlocked(false);
     await supabase.auth.signOut();
     window.location.href = "/login";
   };
