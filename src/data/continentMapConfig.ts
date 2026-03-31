@@ -115,7 +115,7 @@ export const CONTINENT_PROJECTIONS: Record<string, { center: [number, number]; s
   "north-america": { center: [-93, 37], scale: 580 },
   europe: { center: [12, 49], scale: 900 },
   africa: { center: [20, 1], scale: 370 },
-  asia: { center: [90, 35], scale: 300 },
+  asia: { center: [95, 30], scale: 280 },
   "south-america": { center: [-60, -15], scale: 400 },
   australia: { center: [134, -28], scale: 520 },
   antarctica: { center: [0, -85], scale: 280 },
@@ -153,14 +153,14 @@ export const ZONE_COORDINATES: Record<string, { id: string; lat: number; lng: nu
     { id: "boss-troll", lat: 15.0, lng: 20.0 }, // Chad - center
   ],
   asia: [
-    { id: "privacy-palace", lat: 25.2, lng: 55.3 },
-    { id: "browse-bazaar", lat: 19.1, lng: 72.9 },
-    { id: "firewall-frontier", lat: 37.6, lng: 127.0 },
-    { id: "cyberguard-academy", lat: 35.7, lng: 139.7 },
-    { id: "network-nexus", lat: 1.3, lng: 103.8 },
-    { id: "hack-haven", lat: 13.7, lng: 100.5 },
-    { id: "tech-temple", lat: 39.9, lng: 116.4 },
-    { id: "boss-phantom", lat: 28.0, lng: 86.9 },
+    { id: "privacy-palace", lat: 25.2, lng: 55.3 }, // Dubai - far west
+    { id: "browse-bazaar", lat: 19.1, lng: 72.9 }, // Mumbai - west
+    { id: "boss-phantom", lat: 28.0, lng: 84.0 }, // Nepal/Himalayas - center
+    { id: "tech-temple", lat: 39.9, lng: 116.4 }, // Beijing - north center
+    { id: "firewall-frontier", lat: 37.6, lng: 127.0 }, // Seoul - northeast
+    { id: "cyberguard-academy", lat: 35.7, lng: 139.7 }, // Tokyo - far east
+    { id: "hack-haven", lat: 13.7, lng: 100.5 }, // Bangkok - southeast
+    { id: "network-nexus", lat: 1.3, lng: 103.8 }, // Singapore - far south
   ],
   "south-america": [
     { id: "kindness-kingdom", lat: -23.5, lng: -46.6 },
