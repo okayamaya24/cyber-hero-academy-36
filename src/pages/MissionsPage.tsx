@@ -33,11 +33,7 @@ import {
   LEVEL_NAMES,
 } from "@/data/missions";
 import { checkAndAwardBadges } from "@/lib/badges";
-import {
-  GUIDE_REGISTRY,
-  getSupportGuide,
-  getMissionIntro,
-} from "@/data/guides";
+import { GUIDE_REGISTRY, getSupportGuide, getMissionIntro } from "@/data/guides";
 import { getLevelRank } from "@/data/levelTitles";
 import { getActiveEvents, type EventMission } from "@/data/eventMissions";
 import {
@@ -90,7 +86,9 @@ function getEncouragement(score: number, total: number) {
 function MiniGameTypeBadge({ type }: { type: MiniGameType }) {
   const meta = MINI_GAME_META[type];
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[10px] font-semibold ${meta.color}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[10px] font-semibold ${meta.color}`}
+    >
       {meta.emoji} {meta.label}
     </span>
   );
@@ -99,7 +97,9 @@ function MiniGameTypeBadge({ type }: { type: MiniGameType }) {
 function MessageCard({ q, isJunior }: { q: Question; isJunior: boolean }) {
   if (!q.sender) return null;
   return (
-    <div className={`mb-6 overflow-hidden rounded-2xl border-2 border-border bg-background shadow-card ${isJunior ? "text-lg" : ""}`}>
+    <div
+      className={`mb-6 overflow-hidden rounded-2xl border-2 border-border bg-background shadow-card ${isJunior ? "text-lg" : ""}`}
+    >
       <div className="flex items-center gap-3 border-b border-border bg-muted/50 px-4 py-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-card text-xl shadow-sm">
           {q.senderIcon || "📧"}
@@ -150,9 +150,7 @@ function SectionHeader({ icon, title, isNew }: { icon: string; title: string; is
     <div className="flex items-center gap-3 mb-4 mt-8 first:mt-0">
       <span className="text-2xl">{icon}</span>
       <h2 className="text-xl font-bold">{title}</h2>
-      {isNew && (
-        <Badge className="border-0 bg-secondary/20 text-secondary text-xs">🆕 NEW</Badge>
-      )}
+      {isNew && <Badge className="border-0 bg-secondary/20 text-secondary text-xs">🆕 NEW</Badge>}
     </div>
   );
 }
@@ -194,7 +192,11 @@ function GameCard({
             <p className="text-xs text-muted-foreground">{zone}</p>
           </div>
           {guideImage && (
-            <img src={guideImage} alt="" className="h-10 w-10 object-contain opacity-70 group-hover:opacity-100 transition-opacity" />
+            <img
+              src={guideImage}
+              alt=""
+              className="h-10 w-10 object-contain opacity-70 group-hover:opacity-100 transition-opacity"
+            />
           )}
         </div>
 
@@ -203,14 +205,19 @@ function GameCard({
         <div className="flex items-center justify-between mb-3">
           <div className="flex gap-0.5">
             {[1, 2, 3].map((s) => (
-              <Star key={s} className={`h-4 w-4 ${s <= stars ? "text-accent fill-[hsl(var(--accent))]" : "text-muted"}`} />
+              <Star
+                key={s}
+                className={`h-4 w-4 ${s <= stars ? "text-accent fill-[hsl(var(--accent))]" : "text-muted"}`}
+              />
             ))}
           </div>
           <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">{typeBadge}</span>
         </div>
 
         {bestScore !== undefined && maxScore !== undefined && (
-          <p className="text-xs text-muted-foreground mb-3">Best: {bestScore}/{maxScore}</p>
+          <p className="text-xs text-muted-foreground mb-3">
+            Best: {bestScore}/{maxScore}
+          </p>
         )}
 
         <Button variant="outline" className="w-full" size="sm" onClick={onClick}>
@@ -227,7 +234,7 @@ function GameCard({
    ═══════════════════════════════════════════════════════════ */
 
 export default function MissionsPage() {
-  const { user, activeChildId } = useAuth();
+  const { user, activeChildId, setActiveChildId } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
@@ -249,7 +256,9 @@ export default function MissionsPage() {
     title: string;
     data?: any;
   } | null>(null);
-  const [standaloneResult, setStandaloneResult] = useState<{ stars: number; passed: boolean; xpEarned: number } | null>(null);
+  const [standaloneResult, setStandaloneResult] = useState<{ stars: number; passed: boolean; xpEarned: number } | null>(
+    null,
+  );
   const [standaloneStartTime, setStandaloneStartTime] = useState(0);
 
   // Filters
@@ -257,8 +266,13 @@ export default function MissionsPage() {
   const [starFilter, setStarFilter] = useState<number>(0);
 
   useEffect(() => {
-    if (!user) navigate("/login");
-    else if (!activeChildId) navigate("/select-child");
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    if (!activeChildId && user) {
+      setActiveChildId(user.id);
+    }
   }, [user, activeChildId, navigate]);
 
   const { data: child } = useQuery({
@@ -442,7 +456,12 @@ export default function MissionsPage() {
 
   /* ── Standalone game handlers ── */
 
-  const launchStandaloneGame = (type: "wordsearch" | "crossword" | "dragdrop", gameId: string, title: string, data?: any) => {
+  const launchStandaloneGame = (
+    type: "wordsearch" | "crossword" | "dragdrop",
+    gameId: string,
+    title: string,
+    data?: any,
+  ) => {
     setStandaloneGame({ type, gameId, title, data });
     setStandaloneResult(null);
     setStandaloneStartTime(Date.now());
@@ -516,15 +535,33 @@ export default function MissionsPage() {
           </div>
         </motion.div>
 
-        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", duration: 0.6 }} className="w-full max-w-lg">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", duration: 0.6 }}
+          className="w-full max-w-lg"
+        >
           <div className="rounded-3xl border-2 bg-card p-8 md:p-10 text-center shadow-playful">
-            <motion.img src={CAPTAIN_CYBER.image} alt={CAPTAIN_CYBER.name} className="mx-auto mb-4 h-24 w-24 object-contain" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} />
-            <Badge className="mb-3 border-0 bg-accent/20 text-accent">⚡ {CAPTAIN_CYBER.name} · {CAPTAIN_CYBER.role}</Badge>
+            <motion.img
+              src={CAPTAIN_CYBER.image}
+              alt={CAPTAIN_CYBER.name}
+              className="mx-auto mb-4 h-24 w-24 object-contain"
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            />
+            <Badge className="mb-3 border-0 bg-accent/20 text-accent">
+              ⚡ {CAPTAIN_CYBER.name} · {CAPTAIN_CYBER.role}
+            </Badge>
             <div className="mb-5 rounded-2xl bg-muted/50 p-5">
               <p className="text-base font-medium text-foreground">{getMissionIntro(activeMission.id)}</p>
             </div>
             <div className="mb-4 flex items-center gap-3">
-              <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-14 w-14 object-contain" />
+              <img
+                src={activeMission.guide.image}
+                alt={activeMission.guide.name}
+                className="h-14 w-14 object-contain"
+              />
               <div className="text-left">
                 <h2 className="text-2xl font-bold">{activeMission.title}</h2>
                 <p className="text-sm text-muted-foreground">Main Guide: {activeMission.guide.name}</p>
@@ -535,7 +572,9 @@ export default function MissionsPage() {
                 <div key={level.level} className="rounded-xl border bg-muted/30 p-3 text-left">
                   <div className="mb-1.5 flex items-center gap-2">
                     <span className="text-lg">{level.emoji}</span>
-                    <span className="text-sm font-bold">Level {level.level}: {level.name}</span>
+                    <span className="text-sm font-bold">
+                      Level {level.level}: {level.name}
+                    </span>
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {level.miniGameTypes.map((type, i) => (
@@ -546,8 +585,12 @@ export default function MissionsPage() {
               ))}
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" className="flex-1" onClick={resetAll}>← Back</Button>
-              <Button variant="hero" className="flex-1 text-base" onClick={beginPlay}>Let's Go! 🚀</Button>
+              <Button variant="outline" className="flex-1" onClick={resetAll}>
+                ← Back
+              </Button>
+              <Button variant="hero" className="flex-1 text-base" onClick={beginPlay}>
+                Let's Go! 🚀
+              </Button>
             </div>
           </div>
         </motion.div>
@@ -593,21 +636,35 @@ export default function MissionsPage() {
         <div className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur">
           <div className="container mx-auto max-w-3xl px-4 py-3">
             <div className="flex items-center justify-between">
-              <button onClick={resetAll} className="text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground">← Back</button>
+              <button
+                onClick={resetAll}
+                className="text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              >
+                ← Back
+              </button>
               <div className="text-center">
                 <h2 className="text-sm font-bold">{activeMission.title}</h2>
                 <div className="mt-0.5 flex items-center justify-center gap-2">
-                  <Badge variant="outline" className="px-2 py-0 text-[10px]">{tierEmoji} {tierLabel}</Badge>
-                  {levelInfo && <Badge className="border-0 bg-primary/10 px-2 py-0 text-[10px] text-primary">{levelInfo.levelName}</Badge>}
+                  <Badge variant="outline" className="px-2 py-0 text-[10px]">
+                    {tierEmoji} {tierLabel}
+                  </Badge>
+                  {levelInfo && (
+                    <Badge className="border-0 bg-primary/10 px-2 py-0 text-[10px] text-primary">
+                      {levelInfo.levelName}
+                    </Badge>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-1 text-sm font-bold text-accent">
-                <Star className="h-4 w-4" />{runningPoints}
+                <Star className="h-4 w-4" />
+                {runningPoints}
               </div>
             </div>
             <div className="mt-2">
               <div className="mb-1 flex justify-between text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">Game {currentQ + 1}/{games.length} <MiniGameTypeBadge type={q.miniGameType} /></span>
+                <span className="flex items-center gap-1">
+                  Game {currentQ + 1}/{games.length} <MiniGameTypeBadge type={q.miniGameType} />
+                </span>
                 <span>{score} correct</span>
               </div>
               <Progress value={((currentQ + 1) / games.length) * 100} className="h-2" />
@@ -617,7 +674,13 @@ export default function MissionsPage() {
 
         <div className="container mx-auto max-w-3xl px-4 py-8">
           <AnimatePresence mode="wait">
-            <motion.div key={`game-${gameKey}-${currentQ}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.25 }}>
+            <motion.div
+              key={`game-${gameKey}-${currentQ}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.25 }}
+            >
               <div className="mb-3 flex items-center gap-2">
                 <span className="text-2xl">{gameMeta.emoji}</span>
                 <span className={`text-sm font-bold ${gameMeta.color}`}>{gameMeta.label}</span>
@@ -625,31 +688,98 @@ export default function MissionsPage() {
 
               {isCustom && !showResult && (
                 <>
-                  {q.miniGameType === "word-search" && <WordSearchGame key={gameKey} missionId={activeMission.id} ageTier={tier} guideImage={activeMission.guide.image} guideName={activeMission.guide.name} onComplete={handleCustomGameComplete} />}
-                  {q.miniGameType === "password-builder" && <PasswordBuilderGame key={gameKey} ageTier={tier} guideImage={activeMission.guide.image} guideName={activeMission.guide.name} onComplete={handleCustomGameComplete} />}
-                  {q.miniGameType === "sort-game" && <SortGame key={gameKey} missionId={activeMission.id} ageTier={tier} guideImage={activeMission.guide.image} guideName={activeMission.guide.name} onComplete={handleCustomGameComplete} />}
-                  {q.miniGameType === "secret-keeper" && <SecretKeeperGame key={gameKey} ageTier={tier} guideImage={activeMission.guide.image} guideName={activeMission.guide.name} onComplete={handleCustomGameComplete} />}
-                  {q.miniGameType === "memory" && <MemoryGame key={gameKey} ageTier={tier} guideImage={activeMission.guide.image} guideName={activeMission.guide.name} onComplete={handleCustomGameComplete} />}
-                  {q.miniGameType === "boss-battle" && <BossBattleGame key={gameKey} missionId={activeMission.id} ageTier={tier} guideImage={activeMission.guide.image} guideName={activeMission.guide.name} onComplete={handleCustomGameComplete} />}
+                  {q.miniGameType === "word-search" && (
+                    <WordSearchGame
+                      key={gameKey}
+                      missionId={activeMission.id}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
+                  {q.miniGameType === "password-builder" && (
+                    <PasswordBuilderGame
+                      key={gameKey}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
+                  {q.miniGameType === "sort-game" && (
+                    <SortGame
+                      key={gameKey}
+                      missionId={activeMission.id}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
+                  {q.miniGameType === "secret-keeper" && (
+                    <SecretKeeperGame
+                      key={gameKey}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
+                  {q.miniGameType === "memory" && (
+                    <MemoryGame
+                      key={gameKey}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
+                  {q.miniGameType === "boss-battle" && (
+                    <BossBattleGame
+                      key={gameKey}
+                      missionId={activeMission.id}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
                 </>
               )}
 
               {!isCustom && !showResult && (
                 <>
                   <div className="mb-5 flex items-start gap-4">
-                    <img src={activeMission.guide.image} alt={activeMission.guide.name} className="h-14 w-14 object-contain" />
+                    <img
+                      src={activeMission.guide.image}
+                      alt={activeMission.guide.name}
+                      className="h-14 w-14 object-contain"
+                    />
                     <div className="rounded-2xl rounded-bl-sm bg-muted px-5 py-3">
                       <p className={`font-semibold ${isJunior ? "text-lg" : "text-base"}`}>{q.question}</p>
                     </div>
                   </div>
                   {hasMessageCard && <MessageCard q={q} isJunior={isJunior} />}
-                  <div className={`grid gap-3 ${q.options.length === 2 ? "grid-cols-2" : q.options.length === 3 ? "grid-cols-3" : "grid-cols-1"}`}>
+                  <div
+                    className={`grid gap-3 ${q.options.length === 2 ? "grid-cols-2" : q.options.length === 3 ? "grid-cols-3" : "grid-cols-1"}`}
+                  >
                     {q.options.map((opt, idx) => {
                       let emoji = "";
                       if (q.miniGameType === "email-detective" || q.miniGameType === "quiz") {
                         const lower = opt.toLowerCase();
-                        const isSafe = lower === "safe" || lower === "yes!" || lower === "okay" || lower === "good idea!" || lower === "smart choice!";
-                        const isScam = lower === "scam" || lower === "no way!" || lower === "bad idea!" || lower === "keep it secret!" || lower === "don't share it!";
+                        const isSafe =
+                          lower === "safe" ||
+                          lower === "yes!" ||
+                          lower === "okay" ||
+                          lower === "good idea!" ||
+                          lower === "smart choice!";
+                        const isScam =
+                          lower === "scam" ||
+                          lower === "no way!" ||
+                          lower === "bad idea!" ||
+                          lower === "keep it secret!" ||
+                          lower === "don't share it!";
                         emoji = isSafe ? "✅" : isScam ? "🚫" : lower === "unsure" ? "🤔" : "";
                       } else if (q.miniGameType === "scenario") {
                         emoji = "🎭";
@@ -657,7 +787,11 @@ export default function MissionsPage() {
                         emoji = MINI_GAME_META[q.miniGameType]?.emoji || "";
                       }
                       return (
-                        <button key={idx} onClick={() => handleAnswer(idx)} className="group relative cursor-pointer rounded-2xl border-2 border-border bg-card p-6 md:p-7 text-center font-bold transition-all hover:scale-[1.03] hover:border-primary/50 hover:shadow-md active:scale-95">
+                        <button
+                          key={idx}
+                          onClick={() => handleAnswer(idx)}
+                          className="group relative cursor-pointer rounded-2xl border-2 border-border bg-card p-6 md:p-7 text-center font-bold transition-all hover:scale-[1.03] hover:border-primary/50 hover:shadow-md active:scale-95"
+                        >
                           <span className={`mb-1 block ${isJunior ? "text-4xl" : "text-3xl"}`}>{emoji}</span>
                           <span className={isJunior ? "text-xl" : "text-lg"}>{opt}</span>
                         </button>
@@ -669,20 +803,50 @@ export default function MissionsPage() {
 
               {showResult && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-3">
-                  <div className={`rounded-2xl p-6 md:p-7 ${isCorrect ? "border-2 border-secondary/30 bg-secondary/10" : "border-2 border-accent/30 bg-accent/10"}`}>
+                  <div
+                    className={`rounded-2xl p-6 md:p-7 ${isCorrect ? "border-2 border-secondary/30 bg-secondary/10" : "border-2 border-accent/30 bg-accent/10"}`}
+                  >
                     <div className="flex items-start gap-3">
-                      <img src={supportGuide.image} alt={supportGuide.name} className="h-10 w-10 shrink-0 object-contain" />
+                      <img
+                        src={supportGuide.image}
+                        alt={supportGuide.name}
+                        className="h-10 w-10 shrink-0 object-contain"
+                      />
                       <div>
                         <p className="mb-0.5 text-xs text-muted-foreground">{supportGuide.name} says:</p>
                         <p className="text-base font-bold">{isCorrect ? "🎉 Great job!" : "😊 Nice try!"}</p>
-                        {!isCustom && <p className={`mt-1 leading-relaxed text-muted-foreground ${isJunior ? "text-base" : "text-sm"}`}>{q.explanation}</p>}
-                        {isCustom && <p className={`mt-1 leading-relaxed text-muted-foreground ${isJunior ? "text-base" : "text-sm"}`}>{isCorrect ? "Excellent work, hero! Keep it up!" : "Good effort! Keep practicing and you'll get even better!"}</p>}
-                        {isCorrect && <p className="mt-2 flex items-center gap-1 text-sm font-bold text-accent"><Star className="h-4 w-4" /> +{pointsPerCorrect} points!</p>}
+                        {!isCustom && (
+                          <p
+                            className={`mt-1 leading-relaxed text-muted-foreground ${isJunior ? "text-base" : "text-sm"}`}
+                          >
+                            {q.explanation}
+                          </p>
+                        )}
+                        {isCustom && (
+                          <p
+                            className={`mt-1 leading-relaxed text-muted-foreground ${isJunior ? "text-base" : "text-sm"}`}
+                          >
+                            {isCorrect
+                              ? "Excellent work, hero! Keep it up!"
+                              : "Good effort! Keep practicing and you'll get even better!"}
+                          </p>
+                        )}
+                        {isCorrect && (
+                          <p className="mt-2 flex items-center gap-1 text-sm font-bold text-accent">
+                            <Star className="h-4 w-4" /> +{pointsPerCorrect} points!
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
                   <Button variant="hero" className="mt-4 w-full py-6 text-base" onClick={nextQuestion}>
-                    {currentQ + 1 < games.length ? (<>Next Game <ArrowRight className="ml-2 h-5 w-5" /></>) : (<>See My Results 🎉</>)}
+                    {currentQ + 1 < games.length ? (
+                      <>
+                        Next Game <ArrowRight className="ml-2 h-5 w-5" />
+                      </>
+                    ) : (
+                      <>See My Results 🎉</>
+                    )}
                   </Button>
                 </motion.div>
               )}
@@ -704,19 +868,29 @@ export default function MissionsPage() {
 
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-md text-center space-y-5">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="w-full max-w-md text-center space-y-5"
+        >
           <div className="text-6xl">🎉</div>
           <h2 className="text-3xl font-bold">Mission Complete!</h2>
           <p className="text-lg text-muted-foreground">{encouragement}</p>
           <div className="flex justify-center gap-2">
             {[1, 2, 3].map((s) => (
-              <span key={s} className={`text-4xl ${s <= starCount ? "" : "opacity-20"}`}>⭐</span>
+              <span key={s} className={`text-4xl ${s <= starCount ? "" : "opacity-20"}`}>
+                ⭐
+              </span>
             ))}
           </div>
           <div className="rounded-2xl border bg-card p-5 space-y-2">
-            <p className="text-sm text-muted-foreground">Score: {score}/{games.length}</p>
+            <p className="text-sm text-muted-foreground">
+              Score: {score}/{games.length}
+            </p>
             <p className="text-lg font-bold text-accent">+{totalPoints} XP earned!</p>
-            <p className="text-xs text-muted-foreground">Badge earned: {activeMission.badgeIcon} {activeMission.badgeName}</p>
+            <p className="text-xs text-muted-foreground">
+              Badge earned: {activeMission.badgeIcon} {activeMission.badgeName}
+            </p>
           </div>
           <Button variant="hero" className="w-full py-5 text-base" onClick={resetAll}>
             Back to Training Center 🏋️
@@ -735,9 +909,13 @@ export default function MissionsPage() {
         <div className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur">
           <div className="container mx-auto max-w-3xl px-4 py-3">
             <div className="flex items-center justify-between">
-              <button onClick={resetAll} className="text-sm font-semibold text-muted-foreground hover:text-foreground">← Back</button>
+              <button onClick={resetAll} className="text-sm font-semibold text-muted-foreground hover:text-foreground">
+                ← Back
+              </button>
               <h2 className="text-sm font-bold">{standaloneGame.title}</h2>
-              <Badge variant="outline" className="px-2 py-0 text-[10px]">{tierEmoji} {tierLabel}</Badge>
+              <Badge variant="outline" className="px-2 py-0 text-[10px]">
+                {tierEmoji} {tierLabel}
+              </Badge>
             </div>
           </div>
         </div>
@@ -800,16 +978,27 @@ export default function MissionsPage() {
      VIEW: Standalone Game Complete
      ═══════════════════════════════════════════ */
   if (standaloneResult) {
-    const tierMsg = tier === "junior" ? "WOW! You're a STAR! 🌟" : tier === "defender" ? "Great job, Defender! Keep it up!" : "Mission complete, Operative. Impressive work.";
+    const tierMsg =
+      tier === "junior"
+        ? "WOW! You're a STAR! 🌟"
+        : tier === "defender"
+          ? "Great job, Defender! Keep it up!"
+          : "Mission complete, Operative. Impressive work.";
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-md text-center space-y-5">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="w-full max-w-md text-center space-y-5"
+        >
           <div className="text-6xl">{standaloneResult.passed ? "🎉" : "💪"}</div>
           <h2 className="text-3xl font-bold">{standaloneResult.passed ? "Great Work!" : "Nice Try!"}</h2>
           <p className="text-lg text-muted-foreground">{tierMsg}</p>
           <div className="flex justify-center gap-2">
             {[1, 2, 3].map((s) => (
-              <span key={s} className={`text-4xl ${s <= standaloneResult.stars ? "" : "opacity-20"}`}>⭐</span>
+              <span key={s} className={`text-4xl ${s <= standaloneResult.stars ? "" : "opacity-20"}`}>
+                ⭐
+              </span>
             ))}
           </div>
           <div className="rounded-2xl border bg-card p-5">
@@ -871,10 +1060,17 @@ export default function MissionsPage() {
             <p className="text-3xl mb-2">🗺️</p>
             <p className="font-bold mb-1">No quizzes completed yet!</p>
             <p className="text-sm text-muted-foreground mb-3">Complete missions on the Adventure Map first.</p>
-            <Button variant="hero" size="sm" onClick={() => navigate("/world-map")}>Go to Adventure Map 🚀</Button>
+            <Button variant="hero" size="sm" onClick={() => navigate("/world-map")}>
+              Go to Adventure Map 🚀
+            </Button>
           </div>
         ) : (
-          <motion.div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4" initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}>
+          <motion.div
+            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4"
+            initial="hidden"
+            animate="show"
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+          >
             {completedMissions.map((m) => {
               const totalGames = getTotalGames(learningMode);
               const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
@@ -900,7 +1096,12 @@ export default function MissionsPage() {
 
         {/* ─── Section 2: Word Search Games ─── */}
         <SectionHeader icon="🔍" title="Word Search Games" isNew />
-        <motion.div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4" initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}>
+        <motion.div
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4"
+          initial="hidden"
+          animate="show"
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+        >
           {WORD_SEARCH_PUZZLES.map((puzzle) => (
             <GameCard
               key={puzzle.id}
@@ -922,7 +1123,12 @@ export default function MissionsPage() {
 
         {/* ─── Section 3: Crossword Puzzles ─── */}
         <SectionHeader icon="✏️" title="Crossword Puzzles" isNew />
-        <motion.div className="grid gap-4 sm:grid-cols-2 mb-4" initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}>
+        <motion.div
+          className="grid gap-4 sm:grid-cols-2 mb-4"
+          initial="hidden"
+          animate="show"
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+        >
           {CROSSWORD_PUZZLES.map((puzzle) => (
             <GameCard
               key={puzzle.id}
@@ -939,7 +1145,12 @@ export default function MissionsPage() {
 
         {/* ─── Section 4: Drag & Drop Games ─── */}
         <SectionHeader icon="🎯" title="Drag & Drop Games" />
-        <motion.div className="grid gap-4 sm:grid-cols-2 mb-4" initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}>
+        <motion.div
+          className="grid gap-4 sm:grid-cols-2 mb-4"
+          initial="hidden"
+          animate="show"
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+        >
           {DRAG_DROP_GAMES.map((game) => (
             <GameCard
               key={game.id}
