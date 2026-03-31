@@ -179,10 +179,10 @@ export const ZONE_COORDINATES: Record<string, { id: string; lat: number; lng: nu
     { id: "boss-malware", lat: -25.0, lng: 118.0 },
   ],
   antarctica: [
-    { id: "crypto-cavern", lat: -72.0, lng: -60.0 },
-    { id: "algorithm-abyss", lat: -75.0, lng: 0.0 },
-    { id: "code-citadel", lat: -72.0, lng: 60.0 },
-    { id: "ice-intelligence", lat: -77.8, lng: 166.7 },
-    { id: "boss-shadowbyte", lat: -82.0, lng: 0.0 },
+    { id: "crypto-cavern", lat: -71.0, lng: -60.0 },
+    { id: "algorithm-abyss", lat: -71.0, lng: -10.0 },
+    { id: "code-citadel", lat: -71.0, lng: 45.0 },
+    { id: "ice-intelligence", lat: -71.0, lng: 100.0 },
+    { id: "boss-shadowbyte", lat: -80.0, lng: 20.0 },
   ],
 };
