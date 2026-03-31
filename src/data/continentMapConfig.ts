@@ -145,7 +145,7 @@ export const ZONE_COORDINATES: Record<string, { id: string; lat: number; lng: nu
   ],
   africa: [
     { id: "stranger-shore", lat: 6.5, lng: 3.4 }, // Lagos, Nigeria - west
-    { id: "signal-savanna", lat: 14.0, lng: -1.5 }, // Mali - northwest
+    { id: "signal-savanna", lat: 14.0, lng: -5.0 }, // Mali - northwest
     { id: "dark-web-den", lat: 30.0, lng: 31.2 }, // Cairo, Egypt - north
     { id: "data-delta", lat: 9.0, lng: 38.7 }, // Addis Ababa - east
     { id: "kindness-citadel", lat: -1.3, lng: 36.8 }, // Nairobi - east center
