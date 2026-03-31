@@ -51,21 +51,42 @@ const queryClient = new QueryClient();
 
 // Routes kids to game, parents/teachers to portal
 function DashboardRouter() {
-  const { user, activeChildId } = useAuth();
+  const { user, setActiveChildId } = useAuth();
   const [role, setRole] = useState<string | null>(null);
+  const [hasAvatar, setHasAvatar] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("profiles")
-      .select("role")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        setRole(data?.role ?? null);
-        setChecking(false);
-      });
+    const checkRole = async () => {
+      // Check profiles table first
+      const { data: profile } = await supabase.from("profiles").select("role").eq("user_id", user.id).maybeSingle();
+
+      if (profile?.role === "kid" || !profile) {
+        // Check child_profiles for avatar
+        const { data: childProfile } = await supabase
+          .from("child_profiles")
+          .select("id, avatar_config")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (childProfile) {
+          setRole("kid");
+          setActiveChildId(user.id);
+          // Check if they have built their avatar yet
+          const avatarConfig = (childProfile as any).avatar_config;
+          setHasAvatar(!!avatarConfig && Object.keys(avatarConfig).length > 0);
+        } else {
+          setRole(profile?.role ?? "family");
+          setHasAvatar(true);
+        }
+      } else {
+        setRole(profile.role);
+        setHasAvatar(true);
+      }
+      setChecking(false);
+    };
+    checkRole();
   }, [user]);
 
   if (checking)
@@ -74,13 +95,17 @@ function DashboardRouter() {
         <div className="text-muted-foreground">Loading...</div>
       </div>
     );
-  if (role === "kid")
+
+  if (role === "kid") {
+    if (!hasAvatar) return <Navigate to="/create-child" replace />;
     return (
       <>
         <Navbar />
         <KidDashboard />
       </>
     );
+  }
+
   return <MyKidsPage />;
 }
 
