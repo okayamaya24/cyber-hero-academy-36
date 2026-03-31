@@ -31,10 +31,10 @@ export default function LoginPage() {
         navigate("/dashboard", { replace: true });
         break;
       case "kid":
-        navigate("/select-child", { replace: true });
+        navigate("/kid-dashboard", { replace: true });
         break;
       default:
-        navigate("/select-child", { replace: true });
+        navigate("/kid-dashboard", { replace: true });
     }
   }, [user, profile, profileLoading, navigate]);
 
