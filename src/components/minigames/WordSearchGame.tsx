@@ -15,33 +15,63 @@ interface Props {
 
 const WORD_LISTS: Record<string, Record<AgeTier, string[]>> = {
   "scam-detection": {
-    junior: ["SCAM", "SAFE", "FAKE", "LINK", "SPAM"],
-    defender: ["PHISHING", "SCAMMER", "MALWARE", "SECURE", "VIRUS"],
-    guardian: ["PHISHING", "IDENTITY", "ENCRYPT", "FIREWALL", "SPOOFING"],
+    junior: ["SCAM", "SAFE", "FAKE", "LINK", "SPAM", "TRICK", "ALERT"],
+    defender: ["PHISHING", "SCAMMER", "MALWARE", "SECURE", "VIRUS", "SPAM", "TRICK", "ALERT"],
+    guardian: ["PHISHING", "IDENTITY", "ENCRYPT", "FIREWALL", "SPOOFING", "MALWARE", "BREACH", "EXPLOIT"],
   },
   "password-safety": {
-    junior: ["LOCK", "KEY", "SAFE", "CODE", "PASS"],
-    defender: ["PASSWORD", "SYMBOL", "STRONG", "SECURE", "RANDOM"],
-    guardian: ["ENCRYPT", "TWOFACTOR", "HASHING", "COMPLEX", "UNIQUE"],
+    junior: ["LOCK", "KEY", "SAFE", "CODE", "PASS", "STRONG", "PROTECT"],
+    defender: ["PASSWORD", "SYMBOL", "STRONG", "SECURE", "RANDOM", "UPPERCASE", "NUMBER", "LOCK", "PROTECT"],
+    guardian: ["ENCRYPT", "TWOFACTOR", "HASHING", "COMPLEX", "UNIQUE", "RANDOM", "SYMBOL", "BREACH", "SECURE"],
   },
   "safe-websites": {
-    junior: ["SAFE", "LINK", "LOCK", "SITE", "WEB"],
-    defender: ["HTTPS", "SECURE", "DOMAIN", "BROWSER", "SHIELD"],
-    guardian: ["HTTPS", "CERTIFICATE", "DOMAIN", "BROWSER", "VERIFIED"],
+    junior: ["SAFE", "LINK", "LOCK", "SITE", "WEB", "GOOD", "TRUST"],
+    defender: ["HTTPS", "SECURE", "DOMAIN", "BROWSER", "SHIELD", "VIRUS", "SAFE", "LOCK"],
+    guardian: ["HTTPS", "CERTIFICATE", "DOMAIN", "BROWSER", "VERIFIED", "FIREWALL", "ENCRYPT", "SHIELD"],
   },
   "personal-info": {
-    junior: ["NAME", "SAFE", "HIDE", "TELL", "KEEP"],
-    defender: ["PRIVATE", "SECRET", "PROTECT", "SHARE", "HIDDEN"],
-    guardian: ["PRIVACY", "CONSENT", "PERSONAL", "ANONYMOUS", "DIGITAL"],
+    junior: ["NAME", "SAFE", "HIDE", "TELL", "KEEP", "PRIVATE", "TRUST"],
+    defender: ["PRIVATE", "SECRET", "PROTECT", "SHARE", "HIDDEN", "IDENTITY", "SECURE", "DATA"],
+    guardian: ["PRIVACY", "CONSENT", "PERSONAL", "ANONYMOUS", "DIGITAL", "IDENTITY", "PROTECT", "SECURE"],
+  },
+  default: {
+    junior: ["SAFE", "LOCK", "PASS", "CODE", "SCAM", "FAKE", "ALERT"],
+    defender: ["PASSWORD", "SECURE", "PHISHING", "MALWARE", "FIREWALL", "ENCRYPT", "VIRUS", "SHIELD"],
+    guardian: ["FIREWALL", "ENCRYPT", "PHISHING", "MALWARE", "IDENTITY", "BREACH", "EXPLOIT", "SECURE"],
   },
 };
 
 const HIGHLIGHT_COLORS = [
-  { bg: "bg-green-400/50", border: "border-green-500", text: "text-green-900", chip: "bg-green-400/30 text-green-800 border-green-400" },
-  { bg: "bg-blue-400/50", border: "border-blue-500", text: "text-blue-900", chip: "bg-blue-400/30 text-blue-800 border-blue-400" },
-  { bg: "bg-purple-400/50", border: "border-purple-500", text: "text-purple-900", chip: "bg-purple-400/30 text-purple-800 border-purple-400" },
-  { bg: "bg-orange-400/50", border: "border-orange-500", text: "text-orange-900", chip: "bg-orange-400/30 text-orange-800 border-orange-400" },
-  { bg: "bg-pink-400/50", border: "border-pink-500", text: "text-pink-900", chip: "bg-pink-400/30 text-pink-800 border-pink-400" },
+  {
+    bg: "bg-green-400/50",
+    border: "border-green-500",
+    text: "text-green-900",
+    chip: "bg-green-400/30 text-green-800 border-green-400",
+  },
+  {
+    bg: "bg-blue-400/50",
+    border: "border-blue-500",
+    text: "text-blue-900",
+    chip: "bg-blue-400/30 text-blue-800 border-blue-400",
+  },
+  {
+    bg: "bg-purple-400/50",
+    border: "border-purple-500",
+    text: "text-purple-900",
+    chip: "bg-purple-400/30 text-purple-800 border-purple-400",
+  },
+  {
+    bg: "bg-orange-400/50",
+    border: "border-orange-500",
+    text: "text-orange-900",
+    chip: "bg-orange-400/30 text-orange-800 border-orange-400",
+  },
+  {
+    bg: "bg-pink-400/50",
+    border: "border-pink-500",
+    text: "text-pink-900",
+    chip: "bg-pink-400/30 text-pink-800 border-pink-400",
+  },
 ];
 
 type Coord = { r: number; c: number };
@@ -79,7 +109,14 @@ function generateGrid(words: string[], size: number): { grid: string[][]; placem
   const grid: string[][] = Array.from({ length: size }, () => Array(size).fill(""));
   const placements: WordPlacement[] = [];
   const directions = [
-    [0, 1], [1, 0], [1, 1], [0, -1], [-1, 0], [-1, -1], [1, -1], [-1, 1],
+    [0, 1],
+    [1, 0],
+    [1, 1],
+    [0, -1],
+    [-1, 0],
+    [-1, -1],
+    [1, -1],
+    [-1, 1],
   ];
 
   for (const word of words) {
@@ -105,8 +142,14 @@ function generateGrid(words: string[], size: number): { grid: string[][]; placem
       for (let i = 0; i < word.length; i++) {
         const r = startRow + dir[0] * i;
         const c = startCol + dir[1] * i;
-        if (r < 0 || r >= size || c < 0 || c >= size) { canPlace = false; break; }
-        if (grid[r][c] !== "" && grid[r][c] !== word[i]) { canPlace = false; break; }
+        if (r < 0 || r >= size || c < 0 || c >= size) {
+          canPlace = false;
+          break;
+        }
+        if (grid[r][c] !== "" && grid[r][c] !== word[i]) {
+          canPlace = false;
+          break;
+        }
         cells.push({ r, c });
       }
 
@@ -133,9 +176,17 @@ function generateGrid(words: string[], size: number): { grid: string[][]; placem
   return { grid, placements };
 }
 
-export default function WordSearchGame({ missionId, ageTier, guideImage, guideName, onComplete, customWords, customGridSize }: Props) {
-  const size = customGridSize ?? (ageTier === "junior" ? 7 : ageTier === "defender" ? 9 : 11);
-  const wordList = customWords ?? (WORD_LISTS[missionId ?? ""]?.[ageTier] ?? WORD_LISTS["scam-detection"][ageTier]);
+export default function WordSearchGame({
+  missionId,
+  ageTier,
+  guideImage,
+  guideName,
+  onComplete,
+  customWords,
+  customGridSize,
+}: Props) {
+  const size = customGridSize ?? (ageTier === "junior" ? 8 : ageTier === "defender" ? 10 : 12);
+  const wordList = customWords ?? WORD_LISTS[missionId ?? ""]?.[ageTier] ?? WORD_LISTS["default"][ageTier];
 
   const { grid, placements } = useMemo(() => generateGrid(wordList, size), [missionId, ageTier]);
 
@@ -163,10 +214,13 @@ export default function WordSearchGame({ missionId, ageTier, guideImage, guideNa
     setFlashWrong(false);
   }, []);
 
-  const handlePointerEnter = useCallback((r: number, c: number) => {
-    if (!isDragging) return;
-    setDragEnd({ r, c });
-  }, [isDragging]);
+  const handlePointerEnter = useCallback(
+    (r: number, c: number) => {
+      if (!isDragging) return;
+      setDragEnd({ r, c });
+    },
+    [isDragging],
+  );
 
   const handlePointerUp = useCallback(() => {
     if (!isDragging || !dragStart || !dragEnd) {
@@ -219,21 +273,24 @@ export default function WordSearchGame({ missionId, ageTier, guideImage, guideNa
     return { r: parseInt(r), c: parseInt(c) };
   }, []);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    const cell = getCellFromTouch(e);
-    if (cell) setDragEnd(cell);
-  }, [isDragging, getCellFromTouch]);
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const cell = getCellFromTouch(e);
+      if (cell) setDragEnd(cell);
+    },
+    [isDragging, getCellFromTouch],
+  );
 
   const allFound = foundWords.length >= placements.length && placements.length > 0;
 
-  // Larger tiles
-  const tileSize = ageTier === "junior"
-    ? "h-14 w-14 text-xl md:h-16 md:w-16 md:text-2xl"
-    : ageTier === "defender"
-      ? "h-12 w-12 text-lg md:h-14 md:w-14 md:text-xl"
-      : "h-11 w-11 text-base md:h-12 md:w-12 md:text-lg";
+  const tileSize =
+    ageTier === "junior"
+      ? "h-10 w-10 text-base md:h-11 md:w-11 md:text-lg"
+      : ageTier === "defender"
+        ? "h-9 w-9 text-sm md:h-10 md:w-10 md:text-base"
+        : "h-8 w-8 text-xs md:h-9 md:w-9 md:text-sm";
 
   return (
     <div className="text-center select-none" onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
@@ -241,13 +298,11 @@ export default function WordSearchGame({ missionId, ageTier, guideImage, guideNa
       <div className="flex items-center gap-3 mb-5">
         <img src={guideImage} alt={guideName} className="h-14 w-14 object-contain drop-shadow-md" />
         <div className="rounded-2xl rounded-bl-sm bg-muted px-5 py-3 text-left">
-          <p className="font-semibold text-base">
-            🔤 Drag across letters to find the hidden words!
-          </p>
+          <p className="font-semibold text-base">🔤 Drag across letters to find the hidden words!</p>
         </div>
       </div>
 
-      {/* Word chips — larger */}
+      {/* Word chips */}
       <div className="flex flex-wrap gap-2.5 justify-center mb-5">
         {placements.map(({ word }) => {
           const foundIndex = foundWords.indexOf(word);
@@ -257,27 +312,28 @@ export default function WordSearchGame({ missionId, ageTier, guideImage, guideNa
           return (
             <span
               key={word}
-              className={`rounded-full px-5 py-2 text-sm font-bold transition-all duration-300 border-2 ${
+              className={`rounded-full px-4 py-1.5 text-sm font-bold transition-all duration-300 border-2 ${
                 isFound
                   ? `${colorStyle!.chip} line-through scale-95`
                   : "bg-accent/20 text-accent-foreground border-accent/40"
               }`}
             >
-              {isFound ? "✅ " : ""}{word}
+              {isFound ? "✅ " : ""}
+              {word}
             </span>
           );
         })}
       </div>
 
       {/* Progress */}
-      <p className="text-base font-bold text-muted-foreground mb-4">
+      <p className="text-sm font-bold text-muted-foreground mb-4">
         Found {foundWords.length}/{placements.length} words
       </p>
 
-      {/* Grid — larger */}
+      {/* Grid */}
       <div
         ref={gridRef}
-        className="inline-grid gap-1.5 mx-auto mb-5 touch-none"
+        className="inline-grid gap-1 mx-auto mb-5 touch-none"
         style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
         onTouchMove={handleTouchMove}
       >
@@ -309,23 +365,19 @@ export default function WordSearchGame({ missionId, ageTier, guideImage, guideNa
                   handlePointerDown(r, c);
                 }}
                 onPointerEnter={() => handlePointerEnter(r, c)}
-                className={`flex items-center justify-center rounded-xl font-bold cursor-pointer transition-all duration-150 ${tileSize} ${cellClass}`}
+                className={`flex items-center justify-center rounded-lg font-bold cursor-pointer transition-all duration-150 ${tileSize} ${cellClass}`}
               >
                 {letter}
               </motion.div>
             );
-          })
+          }),
         )}
       </div>
 
       {/* Completion */}
       <AnimatePresence>
         {allFound && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="space-y-3 mt-3"
-          >
+          <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="space-y-3 mt-3">
             <div className="flex items-center justify-center gap-2">
               <img src={guideImage} alt={guideName} className="h-12 w-12 object-contain" />
               <p className="text-xl font-bold text-secondary">🎉 All words found! Great job!</p>
