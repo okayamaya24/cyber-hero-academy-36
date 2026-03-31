@@ -14,7 +14,7 @@ export default function EditAvatarPage() {
 
   useEffect(() => {
     if (!user) navigate("/login");
-    else if (!activeChildId) navigate("/select-child");
+    else if (!activeChildId) navigate("/dashboard");
   }, [user, activeChildId, navigate]);
 
   const handleSave = async (config: CyberHeroConfig) => {

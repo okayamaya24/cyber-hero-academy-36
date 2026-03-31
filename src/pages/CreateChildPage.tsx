@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import CyberHeroCreator, { type CyberHeroConfig } from "@/components/avatar/CyberHeroCreator";
 import { ArrowLeft, Copy, CheckCircle } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
 
 function getDifficultyFromAge(age: number): string {
   if (age <= 7) return "easy";
@@ -18,9 +19,13 @@ function getDifficultyFromAge(age: number): string {
 }
 
 export default function CreateChildPage() {
-  const { user, session } = useAuth();
+  const { user, session, setActiveChildId } = useAuth();
+  const { data: profile } = useProfile();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // Detect if the logged-in user IS the kid (kid-mode)
+  const isKidMode = profile?.role === "kid";
 
   const [step, setStep] = useState<"info" | "hero" | "success">("info");
   const [childName, setChildName] = useState("");
@@ -38,6 +43,13 @@ export default function CreateChildPage() {
     password?: string;
     confirmPassword?: string;
   }>({});
+
+  // In kid-mode, skip straight to hero builder
+  useEffect(() => {
+    if (isKidMode) {
+      setStep("hero");
+    }
+  }, [isKidMode]);
 
   const suggestUsername = (name: string) => {
     const base = name.trim().toLowerCase().replace(/\s+/g, "");
@@ -74,7 +86,46 @@ export default function CreateChildPage() {
     if (validate()) setStep("hero");
   };
 
+  // Kid-mode: save avatar to existing child_profiles row
+  const handleKidModeSaveHero = async (config: CyberHeroConfig) => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      const avatarConfig = {
+        gender: config.gender,
+        skin: config.skin,
+        suitKey: config.suitKey,
+        accessory: config.accessory,
+        heroName: config.name,
+        heroSrc: config.heroSrc,
+      };
+
+      const { error } = await supabase
+        .from("child_profiles")
+        .update({
+          avatar_config: avatarConfig as any,
+          avatar: config.gender === "girl" ? "👧" : "👦",
+        })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      setActiveChildId(user.id);
+      toast.success("Your Cyber Hero is ready! 🦸");
+      navigate("/kid-dashboard", { replace: true });
+    } catch (err: any) {
+      toast.error("Failed to save hero: " + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSaveHero = async (config: CyberHeroConfig) => {
+    // If kid-mode, use the simplified save
+    if (isKidMode) {
+      return handleKidModeSaveHero(config);
+    }
+
     if (!user) return;
     setSaving(true);
 
@@ -83,6 +134,10 @@ export default function CreateChildPage() {
     const fakeEmail = `${u}@cyberhero.app`;
 
     try {
+      // Save parent session BEFORE creating kid account
+      const parentAccessToken = session?.access_token;
+      const parentRefreshToken = session?.refresh_token;
+
       // Step 1 — Create auth account for the kid
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: fakeEmail,
@@ -105,11 +160,13 @@ export default function CreateChildPage() {
       const kidId = signUpData.user?.id;
       if (!kidId) throw new Error("No user ID returned");
 
-      // Step 2 — Re-sign in as the parent immediately
-      const parentEmail = user.email!;
-      // Store parent session token to restore
-      const parentAccessToken = session?.access_token;
-      const parentRefreshToken = session?.refresh_token;
+      // Step 2 — Restore parent session immediately so inserts use parent's RLS
+      if (parentAccessToken && parentRefreshToken) {
+        await supabase.auth.setSession({
+          access_token: parentAccessToken,
+          refresh_token: parentRefreshToken,
+        });
+      }
 
       // Step 3 — Insert profiles row for kid
       await supabase.from("profiles").upsert({
@@ -145,16 +202,9 @@ export default function CreateChildPage() {
         kid_id: kidId,
       });
 
-      // Step 6 — Restore parent session
-      if (parentAccessToken && parentRefreshToken) {
-        await supabase.auth.setSession({
-          access_token: parentAccessToken,
-          refresh_token: parentRefreshToken,
-        });
-      }
-
       setCreatedKidId(kidId);
       await queryClient.invalidateQueries({ queryKey: ["children", user.id] });
+      toast.success(`${childName.trim()} can now log in with username: ${u}`);
       setStep("success");
     } catch (err: any) {
       toast.error("Something went wrong: " + err.message);
@@ -169,7 +219,7 @@ export default function CreateChildPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Success screen
+  // Success screen (parent mode only)
   if (step === "success") {
     return (
       <div className="min-h-screen bg-background py-8">
@@ -212,7 +262,7 @@ export default function CreateChildPage() {
               )}
             </Button>
 
-            <Button variant="hero" className="w-full" onClick={() => navigate("/parent-dashboard")}>
+            <Button variant="hero" className="w-full" onClick={() => navigate("/dashboard")}>
               Back to Dashboard
             </Button>
           </motion.div>
@@ -222,13 +272,19 @@ export default function CreateChildPage() {
   }
 
   if (step === "hero") {
-    return <CyberHeroCreator onSave={handleSaveHero} saving={saving} childName={childName.trim()} />;
+    return (
+      <CyberHeroCreator
+        onSave={handleSaveHero}
+        saving={saving}
+        childName={isKidMode ? (profile?.display_name || "Hero") : childName.trim()}
+      />
+    );
   }
 
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto max-w-md px-4">
-        <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate("/parent-dashboard")}>
+        <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate("/dashboard")}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
         </Button>
 
