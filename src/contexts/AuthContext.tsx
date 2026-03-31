@@ -36,13 +36,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkKidRole = async (session: Session | null) => {
       if (session?.user) {
+        // Check profiles table first
         const { data: profile } = await supabase
           .from("profiles")
           .select("role")
           .eq("user_id", session.user.id)
-          .single();
+          .maybeSingle();
+
         if (profile?.role === "kid") {
           handleSetActiveChildId(session.user.id);
+        } else if (!profile) {
+          // Fallback: check if they exist in child_profiles
+          const { data: childProfile } = await supabase
+            .from("child_profiles")
+            .select("id")
+            .eq("id", session.user.id)
+            .maybeSingle();
+          if (childProfile) {
+            handleSetActiveChildId(session.user.id);
+          }
         }
       }
       setSession(session);
