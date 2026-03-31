@@ -130,7 +130,7 @@ export async function fetchActiveEventsFromDB(): Promise<EventMission[]> {
     const { data, error } = await supabase.from("events").select("*").eq("status", "live");
 
     if (error || !data || data.length === 0) {
-      return FALLBACK_EVENTS.filter((e) => e.enabled);
+      return [];
     }
 
     cachedEvents = data.map(mapDbEventToEventMission);
