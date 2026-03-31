@@ -58,35 +58,52 @@ function DashboardRouter() {
 
   useEffect(() => {
     if (!user) return;
+
+    // Timeout fallback — after 5s default to kid dashboard
+    const timeout = setTimeout(() => {
+      setRole((prev) => prev ?? "kid");
+      setHasAvatar((prev) => prev ?? true);
+      setActiveChildId(user.id);
+      setChecking(false);
+    }, 5000);
+
     const checkRole = async () => {
-      // Check profiles table first
-      const { data: profile } = await supabase.from("profiles").select("role").eq("user_id", user.id).maybeSingle();
+      try {
+        const { data: profile } = await supabase.from("profiles").select("role").eq("user_id", user.id).maybeSingle();
 
-      if (profile?.role === "kid" || !profile) {
-        // Check child_profiles for avatar
-        const { data: childProfile } = await supabase
-          .from("child_profiles")
-          .select("id, avatar_config")
-          .eq("id", user.id)
-          .maybeSingle();
+        if (profile?.role === "kid" || !profile) {
+          const { data: childProfile } = await supabase
+            .from("child_profiles")
+            .select("id, avatar_config")
+            .eq("id", user.id)
+            .maybeSingle();
 
-        if (childProfile) {
-          setRole("kid");
-          setActiveChildId(user.id);
-          // Check if they have built their avatar yet
-          const avatarConfig = (childProfile as any).avatar_config;
-          setHasAvatar(!!avatarConfig && Object.keys(avatarConfig).length > 0);
+          if (childProfile || profile?.role === "kid") {
+            setRole("kid");
+            setActiveChildId(user.id);
+            const avatarConfig = childProfile?.avatar_config as Record<string, any> | null;
+            setHasAvatar(!!avatarConfig && typeof avatarConfig === "object" && Object.keys(avatarConfig).length > 0);
+          } else {
+            setRole(profile?.role ?? "family");
+            setHasAvatar(true);
+          }
+        } else if (profile.role === "creator") {
+          setRole("creator");
+          setHasAvatar(true);
         } else {
-          setRole(profile?.role ?? "family");
+          setRole(profile.role);
           setHasAvatar(true);
         }
-      } else {
-        setRole(profile.role);
+      } catch {
+        // fallback
+        setRole("family");
         setHasAvatar(true);
       }
+      clearTimeout(timeout);
       setChecking(false);
     };
     checkRole();
+    return () => clearTimeout(timeout);
   }, [user]);
 
   if (checking)
@@ -95,6 +112,8 @@ function DashboardRouter() {
         <div className="text-muted-foreground">Loading...</div>
       </div>
     );
+
+  if (role === "creator") return <Navigate to="/admin-portal/games" replace />;
 
   if (role === "kid") {
     if (!hasAvatar) return <Navigate to="/create-child" replace />;
