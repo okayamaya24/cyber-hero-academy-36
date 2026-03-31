@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -19,7 +19,7 @@ import {
   type LearningMode,
 } from "@/data/missions";
 import { getLevelRank, getNextRank, getProgressToNextLevel } from "@/data/levelTitles";
-import { getActiveEvents } from "@/data/eventMissions";
+import { fetchActiveEventsFromDB, type EventMission } from "@/data/eventMissions";
 import { GUIDE_REGISTRY } from "@/data/guides";
 import robotGuide from "@/assets/robot-guide.png";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
@@ -83,9 +83,7 @@ function BadgeCard({ badge, earned }: { badge: (typeof ALL_BADGES)[number]; earn
           >
             {badge.icon}
           </div>
-
           <h3 className="text-sm font-bold leading-tight">{badge.name}</h3>
-
           {earned ? (
             <p className="mt-2 text-[11px] font-bold text-secondary">EARNED ✓</p>
           ) : (
@@ -93,7 +91,6 @@ function BadgeCard({ badge, earned }: { badge: (typeof ALL_BADGES)[number]; earn
           )}
         </motion.div>
       </TooltipTrigger>
-
       <TooltipContent className="max-w-xs rounded-xl text-center">
         <p className="font-semibold">{badge.name}</p>
         <p className="mt-1 text-xs text-muted-foreground">{description}</p>
@@ -105,6 +102,7 @@ function BadgeCard({ badge, earned }: { badge: (typeof ALL_BADGES)[number]; earn
 export default function KidDashboard() {
   const { user, activeChildId, setActiveChildId } = useAuth();
   const navigate = useNavigate();
+  const [liveEvents, setLiveEvents] = useState<EventMission[]>([]);
 
   useEffect(() => {
     if (!user) {
@@ -116,11 +114,14 @@ export default function KidDashboard() {
     }
   }, [user, activeChildId, navigate]);
 
+  useEffect(() => {
+    fetchActiveEventsFromDB().then(setLiveEvents);
+  }, []);
+
   const { data: child } = useQuery({
     queryKey: ["child", activeChildId],
     queryFn: async () => {
       const { data, error } = await supabase.from("child_profiles").select("*").eq("id", activeChildId!).single();
-
       if (error) throw error;
       return data;
     },
@@ -131,7 +132,6 @@ export default function KidDashboard() {
     queryKey: ["mission_progress", activeChildId],
     queryFn: async () => {
       const { data, error } = await supabase.from("mission_progress").select("*").eq("child_id", activeChildId!);
-
       if (error) throw error;
       return data;
     },
@@ -142,7 +142,6 @@ export default function KidDashboard() {
     queryKey: ["earned_badges", activeChildId],
     queryFn: async () => {
       const { data, error } = await supabase.from("earned_badges").select("*").eq("child_id", activeChildId!);
-
       if (error) throw error;
       return data;
     },
@@ -165,8 +164,6 @@ export default function KidDashboard() {
   const learningMode = ((child as any)?.learning_mode as LearningMode) || "standard";
   const modeConfig = LEARNING_MODE_CONFIG[learningMode];
   const totalGamesPerMission = getTotalGames(learningMode);
-
-  const completedMissions = missionProgress.filter((m) => m.status === "completed").length;
 
   const totalGamesCompleted = missionProgress.reduce((acc, mp) => {
     if (mp.status === "completed") return acc + totalGamesPerMission;
@@ -356,12 +353,12 @@ export default function KidDashboard() {
         {/* Daily Challenge */}
         <DailyChallenge childId={child.id} childAge={child.age} />
 
-        {/* Event Missions */}
-        {getActiveEvents().length > 0 && (
+        {/* Special Events — pulls from database via admin portal */}
+        {liveEvents.length > 0 && (
           <div>
             <h2 className="mb-4 text-2xl font-bold">🎉 Special Events</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              {getActiveEvents().map((event) => {
+              {liveEvents.map((event) => {
                 const guide = GUIDE_REGISTRY[event.guideId] ?? GUIDE_REGISTRY["captain-cyber"];
                 return (
                   <motion.div
@@ -452,7 +449,6 @@ export default function KidDashboard() {
                       >
                         <m.icon className="h-6 w-6" />
                       </div>
-
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-bold">{m.title}</h3>
@@ -464,9 +460,7 @@ export default function KidDashboard() {
                           )}
                           {isRecommended && <Badge className="border-0 bg-primary/10 text-primary">Recommended</Badge>}
                         </div>
-
                         <p className="text-sm text-muted-foreground">{m.description}</p>
-
                         <div className="mt-2 flex gap-1.5">
                           {levels.map((level) => {
                             const levelStart = (level.level - 1) * modeConfig.gamesPerLevel;
@@ -475,7 +469,6 @@ export default function KidDashboard() {
                               modeConfig.gamesPerLevel,
                             );
                             const levelDone = levelCompleted >= modeConfig.gamesPerLevel;
-
                             return (
                               <div
                                 key={level.level}
@@ -499,7 +492,6 @@ export default function KidDashboard() {
                             );
                           })}
                         </div>
-
                         <div className="mt-3">
                           <div className="mb-1 flex justify-between text-xs">
                             <span>Progress</span>
@@ -511,7 +503,6 @@ export default function KidDashboard() {
                         </div>
                       </div>
                     </div>
-
                     {status !== "completed" && (
                       <Button variant="hero" size="sm" className="mt-4 w-full" asChild>
                         <Link to={`/missions?mission=${m.id}`}>
@@ -535,7 +526,6 @@ export default function KidDashboard() {
                 {earnedBadges.length} of {ALL_BADGES.length} badges earned
               </p>
             </div>
-
             <div className="w-full sm:w-72">
               <div className="mb-1 flex justify-between text-xs font-medium text-muted-foreground">
                 <span>Badge Progress</span>
@@ -553,9 +543,7 @@ export default function KidDashboard() {
             >
               <div className="mb-3 text-5xl">🏆🎉</div>
               <h3 className="mb-2 text-xl font-bold">All Badges Earned!</h3>
-              <p className="mb-4 text-sm text-muted-foreground">
-                You&apos;re a true Cyber Hero! Your certificate is ready!
-              </p>
+              <p className="mb-4 text-sm text-muted-foreground">You're a true Cyber Hero! Your certificate is ready!</p>
               <div className="flex justify-center gap-3">
                 <Button variant="hero" asChild>
                   <Link to="/certificate">
@@ -590,7 +578,6 @@ export default function KidDashboard() {
                       earned
                     </span>
                   </div>
-
                   <motion.div
                     className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6"
                     variants={container}
