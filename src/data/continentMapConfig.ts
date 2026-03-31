@@ -156,9 +156,9 @@ export const ZONE_COORDINATES: Record<string, { id: string; lat: number; lng: nu
     { id: "privacy-palace", lat: 25.2, lng: 55.3 }, // Dubai - far west
     { id: "browse-bazaar", lat: 19.1, lng: 72.9 }, // Mumbai - west
     { id: "boss-phantom", lat: 28.0, lng: 84.0 }, // Nepal/Himalayas - center
-    { id: "tech-temple", lat: 39.9, lng: 116.4 }, // Beijing - north center
-    { id: "firewall-frontier", lat: 37.6, lng: 127.0 }, // Seoul - northeast
-    { id: "cyberguard-academy", lat: 35.7, lng: 139.7 }, // Tokyo - far east
+    { id: "tech-temple", lat: 42.0, lng: 116.4 }, // Beijing - moved up
+    { id: "firewall-frontier", lat: 36.0, lng: 128.0 }, // Seoul - moved down
+    { id: "cyberguard-academy", lat: 33.0, lng: 141.0 }, // Tokyo - moved down more
     { id: "hack-haven", lat: 13.7, lng: 100.5 }, // Bangkok - southeast
     { id: "network-nexus", lat: 1.3, lng: 103.8 }, // Singapore - far south
   ],
