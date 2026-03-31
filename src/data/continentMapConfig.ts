@@ -176,7 +176,7 @@ export const ZONE_COORDINATES: Record<string, { id: string; lat: number; lng: nu
     { id: "antivirus-atoll", lat: -27.5, lng: 153.0 },
     { id: "outback-ops", lat: -23.7, lng: 133.9 },
     { id: "reef-recon", lat: -16.9, lng: 145.8 },
-    { id: "boss-malware", lat: -25.0, lng: 134.0 },
+    { id: "boss-malware", lat: -25.0, lng: 118.0 },
   ],
   antarctica: [
     { id: "crypto-cavern", lat: -80.0, lng: -45.0 },
