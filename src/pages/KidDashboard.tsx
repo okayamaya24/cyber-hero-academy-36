@@ -259,17 +259,6 @@ export default function KidDashboard() {
             >
               <Link to="/edit-avatar">✏️ Customize Hero</Link>
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-primary-foreground/30 bg-card/20 text-primary-foreground hover:bg-card/30"
-              onClick={() => {
-                setActiveChildId(null);
-                navigate("/select-child");
-              }}
-            >
-              Switch Profile
-            </Button>
           </div>
         </div>
       </div>

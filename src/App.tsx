@@ -176,15 +176,7 @@ const App = () => (
               />
 
               {/* Existing Cyber Hero routes (with Navbar) */}
-              <Route
-                path="/select-child"
-                element={
-                  <>
-                    <Navbar />
-                    <ChildSelectPage />
-                  </>
-                }
-              />
+              <Route path="/select-child" element={<Navigate to="/dashboard" replace />} />
               <Route
                 path="/create-child"
                 element={
