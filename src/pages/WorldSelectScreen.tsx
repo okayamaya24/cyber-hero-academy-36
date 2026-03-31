@@ -137,7 +137,9 @@ function ContinentCard({
       {!isLocked && (
         <div className="w-full space-y-0.5">
           <div className="flex justify-between text-[8px] text-white/35">
-            <span>{zonesCompleted}/{totalZones} zones</span>
+            <span>
+              {zonesCompleted}/{totalZones} zones
+            </span>
             <span>{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-1.5 bg-white/10" />
@@ -179,11 +181,7 @@ export default function WorldSelectScreen() {
   const { data: child } = useQuery({
     queryKey: ["child", activeChildId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("child_profiles")
-        .select("*")
-        .eq("id", activeChildId!)
-        .single();
+      const { data, error } = await supabase.from("child_profiles").select("*").eq("id", activeChildId!).single();
       if (error) throw error;
       return data;
     },
@@ -193,10 +191,7 @@ export default function WorldSelectScreen() {
   const { data: continentProgress = [] } = useQuery({
     queryKey: ["continent_progress", activeChildId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("continent_progress")
-        .select("*")
-        .eq("child_id", activeChildId!);
+      const { data, error } = await supabase.from("continent_progress").select("*").eq("child_id", activeChildId!);
       if (error) throw error;
       return data;
     },
@@ -218,10 +213,12 @@ export default function WorldSelectScreen() {
   const playerName = child?.name ?? "Guardian";
 
   const continentStatuses = useMemo(() => {
-    const map: Record
-      string,
-      { status: "locked" | "in_progress" | "completed"; zonesCompleted: number; bossDefeated: boolean }
-    > = {};
+    type ContinentStatus = {
+      status: "locked" | "in_progress" | "completed";
+      zonesCompleted: number;
+      bossDefeated: boolean;
+    };
+    const map: Record<string, ContinentStatus> = {};
 
     for (const c of CONTINENTS) {
       const progress = continentProgress.find((p: any) => p.continent_id === c.id);
@@ -230,11 +227,7 @@ export default function WorldSelectScreen() {
       // Admin override takes priority
       if (adminLock?.admin_override) {
         map[c.id] = {
-          status: adminLock.locked
-            ? "locked"
-            : progress?.status === "completed"
-              ? "completed"
-              : "in_progress",
+          status: adminLock.locked ? "locked" : progress?.status === "completed" ? "completed" : "in_progress",
           zonesCompleted: progress?.zones_completed ?? 0,
           bossDefeated: progress?.boss_defeated ?? false,
         };
@@ -249,28 +242,20 @@ export default function WorldSelectScreen() {
           bossDefeated: progress?.boss_defeated ?? false,
         };
       } else if (c.unlockOrder === 6) {
-        const allBossesDefeated = CONTINENTS.filter(
-          (cc) => cc.unlockOrder >= 0 && cc.unlockOrder < 6
-        ).every(
+        const allBossesDefeated = CONTINENTS.filter((cc) => cc.unlockOrder >= 0 && cc.unlockOrder < 6).every(
           (cc) => continentProgress.find((pr: any) => pr.continent_id === cc.id)?.boss_defeated === true,
         );
         map[c.id] = {
-          status: allBossesDefeated
-            ? progress?.status === "completed" ? "completed" : "in_progress"
-            : "locked",
+          status: allBossesDefeated ? (progress?.status === "completed" ? "completed" : "in_progress") : "locked",
           zonesCompleted: progress?.zones_completed ?? 0,
           bossDefeated: progress?.boss_defeated ?? false,
         };
       } else {
         const prev = CONTINENTS.find((cc) => cc.unlockOrder === c.unlockOrder - 1);
-        const prevProgress = prev
-          ? continentProgress.find((p: any) => p.continent_id === prev.id)
-          : null;
+        const prevProgress = prev ? continentProgress.find((p: any) => p.continent_id === prev.id) : null;
         const unlocked = prevProgress?.boss_defeated === true;
         map[c.id] = {
-          status: unlocked
-            ? progress?.status === "completed" ? "completed" : "in_progress"
-            : "locked",
+          status: unlocked ? (progress?.status === "completed" ? "completed" : "in_progress") : "locked",
           zonesCompleted: progress?.zones_completed ?? 0,
           bossDefeated: progress?.boss_defeated ?? false,
         };
