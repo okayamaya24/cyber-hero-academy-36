@@ -717,7 +717,80 @@ export default function MyKidsPage() {
             {isSchool && (
               <div className="rounded-lg border border-dashed border-border p-4 text-center">
                 <p className="text-sm text-muted-foreground mb-2">Roster Import</p>
-                <Button variant="outline" size="sm" onClick={() => toast.info("CSV upload coming soon!")}>
+                <input
+                  type="file"
+                  accept=".csv"
+                  id="csv-upload"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file || !user) return;
+                    const text = await file.text();
+                    const lines = text.trim().split("\n").slice(1);
+                    const students = lines
+                      .map((line) => {
+                        const [first_name, last_name, username, age] = line.split(",");
+                        return {
+                          name: `${first_name.trim()} ${last_name.trim()}`,
+                          username: username.trim().toLowerCase(),
+                          age: parseInt(age.trim()),
+                        };
+                      })
+                      .filter((s) => s.username && s.name);
+                    const { data: sess } = await supabase.auth.getSession();
+                    let created = 0;
+                    for (const student of students) {
+                      toast.info(`Creating ${student.name}... (${created + 1}/${students.length})`);
+                      const password = `CyberHero${student.username}!`;
+                      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                        email: `${student.username}@cyberhero.app`,
+                        password,
+                      });
+                      if (signUpError) {
+                        toast.error(`Failed: ${student.name}`);
+                        continue;
+                      }
+                      const kidId = signUpData?.user?.id;
+                      if (kidId) {
+                        await supabase
+                          .from("profiles")
+                          .upsert({
+                            id: kidId,
+                            user_id: kidId,
+                            role: "kid",
+                            account_type: "kid",
+                            display_name: student.name,
+                            email: `${student.username}@cyberhero.app`,
+                          });
+                        await supabase
+                          .from("child_profiles")
+                          .insert({
+                            id: kidId,
+                            parent_id: user.id,
+                            name: student.name,
+                            age: student.age || 8,
+                            learning_mode: "standard",
+                            avatar: "🦸",
+                            level: 1,
+                            points: 0,
+                            streak: 0,
+                          });
+                        await supabase.from("parent_kid_links").insert({ parent_id: user.id, kid_id: kidId });
+                        if (sess?.session) {
+                          await supabase.auth.setSession({
+                            access_token: sess.session.access_token,
+                            refresh_token: sess.session.refresh_token,
+                          });
+                        }
+                        created++;
+                      }
+                    }
+                    queryClient.invalidateQueries({ queryKey: ["children"] });
+                    toast.success(`✅ ${created} students imported! Default password: CyberHero[username]!`);
+                    (e.target as HTMLInputElement).value = "";
+                  }}
+                />
+                <Button variant="outline" size="sm" onClick={() => document.getElementById("csv-upload")?.click()}>
                   Upload CSV
                 </Button>
               </div>
