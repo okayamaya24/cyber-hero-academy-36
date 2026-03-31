@@ -10,8 +10,6 @@ import ProtectedAdminRoute from "@/components/ProtectedAdminRoute";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-
-// Existing Cyber Hero pages
 import HomePage from "./pages/HomePage";
 import KidDashboard from "./pages/KidDashboard";
 import MissionsPage from "./pages/MissionsPage";
@@ -28,8 +26,6 @@ import ZoneGameScreen from "./pages/ZoneGameScreen";
 import EditAvatarPage from "./pages/EditAvatarPage";
 import ProtectedParentRoute from "./components/ProtectedParentRoute";
 import NotFound from "./pages/NotFound";
-
-// Admin portal pages
 import AdminGamesPage from "./pages/admin/AdminGamesPage";
 import AdminEventsPage from "./pages/admin/AdminEventsPage";
 import AdminBadgesPage from "./pages/admin/AdminBadgesPage";
@@ -40,8 +36,6 @@ import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import AdminLevelManagerPage from "./pages/admin/AdminLevelManagerPage";
 import AdminAnnouncementsPage from "./pages/admin/AdminAnnouncementsPage";
 import AdminEmailCenterPage from "./pages/admin/AdminEmailCenterPage";
-
-// Dashboard portal pages
 import MyKidsPage from "./pages/portal/MyKidsPage";
 import KidProfilePage from "./pages/portal/KidProfilePage";
 import AccountPage from "./pages/portal/AccountPage";
@@ -49,7 +43,6 @@ import ChangePasswordPage from "./pages/portal/ChangePasswordPage";
 
 const queryClient = new QueryClient();
 
-// Routes kids to game, parents/teachers to portal
 function DashboardRouter() {
   const { user, setActiveChildId } = useAuth();
   const [role, setRole] = useState<string | null>(null);
@@ -59,7 +52,6 @@ function DashboardRouter() {
   useEffect(() => {
     if (!user) return;
 
-    // Timeout fallback — after 5s default to kid dashboard
     const timeout = setTimeout(() => {
       setRole((prev) => prev ?? "kid");
       setHasAvatar((prev) => prev ?? true);
@@ -71,7 +63,14 @@ function DashboardRouter() {
       try {
         const { data: profile } = await supabase.from("profiles").select("role").eq("user_id", user.id).maybeSingle();
 
-        if (profile?.role === "kid" || !profile) {
+        if (profile?.role === "creator") {
+          setRole("creator");
+          setHasAvatar(true);
+        } else if (profile?.role === "family" || profile?.role === "school") {
+          setRole(profile.role);
+          setHasAvatar(true);
+        } else {
+          // role is kid or no profile — check child_profiles
           const { data: childProfile } = await supabase
             .from("child_profiles")
             .select("id, avatar_config")
@@ -82,26 +81,23 @@ function DashboardRouter() {
             setRole("kid");
             setActiveChildId(user.id);
             const avatarConfig = childProfile?.avatar_config as Record<string, any> | null;
-            setHasAvatar(!!avatarConfig && typeof avatarConfig === "object" && Object.keys(avatarConfig).length > 0);
+            const avatarKeys = avatarConfig && typeof avatarConfig === "object" ? Object.keys(avatarConfig) : [];
+            const hasValidAvatar =
+              avatarKeys.length > 0 && avatarKeys.some((k) => ["gender", "suitKey", "heroName", "heroSrc"].includes(k));
+            setHasAvatar(hasValidAvatar);
           } else {
-            setRole(profile?.role ?? "family");
+            setRole("family");
             setHasAvatar(true);
           }
-        } else if (profile.role === "creator") {
-          setRole("creator");
-          setHasAvatar(true);
-        } else {
-          setRole(profile.role);
-          setHasAvatar(true);
         }
       } catch {
-        // fallback
         setRole("family");
         setHasAvatar(true);
       }
       clearTimeout(timeout);
       setChecking(false);
     };
+
     checkRole();
     return () => clearTimeout(timeout);
   }, [user]);
@@ -137,7 +133,6 @@ const App = () => (
         <AuthProvider>
           <MaintenanceGate>
             <Routes>
-              {/* Public pages with Navbar */}
               <Route
                 path="/"
                 element={
@@ -174,8 +169,6 @@ const App = () => (
                   </>
                 }
               />
-
-              {/* Existing Cyber Hero routes (with Navbar) */}
               <Route path="/select-child" element={<Navigate to="/dashboard" replace />} />
               <Route
                 path="/create-child"
@@ -261,8 +254,6 @@ const App = () => (
                 }
               />
 
-              {/* Admin Portal (no Navbar - has own sidebar) */}
-              {/* Creator account must be manually inserted into Supabase with role = 'creator'. No public signup flow for this role. */}
               <Route path="/admin-portal" element={<Navigate to="/admin-portal/games" replace />} />
               <Route
                 path="/admin-portal/games"
@@ -345,16 +336,12 @@ const App = () => (
                 }
               />
 
-              {/* Dashboard Portal (no Navbar - has own sidebar) — family & school roles */}
               <Route path="/dashboard" element={<DashboardRouter />} />
               <Route path="/dashboard/kids/:id" element={<KidProfilePage />} />
               <Route path="/dashboard/account" element={<AccountPage />} />
               <Route path="/dashboard/password" element={<ChangePasswordPage />} />
-
-              {/* Legacy portal routes redirect to new dashboard paths */}
               <Route path="/portal" element={<Navigate to="/dashboard" replace />} />
               <Route path="/portal/*" element={<Navigate to="/dashboard" replace />} />
-
               <Route path="*" element={<NotFound />} />
             </Routes>
           </MaintenanceGate>
