@@ -116,7 +116,7 @@ export const CONTINENT_PROJECTIONS: Record<string, { center: [number, number]; s
   europe: { center: [12, 49], scale: 900 },
   africa: { center: [20, 1], scale: 370 },
   asia: { center: [95, 30], scale: 380 },
-  "south-america": { center: [-60, -24], scale: 400 },
+  "south-america": { center: [-60, -25], scale: 400 },
   australia: { center: [134, -28], scale: 520 },
   antarctica: { center: [0, -85], scale: 280 },
 };
