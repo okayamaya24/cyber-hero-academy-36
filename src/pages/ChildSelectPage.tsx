@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -8,22 +7,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
-
 type ChildProfile = Tables<"child_profiles">;
-
 export default function ChildSelectPage() {
   const { user, setActiveChildId } = useAuth();
   const navigate = useNavigate();
-
   const { data: children = [], isLoading } = useQuery({
     queryKey: ["children", user?.id],
     queryFn: async () => {
-      // First check if this user IS a child profile themselves
-      const { data: selfData } = await supabase.from("child_profiles").select("*").eq("id", user!.id).single();
+      const { data: selfData } = await supabase.from("child_profiles").select("*").eq("id", user!.id).maybeSingle();
       if (selfData) {
         return [selfData] as ChildProfile[];
       }
-      // Otherwise fetch children linked to this parent
       const { data, error } = await supabase
         .from("child_profiles")
         .select("*")
@@ -34,12 +28,10 @@ export default function ChildSelectPage() {
     },
     enabled: !!user,
   });
-
   const selectChild = (child: ChildProfile) => {
     setActiveChildId(child.id);
     navigate("/dashboard");
   };
-
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -47,7 +39,6 @@ export default function ChildSelectPage() {
       </div>
     );
   }
-
   if (children.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
@@ -64,7 +55,6 @@ export default function ChildSelectPage() {
       </div>
     );
   }
-
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <motion.div
@@ -75,7 +65,6 @@ export default function ChildSelectPage() {
         <Shield className="mx-auto mb-4 h-12 w-12 text-primary" />
         <h1 className="text-3xl font-bold">Who's Playing?</h1>
         <p className="mt-2 mb-8 text-muted-foreground">Choose your Cyber Hero profile</p>
-
         <div className="grid grid-cols-2 gap-4">
           {children.map((child) => (
             <motion.button
