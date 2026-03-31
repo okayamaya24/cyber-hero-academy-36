@@ -111,8 +111,8 @@ export default function KidDashboard() {
       navigate("/login");
       return;
     }
-    if (!activeChildId) {
-      navigate("/select-child");
+    if (!activeChildId && user) {
+      setActiveChildId(user.id);
     }
   }, [user, activeChildId, navigate]);
 
@@ -229,7 +229,9 @@ export default function KidDashboard() {
             transition={{ delay: 0.2 }}
           >
             <h1 className="text-2xl font-bold">Welcome, {child.name}!</h1>
-            <p className="opacity-90">Level {child.level} · {getLevelRank(child.level).emoji} {getLevelRank(child.level).title}</p>
+            <p className="opacity-90">
+              Level {child.level} · {getLevelRank(child.level).emoji} {getLevelRank(child.level).title}
+            </p>
             <div className="mt-2 flex items-center gap-4">
               <span className="flex items-center gap-1">
                 <Star className="h-4 w-4" /> {child.points} Points
@@ -335,7 +337,9 @@ export default function KidDashboard() {
                 {nextRankData && (
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground">Next rank</p>
-                    <p className="text-sm font-bold">{nextRankData.emoji} {nextRankData.title}</p>
+                    <p className="text-sm font-bold">
+                      {nextRankData.emoji} {nextRankData.title}
+                    </p>
                   </div>
                 )}
               </div>
@@ -343,14 +347,14 @@ export default function KidDashboard() {
                 <div>
                   <div className="mb-1 flex justify-between text-xs text-muted-foreground">
                     <span>XP Progress</span>
-                    <span>{progress.current}/{progress.needed} XP</span>
+                    <span>
+                      {progress.current}/{progress.needed} XP
+                    </span>
                   </div>
                   <Progress value={progress.percent} className="h-2.5" />
                 </div>
               )}
-              {!nextRankData && (
-                <p className="text-sm font-bold text-accent text-center">🏆 Maximum rank achieved!</p>
-              )}
+              {!nextRankData && <p className="text-sm font-bold text-accent text-center">🏆 Maximum rank achieved!</p>}
             </motion.div>
           );
         })()}
@@ -380,7 +384,9 @@ export default function KidDashboard() {
                         <div className="mt-2 flex items-center gap-2">
                           <img src={guide.image} alt={guide.name} className="h-6 w-6 object-contain" />
                           <span className="text-xs text-muted-foreground">{guide.name}</span>
-                          <span className="text-xs">{event.badgeIcon} {event.badgeName}</span>
+                          <span className="text-xs">
+                            {event.badgeIcon} {event.badgeName}
+                          </span>
                         </div>
                       </div>
                     </div>
