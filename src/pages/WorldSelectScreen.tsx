@@ -201,7 +201,7 @@ export default function WorldSelectScreen() {
   const { data: worldLocks = [] } = useQuery({
     queryKey: ["world-locks"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("world_locks").select("*");
+      const { data, error } = await (supabase as any).from("world_locks").select("*");
       if (error) throw error;
       return data as any[];
     },

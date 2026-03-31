@@ -40,7 +40,7 @@ export default function AdminLevelManagerPage() {
   const { data: worldLocks = [], isLoading: worldsLoading } = useQuery({
     queryKey: ["world-locks"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("world_locks").select("*").order("id");
+      const { data, error } = await (supabase as any).from("world_locks").select("*").order("id");
       if (error) throw error;
       return data as any[];
     },
@@ -48,7 +48,10 @@ export default function AdminLevelManagerPage() {
 
   const worldToggleMutation = useMutation({
     mutationFn: async ({ id, locked }: { id: string; locked: boolean }) => {
-      const { error } = await supabase.from("world_locks").update({ locked, admin_override: true }).eq("id", id);
+      const { error } = await (supabase as any)
+        .from("world_locks")
+        .update({ locked, admin_override: true })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: (_, { locked }) => {
@@ -60,7 +63,7 @@ export default function AdminLevelManagerPage() {
 
   const unlockAllWorlds = async () => {
     for (const world of worldLocks) {
-      await supabase.from("world_locks").update({ locked: false, admin_override: true }).eq("id", world.id);
+      await (supabase as any).from("world_locks").update({ locked: false, admin_override: true }).eq("id", world.id);
     }
     queryClient.invalidateQueries({ queryKey: ["world-locks"] });
     toast.success("All worlds unlocked!");
@@ -77,7 +80,7 @@ export default function AdminLevelManagerPage() {
       antarctica: true,
     };
     for (const [id, locked] of Object.entries(defaults)) {
-      await supabase.from("world_locks").update({ locked, admin_override: false }).eq("id", id);
+      await (supabase as any).from("world_locks").update({ locked, admin_override: false }).eq("id", id);
     }
     queryClient.invalidateQueries({ queryKey: ["world-locks"] });
     toast.success("Worlds reset to default progression!");
