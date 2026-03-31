@@ -114,7 +114,7 @@ export const CONTINENT_COUNTRIES: Record<string, string[]> = {
 export const CONTINENT_PROJECTIONS: Record<string, { center: [number, number]; scale: number }> = {
   "north-america": { center: [-93, 37], scale: 580 },
   europe: { center: [12, 49], scale: 900 },
-  africa: { center: [20, 1], scale: 420 },
+  africa: { center: [20, 1], scale: 340 },
   asia: { center: [90, 35], scale: 300 },
   "south-america": { center: [-60, -15], scale: 400 },
   australia: { center: [134, -28], scale: 520 },
