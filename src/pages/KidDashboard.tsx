@@ -152,7 +152,12 @@ export default function KidDashboard() {
   if (!child) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-center">
+          <div className="text-muted-foreground mb-4">Loading your dashboard...</div>
+          <button className="text-sm text-primary underline" onClick={() => (window.location.href = "/kid-dashboard")}>
+            Click here if this takes too long
+          </button>
+        </div>
       </div>
     );
   }
