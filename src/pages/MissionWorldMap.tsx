@@ -563,7 +563,7 @@ export default function MissionWorldMap() {
 
   useEffect(() => {
     if (!user) navigate("/login");
-    else if (!activeChildId) navigate("/select-child");
+    else if (!activeChildId) navigate("/dashboard");
   }, [user, activeChildId, navigate]);
 
   const { data: child } = useQuery({

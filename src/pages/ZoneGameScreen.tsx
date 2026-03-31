@@ -56,7 +56,7 @@ export default function ZoneGameScreen() {
 
   useEffect(() => {
     if (!user) navigate("/login");
-    else if (!activeChildId) navigate("/select-child");
+    else if (!activeChildId) navigate("/dashboard");
     else if (!continent || !zone) navigate("/world-map");
   }, [user, activeChildId, continent, zone, navigate]);
 

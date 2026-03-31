@@ -268,7 +268,7 @@ export default function ContinentMapScreen() {
 
   useEffect(() => {
     if (!user) navigate("/login");
-    else if (!activeChildId) navigate("/select-child");
+    else if (!activeChildId) navigate("/dashboard");
     else if (!continent) navigate("/world-map");
   }, [user, activeChildId, continent, navigate]);
 
