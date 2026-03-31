@@ -118,7 +118,7 @@ export const CONTINENT_PROJECTIONS: Record<string, { center: [number, number]; s
   asia: { center: [95, 30], scale: 380 },
   "south-america": { center: [-60, -25], scale: 400 },
   australia: { center: [134, -28], scale: 520 },
-  antarctica: { center: [0, -85], scale: 280 },
+  antarctica: { center: [0, -75], scale: 180 },
 };
 
 /** Zone coordinates per continent — matches continents.ts zone ids */
@@ -179,10 +179,10 @@ export const ZONE_COORDINATES: Record<string, { id: string; lat: number; lng: nu
     { id: "boss-malware", lat: -25.0, lng: 118.0 },
   ],
   antarctica: [
-    { id: "crypto-cavern", lat: -80.0, lng: -45.0 },
-    { id: "algorithm-abyss", lat: -82.0, lng: 0.0 },
-    { id: "code-citadel", lat: -84.0, lng: 45.0 },
+    { id: "crypto-cavern", lat: -72.0, lng: -60.0 },
+    { id: "algorithm-abyss", lat: -75.0, lng: 0.0 },
+    { id: "code-citadel", lat: -72.0, lng: 60.0 },
     { id: "ice-intelligence", lat: -77.8, lng: 166.7 },
-    { id: "boss-shadowbyte", lat: -89.0, lng: 0.0 },
+    { id: "boss-shadowbyte", lat: -82.0, lng: 0.0 },
   ],
 };
