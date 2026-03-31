@@ -239,18 +239,70 @@ export default function MyKidsPage() {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("No user");
-      const { error } = await supabase.from("child_profiles").insert({
+
+      // Save parent session BEFORE creating kid account
+      const { data: parentSession } = await supabase.auth.getSession();
+      const parentAccessToken = parentSession.session?.access_token;
+      const parentRefreshToken = parentSession.session?.refresh_token;
+
+      const u = form.username.trim().toLowerCase();
+      if (!u) throw new Error("Username is required");
+      if (!form.password || form.password.length < 8) throw new Error("Password must be at least 8 characters");
+      const fakeEmail = `${u}@cyberhero.app`;
+
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: fakeEmail,
+        password: form.password,
+        options: { data: { name: form.name.trim(), role: "kid" } },
+      });
+      if (signUpError) {
+        if (signUpError.message.includes("already registered")) throw new Error("That username is already taken");
+        throw signUpError;
+      }
+      const kidId = signUpData.user?.id;
+      if (!kidId) throw new Error("Failed to create account");
+
+      await supabase.from("profiles").upsert({
+        id: kidId,
+        user_id: kidId,
+        role: "kid",
+        account_type: "kid",
+        display_name: form.name.trim(),
+        email: fakeEmail,
+      });
+
+      await supabase.from("child_profiles").insert({
+        id: kidId,
         parent_id: user.id,
         name: form.name.trim(),
         age: form.age ? parseInt(form.age) : 7,
+        learning_mode: "standard",
+        avatar: "🦸",
+        level: 1,
+        points: 0,
+        streak: 0,
       });
-      if (error) throw error;
+
+      await supabase.from("parent_kid_links").insert({
+        parent_id: user.id,
+        kid_id: kidId,
+      });
+
+      // Restore parent session using saved tokens
+      if (parentAccessToken && parentRefreshToken) {
+        await supabase.auth.setSession({
+          access_token: parentAccessToken,
+          refresh_token: parentRefreshToken,
+        });
+      }
+
+      return { username: u, name: form.name.trim() };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["children"] });
       setDrawerOpen(false);
       setForm(emptyForm);
-      toast.success(`${terms.kidSingular} added!`);
+      toast.success(`${result.name} added! They can log in with username: ${result.username}`);
     },
     onError: (e: any) => toast.error(e.message),
   });
