@@ -31,7 +31,7 @@ export default function LoginPage() {
         navigate("/dashboard", { replace: true });
         break;
       case "kid":
-        navigate("/kid-dashboard", { replace: true });
+        navigate("/dashboard", { replace: true });
         break;
       default:
         navigate("/kid-dashboard", { replace: true });
