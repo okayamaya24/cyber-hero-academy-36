@@ -11,7 +11,6 @@ import VillainSprite from "@/components/world/VillainSprite";
 import StarfieldBackground from "@/components/world/StarfieldBackground";
 import { Progress } from "@/components/ui/progress";
 
-/* ─── HUD Bar ────────────────────────────────────────────── */
 function HUDBar({
   playerName,
   level,
@@ -57,7 +56,6 @@ function HUDBar({
   );
 }
 
-/* ─── Continent Card ─────────────────────────────────────── */
 function ContinentCard({
   continent,
   status,
@@ -90,7 +88,6 @@ function ContinentCard({
               : "border-[hsl(195_80%_50%/0.3)] bg-[hsl(210_40%_14%/0.65)] hover:shadow-[0_0_30px_hsl(195_80%_50%/0.2)] hover:border-[hsl(195_80%_50%/0.55)] cursor-pointer"
       }`}
     >
-      {/* Glow effect on hover for active cards */}
       {!isLocked && (
         <div
           className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none ${
@@ -101,7 +98,6 @@ function ContinentCard({
         />
       )}
 
-      {/* Antarctica ice overlay */}
       {isAntarctica && isLocked && (
         <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-b from-[hsl(200_60%_90%/0.05)] to-transparent" />
@@ -115,30 +111,17 @@ function ContinentCard({
         </div>
       )}
 
-      {/* Top section — emoji + name */}
       <div className="flex flex-col items-center gap-1.5 w-full">
         <motion.span
           className="text-4xl leading-none"
-          animate={
-            !isLocked
-              ? {
-                  y: [0, -3, 0],
-                }
-              : {}
-          }
-          transition={{
-            repeat: Infinity,
-            duration: 3,
-            ease: "easeInOut",
-            delay: Math.random() * 2,
-          }}
+          animate={!isLocked ? { y: [0, -3, 0] } : {}}
+          transition={{ repeat: Infinity, duration: 3, ease: "easeInOut", delay: Math.random() * 2 }}
         >
           {continent.emoji}
         </motion.span>
         <h3 className="text-sm font-bold text-white text-center leading-tight">{continent.name}</h3>
       </div>
 
-      {/* Villain row */}
       <div className="flex items-center justify-center gap-1.5 w-full">
         <VillainSprite villainName={continent.villain} size={28} />
         <div className="flex flex-col">
@@ -149,23 +132,18 @@ function ContinentCard({
         </div>
       </div>
 
-      {/* Zone count */}
       <p className="text-[9px] text-white/35 text-center">{totalZones} Zones + 1 Boss Battle</p>
 
-      {/* Progress bar — only for non-locked */}
       {!isLocked && (
         <div className="w-full space-y-0.5">
           <div className="flex justify-between text-[8px] text-white/35">
-            <span>
-              {zonesCompleted}/{totalZones} zones
-            </span>
+            <span>{zonesCompleted}/{totalZones} zones</span>
             <span>{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-1.5 bg-white/10" />
         </div>
       )}
 
-      {/* Status badge */}
       <span
         className={`rounded-full px-2.5 py-0.5 text-[8px] font-bold border w-full text-center ${
           status === "completed"
@@ -187,7 +165,6 @@ function ContinentCard({
   );
 }
 
-/* ─── Main World Select Screen ───────────────────────────── */
 export default function WorldSelectScreen() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
@@ -202,7 +179,11 @@ export default function WorldSelectScreen() {
   const { data: child } = useQuery({
     queryKey: ["child", activeChildId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("child_profiles").select("*").eq("id", activeChildId!).single();
+      const { data, error } = await supabase
+        .from("child_profiles")
+        .select("*")
+        .eq("id", activeChildId!)
+        .single();
       if (error) throw error;
       return data;
     },
@@ -212,11 +193,23 @@ export default function WorldSelectScreen() {
   const { data: continentProgress = [] } = useQuery({
     queryKey: ["continent_progress", activeChildId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("continent_progress").select("*").eq("child_id", activeChildId!);
+      const { data, error } = await supabase
+        .from("continent_progress")
+        .select("*")
+        .eq("child_id", activeChildId!);
       if (error) throw error;
       return data;
     },
     enabled: !!activeChildId,
+  });
+
+  const { data: worldLocks = [] } = useQuery({
+    queryKey: ["world-locks"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("world_locks").select("*");
+      if (error) throw error;
+      return data as any[];
+    },
   });
 
   const level = child?.level ?? 1;
@@ -225,16 +218,30 @@ export default function WorldSelectScreen() {
   const playerName = child?.name ?? "Guardian";
 
   const continentStatuses = useMemo(() => {
-    const map: Record<
+    const map: Record
       string,
-      {
-        status: "locked" | "in_progress" | "completed";
-        zonesCompleted: number;
-        bossDefeated: boolean;
-      }
+      { status: "locked" | "in_progress" | "completed"; zonesCompleted: number; bossDefeated: boolean }
     > = {};
+
     for (const c of CONTINENTS) {
       const progress = continentProgress.find((p: any) => p.continent_id === c.id);
+      const adminLock = worldLocks.find((w: any) => w.id === c.id);
+
+      // Admin override takes priority
+      if (adminLock?.admin_override) {
+        map[c.id] = {
+          status: adminLock.locked
+            ? "locked"
+            : progress?.status === "completed"
+              ? "completed"
+              : "in_progress",
+          zonesCompleted: progress?.zones_completed ?? 0,
+          bossDefeated: progress?.boss_defeated ?? false,
+        };
+        continue;
+      }
+
+      // Normal progression logic
       if (c.unlockOrder === 0) {
         map[c.id] = {
           status: progress?.status === "completed" ? "completed" : "in_progress",
@@ -242,27 +249,35 @@ export default function WorldSelectScreen() {
           bossDefeated: progress?.boss_defeated ?? false,
         };
       } else if (c.unlockOrder === 6) {
-        const allBossesDefeated = CONTINENTS.filter((cc) => cc.unlockOrder >= 0 && cc.unlockOrder < 6).every(
+        const allBossesDefeated = CONTINENTS.filter(
+          (cc) => cc.unlockOrder >= 0 && cc.unlockOrder < 6
+        ).every(
           (cc) => continentProgress.find((pr: any) => pr.continent_id === cc.id)?.boss_defeated === true,
         );
         map[c.id] = {
-          status: allBossesDefeated ? (progress?.status === "completed" ? "completed" : "in_progress") : "locked",
+          status: allBossesDefeated
+            ? progress?.status === "completed" ? "completed" : "in_progress"
+            : "locked",
           zonesCompleted: progress?.zones_completed ?? 0,
           bossDefeated: progress?.boss_defeated ?? false,
         };
       } else {
         const prev = CONTINENTS.find((cc) => cc.unlockOrder === c.unlockOrder - 1);
-        const prevProgress = prev ? continentProgress.find((p: any) => p.continent_id === prev.id) : null;
+        const prevProgress = prev
+          ? continentProgress.find((p: any) => p.continent_id === prev.id)
+          : null;
         const unlocked = prevProgress?.boss_defeated === true;
         map[c.id] = {
-          status: unlocked ? (progress?.status === "completed" ? "completed" : "in_progress") : "locked",
+          status: unlocked
+            ? progress?.status === "completed" ? "completed" : "in_progress"
+            : "locked",
           zonesCompleted: progress?.zones_completed ?? 0,
           bossDefeated: progress?.boss_defeated ?? false,
         };
       }
     }
     return map;
-  }, [continentProgress]);
+  }, [continentProgress, worldLocks]);
 
   const worldsCompleted = Object.values(continentStatuses).filter((s) => s.status === "completed").length;
 
@@ -290,16 +305,13 @@ export default function WorldSelectScreen() {
     setGuideMessage(IDLE_MSGS[next]);
   }, [idleIdx]);
 
-  // Split into rows: 4 top, 3 bottom
   const topRow = CONTINENTS.slice(0, 4);
   const bottomRow = CONTINENTS.slice(4, 7);
 
   return (
     <div className="h-screen relative overflow-hidden flex flex-col" style={{ background: "#050a14" }}>
-      {/* Starfield */}
       <StarfieldBackground />
 
-      {/* Scanline overlay */}
       <div
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
@@ -308,18 +320,14 @@ export default function WorldSelectScreen() {
         }}
       />
 
-      {/* Ambient glow blobs */}
       <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
         <div className="absolute top-[-10%] left-[20%] w-[40%] h-[35%] bg-[hsl(195_80%_50%/0.04)] rounded-full blur-[80px]" />
         <div className="absolute bottom-[-5%] right-[10%] w-[30%] h-[30%] bg-[hsl(270_70%_50%/0.04)] rounded-full blur-[80px]" />
       </div>
 
-      {/* Main content */}
       <div className="relative z-[2] flex flex-col h-full max-w-6xl mx-auto w-full px-5 pt-3 pb-4">
-        {/* HUD */}
         <HUDBar playerName={playerName} level={level} points={points} worldsCompleted={worldsCompleted} />
 
-        {/* Page title — compact */}
         <div className="mt-3 mb-4">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -342,9 +350,7 @@ export default function WorldSelectScreen() {
           </motion.p>
         </div>
 
-        {/* ── Continent Grid ── */}
         <div className="flex flex-col items-center gap-4 flex-1">
-          {/* Top row — 4 cards, fixed width so bottom row can match */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -375,15 +381,12 @@ export default function WorldSelectScreen() {
             })}
           </motion.div>
 
-          {/* Bottom row — 3 cards perfectly centered under top 4 */}
-          {/* Use same total width as top row, split into 4 cols, center 3 cards */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55 }}
             className="w-full flex justify-center"
           >
-            {/* Inner container matches top grid width, centers 3 cards with half-card offset */}
             <div
               style={{
                 display: "grid",
@@ -392,7 +395,6 @@ export default function WorldSelectScreen() {
                 width: "100%",
               }}
             >
-              {/* Half-width invisible spacer — shifts 3 cards to center */}
               <div style={{ gridColumn: "1 / 2", visibility: "hidden" }} />
               {bottomRow.map((continent, i) => {
                 const s = continentStatuses[continent.id] || {
@@ -421,7 +423,6 @@ export default function WorldSelectScreen() {
           </motion.div>
         </div>
 
-        {/* Certificate progress bar — bottom of page */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -436,14 +437,12 @@ export default function WorldSelectScreen() {
         </motion.div>
       </div>
 
-      {/* ── Guide Character — bottom right ── */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.85 }}
         className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2"
       >
-        {/* Speech bubble */}
         <AnimatePresence mode="wait">
           <motion.div
             key={guideMessage}
@@ -454,12 +453,10 @@ export default function WorldSelectScreen() {
             className="relative max-w-[200px] rounded-2xl rounded-br-sm border border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_12%/0.95)] px-3 py-2 shadow-xl backdrop-blur-md"
           >
             <p className="text-[11px] font-medium text-white leading-snug">{guideMessage}</p>
-            {/* Bubble tail */}
             <div className="absolute -bottom-1.5 right-4 w-3 h-3 bg-[hsl(210_40%_12%/0.95)] border-r border-b border-[hsl(195_80%_50%/0.25)] rotate-45" />
           </motion.div>
         </AnimatePresence>
 
-        {/* Avatar button */}
         <motion.button
           onClick={cycleIdle}
           whileHover={{ scale: 1.1 }}
@@ -467,7 +464,6 @@ export default function WorldSelectScreen() {
           className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-[hsl(195_80%_50%/0.5)] bg-[hsl(210_40%_14%/0.95)] shadow-[0_0_20px_hsl(195_85%_50%/0.35)]"
         >
           <HeroAvatar avatarConfig={avatarConfig} size={36} fallbackEmoji="🦸" />
-          {/* Message icon badge */}
           <motion.div
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ repeat: Infinity, duration: 2.5 }}
