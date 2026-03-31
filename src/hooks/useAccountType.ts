@@ -6,7 +6,7 @@ const familyTerms = {
   kidSingular: "Kid",
   kidPlural: "Kids",
   addKid: "Add a Kid",
-  addKidShort: "+ Add Kid",
+  addKidShort: "Add Kid",
   familyLabel: "Family",
   classLabel: "Family",
 };
@@ -17,7 +17,7 @@ const schoolTerms = {
   kidSingular: "Student",
   kidPlural: "Students",
   addKid: "Add a Student",
-  addKidShort: "+ Add Student",
+  addKidShort: "Add Student",
   familyLabel: "Classroom",
   classLabel: "Classroom",
 };
