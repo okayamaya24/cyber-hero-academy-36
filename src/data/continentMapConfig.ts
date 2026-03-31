@@ -114,7 +114,7 @@ export const CONTINENT_COUNTRIES: Record<string, string[]> = {
 export const CONTINENT_PROJECTIONS: Record<string, { center: [number, number]; scale: number }> = {
   "north-america": { center: [-93, 37], scale: 580 },
   europe: { center: [12, 49], scale: 900 },
-  africa: { center: [22, 2], scale: 360 },
+  africa: { center: [20, 5], scale: 420 },
   asia: { center: [90, 35], scale: 300 },
   "south-america": { center: [-60, -15], scale: 400 },
   australia: { center: [134, -28], scale: 520 },
@@ -144,13 +144,13 @@ export const ZONE_COORDINATES: Record<string, { id: string; lat: number; lng: nu
     { id: "boss-phisher", lat: 41.9, lng: 12.5 }, // Rome, Italy — south center
   ],
   africa: [
-    { id: "stranger-shore", lat: 6.5, lng: 3.4 },
-    { id: "dark-web-den", lat: 30.0, lng: 31.2 },
-    { id: "kindness-citadel", lat: -1.3, lng: 36.8 },
-    { id: "signal-savanna", lat: 5.6, lng: -0.2 },
-    { id: "code-cape", lat: -33.9, lng: 18.4 },
-    { id: "data-delta", lat: 9.0, lng: 38.7 },
-    { id: "boss-troll", lat: 23.0, lng: 12.0 },
+    { id: "stranger-shore", lat: 6.5, lng: 3.4 }, // Lagos, Nigeria - west
+    { id: "signal-savanna", lat: 14.0, lng: -1.5 }, // Mali - northwest
+    { id: "dark-web-den", lat: 30.0, lng: 31.2 }, // Cairo, Egypt - north
+    { id: "data-delta", lat: 9.0, lng: 38.7 }, // Addis Ababa - east
+    { id: "kindness-citadel", lat: -1.3, lng: 36.8 }, // Nairobi - east center
+    { id: "code-cape", lat: -33.9, lng: 18.4 }, // Cape Town - south
+    { id: "boss-troll", lat: 15.0, lng: 20.0 }, // Chad - center
   ],
   asia: [
     { id: "privacy-palace", lat: 25.2, lng: 55.3 },
