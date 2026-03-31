@@ -7,6 +7,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import MaintenanceGate from "@/components/MaintenanceGate";
 import { Navbar } from "@/components/Navbar";
 import ProtectedAdminRoute from "@/components/ProtectedAdminRoute";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 // Existing Cyber Hero pages
 import HomePage from "./pages/HomePage";
@@ -46,6 +49,41 @@ import ChangePasswordPage from "./pages/portal/ChangePasswordPage";
 
 const queryClient = new QueryClient();
 
+// Routes kids to game, parents/teachers to portal
+function DashboardRouter() {
+  const { user, activeChildId } = useAuth();
+  const [role, setRole] = useState<string | null>(null);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setRole(data?.role ?? null);
+        setChecking(false);
+      });
+  }, [user]);
+
+  if (checking)
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  if (role === "kid")
+    return (
+      <>
+        <Navbar />
+        <KidDashboard />
+      </>
+    );
+  return <MyKidsPage />;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -56,39 +94,223 @@ const App = () => (
           <MaintenanceGate>
             <Routes>
               {/* Public pages with Navbar */}
-              <Route path="/" element={<><Navbar /><HomePage /></>} />
-              <Route path="/signup" element={<><Navbar /><SignupPage /></>} />
-              <Route path="/login" element={<><Navbar /><LoginPage /></>} />
-              <Route path="/for-parents" element={<><Navbar /><ForParentsPage /></>} />
+              <Route
+                path="/"
+                element={
+                  <>
+                    <Navbar />
+                    <HomePage />
+                  </>
+                }
+              />
+              <Route
+                path="/signup"
+                element={
+                  <>
+                    <Navbar />
+                    <SignupPage />
+                  </>
+                }
+              />
+              <Route
+                path="/login"
+                element={
+                  <>
+                    <Navbar />
+                    <LoginPage />
+                  </>
+                }
+              />
+              <Route
+                path="/for-parents"
+                element={
+                  <>
+                    <Navbar />
+                    <ForParentsPage />
+                  </>
+                }
+              />
 
               {/* Existing Cyber Hero routes (with Navbar) */}
-              <Route path="/select-child" element={<><Navbar /><ChildSelectPage /></>} />
-              <Route path="/create-child" element={<><Navbar /><CreateChildPage /></>} />
-              <Route path="/kid-dashboard" element={<><Navbar /><KidDashboard /></>} />
-              <Route path="/missions" element={<><Navbar /><MissionsPage /></>} />
-              <Route path="/world-map" element={<><Navbar /><WorldSelectScreen /></>} />
-              <Route path="/world-map/:continentId" element={<><Navbar /><ContinentMapScreen /></>} />
-              <Route path="/world-map/:continentId/:zoneId" element={<><Navbar /><ZoneGameScreen /></>} />
-              <Route path="/edit-avatar" element={<><Navbar /><EditAvatarPage /></>} />
-              <Route path="/parent-dashboard" element={<><Navbar /><ProtectedParentRoute><ParentDashboard /></ProtectedParentRoute></>} />
-              <Route path="/certificate" element={<><Navbar /><CertificatePage /></>} />
+              <Route
+                path="/select-child"
+                element={
+                  <>
+                    <Navbar />
+                    <ChildSelectPage />
+                  </>
+                }
+              />
+              <Route
+                path="/create-child"
+                element={
+                  <>
+                    <Navbar />
+                    <CreateChildPage />
+                  </>
+                }
+              />
+              <Route
+                path="/kid-dashboard"
+                element={
+                  <>
+                    <Navbar />
+                    <KidDashboard />
+                  </>
+                }
+              />
+              <Route
+                path="/missions"
+                element={
+                  <>
+                    <Navbar />
+                    <MissionsPage />
+                  </>
+                }
+              />
+              <Route
+                path="/world-map"
+                element={
+                  <>
+                    <Navbar />
+                    <WorldSelectScreen />
+                  </>
+                }
+              />
+              <Route
+                path="/world-map/:continentId"
+                element={
+                  <>
+                    <Navbar />
+                    <ContinentMapScreen />
+                  </>
+                }
+              />
+              <Route
+                path="/world-map/:continentId/:zoneId"
+                element={
+                  <>
+                    <Navbar />
+                    <ZoneGameScreen />
+                  </>
+                }
+              />
+              <Route
+                path="/edit-avatar"
+                element={
+                  <>
+                    <Navbar />
+                    <EditAvatarPage />
+                  </>
+                }
+              />
+              <Route
+                path="/parent-dashboard"
+                element={
+                  <>
+                    <Navbar />
+                    <ProtectedParentRoute>
+                      <ParentDashboard />
+                    </ProtectedParentRoute>
+                  </>
+                }
+              />
+              <Route
+                path="/certificate"
+                element={
+                  <>
+                    <Navbar />
+                    <CertificatePage />
+                  </>
+                }
+              />
 
               {/* Admin Portal (no Navbar - has own sidebar) */}
               {/* Creator account must be manually inserted into Supabase with role = 'creator'. No public signup flow for this role. */}
               <Route path="/admin-portal" element={<Navigate to="/admin-portal/games" replace />} />
-              <Route path="/admin-portal/games" element={<ProtectedAdminRoute><AdminGamesPage /></ProtectedAdminRoute>} />
-              <Route path="/admin-portal/events" element={<ProtectedAdminRoute><AdminEventsPage /></ProtectedAdminRoute>} />
-              <Route path="/admin-portal/badges" element={<ProtectedAdminRoute><AdminBadgesPage /></ProtectedAdminRoute>} />
-              <Route path="/admin-portal/categories" element={<ProtectedAdminRoute><AdminCategoriesPage /></ProtectedAdminRoute>} />
-              <Route path="/admin-portal/levels" element={<ProtectedAdminRoute><AdminLevelManagerPage /></ProtectedAdminRoute>} />
-              <Route path="/admin-portal/announcements" element={<ProtectedAdminRoute><AdminAnnouncementsPage /></ProtectedAdminRoute>} />
-              <Route path="/admin-portal/emails" element={<ProtectedAdminRoute><AdminEmailCenterPage /></ProtectedAdminRoute>} />
-              <Route path="/admin-portal/users" element={<ProtectedAdminRoute><AdminUsersPage /></ProtectedAdminRoute>} />
-              <Route path="/admin-portal/analytics" element={<ProtectedAdminRoute><AdminAnalyticsPage /></ProtectedAdminRoute>} />
-              <Route path="/admin-portal/settings" element={<ProtectedAdminRoute><AdminSettingsPage /></ProtectedAdminRoute>} />
+              <Route
+                path="/admin-portal/games"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminGamesPage />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin-portal/events"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminEventsPage />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin-portal/badges"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminBadgesPage />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin-portal/categories"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminCategoriesPage />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin-portal/levels"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminLevelManagerPage />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin-portal/announcements"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminAnnouncementsPage />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin-portal/emails"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminEmailCenterPage />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin-portal/users"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminUsersPage />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin-portal/analytics"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminAnalyticsPage />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin-portal/settings"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminSettingsPage />
+                  </ProtectedAdminRoute>
+                }
+              />
 
               {/* Dashboard Portal (no Navbar - has own sidebar) — family & school roles */}
-              <Route path="/dashboard" element={<MyKidsPage />} />
+              <Route path="/dashboard" element={<DashboardRouter />} />
               <Route path="/dashboard/kids/:id" element={<KidProfilePage />} />
               <Route path="/dashboard/account" element={<AccountPage />} />
               <Route path="/dashboard/password" element={<ChangePasswordPage />} />
