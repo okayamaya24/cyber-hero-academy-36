@@ -21,7 +21,6 @@ import dataThiefImg from "@/assets/villains/data-thief.png";
 
 /* ═══════════════════════════════════════════════════════════
    NORTH AMERICA UNLOCK ORDER
-   HQ must be completed first, then sequential zone unlock.
    ═══════════════════════════════════════════════════════════ */
 const NA_UNLOCK_ORDER = [
   "hq",
@@ -47,16 +46,13 @@ function getZoneStatus(
 
   if (continentId === "north-america") {
     const idx = NA_UNLOCK_ORDER.indexOf(zone.id);
-    // HQ is always the first available
     if (idx === 0) return "available";
     if (idx < 0) return "locked";
-    // Each zone requires the previous one completed
     const prevId = NA_UNLOCK_ORDER[idx - 1];
     const prevDone = zoneProgress.find((p) => p.zone_id === prevId && p.status === "completed");
     return prevDone ? "available" : "locked";
   }
 
-  // Other continents: boss requires all non-boss completed, else sequential
   if (zone.isBoss) {
     const nonBoss = allZones.filter((z) => !z.isBoss);
     const allDone = nonBoss.every((z) => zoneProgress.find((p) => p.zone_id === z.id && p.status === "completed"));
@@ -70,15 +66,13 @@ function getZoneStatus(
 }
 
 /* ═══════════════════════════════════════════════════════════
-   STORY SYSTEM
+   STORY SYSTEM — cutscenes + completion only (no ambient)
    ═══════════════════════════════════════════════════════════ */
 type SpeakerRole = "guide" | "villain";
-
 interface DialogueLine {
   speaker: SpeakerRole;
-  name?: string; // villain name or player name override
+  name?: string;
   text: string;
-  emotion?: "neutral" | "happy" | "serious" | "warning" | "excited";
 }
 
 interface ZoneStoryScript {
@@ -89,56 +83,29 @@ interface ZoneStoryScript {
   villainName: string;
 }
 
-/* ── Per-zone story scripts for North America ─────────── */
 const NA_ZONE_SCRIPTS: Record<string, ZoneStoryScript> = {
   __map__: {
     xp: 0,
     villainName: "The Keybreaker",
     intro: [
       { speaker: "villain", text: "Heh heh heh… No password can stop me! I've cracked them ALL, Guardian!" },
-      {
-        speaker: "guide",
-        emotion: "serious",
-        text: "Guardian — the Keybreaker has broken into systems across North America. People are locked out of their own accounts.",
-      },
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "Start at HQ and begin your training. The Digital World is counting on you!",
-      },
+      { speaker: "guide", text: "Guardian — the Keybreaker has broken into systems across North America." },
+      { speaker: "guide", text: "Start at HQ and begin your training. The Digital World is counting on you!" },
     ],
     completion: [],
   },
   hq: {
     xp: 100,
+    badge: "CyberGuardian Recruit",
     villainName: "The Keybreaker",
     intro: [
-      {
-        speaker: "guide",
-        emotion: "happy",
-        text: "Welcome to Cyber Hero Command! This is where every Guardian's journey begins.",
-      },
-      {
-        speaker: "guide",
-        emotion: "serious",
-        text: "Complete your orientation to unlock your first mission. Knowledge is your most powerful weapon!",
-      },
-      {
-        speaker: "villain",
-        text: "A training room? How adorable. While you study, I'll crack every account in the city…",
-      },
+      { speaker: "guide", text: "Welcome to Cyber Hero Command! This is where every Guardian's journey begins." },
+      { speaker: "villain", text: "A training room? While you study, I'll crack every account in the city…" },
+      { speaker: "guide", text: "Ignore him. Complete your orientation to unlock your first mission!" },
     ],
     completion: [
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "Orientation complete — you're officially a CyberGuardian recruit!",
-      },
-      {
-        speaker: "guide",
-        emotion: "happy",
-        text: "Pixel Port in Los Angeles is now open. The Keybreaker has been causing chaos there. Time to deploy!",
-      },
+      { speaker: "guide", text: "Orientation complete — you're officially a CyberGuardian recruit!" },
+      { speaker: "guide", text: "Pixel Port in Los Angeles is now unlocked. Time to deploy!" },
       { speaker: "villain", text: "One city. There are thousands more. Enjoy this tiny victory…" },
     ],
   },
@@ -147,33 +114,12 @@ const NA_ZONE_SCRIPTS: Record<string, ZoneStoryScript> = {
     badge: "Digital Balance Badge",
     villainName: "The Keybreaker",
     intro: [
-      {
-        speaker: "villain",
-        text: "Pixel Port — my favourite hunting ground. Kids here have no idea how to stay safe online!",
-      },
-      {
-        speaker: "guide",
-        emotion: "warning",
-        text: "The Keybreaker's been exploiting bad screen habits. Kids are spending too much time online without knowing the risks.",
-      },
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "Teach them about digital balance and online safety. A healthy Guardian is a powerful Guardian!",
-      },
+      { speaker: "villain", text: "Pixel Port — my favourite hunting ground. These kids have no idea!" },
+      { speaker: "guide", text: "Teach them about digital balance and online safety." },
     ],
     completion: [
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "Pixel Port is secure! The kids here now know how to balance their digital lives.",
-      },
-      {
-        speaker: "guide",
-        emotion: "happy",
-        text: "Digital Balance Badge earned! Signal Summit in Denver is now unlocked.",
-      },
-      { speaker: "villain", text: "Hmph. One port. I have the whole coastline!" },
+      { speaker: "guide", text: "Pixel Port is secure! The kids here know how to balance their digital lives." },
+      { speaker: "guide", text: "Digital Balance Badge earned! Signal Summit in Denver is now unlocked." },
     ],
   },
   "signal-summit": {
@@ -181,26 +127,12 @@ const NA_ZONE_SCRIPTS: Record<string, ZoneStoryScript> = {
     badge: "WiFi Watchdog Badge",
     villainName: "The Keybreaker",
     intro: [
-      { speaker: "villain", text: "All your WiFi passwords are mine! Every café, every hotel — I own their networks!" },
-      {
-        speaker: "guide",
-        emotion: "warning",
-        text: "The Keybreaker is running Man-in-the-Middle attacks across Denver's networks. He's intercepting private messages.",
-      },
-      {
-        speaker: "guide",
-        emotion: "serious",
-        text: "Learn to spot safe versus fake networks. Secure the relay stations before it's too late!",
-      },
+      { speaker: "villain", text: "All your WiFi passwords are mine! I own every network!" },
+      { speaker: "guide", text: "Learn to spot safe versus fake networks. Secure the relay stations!" },
     ],
     completion: [
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "Signal Summit is clean! The Keybreaker's fake hotspots are destroyed.",
-      },
-      { speaker: "guide", emotion: "happy", text: "WiFi Watchdog Badge earned! Code Canyon in Chicago is now open." },
-      { speaker: "villain", text: "You cleared one relay tower. I have hundreds. This changes nothing!" },
+      { speaker: "guide", text: "Signal Summit is clean! The Keybreaker's fake hotspots are destroyed." },
+      { speaker: "guide", text: "WiFi Watchdog Badge earned! Code Canyon in Chicago is now open." },
     ],
   },
   "code-canyon": {
@@ -208,30 +140,12 @@ const NA_ZONE_SCRIPTS: Record<string, ZoneStoryScript> = {
     badge: "Scam Spotter Badge",
     villainName: "The Keybreaker",
     intro: [
-      { speaker: "villain", text: "Act NOW or your account will be DELETED! Heh heh — panic makes people careless…" },
-      {
-        speaker: "guide",
-        emotion: "warning",
-        text: "Chicago's digital canyons are full of scam traps. The Keybreaker is using social engineering to steal information.",
-      },
-      {
-        speaker: "guide",
-        emotion: "serious",
-        text: "Slow down, think carefully, spot the scam. That's your mission here.",
-      },
+      { speaker: "villain", text: "Act NOW or your account will be DELETED! Panic makes people careless…" },
+      { speaker: "guide", text: "Slow down, think carefully, spot the scam. That's your mission here." },
     ],
     completion: [
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "Code Canyon secured! Chicago's residents can now spot a scam from a mile away.",
-      },
-      {
-        speaker: "guide",
-        emotion: "happy",
-        text: "Scam Spotter Badge earned! Encrypt Enclave in Toronto is now unlocked.",
-      },
-      { speaker: "villain", text: "You think you've won? I invented social engineering!" },
+      { speaker: "guide", text: "Code Canyon secured! Chicago's residents can now spot a scam anywhere." },
+      { speaker: "guide", text: "Scam Spotter Badge earned! Encrypt Enclave in Toronto is now unlocked." },
     ],
   },
   "encrypt-enclave": {
@@ -243,28 +157,11 @@ const NA_ZONE_SCRIPTS: Record<string, ZoneStoryScript> = {
         speaker: "villain",
         text: "Your encryption is useless! I've cracked stronger codes than anything you can build!",
       },
-      {
-        speaker: "guide",
-        emotion: "serious",
-        text: "Toronto's encryption systems are under attack. The Keybreaker wants to expose every private message on the network.",
-      },
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "He's bluffing. Master encryption and prove that strong codes are truly unbreakable!",
-      },
+      { speaker: "guide", text: "Master encryption and prove that strong codes are truly unbreakable!" },
     ],
     completion: [
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "Encrypt Enclave is secure! The Keybreaker's decryption bots are destroyed.",
-      },
-      {
-        speaker: "guide",
-        emotion: "happy",
-        text: "Code Breaker Badge earned! Password Peak in New York is now unlocked.",
-      },
+      { speaker: "guide", text: "Encrypt Enclave is secure! The decryption bots are destroyed." },
+      { speaker: "guide", text: "Code Breaker Badge earned! Password Peak in New York is now unlocked." },
     ],
   },
   "password-peak": {
@@ -272,33 +169,13 @@ const NA_ZONE_SCRIPTS: Record<string, ZoneStoryScript> = {
     badge: "Password Master Badge",
     villainName: "The Keybreaker",
     intro: [
-      {
-        speaker: "villain",
-        text: "password123… fluffy… mybirthday… Your passwords are embarrassingly easy. I crack them before breakfast!",
-      },
-      {
-        speaker: "guide",
-        emotion: "warning",
-        text: "Password Peak is the Keybreaker's favourite playground. He steals thousands of weak passwords every hour.",
-      },
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "Every strong password you create is a lock he can't pick. Let's build an unbreakable fortress!",
-      },
+      { speaker: "villain", text: "password123… fluffy… mybirthday… Your passwords are embarrassingly easy!" },
+      { speaker: "guide", text: "Every strong password you create is a lock he can't pick. Build the fortress!" },
     ],
     completion: [
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "Password Peak is ours! The Keybreaker's stolen credential database is destroyed.",
-      },
-      { speaker: "villain", text: "My… my passwords… YEARS of work! You'll pay for this, Guardian!" },
-      {
-        speaker: "guide",
-        emotion: "happy",
-        text: "Password Master Badge earned! Arctic Archive in Vancouver is now unlocked.",
-      },
+      { speaker: "guide", text: "Password Peak is ours! The Keybreaker's credential database is destroyed." },
+      { speaker: "villain", text: "My passwords… YEARS of work! You'll pay for this, Guardian!" },
+      { speaker: "guide", text: "Password Master Badge earned! Arctic Archive is now unlocked." },
     ],
   },
   "arctic-archive": {
@@ -306,29 +183,12 @@ const NA_ZONE_SCRIPTS: Record<string, ZoneStoryScript> = {
     badge: "Data Guardian Badge",
     villainName: "The Keybreaker",
     intro: [
-      { speaker: "villain", text: "Cold storage won't save your secrets forever, Guardian. My bots never get cold…" },
-      {
-        speaker: "guide",
-        emotion: "warning",
-        text: "The Arctic Archive holds the world's most important backups. The Keybreaker's bots are thawing the security systems.",
-      },
-      {
-        speaker: "guide",
-        emotion: "serious",
-        text: "Learn the 3-2-1 backup rule and protect the Archive before everything is lost!",
-      },
+      { speaker: "villain", text: "Cold storage won't save your secrets forever. My bots never get cold…" },
+      { speaker: "guide", text: "Learn the 3-2-1 backup rule and protect the Archive!" },
     ],
     completion: [
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "Arctic Archive is safe! Every backup is secured — the Keybreaker's bots are shut down.",
-      },
-      {
-        speaker: "guide",
-        emotion: "happy",
-        text: "Data Guardian Badge earned! Shadow Station in Mexico City is now open.",
-      },
+      { speaker: "guide", text: "Arctic Archive is safe! Every backup is secured." },
+      { speaker: "guide", text: "Data Guardian Badge earned! Shadow Station in Mexico City is now open." },
     ],
   },
   "shadow-station": {
@@ -336,29 +196,12 @@ const NA_ZONE_SCRIPTS: Record<string, ZoneStoryScript> = {
     badge: "Game Guardian Badge",
     villainName: "The Keybreaker",
     intro: [
-      { speaker: "villain", text: "Want free in-game items? Just give me your password… Such a simple trap." },
-      {
-        speaker: "guide",
-        emotion: "warning",
-        text: "Shadow Station is packed with fake gaming sites targeting kids. Strangers pretending to be friends, fake item offers — all traps.",
-      },
-      {
-        speaker: "guide",
-        emotion: "serious",
-        text: "Help the kids here learn who to trust in online games — and what to do when something feels wrong.",
-      },
+      { speaker: "villain", text: "Want free in-game items? Just give me your password… such a simple trap." },
+      { speaker: "guide", text: "Help kids here learn who to trust in online games!" },
     ],
     completion: [
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "Shadow Station is clear! The fake gaming networks are shut down.",
-      },
-      {
-        speaker: "guide",
-        emotion: "happy",
-        text: "Game Guardian Badge earned! Firewall Fortress in Atlanta is now unlocked.",
-      },
+      { speaker: "guide", text: "Shadow Station is clear! The fake gaming networks are shut down." },
+      { speaker: "guide", text: "Game Guardian Badge earned! Firewall Fortress in Atlanta is now unlocked." },
     ],
   },
   "firewall-fortress": {
@@ -367,28 +210,11 @@ const NA_ZONE_SCRIPTS: Record<string, ZoneStoryScript> = {
     villainName: "The Keybreaker",
     intro: [
       { speaker: "villain", text: "Your firewalls are useless against me! I phase right through them!" },
-      {
-        speaker: "guide",
-        emotion: "serious",
-        text: "Firewall Fortress is the last line of defence before the Keybreaker's Vault. We need to make it impenetrable.",
-      },
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "Build the strongest firewall you can — then we go after the Keybreaker himself!",
-      },
+      { speaker: "guide", text: "Build the strongest firewall you can — then we go after the Keybreaker himself!" },
     ],
     completion: [
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "Firewall Fortress is holding! The Keybreaker can't get through anymore.",
-      },
-      {
-        speaker: "guide",
-        emotion: "serious",
-        text: "Firewall Builder Badge earned. Guardian… there's only one zone left. The Keybreaker's Vault. Are you ready?",
-      },
+      { speaker: "guide", text: "Firewall Fortress is holding! The Keybreaker can't get through anymore." },
+      { speaker: "guide", text: "Firewall Builder Badge earned. One zone left — the Keybreaker's Vault." },
     ],
   },
   "boss-keybreaker": {
@@ -396,85 +222,21 @@ const NA_ZONE_SCRIPTS: Record<string, ZoneStoryScript> = {
     badge: "North America Champion",
     villainName: "The Keybreaker",
     intro: [
-      {
-        speaker: "guide",
-        emotion: "serious",
-        text: "Guardian… this is it. The Keybreaker's Vault — deep in the Canadian wilderness. His true stronghold.",
-      },
-      {
-        speaker: "guide",
-        emotion: "warning",
-        text: "Every skill you've learned — passwords, encryption, WiFi safety, scam spotting — you'll need all of it.",
-      },
-      {
-        speaker: "villain",
-        text: "Welcome to my domain, little Guardian. Impressive you made it this far. But no one leaves the Vault with their data intact.",
-      },
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "You've trained for this. I believe in you. Go show him what a true CyberGuardian can do!",
-      },
+      { speaker: "guide", text: "This is it, Guardian. The Keybreaker's Vault — his true stronghold." },
+      { speaker: "villain", text: "Welcome to my domain. No one leaves the Vault with their data intact." },
+      { speaker: "guide", text: "You've trained for this. Go show him what a true CyberGuardian can do!" },
     ],
     completion: [
-      { speaker: "villain", text: "I… I don't believe it. No Guardian has ever defeated me. My Vault… it's over." },
-      {
-        speaker: "guide",
-        emotion: "excited",
-        text: "GUARDIAN! You did it! North America is free! Every system is secure, every password protected!",
-      },
-      {
-        speaker: "guide",
-        emotion: "happy",
-        text: "North America Champion Badge earned — the highest honour a Guardian can receive on this continent!",
-      },
-      {
-        speaker: "guide",
-        emotion: "serious",
-        text: "But the Digital World is vast. The Phisher King stirs in Europe… Your journey is far from over.",
-      },
+      { speaker: "villain", text: "I… I don't believe it. No Guardian has ever defeated me. It's over." },
+      { speaker: "guide", text: "GUARDIAN! You did it! North America is free!" },
+      { speaker: "guide", text: "North America Champion Badge earned! The Phisher King stirs in Europe…" },
     ],
   },
 };
 
-/* ── Ambient lines ─────────────────────────────────────── */
-interface AmbientLine {
-  speaker: SpeakerRole;
-  text: string;
-  villainName?: string;
-  nearZone?: string;
-}
-const NA_AMBIENT: AmbientLine[] = [
-  { speaker: "guide", text: "Always tell a trusted adult if something online feels wrong! 🛡️" },
-  { speaker: "guide", text: "Strong passwords are your first line of defence! 🔑" },
-  { speaker: "guide", text: "The Keybreaker is getting desperate — that means we're winning! 💪" },
-  { speaker: "guide", text: "Look for the padlock icon before entering personal info online. 🔒" },
-  { speaker: "guide", text: "If it seems too good to be true, it's almost certainly a scam! 🎣" },
-  { speaker: "villain", villainName: "The Keybreaker", text: "Heh heh… I'm watching every move you make, Guardian…" },
-  {
-    speaker: "villain",
-    villainName: "The Keybreaker",
-    text: "password123? mybirthday? Thank you for making this so easy…",
-    nearZone: "password-peak",
-  },
-  {
-    speaker: "villain",
-    villainName: "The Keybreaker",
-    text: "My fake WiFi networks are everywhere. Which one will you fall for?",
-    nearZone: "signal-summit",
-  },
-  {
-    speaker: "villain",
-    villainName: "The Keybreaker",
-    text: "Cold storage won't save your secrets forever…",
-    nearZone: "arctic-archive",
-  },
-];
-
-/* ── useStoryEngine ─────────────────────────────────────── */
+/* ── Story engine (no ambient) ──────────────────────── */
 function useStoryEngine(childId: string | null, continentId: string) {
   const key = `cga_story_${continentId}_${childId ?? "guest"}`;
-
   const [seenIntros, setSeenIntros] = useState<Set<string>>(() => {
     try {
       return new Set(JSON.parse(localStorage.getItem(key) ?? "[]"));
@@ -482,7 +244,6 @@ function useStoryEngine(childId: string | null, continentId: string) {
       return new Set();
     }
   });
-
   useEffect(() => {
     localStorage.setItem(key, JSON.stringify(Array.from(seenIntros)));
   }, [seenIntros, key]);
@@ -497,45 +258,14 @@ function useStoryEngine(childId: string | null, continentId: string) {
     unlocksZoneName?: string;
     onDone: () => void;
   } | null>(null);
-  const [ambientLine, setAmbientLine] = useState<AmbientLine | null>(null);
-  const [activeZone, setActiveZone] = useState<string | null>(null);
-  const ambientTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const scheduleAmbient = useCallback(() => {
-    if (ambientTimer.current) clearTimeout(ambientTimer.current);
-    ambientTimer.current = setTimeout(
-      () => {
-        const pool = NA_AMBIENT.filter((l) => !l.nearZone || l.nearZone === activeZone);
-        const pick = pool[Math.floor(Math.random() * pool.length)];
-        setAmbientLine(pick);
-        setTimeout(() => {
-          setAmbientLine(null);
-          scheduleAmbient();
-        }, 5000);
-      },
-      10000 + Math.random() * 8000,
-    );
-  }, [activeZone]);
-
-  useEffect(() => {
-    if (!cutscene && !completion) scheduleAmbient();
-    return () => {
-      if (ambientTimer.current) clearTimeout(ambientTimer.current);
-    };
-  }, [cutscene, completion, scheduleAmbient]);
-
-  const getScript = useCallback((zoneId: string) => {
-    return NA_ZONE_SCRIPTS[zoneId] ?? null;
-  }, []);
 
   const triggerIntro = useCallback(
     (zoneId: string, onEnter: () => void) => {
-      setActiveZone(zoneId);
       if (seenIntros.has(zoneId)) {
         onEnter();
         return;
       }
-      const script = getScript(zoneId);
+      const script = NA_ZONE_SCRIPTS[zoneId];
       if (!script?.intro?.length) {
         setSeenIntros((p) => new Set(p).add(zoneId));
         onEnter();
@@ -551,12 +281,12 @@ function useStoryEngine(childId: string | null, continentId: string) {
         },
       });
     },
-    [seenIntros, getScript],
+    [seenIntros],
   );
 
   const triggerMapIntro = useCallback(() => {
     if (seenIntros.has("__map__")) return;
-    const script = getScript("__map__");
+    const script = NA_ZONE_SCRIPTS["__map__"];
     if (!script?.intro?.length) return;
     setCutscene({
       lines: script.intro,
@@ -566,11 +296,11 @@ function useStoryEngine(childId: string | null, continentId: string) {
         setCutscene(null);
       },
     });
-  }, [seenIntros, getScript]);
+  }, [seenIntros]);
 
   const triggerCompletion = useCallback(
     (zoneId: string, zoneName: string, unlocksZoneName: string | undefined, onDone: () => void) => {
-      const script = getScript(zoneId);
+      const script = NA_ZONE_SCRIPTS[zoneId];
       if (!script?.completion?.length) {
         onDone();
         return;
@@ -585,7 +315,7 @@ function useStoryEngine(childId: string | null, continentId: string) {
         onDone,
       });
     },
-    [getScript],
+    [],
   );
 
   const advanceCutscene = useCallback(() => {
@@ -599,7 +329,6 @@ function useStoryEngine(childId: string | null, continentId: string) {
       return { ...prev, index: next };
     });
   }, []);
-
   const skipCutscene = useCallback(() => {
     setCutscene((prev) => {
       if (prev) setTimeout(prev.onDone, 0);
@@ -618,7 +347,6 @@ function useStoryEngine(childId: string | null, continentId: string) {
       return { ...prev, index: next };
     });
   }, []);
-
   const skipCompletion = useCallback(() => {
     setCompletion((prev) => {
       if (prev) setTimeout(prev.onDone, 0);
@@ -629,7 +357,6 @@ function useStoryEngine(childId: string | null, continentId: string) {
   return {
     cutscene,
     completion,
-    ambientLine,
     triggerIntro,
     triggerMapIntro,
     triggerCompletion,
@@ -643,6 +370,13 @@ function useStoryEngine(childId: string | null, continentId: string) {
 /* ═══════════════════════════════════════════════════════════
    CUTSCENE PLAYER
    ═══════════════════════════════════════════════════════════ */
+const VILLAIN_ASSETS: Record<string, { img: string; color: string }> = {
+  "The Keybreaker": { img: keybreakerImg, color: "140, 85%, 50%" },
+  "The Phisher King": { img: phisherKingImg, color: "195, 85%, 50%" },
+  "The Firewall Phantom": { img: firewallPhantomImg, color: "300, 85%, 50%" },
+  "The Data Thief": { img: dataThiefImg, color: "175, 85%, 45%" },
+};
+
 function useTypewriter(text: string, speed = 24) {
   const [shown, setShown] = useState("");
   const [done, setDone] = useState(false);
@@ -666,13 +400,6 @@ function useTypewriter(text: string, speed = 24) {
   }, [text]);
   return { shown, done, finish };
 }
-
-const VILLAIN_ASSETS: Record<string, { img: string; color: string }> = {
-  "The Keybreaker": { img: keybreakerImg, color: "140, 85%, 50%" },
-  "The Phisher King": { img: phisherKingImg, color: "195, 85%, 50%" },
-  "The Firewall Phantom": { img: firewallPhantomImg, color: "300, 85%, 50%" },
-  "The Data Thief": { img: dataThiefImg, color: "175, 85%, 45%" },
-};
 
 function CutscenePlayer({
   lines,
@@ -701,7 +428,6 @@ function CutscenePlayer({
     if (!done) finish();
     else onAdvance();
   }, [done, finish, onAdvance]);
-
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (e.key === " " || e.key === "Enter") {
@@ -718,14 +444,11 @@ function CutscenePlayer({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[80] flex flex-col items-center justify-end pb-14 cursor-pointer"
-      style={{ background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.25) 45%, transparent 100%)" }}
+      className="fixed inset-0 z-[80] flex flex-col items-center justify-end pb-14 cursor-pointer px-4"
+      style={{ background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)" }}
       onClick={handleClick}
     >
-      {/* Top bar */}
       <div className="absolute top-0 left-0 right-0 h-16 bg-black/75 backdrop-blur-sm" />
-
-      {/* Progress dots */}
       <div className="absolute top-5 left-1/2 -translate-x-1/2 flex gap-2">
         {lines.map((_, i) => (
           <motion.div
@@ -735,10 +458,8 @@ function CutscenePlayer({
           />
         ))}
       </div>
-
-      {/* Skip */}
       <button
-        className="absolute top-4 right-4 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[10px] font-bold text-white/40 hover:text-white/70 transition-colors"
+        className="absolute top-4 right-4 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] font-bold text-white/40 hover:text-white/70 transition-colors"
         onClick={(e) => {
           e.stopPropagation();
           onSkip();
@@ -747,60 +468,95 @@ function CutscenePlayer({
         SKIP ▶▶
       </button>
 
-      {/* Dialogue box */}
       <motion.div
         key={index}
         initial={{ y: 14, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className={`w-full max-w-lg mx-4 rounded-2xl border-2 p-5 backdrop-blur-xl shadow-2xl ${
-          isVillain
-            ? `border-[hsla(${hue},70%,50%,0.4)] bg-[hsl(0_20%_8%/0.97)]`
-            : "border-[hsl(195_80%_50%/0.4)] bg-[hsl(210_40%_11%/0.97)]"
-        }`}
-        style={{ boxShadow: `0 0 40px hsla(${isVillain ? hue : "195"},80%,50%,0.12)` }}
+        className={`w-full max-w-lg rounded-2xl border-2 overflow-hidden`}
+        style={{
+          borderColor: isVillain ? `hsla(${hue},70%,50%,0.45)` : "hsl(195,80%,50%,0.45)",
+          background: isVillain ? `hsla(${hue},35%,7%,0.97)` : "hsl(210,50%,11%,0.97)",
+          boxShadow: `0 0 40px ${isVillain ? `hsla(${hue},70%,40%,0.12)` : "hsl(195,80%,40%,0.12)"}`,
+        }}
       >
-        <div className="flex items-start gap-4">
-          {/* Avatar */}
-          <div
-            className={`flex-shrink-0 flex h-14 w-14 items-center justify-center rounded-full border-2 overflow-hidden ${
-              isVillain
-                ? `border-[hsla(${hue},70%,50%,0.5)] bg-[hsl(0_20%_12%)]`
-                : "border-[hsl(195_80%_50%/0.5)] bg-[hsl(210_40%_18%)]"
-            }`}
+        {/* Speaker strip */}
+        <div
+          className="flex items-center gap-2 px-5 pt-4 pb-3 border-b"
+          style={{ borderColor: isVillain ? `hsla(${hue},60%,40%,0.2)` : "hsl(195,80%,50%,0.15)" }}
+        >
+          <span
+            className="text-[11px] font-bold tracking-[0.15em] uppercase"
+            style={{ color: isVillain ? `hsla(${hue},70%,65%,1)` : "hsl(195,80%,65%)" }}
           >
-            {isVillain && asset ? (
-              <img src={asset.img} alt={villainName} className="w-full h-full object-cover object-top" />
-            ) : isVillain ? (
-              <span className="text-2xl">🦹</span>
-            ) : (
-              <HeroAvatar avatarConfig={avatarConfig} size={40} fallbackEmoji="🦸" />
-            )}
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <p
-              className={`mb-1.5 text-[10px] font-bold tracking-widest uppercase ${
-                isVillain ? `text-[hsla(${hue},70%,65%,1)]` : "text-[hsl(195_80%_65%)]"
-              }`}
+            {isVillain ? villainName : playerName}
+          </span>
+          {!isVillain && (
+            <span
+              className="rounded-full px-2 py-0.5 text-[9px] font-bold"
+              style={{ background: "hsl(195,80%,50%,0.15)", color: "hsl(195,80%,70%)" }}
             >
-              {isVillain ? villainName : playerName}
-            </p>
-            <p className="text-sm leading-relaxed text-white min-h-[3rem]">
+              CyberGuardian
+            </span>
+          )}
+        </div>
+
+        {/* Avatar + text */}
+        <div className="flex items-start gap-4 px-5 py-5">
+          <div className="flex-shrink-0 flex flex-col items-center gap-2">
+            <div
+              className="rounded-2xl border-2 overflow-hidden flex items-center justify-center"
+              style={{
+                width: 80,
+                height: 80,
+                borderColor: isVillain ? `hsla(${hue},60%,45%,0.55)` : "hsl(195,80%,50%,0.55)",
+                background: isVillain ? `hsla(${hue},40%,10%,0.85)` : "hsl(210,45%,16%,0.9)",
+                boxShadow: `0 0 14px ${isVillain ? `hsla(${hue},60%,45%,0.2)` : "hsl(195,80%,50%,0.15)"}`,
+              }}
+            >
+              {isVillain && asset ? (
+                <img
+                  src={asset.img}
+                  alt={villainName}
+                  className="w-full h-full object-cover object-top"
+                  style={{ transform: "scale(1.4) translateY(8px)" }}
+                  draggable={false}
+                />
+              ) : isVillain ? (
+                <span className="text-3xl">🦹</span>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center p-1">
+                  <HeroAvatar avatarConfig={avatarConfig} size={68} fallbackEmoji="🦸" />
+                </div>
+              )}
+            </div>
+            <div className="flex gap-0.5 h-3 items-end">
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  animate={done ? { height: "3px" } : { height: ["3px", "10px", "3px"] }}
+                  transition={{ repeat: Infinity, duration: 0.55, delay: i * 0.12 }}
+                  className="w-1 rounded-full"
+                  style={{ background: isVillain ? `hsla(${hue},70%,60%,0.7)` : "hsl(195,80%,60%,0.7)" }}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="flex-1 min-w-0 pt-1">
+            <p className="text-sm leading-relaxed text-white min-h-[3.5rem]">
               {shown}
               {!done && (
                 <motion.span
                   animate={{ opacity: [1, 0, 1] }}
                   transition={{ repeat: Infinity, duration: 0.65 }}
-                  className={`inline-block w-0.5 h-4 ml-0.5 rounded-full align-middle ${
-                    isVillain ? `bg-[hsla(${hue},70%,65%,1)]` : "bg-[hsl(195_80%_65%)]"
-                  }`}
+                  className="inline-block w-0.5 h-4 ml-0.5 rounded-full align-middle"
+                  style={{ background: isVillain ? `hsla(${hue},70%,65%,1)` : "hsl(195,80%,65%)" }}
                 />
               )}
             </p>
             {done && (
               <motion.p
                 initial={{ opacity: 0 }}
-                animate={{ opacity: [0.35, 0.75, 0.35] }}
+                animate={{ opacity: [0.3, 0.7, 0.3] }}
                 transition={{ repeat: Infinity, duration: 1.5 }}
                 className="mt-2 text-[10px] text-white/35"
               >
@@ -872,7 +628,7 @@ function ZoneCompletionPanel({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[75] flex items-center justify-center bg-black/72 backdrop-blur-sm px-4"
+      className="fixed inset-0 z-[75] flex items-center justify-center bg-black/75 backdrop-blur-sm px-4"
     >
       <motion.div
         initial={{ scale: 0.88, y: 18 }}
@@ -904,8 +660,8 @@ function ZoneCompletionPanel({
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -6 }}
-                animate={{ opacity: i <= index ? 1 : 0.15, x: 0 }}
-                transition={{ delay: i * 0.07 }}
+                animate={{ opacity: i <= index ? 1 : 0.12, x: 0 }}
+                transition={{ delay: i * 0.06 }}
                 className={`flex items-start gap-2.5 rounded-xl p-3 text-sm ${
                   i === index
                     ? iv
@@ -914,20 +670,29 @@ function ZoneCompletionPanel({
                     : "border border-transparent"
                 }`}
               >
-                <div className="flex-shrink-0 mt-0.5 flex h-5 w-5 items-center justify-center rounded-full overflow-hidden">
+                <div
+                  className="flex-shrink-0 mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl overflow-hidden border"
+                  style={{
+                    borderColor: iv ? `hsla(${hue},60%,40%,0.4)` : "hsl(195,80%,50%,0.3)",
+                    background: iv ? `hsla(${hue},40%,10%,0.8)` : "hsl(210,45%,16%,0.8)",
+                  }}
+                >
                   {iv && asset ? (
-                    <img src={asset.img} alt={villainName} className="w-full h-full object-cover object-top" />
+                    <img
+                      src={asset.img}
+                      alt={villainName}
+                      className="w-full h-full object-cover object-top"
+                      style={{ transform: "scale(1.4) translateY(4px)" }}
+                    />
                   ) : iv ? (
                     <span className="text-xs">🦹</span>
                   ) : (
-                    <HeroAvatar avatarConfig={avatarConfig} size={18} fallbackEmoji="🦸" />
+                    <HeroAvatar avatarConfig={avatarConfig} size={26} fallbackEmoji="🦸" />
                   )}
                 </div>
                 <div>
                   <p
-                    className={`text-[9px] font-bold tracking-wide uppercase mb-0.5 ${
-                      iv ? `text-[hsla(${hue},65%,62%,1)]` : "text-[hsl(195_80%_60%)]"
-                    }`}
+                    className={`text-[9px] font-bold tracking-wide uppercase mb-0.5 ${iv ? `text-[hsla(${hue},65%,62%,1)]` : "text-[hsl(195_80%_60%)]"}`}
                   >
                     {iv ? villainName : playerName}
                   </p>
@@ -999,57 +764,6 @@ function ZoneCompletionPanel({
 }
 
 /* ═══════════════════════════════════════════════════════════
-   AMBIENT BUBBLE
-   ═══════════════════════════════════════════════════════════ */
-function AmbientBubble({
-  line,
-  avatarConfig,
-  playerName,
-  villainName,
-}: {
-  line: AmbientLine;
-  avatarConfig: Record<string, any> | null;
-  playerName: string;
-  villainName: string;
-}) {
-  const isVillain = line.speaker === "villain";
-  const asset = VILLAIN_ASSETS[villainName];
-  const hue = asset?.color.split(",")[0] ?? "140";
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.93 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 10, scale: 0.93 }}
-      className={`fixed bottom-28 left-4 z-50 flex items-start gap-2.5 max-w-[210px] rounded-2xl border p-3 shadow-xl backdrop-blur-md md:bottom-14 md:left-6 ${
-        isVillain
-          ? `border-[hsla(${hue},60%,45%,0.35)] bg-[hsl(0_20%_8%/0.93)] rounded-bl-sm`
-          : "border-[hsl(195_80%_50%/0.25)] bg-[hsl(210_40%_13%/0.93)] rounded-bl-sm"
-      }`}
-    >
-      <div className="flex-shrink-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded-full overflow-hidden">
-        {isVillain && asset ? (
-          <img src={asset.img} alt={villainName} className="w-full h-full object-cover object-top" />
-        ) : isVillain ? (
-          <span className="text-sm">🦹</span>
-        ) : (
-          <HeroAvatar avatarConfig={avatarConfig} size={20} fallbackEmoji="🦸" />
-        )}
-      </div>
-      <div>
-        <p
-          className={`text-[9px] font-bold tracking-wide uppercase mb-0.5 ${
-            isVillain ? `text-[hsla(${hue},65%,62%,1)]` : "text-[hsl(195_80%_60%)]"
-          }`}
-        >
-          {isVillain ? (line.villainName ?? villainName) : playerName}
-        </p>
-        <p className="text-[11px] text-white/80 leading-snug">{line.text}</p>
-      </div>
-    </motion.div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════
    UNLOCK BURST
    ═══════════════════════════════════════════════════════════ */
 function UnlockBurst({ onDone }: { onDone: () => void }) {
@@ -1059,9 +773,9 @@ function UnlockBurst({ onDone }: { onDone: () => void }) {
   }, [onDone]);
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.5 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 1.3 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       className="fixed inset-0 z-[70] flex items-center justify-center pointer-events-none"
     >
       <div className="relative flex items-center justify-center">
@@ -1070,7 +784,7 @@ function UnlockBurst({ onDone }: { onDone: () => void }) {
             key={i}
             initial={{ scale: 0, opacity: 0.8 }}
             animate={{ scale: 1, opacity: 0 }}
-            transition={{ duration: 0.9, delay: i * 0.15, ease: "easeOut" }}
+            transition={{ duration: 0.9, delay: i * 0.15 }}
             className="absolute rounded-full border-2 border-[hsl(195_80%_60%/0.5)]"
             style={{ width: size, height: size }}
           />
@@ -1090,7 +804,7 @@ function UnlockBurst({ onDone }: { onDone: () => void }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   VILLAIN CHARACTER (preserved from original)
+   VILLAIN CHARACTER (original — unchanged)
    ═══════════════════════════════════════════════════════════ */
 const VILLAIN_TAUNTS: Record<string, string[]> = {
   "The Keybreaker": [
@@ -1116,18 +830,17 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
     "I've already been inside your system.",
     "Every packet you send... I intercept.",
     "You can't fight what you can't see. 👻",
-    "I am the ghost in your machine.",
   ],
   "The Data Thief": [
-    "This network is mine. Every node, every path.",
+    "This network is mine. Every node.",
     "I don't block threats. I become them.",
-    "Your data passed through me before you knew it.",
-    "Every lock you see? I placed it there.",
+    "Your data passed through me before you knew.",
+    "Every lock you see? I placed it.",
   ],
   "Malware Max": [
     "My viruses are EVERYWHERE, mate!",
     "Your device doesn't stand a chance!",
-    "Hop hop hop — infected!",
+    "Hop hop — infected!",
     "No update can save you now!",
   ],
   SHADOWBYTE: [
@@ -1157,18 +870,18 @@ const VILLAIN_DYNAMIC_TAUNTS: Record<
   "The Firewall Phantom": {
     locked: "That zone is sealed. I sealed it myself.",
     available: "Brave. Let's see if you're ready.",
-    completed: "You got lucky. Don't expect that again.",
+    completed: "You got lucky.",
     boss: "You actually made it here? ...Impressive.",
-    first: "So it begins. I've been waiting.",
+    first: "So it begins.",
     lastLocked: "One more wall between you and me.",
   },
   "The Data Thief": {
-    locked: "That one stays locked until I say otherwise.",
+    locked: "That one stays locked until I say.",
     available: "You can try. I've seen better fail.",
-    completed: "Fine. That zone is yours. Enjoy it while it lasts.",
-    boss: "You came all this way just to lose to me? Bold.",
-    first: "Welcome to my network. You won't leave easily.",
-    lastLocked: "One more gate. My gate. Good luck.",
+    completed: "Fine. That zone is yours.",
+    boss: "You came all this way just to lose? Bold.",
+    first: "Welcome to my network.",
+    lastLocked: "One more gate. Good luck.",
   },
 };
 
@@ -1210,7 +923,7 @@ function VillainCharacter({
       ? dynamicTaunts[hoveredNodeStatus as keyof typeof dynamicTaunts] || taunts[tauntIdx]
       : taunts[tauntIdx];
   const bubbleKey = hoveredNodeStatus || `idle-${tauntIdx}`;
-  const glowHsl = asset ? asset.color : "140, 85%, 50%";
+  const glowHsl = asset?.color ?? "140, 85%, 50%";
   const hueVal = glowHsl.split(",")[0];
   const textColor = `hsl(${hueVal}, 70%, 72%)`;
   const borderColor = `hsla(${hueVal}, 75%, 50%, 0.3)`;
@@ -1231,18 +944,18 @@ function VillainCharacter({
           transition={{ duration: 0.3 }}
           className="relative mr-2 mb-1 max-w-[170px] md:mr-3 md:max-w-[210px] rounded-xl rounded-br-sm px-3 py-2 shadow-xl backdrop-blur-md"
           style={{
-            background: "hsla(210, 40%, 10%, 0.88)",
+            background: "hsla(210,40%,10%,0.88)",
             border: `1px solid ${borderColor}`,
-            boxShadow: `0 0 18px hsla(${hueVal}, 80%, 50%, 0.15)`,
+            boxShadow: `0 0 18px hsla(${hueVal},80%,50%,0.15)`,
           }}
         >
           <motion.div
             className="absolute inset-0 rounded-xl pointer-events-none"
             animate={{
               boxShadow: [
-                `0 0 20px hsla(${hueVal}, 80%, 50%, 0.15)`,
-                `0 0 40px hsla(${hueVal}, 80%, 50%, 0.35)`,
-                `0 0 20px hsla(${hueVal}, 80%, 50%, 0.15)`,
+                `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
+                `0 0 40px hsla(${hueVal},80%,50%,0.35)`,
+                `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
               ],
             }}
             transition={{ repeat: Infinity, duration: 2.5 }}
@@ -1260,7 +973,7 @@ function VillainCharacter({
           <div
             className="absolute -bottom-1.5 right-5 h-3 w-3 rotate-45"
             style={{
-              background: "hsla(210, 40%, 10%, 0.88)",
+              background: "hsla(210,40%,10%,0.88)",
               borderRight: `1px solid ${borderColor}`,
               borderBottom: `1px solid ${borderColor}`,
             }}
@@ -1278,7 +991,7 @@ function VillainCharacter({
           animate={{ opacity: [0.3, 0.6, 0.3] }}
           transition={{ repeat: Infinity, duration: 2.5 }}
           style={{
-            background: `radial-gradient(circle, hsla(${glowHsl}, 0.25) 0%, transparent 70%)`,
+            background: `radial-gradient(circle, hsla(${glowHsl},0.25) 0%, transparent 70%)`,
             filter: "blur(12px)",
             transform: "scale(1.3)",
           }}
@@ -1289,7 +1002,7 @@ function VillainCharacter({
               src={asset.img}
               alt={villainName}
               className="relative z-10 w-[150px] h-auto md:w-[190px]"
-              style={{ filter: `drop-shadow(0 0 16px hsla(${glowHsl}, 0.35))` }}
+              style={{ filter: `drop-shadow(0 0 16px hsla(${glowHsl},0.35))` }}
               draggable={false}
             />
             <AnimatePresence>
@@ -1301,7 +1014,7 @@ function VillainCharacter({
                   transition={{ duration: 0.6 }}
                   className="absolute top-0 z-20 h-full w-[30%] pointer-events-none"
                   style={{
-                    background: `linear-gradient(90deg, transparent, hsla(${hueVal}, 80%, 60%, 0.4), transparent)`,
+                    background: `linear-gradient(90deg, transparent, hsla(${hueVal},80%,60%,0.4), transparent)`,
                     filter: "blur(4px)",
                   }}
                 />
@@ -1317,7 +1030,7 @@ function VillainCharacter({
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ZONE MISSION PANEL (preserved, opens AFTER intro cutscene)
+   ZONE MISSION PANEL
    ═══════════════════════════════════════════════════════════ */
 function ZoneMissionPanel({
   zone,
@@ -1398,7 +1111,6 @@ function ZoneMissionPanel({
           <div className="text-center py-8">
             <span className="text-4xl mb-3 block">🚧</span>
             <p className="text-sm text-white/70 mb-1">Mission content coming soon</p>
-            <p className="text-xs text-white/40">Zone: {zone.name}</p>
           </div>
         )}
       </motion.div>
@@ -1457,7 +1169,6 @@ export default function ContinentMapScreen() {
   const playerName = (child as any)?.name ?? "Guardian";
   const isAntarctica = continent?.id === "antarctica";
 
-  // ── Compute statuses using HQ-first logic ──
   const zoneStatuses = useMemo(() => {
     if (!continent) return [];
     return continent.zones.map((zone) => getZoneStatus(zone, continent.zones, zoneProgress, continentId ?? ""));
@@ -1467,50 +1178,36 @@ export default function ContinentMapScreen() {
   const projection = CONTINENT_PROJECTIONS[continentId || ""];
   const countryCodes = CONTINENT_COUNTRIES[continentId || ""] || [];
 
-  // ── Story engine ──
   const story = useStoryEngine(activeChildId, continentId ?? "unknown");
 
-  // Trigger map intro on first load
+  // Fire map intro once on first load
   useEffect(() => {
     const t = setTimeout(() => story.triggerMapIntro(), 900);
     return () => clearTimeout(t);
   }, []);
 
-  // ── Zone click: intro cutscene → panel ──
-  const handleZoneClick = (zone: ZoneDef, index: number) => {
-    if (zoneStatuses[index] === "locked") return;
-    story.triggerIntro(zone.id, () => setSelectedZone(zone));
-  };
-
-  // ── Deploy: navigate into zone ──
-  const handleDeploy = () => {
-    if (!selectedZone) return;
-    setSelectedZone(null);
-    navigate(`/world-map/${continentId}/${selectedZone.id}`);
-  };
-
-  // ── Zone completion: called when returning from a finished zone ──
-  // Wire this up by passing ?completed=zone-id when navigating back from the zone game screen
+  // Handle ?completed= param from zone game screen
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const completedId = params.get("completed");
     if (!completedId || !continent) return;
-    // Remove query param without reload
     window.history.replaceState({}, "", window.location.pathname);
-    // Refetch progress
     queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId, continentId] });
     const zone = continent.zones.find((z) => z.id === completedId);
     if (!zone) return;
-    // Find what zone unlocks next
     const idx = NA_UNLOCK_ORDER.indexOf(completedId);
     const nextId = idx >= 0 ? NA_UNLOCK_ORDER[idx + 1] : undefined;
     const nextZone = nextId ? continent.zones.find((z) => z.id === nextId) : undefined;
-    // Show unlock burst then completion debrief
     setShowUnlockBurst(true);
     setTimeout(() => {
       story.triggerCompletion(completedId, zone.name, nextZone?.name, () => {});
     }, 2400);
   }, [continent]);
+
+  const handleZoneClick = (zone: ZoneDef, index: number) => {
+    if (zoneStatuses[index] === "locked") return;
+    story.triggerIntro(zone.id, () => setSelectedZone(zone));
+  };
 
   if (!continent) return null;
 
@@ -1600,8 +1297,8 @@ export default function ContinentMapScreen() {
 
               {zoneCoords.slice(0, -1).map((from, i) => {
                 const to = zoneCoords[i + 1];
-                const fromStatus = zoneStatuses[i];
-                const toStatus = zoneStatuses[i + 1];
+                const fromStatus = zoneStatuses[i],
+                  toStatus = zoneStatuses[i + 1];
                 const bothDone = fromStatus === "completed" && toStatus === "completed";
                 const available = fromStatus === "completed" && toStatus !== "locked";
                 return (
@@ -1699,7 +1396,7 @@ export default function ContinentMapScreen() {
                         y={r + 42}
                         fontSize={8}
                         fontWeight="bold"
-                        fill={zone.isBoss ? "#ff6b8a" : "#00ffe7"}
+                        fill={zone.isBoss ? "#ff6b8a" : zone.isHQ ? "#f5c518" : "#00ffe7"}
                         style={{ pointerEvents: "none", userSelect: "none" }}
                       >
                         {zone.isBoss ? "⚔️ FIGHT" : zone.isHQ ? "▶ START" : "▶ DEPLOY"}
@@ -1736,7 +1433,7 @@ export default function ContinentMapScreen() {
         </motion.div>
       </div>
 
-      {/* Player avatar - bottom left */}
+      {/* Player avatar */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1747,18 +1444,6 @@ export default function ContinentMapScreen() {
           <HeroAvatar avatarConfig={avatarConfig} size={36} fallbackEmoji="🦸" />
         </div>
       </motion.div>
-
-      {/* Ambient bubble */}
-      <AnimatePresence>
-        {story.ambientLine && !story.cutscene && !story.completion && (
-          <AmbientBubble
-            line={story.ambientLine}
-            avatarConfig={avatarConfig}
-            playerName={playerName}
-            villainName={continent.villain}
-          />
-        )}
-      </AnimatePresence>
 
       {/* Unlock burst */}
       <AnimatePresence>{showUnlockBurst && <UnlockBurst onDone={() => setShowUnlockBurst(false)} />}</AnimatePresence>
@@ -1804,7 +1489,10 @@ export default function ContinentMapScreen() {
             zone={selectedZone}
             continent={continent}
             onClose={() => setSelectedZone(null)}
-            onDeploy={handleDeploy}
+            onDeploy={() => {
+              setSelectedZone(null);
+              navigate(`/world-map/${continentId}/${selectedZone.id}`);
+            }}
           />
         )}
       </AnimatePresence>
