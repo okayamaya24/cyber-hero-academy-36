@@ -1695,17 +1695,31 @@ function VillainCharacter({
             />
             <AnimatePresence>
               {showShimmer && (
-                <motion.div
-                  initial={{ left: "-30%", opacity: 0 }}
-                  animate={{ left: "130%", opacity: [0, 0.7, 0] }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.6 }}
-                  className="absolute top-0 z-20 h-full w-[30%] pointer-events-none"
-                  style={{
-                    background: `linear-gradient(90deg, transparent, hsla(${hueVal},80%,60%,0.4), transparent)`,
-                    filter: "blur(4px)",
-                  }}
-                />
+                isShadowbyte ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.6 }}
+                    animate={{ opacity: [0, 0.5, 0], scale: [0.6, 1.6, 2] }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="absolute inset-0 z-20 pointer-events-none rounded-full"
+                    style={{
+                      background: "radial-gradient(circle, rgba(91,77,255,0.35) 0%, rgba(91,77,255,0.1) 40%, transparent 70%)",
+                      filter: "blur(6px)",
+                    }}
+                  />
+                ) : (
+                  <motion.div
+                    initial={{ left: "-30%", opacity: 0 }}
+                    animate={{ left: "130%", opacity: [0, 0.7, 0] }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="absolute top-0 z-20 h-full w-[30%] pointer-events-none"
+                    style={{
+                      background: `linear-gradient(90deg, transparent, hsla(${hueVal},80%,60%,0.4), transparent)`,
+                      filter: "blur(4px)",
+                    }}
+                  />
+                )
               )}
             </AnimatePresence>
           </div>
