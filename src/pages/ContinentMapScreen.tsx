@@ -1534,10 +1534,12 @@ const VILLAIN_DYNAMIC_TAUNTS: Record<
     boss: "You came all this way just to lose? Bold.",
   },
   "Malware Max": {
-    locked: "Infected and locked, mate!",
-    available: "Come on then. My viruses are waiting!",
-    completed: "Cleaned that one? I've got thousands more!",
-    boss: "Think you can beat Malware Max? Heh!",
+    locked: "Oh that one's locked? I locked it. With a bug. 🐛",
+    available: "Ooooh you're gonna click that? This'll be fun.",
+    completed: "You beat that zone?! Okay okay... respect. Tiny respect.",
+    boss: "YOU FOUND ME! Let's see if you can keep up! ⚡",
+    first: "Here we GOOOOO! Try to keep up!",
+    lastLocked: "Almost there! My best bugs are waiting for you.",
   },
   SHADOWBYTE: {
     locked: "That zone is mine. Stay away.",
