@@ -1526,10 +1526,12 @@ const VILLAIN_DYNAMIC_TAUNTS: Record<
     boss: "One click is all I need!",
   },
   "The Troll Lord": {
-    locked: "That zone stays dark. I like it that way.",
-    available: "Come on then. My trolls are ready.",
-    completed: "One zone. My trolls have a hundred more.",
-    boss: "You want to cross MY bridge?! Try it!",
+    locked: "LOL that zone is locked. Good luck finding the key. 😈",
+    available: "Ooooh going for that one? Bold move. Let's see it. 👀",
+    completed: "Okay fine. You cleared that. Don't let it go to your head.",
+    boss: "You actually made it to ME?! This just got interesting. 😈",
+    first: "First move detected. Let the trolling begin.",
+    lastLocked: "One more zone and you face the Troll Lord herself. Nervous?",
   },
   "The Firewall Phantom": {
     locked: "That zone is sealed. I sealed it myself.",
