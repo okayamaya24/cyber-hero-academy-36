@@ -1484,10 +1484,13 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
     "Every lock you see? I placed it.",
   ],
   "Malware Max": [
-    "My viruses are EVERYWHERE, mate!",
-    "Your device doesn't stand a chance!",
-    "Hop hop — infected!",
-    "No update can save you now!",
+    "Bugs aren't problems. They're my pets. 🐛",
+    "I didn't break your system. I improved it.",
+    "Every crash is just a feature I added.",
+    "Warning: me. That's the only warning you'll get. ⚠️",
+    "Your antivirus is crying right now.",
+    "I've got a bug for every occasion!",
+    "Chaos is just code that's having fun.",
   ],
   SHADOWBYTE: [
     "You dare face ME?",
