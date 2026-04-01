@@ -44,10 +44,13 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
     "I was here before you logged in.",
   ],
   "The Data Thief": [
-    "Your data is MINE!",
-    "I know your name, address, everything!",
-    "Privacy? What privacy?",
-    "I've stolen it all already!",
+    "This network is mine. Every node, every path.",
+    "I don't block threats. I become them.",
+    "Your data passed through me before you knew it existed.",
+    "Every lock you see? I placed it there.",
+    "You think you're browsing. I think you're being watched.",
+    "No one enters this network without my permission.",
+    "The firewall isn't a wall. It's a cage I built for you.",
   ],
   "Malware Max": [
     "My viruses are EVERYWHERE, mate!",
@@ -67,17 +70,20 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
 import keybreakerImg from "@/assets/villains/keybreaker.png";
 import phisherKingImg from "@/assets/villains/phisher-king.png";
 import firewallPhantomImg from "@/assets/villains/firewall-phantom.png";
+import dataThiefImg from "@/assets/villains/data-thief.png";
 
 const VILLAIN_ASSETS: Record<string, { img: string; hue: number; glowHsl: string; textHsl: string; borderHsl: string }> = {
   "The Keybreaker": { img: keybreakerImg, hue: 140, glowHsl: "140, 85%, 50%", textHsl: "hsl(140, 80%, 70%)", borderHsl: "hsla(140, 80%, 50%, 0.3)" },
   "The Phisher King": { img: phisherKingImg, hue: 195, glowHsl: "195, 85%, 50%", textHsl: "hsl(195, 80%, 70%)", borderHsl: "hsla(195, 80%, 50%, 0.3)" },
   "The Firewall Phantom": { img: firewallPhantomImg, hue: 300, glowHsl: "300, 85%, 50%", textHsl: "hsl(340, 80%, 75%)", borderHsl: "hsla(300, 80%, 50%, 0.3)" },
+  "The Data Thief": { img: dataThiefImg, hue: 175, glowHsl: "175, 85%, 45%", textHsl: "hsl(175, 80%, 70%)", borderHsl: "hsla(175, 80%, 50%, 0.3)" },
 };
 
 const VILLAIN_DYNAMIC_TAUNTS: Record<string, { locked: string; available: string; completed: string; boss: string; first?: string; lastLocked?: string }> = {
   "The Keybreaker": { locked: "Too weak. I broke that instantly.", available: "Let's see if you're actually secure.", completed: "Hmm… not bad.", boss: "You'll never break my code!" },
   "The Phisher King": { locked: "Locked out? Maybe this email can help...", available: "Go ahead... click something.", completed: "You spotted that one... impressive.", boss: "One click is all I need!" },
   "The Firewall Phantom": { locked: "That zone is sealed. I sealed it myself.", available: "Brave. Let's see if you're ready for this one.", completed: "You got lucky. Don't expect that again.", boss: "You actually made it here? ...Impressive.", first: "So it begins. I've been waiting.", lastLocked: "One more wall between you and me." },
+  "The Data Thief": { locked: "That one stays locked until I say otherwise.", available: "You can try. I've seen better fail.", completed: "Fine. That zone is yours. Enjoy it while it lasts.", boss: "You came all this way just to lose to me? Bold.", first: "Welcome to my network. You won't leave easily.", lastLocked: "One more gate. My gate. Good luck." },
 };
 
 interface VillainCharacterProps {
@@ -88,14 +94,26 @@ interface VillainCharacterProps {
 function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterProps) {
   const taunts = VILLAIN_TAUNTS[villainName] || ["..."];
   const [tauntIdx, setTauntIdx] = useState(0);
+  const [showShimmer, setShowShimmer] = useState(false);
   const asset = VILLAIN_ASSETS[villainName];
   const dynamicTaunts = VILLAIN_DYNAMIC_TAUNTS[villainName];
 
   useEffect(() => {
     if (hoveredNodeStatus) return;
-    const interval = setInterval(() => setTauntIdx((i) => (i + 1) % taunts.length), 8000);
+    const interval = setInterval(() => setTauntIdx((i) => (i + 1) % taunts.length), 3000);
     return () => clearInterval(interval);
   }, [taunts.length, hoveredNodeStatus]);
+
+  // Data stream shimmer every 6-9s
+  useEffect(() => {
+    const trigger = () => {
+      setShowShimmer(true);
+      setTimeout(() => setShowShimmer(false), 600);
+    };
+    const schedule = () => setTimeout(() => { trigger(); schedule(); }, 6000 + Math.random() * 3000);
+    const t = schedule();
+    return () => clearTimeout(t as any);
+  }, []);
 
   const bubbleText = hoveredNodeStatus && dynamicTaunts
     ? dynamicTaunts[hoveredNodeStatus as keyof typeof dynamicTaunts] || taunts[tauntIdx]
@@ -106,6 +124,7 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
   const glowHsl = asset?.glowHsl || "140, 85%, 50%";
   const textColor = asset?.textHsl || "hsl(140, 80%, 70%)";
   const borderColor = asset?.borderHsl || "hsla(140, 80%, 50%, 0.3)";
+  const hueVal = glowHsl.split(",")[0];
 
   return (
     <motion.div
@@ -125,11 +144,21 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
           style={{
             background: "hsla(210, 40%, 10%, 0.88)",
             border: `1px solid ${borderColor}`,
-            boxShadow: `0 0 18px hsla(${glowHsl.split(",")[0]}, 80%, 50%, 0.15), inset 0 0 12px hsla(${glowHsl.split(",")[0]}, 80%, 50%, 0.05)`,
+            boxShadow: `0 0 18px hsla(${hueVal}, 80%, 50%, 0.15), inset 0 0 12px hsla(${hueVal}, 80%, 50%, 0.05)`,
           }}
         >
+          <motion.div
+            className="absolute inset-0 rounded-xl pointer-events-none"
+            animate={{ boxShadow: [`0 0 20px hsla(${hueVal}, 80%, 50%, 0.15)`, `0 0 40px hsla(${hueVal}, 80%, 50%, 0.35)`, `0 0 20px hsla(${hueVal}, 80%, 50%, 0.15)`] }}
+            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+          />
           <p className="text-[11px] md:text-xs font-medium italic leading-snug" style={{ color: textColor }}>
             "{bubbleText}"
+            <motion.span
+              animate={{ opacity: [1, 0, 1] }}
+              transition={{ repeat: Infinity, duration: 0.8 }}
+              className="ml-0.5 inline-block"
+            >▌</motion.span>
           </p>
           <div
             className="absolute -bottom-1.5 right-5 h-3 w-3 rotate-45"
@@ -143,9 +172,9 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
       </AnimatePresence>
 
       <motion.div
-        animate={{ y: [0, -6, 0] }}
-        transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
-        whileHover={{ scale: 1.08 }}
+        animate={{ y: [0, -10, 0] }}
+        transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+        whileHover={{ scale: 1.06 }}
         className="relative cursor-default"
       >
         <motion.div
@@ -159,13 +188,31 @@ function VillainCharacter({ villainName, hoveredNodeStatus }: VillainCharacterPr
           }}
         />
         {asset ? (
-          <img
-            src={asset.img}
-            alt={villainName}
-            className="relative z-10 w-[150px] h-auto md:w-[190px]"
-            style={{ filter: `drop-shadow(0 0 16px hsla(${glowHsl}, 0.35))` }}
-            draggable={false}
-          />
+          <div className="relative">
+            <img
+              src={asset.img}
+              alt={villainName}
+              className="relative z-10 w-[150px] h-auto md:w-[190px]"
+              style={{ filter: `drop-shadow(0 0 16px hsla(${glowHsl}, 0.35))` }}
+              draggable={false}
+            />
+            {/* Data stream shimmer overlay */}
+            <AnimatePresence>
+              {showShimmer && (
+                <motion.div
+                  initial={{ left: "-30%", opacity: 0 }}
+                  animate={{ left: "130%", opacity: [0, 0.7, 0] }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                  className="absolute top-0 z-20 h-full w-[30%] pointer-events-none"
+                  style={{
+                    background: `linear-gradient(90deg, transparent, hsla(${hueVal}, 80%, 60%, 0.4), transparent)`,
+                    filter: "blur(4px)",
+                  }}
+                />
+              )}
+            </AnimatePresence>
+          </div>
         ) : (
           <VillainSprite villainName={villainName} size={120} menacing />
         )}
