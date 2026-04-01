@@ -1826,6 +1826,73 @@ function VillainCharacter({
             </motion.span>
           </>
         )}
+        {isTrollLord && (
+          <>
+            {/* Floating glitchy tags */}
+            <motion.span
+              animate={{ y: [0, -4, 0], opacity: [0.7, 1, 0.7] }}
+              transition={{ repeat: Infinity, duration: 2.2, delay: 0.3 }}
+              className="absolute -top-1 -left-3 z-30 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-widest"
+              style={{
+                background: "rgba(170,255,0,0.12)",
+                border: "1px solid rgba(170,255,0,0.35)",
+                color: "#AAFF00",
+                fontFamily: "'Orbitron', monospace",
+                textShadow: "0 0 6px rgba(170,255,0,0.5)",
+              }}
+            >
+              TROLLED!
+            </motion.span>
+            <motion.span
+              animate={{ y: [0, -3, 0], opacity: [0.6, 0.9, 0.6] }}
+              transition={{ repeat: Infinity, duration: 1.8, delay: 1.0 }}
+              className="absolute -bottom-1 -left-2 z-30 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-widest"
+              style={{
+                background: "rgba(255,45,139,0.12)",
+                border: "1px solid rgba(255,45,139,0.35)",
+                color: "#FF2D8B",
+                fontFamily: "'Orbitron', monospace",
+                textShadow: "0 0 6px rgba(255,45,139,0.5)",
+              }}
+            >
+              PWNED!
+            </motion.span>
+            {/* Pink accent flicker */}
+            <motion.div
+              className="absolute inset-0 z-20 pointer-events-none rounded-full"
+              animate={{ opacity: [0, 0.15, 0, 0.1, 0] }}
+              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+              style={{
+                background: "radial-gradient(circle, rgba(255,45,139,0.2) 0%, transparent 60%)",
+                filter: "blur(8px)",
+              }}
+            />
+            {/* Emoji burst */}
+            <AnimatePresence>
+              {emojiBurst && (
+                <>
+                  {["😈", "🔥", "💀", "👑"].map((e, i) => (
+                    <motion.span
+                      key={`emoji-${i}`}
+                      initial={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+                      animate={{
+                        opacity: 0,
+                        scale: 0.5,
+                        x: (i % 2 === 0 ? -1 : 1) * (20 + i * 10),
+                        y: -(15 + i * 8),
+                      }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.7 }}
+                      className="absolute top-1/3 left-1/2 z-40 text-sm pointer-events-none"
+                    >
+                      {e}
+                    </motion.span>
+                  ))}
+                </>
+              )}
+            </AnimatePresence>
+          </>
+        )}
       </motion.div>
     </motion.div>
   );
