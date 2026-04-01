@@ -1612,9 +1612,9 @@ function VillainCharacter({
   const glowHsl = asset?.color ?? "140, 85%, 50%";
   const hueVal = glowHsl.split(",")[0];
   
-  const textColor = isShadowbyte ? "#9d8cff" : `hsl(${hueVal}, 70%, 72%)`;
-  const borderColor = isShadowbyte ? "rgba(91,77,255,0.4)" : `hsla(${hueVal}, 75%, 50%, 0.3)`;
-  const bubbleBg = isShadowbyte ? "rgba(4,6,20,0.92)" : "hsla(210,40%,10%,0.88)";
+  const textColor = isShadowbyte ? "#9d8cff" : isTrollLord ? "#c8ff44" : `hsl(${hueVal}, 70%, 72%)`;
+  const borderColor = isShadowbyte ? "rgba(91,77,255,0.4)" : isTrollLord ? "rgba(170,255,0,0.4)" : `hsla(${hueVal}, 75%, 50%, 0.3)`;
+  const bubbleBg = isShadowbyte ? "rgba(4,6,20,0.92)" : isTrollLord ? "rgba(8,14,4,0.92)" : "hsla(210,40%,10%,0.88)";
 
   return (
     <motion.div
