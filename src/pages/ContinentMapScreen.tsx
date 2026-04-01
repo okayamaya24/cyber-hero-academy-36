@@ -18,6 +18,7 @@ import keybreakerImg from "@/assets/villains/keybreaker.png";
 import phisherKingImg from "@/assets/villains/phisher-king.png";
 import firewallPhantomImg from "@/assets/villains/firewall-phantom.png";
 import dataThiefImg from "@/assets/villains/data-thief.png";
+import malwareMaxImg from "@/assets/villains/malware-max.png";
 
 /* ═══════════════════════════════════════════════════════════
    UNLOCK LOGIC
@@ -1023,6 +1024,7 @@ const VILLAIN_ASSETS: Record<string, { img: string; color: string }> = {
   "The Phisher King": { img: phisherKingImg, color: "195, 85%, 50%" },
   "The Firewall Phantom": { img: firewallPhantomImg, color: "300, 85%, 50%" },
   "The Data Thief": { img: dataThiefImg, color: "175, 85%, 45%" },
+  "Malware Max": { img: malwareMaxImg, color: "110, 100%, 55%" },
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -1482,10 +1484,13 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
     "Every lock you see? I placed it.",
   ],
   "Malware Max": [
-    "My viruses are EVERYWHERE, mate!",
-    "Your device doesn't stand a chance!",
-    "Hop hop — infected!",
-    "No update can save you now!",
+    "Bugs aren't problems. They're my pets. 🐛",
+    "I didn't break your system. I improved it.",
+    "Every crash is just a feature I added.",
+    "Warning: me. That's the only warning you'll get. ⚠️",
+    "Your antivirus is crying right now.",
+    "I've got a bug for every occasion!",
+    "Chaos is just code that's having fun.",
   ],
   SHADOWBYTE: [
     "You dare face ME?",
@@ -1529,10 +1534,12 @@ const VILLAIN_DYNAMIC_TAUNTS: Record<
     boss: "You came all this way just to lose? Bold.",
   },
   "Malware Max": {
-    locked: "Infected and locked, mate!",
-    available: "Come on then. My viruses are waiting!",
-    completed: "Cleaned that one? I've got thousands more!",
-    boss: "Think you can beat Malware Max? Heh!",
+    locked: "Oh that one's locked? I locked it. With a bug. 🐛",
+    available: "Ooooh you're gonna click that? This'll be fun.",
+    completed: "You beat that zone?! Okay okay... respect. Tiny respect.",
+    boss: "YOU FOUND ME! Let's see if you can keep up! ⚡",
+    first: "Here we GOOOOO! Try to keep up!",
+    lastLocked: "Almost there! My best bugs are waiting for you.",
   },
   SHADOWBYTE: {
     locked: "That zone is mine. Stay away.",
@@ -1680,6 +1687,38 @@ function VillainCharacter({
           </div>
         ) : (
           <VillainSprite villainName={villainName} size={120} menacing />
+        )}
+        {villainName === "Malware Max" && (
+          <>
+            <motion.span
+              animate={{ y: [0, -4, 0], opacity: [0.7, 1, 0.7] }}
+              transition={{ repeat: Infinity, duration: 2.2, delay: 0.3 }}
+              className="absolute -top-1 -left-3 z-30 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-widest"
+              style={{
+                background: "hsla(110,100%,55%,0.12)",
+                border: "1px solid hsla(110,100%,55%,0.35)",
+                color: "#39FF14",
+                fontFamily: "'Orbitron', monospace",
+                textShadow: "0 0 6px hsla(110,100%,55%,0.5)",
+              }}
+            >
+              BUG DETECTED
+            </motion.span>
+            <motion.span
+              animate={{ y: [0, -3, 0], opacity: [0.6, 0.9, 0.6] }}
+              transition={{ repeat: Infinity, duration: 1.8, delay: 1.0 }}
+              className="absolute -bottom-1 -left-2 z-30 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-widest"
+              style={{
+                background: "hsla(25,100%,50%,0.12)",
+                border: "1px solid hsla(25,100%,50%,0.35)",
+                color: "#FF6B00",
+                fontFamily: "'Orbitron', monospace",
+                textShadow: "0 0 6px hsla(25,100%,50%,0.5)",
+              }}
+            >
+              ERROR
+            </motion.span>
+          </>
         )}
       </motion.div>
     </motion.div>
