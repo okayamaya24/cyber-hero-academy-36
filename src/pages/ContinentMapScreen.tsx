@@ -462,7 +462,14 @@ export default function ContinentMapScreen() {
                     key={zone.id}
                     coordinates={[coord.lng, coord.lat]}
                     onClick={() => handleZoneClick(zone, i)}
-                    onMouseEnter={() => setHoveredNodeStatus(zone.isBoss ? "boss" : status)}
+                    onMouseEnter={() => {
+                      const isFirst = i === 0 && status !== "completed";
+                      const lockedZones = zoneStatuses.filter((s, idx) => s === "locked" && !continent.zones[idx]?.isBoss);
+                      const isLastLocked = status === "locked" && lockedZones.length === 1;
+                      if (isFirst) setHoveredNodeStatus("first");
+                      else if (isLastLocked) setHoveredNodeStatus("lastLocked");
+                      else setHoveredNodeStatus(zone.isBoss ? "boss" : status);
+                    }}
                     onMouseLeave={() => setHoveredNodeStatus(null)}
                     style={{ cursor: isLocked ? "not-allowed" : "pointer" }}
                   >
