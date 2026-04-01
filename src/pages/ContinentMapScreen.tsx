@@ -20,6 +20,7 @@ import firewallPhantomImg from "@/assets/villains/firewall-phantom.png";
 import dataThiefImg from "@/assets/villains/data-thief.png";
 import malwareMaxImg from "@/assets/villains/malware-max.png";
 import shadowbyteImg from "@/assets/villains/shadowbyte.png";
+import trollLordImg from "@/assets/villains/troll-lord.png";
 
 /* ═══════════════════════════════════════════════════════════
    UNLOCK LOGIC
@@ -1027,6 +1028,7 @@ const VILLAIN_ASSETS: Record<string, { img: string; color: string }> = {
   "The Data Thief": { img: dataThiefImg, color: "175, 85%, 45%" },
   "Malware Max": { img: malwareMaxImg, color: "110, 100%, 55%" },
   SHADOWBYTE: { img: shadowbyteImg, color: "249, 100%, 65%" },
+  "The Troll Lord": { img: trollLordImg, color: "82, 100%, 50%" },
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -1468,10 +1470,13 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
     "Open the message... if you trust me.",
   ],
   "The Troll Lord": [
-    "I'll make everyone feel bad!",
-    "My trolls are EVERYWHERE!",
-    "Kindness won't save you!",
-    "The internet is MINE!",
+    "Did you just try to argue with me? Cute. 💅",
+    "I live in the comments. I AM the comments.",
+    "Ratio incoming. Brace yourself. 🧨",
+    "Your opinion has been flagged as irrelevant.",
+    "I don't start drama. I finish it.",
+    "Every post you make feeds me stronger. 👑",
+    "Touch grass? Never heard of it.",
   ],
   "The Firewall Phantom": [
     "Your firewall means nothing to me.",
@@ -1521,10 +1526,12 @@ const VILLAIN_DYNAMIC_TAUNTS: Record<
     boss: "One click is all I need!",
   },
   "The Troll Lord": {
-    locked: "That zone stays dark. I like it that way.",
-    available: "Come on then. My trolls are ready.",
-    completed: "One zone. My trolls have a hundred more.",
-    boss: "You want to cross MY bridge?! Try it!",
+    locked: "LOL that zone is locked. Good luck finding the key. 😈",
+    available: "Ooooh going for that one? Bold move. Let's see it. 👀",
+    completed: "Okay fine. You cleared that. Don't let it go to your head.",
+    boss: "You actually made it to ME?! This just got interesting. 😈",
+    first: "First move detected. Let the trolling begin.",
+    lastLocked: "One more zone and you face the Troll Lord herself. Nervous?",
   },
   "The Firewall Phantom": {
     locked: "That zone is sealed. I sealed it myself.",
@@ -1569,6 +1576,8 @@ function VillainCharacter({
   const asset = VILLAIN_ASSETS[villainName];
   const dynamicTaunts = VILLAIN_DYNAMIC_TAUNTS[villainName];
   const isShadowbyte = villainName === "SHADOWBYTE";
+  const isTrollLord = villainName === "The Troll Lord";
+  const [emojiBurst, setEmojiBurst] = useState(false);
   useEffect(() => {
     if (hoveredNodeStatus) return;
     const interval = setInterval(() => setTauntIdx((i) => (i + 1) % taunts.length), 3000);
@@ -1576,20 +1585,24 @@ function VillainCharacter({
   }, [taunts.length, hoveredNodeStatus]);
 
   useEffect(() => {
-    const baseDelay = isShadowbyte ? 8000 : 6000;
-    const randRange = isShadowbyte ? 2000 : 3000;
+    const baseDelay = isShadowbyte ? 8000 : isTrollLord ? 5000 : 6000;
+    const randRange = isShadowbyte ? 2000 : isTrollLord ? 2000 : 3000;
     const schedule = () =>
       setTimeout(
         () => {
           setShowShimmer(true);
           setTimeout(() => setShowShimmer(false), 600);
+          if (isTrollLord) {
+            setEmojiBurst(true);
+            setTimeout(() => setEmojiBurst(false), 800);
+          }
           schedule();
         },
         baseDelay + Math.random() * randRange,
       );
     const t = schedule();
     return () => clearTimeout(t as any);
-  }, [isShadowbyte]);
+  }, [isShadowbyte, isTrollLord]);
 
   const bubbleText =
     hoveredNodeStatus && dynamicTaunts
@@ -1599,9 +1612,9 @@ function VillainCharacter({
   const glowHsl = asset?.color ?? "140, 85%, 50%";
   const hueVal = glowHsl.split(",")[0];
   
-  const textColor = isShadowbyte ? "#9d8cff" : `hsl(${hueVal}, 70%, 72%)`;
-  const borderColor = isShadowbyte ? "rgba(91,77,255,0.4)" : `hsla(${hueVal}, 75%, 50%, 0.3)`;
-  const bubbleBg = isShadowbyte ? "rgba(4,6,20,0.92)" : "hsla(210,40%,10%,0.88)";
+  const textColor = isShadowbyte ? "#9d8cff" : isTrollLord ? "#c8ff44" : `hsl(${hueVal}, 70%, 72%)`;
+  const borderColor = isShadowbyte ? "rgba(91,77,255,0.4)" : isTrollLord ? "rgba(170,255,0,0.4)" : `hsla(${hueVal}, 75%, 50%, 0.3)`;
+  const bubbleBg = isShadowbyte ? "rgba(4,6,20,0.92)" : isTrollLord ? "rgba(8,14,4,0.92)" : "hsla(210,40%,10%,0.88)";
 
   return (
     <motion.div
@@ -1623,12 +1636,19 @@ function VillainCharacter({
             border: `1px solid ${borderColor}`,
             boxShadow: isShadowbyte
               ? `0 0 20px rgba(91,77,255,0.3)`
+              : isTrollLord
+              ? `0 0 20px rgba(170,255,0,0.3)`
               : `0 0 18px hsla(${hueVal},80%,50%,0.15)`,
           }}
         >
           {isShadowbyte && (
             <span className="block mb-1 text-[8px] tracking-[0.2em] uppercase" style={{ color: "#5B4DFF", fontFamily: "'Share Tech Mono', 'Orbitron', monospace" }}>
               // SHADOWBYTE.exe
+            </span>
+          )}
+          {isTrollLord && (
+            <span className="block mb-1 text-[8px] tracking-[0.2em] uppercase" style={{ color: "#AAFF00", fontFamily: "'Share Tech Mono', 'Orbitron', monospace" }}>
+              // TROLL_LORD.exe
             </span>
           )}
           <motion.div
@@ -1640,13 +1660,19 @@ function VillainCharacter({
                     `0 0 50px rgba(91,77,255,0.7)`,
                     `0 0 20px rgba(91,77,255,0.3)`,
                   ]
+                : isTrollLord
+                ? [
+                    `0 0 20px rgba(170,255,0,0.3)`,
+                    `0 0 50px rgba(170,255,0,0.7)`,
+                    `0 0 20px rgba(170,255,0,0.3)`,
+                  ]
                 : [
                     `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
                     `0 0 40px hsla(${hueVal},80%,50%,0.35)`,
                     `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
                   ],
             }}
-            transition={{ repeat: Infinity, duration: isShadowbyte ? 3 : 2.5 }}
+            transition={{ repeat: Infinity, duration: isShadowbyte ? 3 : isTrollLord ? 2 : 2.5 }}
           />
           <p className="text-[11px] md:text-xs font-medium italic leading-snug" style={{ color: textColor }}>
             "{bubbleText}"
@@ -1669,8 +1695,8 @@ function VillainCharacter({
         </motion.div>
       </AnimatePresence>
       <motion.div
-        animate={{ y: isShadowbyte ? [0, -8, 0] : [0, -10, 0] }}
-        transition={{ repeat: Infinity, duration: isShadowbyte ? 4 : 3, ease: "easeInOut" }}
+        animate={{ y: isShadowbyte ? [0, -8, 0] : isTrollLord ? [0, -11, 0] : [0, -10, 0] }}
+        transition={{ repeat: Infinity, duration: isShadowbyte ? 4 : isTrollLord ? 2.5 : 3, ease: "easeInOut" }}
         whileHover={{ scale: 1.06 }}
         className="relative cursor-default"
       >
@@ -1798,6 +1824,73 @@ function VillainCharacter({
             >
               BREACHED
             </motion.span>
+          </>
+        )}
+        {isTrollLord && (
+          <>
+            {/* Floating glitchy tags */}
+            <motion.span
+              animate={{ y: [0, -4, 0], opacity: [0.7, 1, 0.7] }}
+              transition={{ repeat: Infinity, duration: 2.2, delay: 0.3 }}
+              className="absolute -top-1 -left-3 z-30 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-widest"
+              style={{
+                background: "rgba(170,255,0,0.12)",
+                border: "1px solid rgba(170,255,0,0.35)",
+                color: "#AAFF00",
+                fontFamily: "'Orbitron', monospace",
+                textShadow: "0 0 6px rgba(170,255,0,0.5)",
+              }}
+            >
+              TROLLED!
+            </motion.span>
+            <motion.span
+              animate={{ y: [0, -3, 0], opacity: [0.6, 0.9, 0.6] }}
+              transition={{ repeat: Infinity, duration: 1.8, delay: 1.0 }}
+              className="absolute -bottom-1 -left-2 z-30 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-widest"
+              style={{
+                background: "rgba(255,45,139,0.12)",
+                border: "1px solid rgba(255,45,139,0.35)",
+                color: "#FF2D8B",
+                fontFamily: "'Orbitron', monospace",
+                textShadow: "0 0 6px rgba(255,45,139,0.5)",
+              }}
+            >
+              PWNED!
+            </motion.span>
+            {/* Pink accent flicker */}
+            <motion.div
+              className="absolute inset-0 z-20 pointer-events-none rounded-full"
+              animate={{ opacity: [0, 0.15, 0, 0.1, 0] }}
+              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+              style={{
+                background: "radial-gradient(circle, rgba(255,45,139,0.2) 0%, transparent 60%)",
+                filter: "blur(8px)",
+              }}
+            />
+            {/* Emoji burst */}
+            <AnimatePresence>
+              {emojiBurst && (
+                <>
+                  {["😈", "🔥", "💀", "👑"].map((e, i) => (
+                    <motion.span
+                      key={`emoji-${i}`}
+                      initial={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+                      animate={{
+                        opacity: 0,
+                        scale: 0.5,
+                        x: (i % 2 === 0 ? -1 : 1) * (20 + i * 10),
+                        y: -(15 + i * 8),
+                      }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.7 }}
+                      className="absolute top-1/3 left-1/2 z-40 text-sm pointer-events-none"
+                    >
+                      {e}
+                    </motion.span>
+                  ))}
+                </>
+              )}
+            </AnimatePresence>
           </>
         )}
       </motion.div>
