@@ -1632,13 +1632,19 @@ function VillainCharacter({
           <motion.div
             className="absolute inset-0 rounded-xl pointer-events-none"
             animate={{
-              boxShadow: [
-                `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
-                `0 0 40px hsla(${hueVal},80%,50%,0.35)`,
-                `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
-              ],
+              boxShadow: isShadowbyte
+                ? [
+                    `0 0 20px rgba(91,77,255,0.3)`,
+                    `0 0 50px rgba(91,77,255,0.7)`,
+                    `0 0 20px rgba(91,77,255,0.3)`,
+                  ]
+                : [
+                    `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
+                    `0 0 40px hsla(${hueVal},80%,50%,0.35)`,
+                    `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
+                  ],
             }}
-            transition={{ repeat: Infinity, duration: 2.5 }}
+            transition={{ repeat: Infinity, duration: isShadowbyte ? 3 : 2.5 }}
           />
           <p className="text-[11px] md:text-xs font-medium italic leading-snug" style={{ color: textColor }}>
             "{bubbleText}"
