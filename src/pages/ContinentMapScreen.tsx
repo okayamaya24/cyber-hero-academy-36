@@ -1659,7 +1659,7 @@ function VillainCharacter({
           <div
             className="absolute -bottom-1.5 right-5 h-3 w-3 rotate-45"
             style={{
-              background: "hsla(210,40%,10%,0.88)",
+              background: bubbleBg,
               borderRight: `1px solid ${borderColor}`,
               borderBottom: `1px solid ${borderColor}`,
             }}
