@@ -1758,6 +1758,48 @@ function VillainCharacter({
             </motion.span>
           </>
         )}
+        {isShadowbyte && (
+          <>
+            {/* Eye flicker overlay */}
+            <motion.div
+              className="absolute top-[28%] left-[32%] w-[36%] h-[8%] z-30 pointer-events-none"
+              animate={{ opacity: [0.9, 0.4, 0.9, 1, 0.5, 0.9] }}
+              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+              style={{
+                background: "radial-gradient(ellipse, rgba(0,207,255,0.25) 0%, transparent 70%)",
+                filter: "blur(4px)",
+              }}
+            />
+            <motion.span
+              animate={{ y: [0, -4, 0], opacity: [0.7, 1, 0.7] }}
+              transition={{ repeat: Infinity, duration: 2.5, delay: 0.5 }}
+              className="absolute -top-1 -left-3 z-30 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-widest"
+              style={{
+                background: "rgba(91,77,255,0.12)",
+                border: "1px solid rgba(91,77,255,0.35)",
+                color: "#5B4DFF",
+                fontFamily: "'Orbitron', monospace",
+                textShadow: "0 0 6px rgba(91,77,255,0.5)",
+              }}
+            >
+              SHADOW
+            </motion.span>
+            <motion.span
+              animate={{ y: [0, -3, 0], opacity: [0.6, 0.9, 0.6] }}
+              transition={{ repeat: Infinity, duration: 2, delay: 1.2 }}
+              className="absolute -bottom-1 -left-2 z-30 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-widest"
+              style={{
+                background: "rgba(0,207,255,0.1)",
+                border: "1px solid rgba(0,207,255,0.3)",
+                color: "#00CFFF",
+                fontFamily: "'Orbitron', monospace",
+                textShadow: "0 0 6px rgba(0,207,255,0.5)",
+              }}
+            >
+              BREACHED
+            </motion.span>
+          </>
+        )}
       </motion.div>
     </motion.div>
   );
