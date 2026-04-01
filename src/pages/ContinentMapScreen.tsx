@@ -35,10 +35,13 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
     "The internet is MINE!",
   ],
   "The Firewall Phantom": [
-    "I am the ghost in the machine!",
-    "Your firewalls can't stop me!",
-    "I phase through your defences!",
-    "The network belongs to me now!",
+    "Your firewall means nothing to me.",
+    "I've already been inside your system.",
+    "Every packet you send... I intercept.",
+    "You can't fight what you can't see. 👻",
+    "I am the ghost in your machine.",
+    "Encryption won't save you here.",
+    "I was here before you logged in.",
   ],
   "The Data Thief": [
     "Your data is MINE!",
