@@ -35,10 +35,13 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
     "The internet is MINE!",
   ],
   "The Firewall Phantom": [
-    "I am the ghost in the machine!",
-    "Your firewalls can't stop me!",
-    "I phase through your defences!",
-    "The network belongs to me now!",
+    "Your firewall means nothing to me.",
+    "I've already been inside your system.",
+    "Every packet you send... I intercept.",
+    "You can't fight what you can't see. 👻",
+    "I am the ghost in your machine.",
+    "Encryption won't save you here.",
+    "I was here before you logged in.",
   ],
   "The Data Thief": [
     "Your data is MINE!",
@@ -63,15 +66,18 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
 /* ─── Villain Character ─────────────────────────────────── */
 import keybreakerImg from "@/assets/villains/keybreaker.png";
 import phisherKingImg from "@/assets/villains/phisher-king.png";
+import firewallPhantomImg from "@/assets/villains/firewall-phantom.png";
 
 const VILLAIN_ASSETS: Record<string, { img: string; hue: number; glowHsl: string; textHsl: string; borderHsl: string }> = {
   "The Keybreaker": { img: keybreakerImg, hue: 140, glowHsl: "140, 85%, 50%", textHsl: "hsl(140, 80%, 70%)", borderHsl: "hsla(140, 80%, 50%, 0.3)" },
   "The Phisher King": { img: phisherKingImg, hue: 195, glowHsl: "195, 85%, 50%", textHsl: "hsl(195, 80%, 70%)", borderHsl: "hsla(195, 80%, 50%, 0.3)" },
+  "The Firewall Phantom": { img: firewallPhantomImg, hue: 300, glowHsl: "300, 85%, 50%", textHsl: "hsl(340, 80%, 75%)", borderHsl: "hsla(300, 80%, 50%, 0.3)" },
 };
 
-const VILLAIN_DYNAMIC_TAUNTS: Record<string, { locked: string; available: string; completed: string; boss: string }> = {
+const VILLAIN_DYNAMIC_TAUNTS: Record<string, { locked: string; available: string; completed: string; boss: string; first?: string; lastLocked?: string }> = {
   "The Keybreaker": { locked: "Too weak. I broke that instantly.", available: "Let's see if you're actually secure.", completed: "Hmm… not bad.", boss: "You'll never break my code!" },
   "The Phisher King": { locked: "Locked out? Maybe this email can help...", available: "Go ahead... click something.", completed: "You spotted that one... impressive.", boss: "One click is all I need!" },
+  "The Firewall Phantom": { locked: "That zone is sealed. I sealed it myself.", available: "Brave. Let's see if you're ready for this one.", completed: "You got lucky. Don't expect that again.", boss: "You actually made it here? ...Impressive.", first: "So it begins. I've been waiting.", lastLocked: "One more wall between you and me." },
 };
 
 interface VillainCharacterProps {
@@ -456,7 +462,14 @@ export default function ContinentMapScreen() {
                     key={zone.id}
                     coordinates={[coord.lng, coord.lat]}
                     onClick={() => handleZoneClick(zone, i)}
-                    onMouseEnter={() => setHoveredNodeStatus(zone.isBoss ? "boss" : status)}
+                    onMouseEnter={() => {
+                      const isFirst = i === 0 && status !== "completed";
+                      const lockedZones = zoneStatuses.filter((s, idx) => s === "locked" && !continent.zones[idx]?.isBoss);
+                      const isLastLocked = status === "locked" && lockedZones.length === 1;
+                      if (isFirst) setHoveredNodeStatus("first");
+                      else if (isLastLocked) setHoveredNodeStatus("lastLocked");
+                      else setHoveredNodeStatus(zone.isBoss ? "boss" : status);
+                    }}
                     onMouseLeave={() => setHoveredNodeStatus(null)}
                     style={{ cursor: isLocked ? "not-allowed" : "pointer" }}
                   >
