@@ -1576,6 +1576,8 @@ function VillainCharacter({
   const asset = VILLAIN_ASSETS[villainName];
   const dynamicTaunts = VILLAIN_DYNAMIC_TAUNTS[villainName];
   const isShadowbyte = villainName === "SHADOWBYTE";
+  const isTrollLord = villainName === "The Troll Lord";
+  const [emojiBurst, setEmojiBurst] = useState(false);
   useEffect(() => {
     if (hoveredNodeStatus) return;
     const interval = setInterval(() => setTauntIdx((i) => (i + 1) % taunts.length), 3000);
