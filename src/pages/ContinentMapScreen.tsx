@@ -19,6 +19,7 @@ import phisherKingImg from "@/assets/villains/phisher-king.png";
 import firewallPhantomImg from "@/assets/villains/firewall-phantom.png";
 import dataThiefImg from "@/assets/villains/data-thief.png";
 import malwareMaxImg from "@/assets/villains/malware-max.png";
+import shadowbyteImg from "@/assets/villains/shadowbyte.png";
 
 /* ═══════════════════════════════════════════════════════════
    UNLOCK LOGIC
@@ -1025,6 +1026,7 @@ const VILLAIN_ASSETS: Record<string, { img: string; color: string }> = {
   "The Firewall Phantom": { img: firewallPhantomImg, color: "300, 85%, 50%" },
   "The Data Thief": { img: dataThiefImg, color: "175, 85%, 45%" },
   "Malware Max": { img: malwareMaxImg, color: "110, 100%, 55%" },
+  SHADOWBYTE: { img: shadowbyteImg, color: "249, 100%, 65%" },
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -1493,10 +1495,13 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
     "Chaos is just code that's having fun.",
   ],
   SHADOWBYTE: [
-    "You dare face ME?",
-    "I am every threat combined.",
-    "Your Cyber Hero skills end HERE.",
-    "The digital world is already mine.",
+    "Every password you've ever used... I have it.",
+    "The cold doesn't bother me. Neither do you.",
+    "I don't hack systems. I erase them.",
+    "Your credentials expired the moment I arrived.",
+    "Nothing survives the void. Not even your data.",
+    "I've been watching from the dark since you started.",
+    "Silence is my weapon. The breach already happened.",
   ],
 };
 const VILLAIN_DYNAMIC_TAUNTS: Record<
@@ -1542,10 +1547,12 @@ const VILLAIN_DYNAMIC_TAUNTS: Record<
     lastLocked: "Almost there! My best bugs are waiting for you.",
   },
   SHADOWBYTE: {
-    locked: "That zone is mine. Stay away.",
-    available: "You dare approach?",
-    completed: "One zone. I have everything else.",
-    boss: "You want to face my Core? Your funeral.",
+    locked: "That zone is frozen solid. I made sure of it.",
+    available: "Go ahead. Walk into the cold.",
+    completed: "Hmm. You cleared that one. I underestimated you.",
+    boss: "You reached the void. Few ever do. Fewer survive.",
+    first: "Into the darkness you go. I'll be watching.",
+    lastLocked: "One last gate stands between you and me.",
   },
 };
 
@@ -1561,7 +1568,7 @@ function VillainCharacter({
   const [showShimmer, setShowShimmer] = useState(false);
   const asset = VILLAIN_ASSETS[villainName];
   const dynamicTaunts = VILLAIN_DYNAMIC_TAUNTS[villainName];
-
+  const isShadowbyte = villainName === "SHADOWBYTE";
   useEffect(() => {
     if (hoveredNodeStatus) return;
     const interval = setInterval(() => setTauntIdx((i) => (i + 1) % taunts.length), 3000);
@@ -1569,6 +1576,8 @@ function VillainCharacter({
   }, [taunts.length, hoveredNodeStatus]);
 
   useEffect(() => {
+    const baseDelay = isShadowbyte ? 8000 : 6000;
+    const randRange = isShadowbyte ? 2000 : 3000;
     const schedule = () =>
       setTimeout(
         () => {
@@ -1576,11 +1585,11 @@ function VillainCharacter({
           setTimeout(() => setShowShimmer(false), 600);
           schedule();
         },
-        6000 + Math.random() * 3000,
+        baseDelay + Math.random() * randRange,
       );
     const t = schedule();
     return () => clearTimeout(t as any);
-  }, []);
+  }, [isShadowbyte]);
 
   const bubbleText =
     hoveredNodeStatus && dynamicTaunts
@@ -1589,8 +1598,10 @@ function VillainCharacter({
   const bubbleKey = hoveredNodeStatus || `idle-${tauntIdx}`;
   const glowHsl = asset?.color ?? "140, 85%, 50%";
   const hueVal = glowHsl.split(",")[0];
-  const textColor = `hsl(${hueVal}, 70%, 72%)`;
-  const borderColor = `hsla(${hueVal}, 75%, 50%, 0.3)`;
+  
+  const textColor = isShadowbyte ? "#9d8cff" : `hsl(${hueVal}, 70%, 72%)`;
+  const borderColor = isShadowbyte ? "rgba(91,77,255,0.4)" : `hsla(${hueVal}, 75%, 50%, 0.3)`;
+  const bubbleBg = isShadowbyte ? "rgba(4,6,20,0.92)" : "hsla(210,40%,10%,0.88)";
 
   return (
     <motion.div
@@ -1608,21 +1619,34 @@ function VillainCharacter({
           transition={{ duration: 0.3 }}
           className="relative mr-2 mb-1 max-w-[170px] md:mr-3 md:max-w-[210px] rounded-xl rounded-br-sm px-3 py-2 shadow-xl backdrop-blur-md"
           style={{
-            background: "hsla(210,40%,10%,0.88)",
+            background: bubbleBg,
             border: `1px solid ${borderColor}`,
-            boxShadow: `0 0 18px hsla(${hueVal},80%,50%,0.15)`,
+            boxShadow: isShadowbyte
+              ? `0 0 20px rgba(91,77,255,0.3)`
+              : `0 0 18px hsla(${hueVal},80%,50%,0.15)`,
           }}
         >
+          {isShadowbyte && (
+            <span className="block mb-1 text-[8px] tracking-[0.2em] uppercase" style={{ color: "#5B4DFF", fontFamily: "'Share Tech Mono', 'Orbitron', monospace" }}>
+              // SHADOWBYTE.exe
+            </span>
+          )}
           <motion.div
             className="absolute inset-0 rounded-xl pointer-events-none"
             animate={{
-              boxShadow: [
-                `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
-                `0 0 40px hsla(${hueVal},80%,50%,0.35)`,
-                `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
-              ],
+              boxShadow: isShadowbyte
+                ? [
+                    `0 0 20px rgba(91,77,255,0.3)`,
+                    `0 0 50px rgba(91,77,255,0.7)`,
+                    `0 0 20px rgba(91,77,255,0.3)`,
+                  ]
+                : [
+                    `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
+                    `0 0 40px hsla(${hueVal},80%,50%,0.35)`,
+                    `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
+                  ],
             }}
-            transition={{ repeat: Infinity, duration: 2.5 }}
+            transition={{ repeat: Infinity, duration: isShadowbyte ? 3 : 2.5 }}
           />
           <p className="text-[11px] md:text-xs font-medium italic leading-snug" style={{ color: textColor }}>
             "{bubbleText}"
@@ -1637,7 +1661,7 @@ function VillainCharacter({
           <div
             className="absolute -bottom-1.5 right-5 h-3 w-3 rotate-45"
             style={{
-              background: "hsla(210,40%,10%,0.88)",
+              background: bubbleBg,
               borderRight: `1px solid ${borderColor}`,
               borderBottom: `1px solid ${borderColor}`,
             }}
@@ -1645,8 +1669,8 @@ function VillainCharacter({
         </motion.div>
       </AnimatePresence>
       <motion.div
-        animate={{ y: [0, -10, 0] }}
-        transition={{ repeat: Infinity, duration: 3 }}
+        animate={{ y: isShadowbyte ? [0, -8, 0] : [0, -10, 0] }}
+        transition={{ repeat: Infinity, duration: isShadowbyte ? 4 : 3, ease: "easeInOut" }}
         whileHover={{ scale: 1.06 }}
         className="relative cursor-default"
       >
@@ -1671,17 +1695,31 @@ function VillainCharacter({
             />
             <AnimatePresence>
               {showShimmer && (
-                <motion.div
-                  initial={{ left: "-30%", opacity: 0 }}
-                  animate={{ left: "130%", opacity: [0, 0.7, 0] }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.6 }}
-                  className="absolute top-0 z-20 h-full w-[30%] pointer-events-none"
-                  style={{
-                    background: `linear-gradient(90deg, transparent, hsla(${hueVal},80%,60%,0.4), transparent)`,
-                    filter: "blur(4px)",
-                  }}
-                />
+                isShadowbyte ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.6 }}
+                    animate={{ opacity: [0, 0.5, 0], scale: [0.6, 1.6, 2] }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="absolute inset-0 z-20 pointer-events-none rounded-full"
+                    style={{
+                      background: "radial-gradient(circle, rgba(91,77,255,0.35) 0%, rgba(91,77,255,0.1) 40%, transparent 70%)",
+                      filter: "blur(6px)",
+                    }}
+                  />
+                ) : (
+                  <motion.div
+                    initial={{ left: "-30%", opacity: 0 }}
+                    animate={{ left: "130%", opacity: [0, 0.7, 0] }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="absolute top-0 z-20 h-full w-[30%] pointer-events-none"
+                    style={{
+                      background: `linear-gradient(90deg, transparent, hsla(${hueVal},80%,60%,0.4), transparent)`,
+                      filter: "blur(4px)",
+                    }}
+                  />
+                )
               )}
             </AnimatePresence>
           </div>
@@ -1717,6 +1755,48 @@ function VillainCharacter({
               }}
             >
               ERROR
+            </motion.span>
+          </>
+        )}
+        {isShadowbyte && (
+          <>
+            {/* Eye flicker overlay */}
+            <motion.div
+              className="absolute top-[28%] left-[32%] w-[36%] h-[8%] z-30 pointer-events-none"
+              animate={{ opacity: [0.9, 0.4, 0.9, 1, 0.5, 0.9] }}
+              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+              style={{
+                background: "radial-gradient(ellipse, rgba(0,207,255,0.25) 0%, transparent 70%)",
+                filter: "blur(4px)",
+              }}
+            />
+            <motion.span
+              animate={{ y: [0, -4, 0], opacity: [0.7, 1, 0.7] }}
+              transition={{ repeat: Infinity, duration: 2.5, delay: 0.5 }}
+              className="absolute -top-1 -left-3 z-30 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-widest"
+              style={{
+                background: "rgba(91,77,255,0.12)",
+                border: "1px solid rgba(91,77,255,0.35)",
+                color: "#5B4DFF",
+                fontFamily: "'Orbitron', monospace",
+                textShadow: "0 0 6px rgba(91,77,255,0.5)",
+              }}
+            >
+              SHADOW
+            </motion.span>
+            <motion.span
+              animate={{ y: [0, -3, 0], opacity: [0.6, 0.9, 0.6] }}
+              transition={{ repeat: Infinity, duration: 2, delay: 1.2 }}
+              className="absolute -bottom-1 -left-2 z-30 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-widest"
+              style={{
+                background: "rgba(0,207,255,0.1)",
+                border: "1px solid rgba(0,207,255,0.3)",
+                color: "#00CFFF",
+                fontFamily: "'Orbitron', monospace",
+                textShadow: "0 0 6px rgba(0,207,255,0.5)",
+              }}
+            >
+              BREACHED
             </motion.span>
           </>
         )}
