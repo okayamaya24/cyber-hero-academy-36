@@ -1617,11 +1617,18 @@ function VillainCharacter({
           transition={{ duration: 0.3 }}
           className="relative mr-2 mb-1 max-w-[170px] md:mr-3 md:max-w-[210px] rounded-xl rounded-br-sm px-3 py-2 shadow-xl backdrop-blur-md"
           style={{
-            background: "hsla(210,40%,10%,0.88)",
+            background: bubbleBg,
             border: `1px solid ${borderColor}`,
-            boxShadow: `0 0 18px hsla(${hueVal},80%,50%,0.15)`,
+            boxShadow: isShadowbyte
+              ? `0 0 20px rgba(91,77,255,0.3)`
+              : `0 0 18px hsla(${hueVal},80%,50%,0.15)`,
           }}
         >
+          {isShadowbyte && (
+            <span className="block mb-1 text-[8px] tracking-[0.2em] uppercase" style={{ color: "#5B4DFF", fontFamily: "'Share Tech Mono', 'Orbitron', monospace" }}>
+              // SHADOWBYTE.exe
+            </span>
+          )}
           <motion.div
             className="absolute inset-0 rounded-xl pointer-events-none"
             animate={{
