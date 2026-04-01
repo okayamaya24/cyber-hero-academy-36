@@ -44,10 +44,13 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
     "I was here before you logged in.",
   ],
   "The Data Thief": [
-    "Your data is MINE!",
-    "I know your name, address, everything!",
-    "Privacy? What privacy?",
-    "I've stolen it all already!",
+    "This network is mine. Every node, every path.",
+    "I don't block threats. I become them.",
+    "Your data passed through me before you knew it existed.",
+    "Every lock you see? I placed it there.",
+    "You think you're browsing. I think you're being watched.",
+    "No one enters this network without my permission.",
+    "The firewall isn't a wall. It's a cage I built for you.",
   ],
   "Malware Max": [
     "My viruses are EVERYWHERE, mate!",
