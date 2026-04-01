@@ -20,7 +20,7 @@ import firewallPhantomImg from "@/assets/villains/firewall-phantom.png";
 import dataThiefImg from "@/assets/villains/data-thief.png";
 
 /* ═══════════════════════════════════════════════════════════
-   NORTH AMERICA UNLOCK ORDER
+   UNLOCK LOGIC
    ═══════════════════════════════════════════════════════════ */
 const NA_UNLOCK_ORDER = [
   "hq",
@@ -66,175 +66,823 @@ function getZoneStatus(
 }
 
 /* ═══════════════════════════════════════════════════════════
-   STORY SYSTEM — cutscenes + completion only (no ambient)
+   STORY SCRIPTS — ALL 7 CONTINENTS
    ═══════════════════════════════════════════════════════════ */
 type SpeakerRole = "guide" | "villain";
 interface DialogueLine {
   speaker: SpeakerRole;
-  name?: string;
   text: string;
 }
-
 interface ZoneStoryScript {
   intro: DialogueLine[];
   completion: DialogueLine[];
   xp: number;
   badge?: string;
-  villainName: string;
 }
 
-const NA_ZONE_SCRIPTS: Record<string, ZoneStoryScript> = {
-  __map__: {
-    xp: 0,
-    villainName: "The Keybreaker",
-    intro: [
-      { speaker: "villain", text: "Heh heh heh… No password can stop me! I've cracked them ALL, Guardian!" },
-      { speaker: "guide", text: "Guardian — the Keybreaker has broken into systems across North America." },
-      { speaker: "guide", text: "Start at HQ and begin your training. The Digital World is counting on you!" },
-    ],
-    completion: [],
+/* ── Map intro per continent ────────────────────────── */
+const CONTINENT_MAP_INTROS: Record<string, DialogueLine[]> = {
+  "north-america": [
+    { speaker: "villain", text: "Heh heh heh… No password can stop me! I've cracked them ALL, Guardian!" },
+    { speaker: "guide", text: "Guardian — the Keybreaker has broken into systems across North America." },
+    { speaker: "guide", text: "Start at HQ and begin your training. The Digital World is counting on you!" },
+  ],
+  europe: [
+    { speaker: "villain", text: "Click the link, Guardian… I dare you! Every email is a trap I've set for you! 🎣" },
+    { speaker: "guide", text: "The Phisher King has flooded Europe with fake emails and phishing traps." },
+    { speaker: "guide", text: "People are falling for his tricks every minute. We need to stop him — starting now!" },
+  ],
+  africa: [
+    { speaker: "villain", text: "I'll make everyone feel terrible online! Misery is my greatest weapon, Guardian!" },
+    { speaker: "guide", text: "The Troll Lord's army is spreading cyberbullying and hate across Africa's networks." },
+    { speaker: "guide", text: "Kindness is the most powerful shield there is. Let's take the fight to him!" },
+  ],
+  asia: [
+    { speaker: "villain", text: "Your firewalls mean nothing to me. I've already been inside your system! 👻" },
+    { speaker: "guide", text: "The Firewall Phantom is a ghost in Asia's networks — invisible and dangerous." },
+    { speaker: "guide", text: "You'll need to use everything you know about privacy, firewalls, and encryption!" },
+  ],
+  "south-america": [
+    { speaker: "villain", text: "Your data is MINE! Name, address, everything — I've got it all, Guardian!" },
+    { speaker: "guide", text: "The Data Thief has been stealing personal information from kids across South America." },
+    { speaker: "guide", text: "Learn to protect your identity and personal information — before it's too late!" },
+  ],
+  australia: [
+    { speaker: "villain", text: "My viruses are EVERYWHERE, mate! Your device doesn't stand a chance!" },
+    { speaker: "guide", text: "Malware Max has unleashed a swarm of viruses across Australia's devices." },
+    { speaker: "guide", text: "Use your antivirus knowledge and safe download skills to clean up the damage!" },
+  ],
+  antarctica: [
+    { speaker: "villain", text: "Impressive that you made it this far, Guardian. But you've never faced ME." },
+    { speaker: "guide", text: "SHADOWBYTE is every cyber threat combined — the ultimate final challenge." },
+    { speaker: "guide", text: "Use every skill you've learned across all six continents. This is it, Guardian!" },
+  ],
+};
+
+/* ── Zone scripts per continent ─────────────────────── */
+const ALL_ZONE_SCRIPTS: Record<string, Record<string, ZoneStoryScript>> = {
+  /* ── NORTH AMERICA ── */
+  "north-america": {
+    hq: {
+      xp: 100,
+      badge: "CyberGuardian Recruit",
+      intro: [
+        { speaker: "guide", text: "Welcome to Cyber Hero Command! This is where every Guardian's journey begins." },
+        { speaker: "villain", text: "A training room? While you study, I'll crack every account in the city…" },
+        { speaker: "guide", text: "Ignore him. Complete your orientation to unlock your first mission!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Orientation complete — you're officially a CyberGuardian recruit!" },
+        { speaker: "guide", text: "Pixel Port in Los Angeles is now unlocked. Time to deploy!" },
+        { speaker: "villain", text: "One city. There are thousands more. Enjoy this tiny victory…" },
+      ],
+    },
+    "pixel-port": {
+      xp: 150,
+      badge: "Digital Balance Badge",
+      intro: [
+        { speaker: "villain", text: "Pixel Port — my favourite hunting ground. These kids have no idea!" },
+        {
+          speaker: "guide",
+          text: "Teach them about digital balance and online safety. A healthy Guardian is a powerful one!",
+        },
+      ],
+      completion: [
+        { speaker: "guide", text: "Pixel Port is secure! The kids here know how to balance their digital lives." },
+        { speaker: "guide", text: "Digital Balance Badge earned! Signal Summit in Denver is now unlocked." },
+      ],
+    },
+    "signal-summit": {
+      xp: 175,
+      badge: "WiFi Watchdog Badge",
+      intro: [
+        {
+          speaker: "villain",
+          text: "All your WiFi passwords are mine! Every café, every hotel — I own their networks!",
+        },
+        { speaker: "guide", text: "Learn to spot safe versus fake networks. Secure the relay stations!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Signal Summit is clean! The Keybreaker's fake hotspots are destroyed." },
+        { speaker: "guide", text: "WiFi Watchdog Badge earned! Code Canyon in Chicago is now open." },
+      ],
+    },
+    "code-canyon": {
+      xp: 200,
+      badge: "Scam Spotter Badge",
+      intro: [
+        { speaker: "villain", text: "Act NOW or your account will be DELETED! Panic makes people careless…" },
+        { speaker: "guide", text: "Slow down, think carefully, spot the scam. That's your mission here." },
+      ],
+      completion: [
+        { speaker: "guide", text: "Code Canyon secured! Chicago's residents can now spot a scam anywhere." },
+        { speaker: "guide", text: "Scam Spotter Badge earned! Encrypt Enclave in Toronto is now unlocked." },
+      ],
+    },
+    "encrypt-enclave": {
+      xp: 225,
+      badge: "Code Breaker Badge",
+      intro: [
+        {
+          speaker: "villain",
+          text: "Your encryption is useless! I've cracked stronger codes than anything you can build!",
+        },
+        { speaker: "guide", text: "Master encryption and prove that strong codes are truly unbreakable!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Encrypt Enclave is secure! The decryption bots are destroyed." },
+        { speaker: "guide", text: "Code Breaker Badge earned! Password Peak in New York is now unlocked." },
+      ],
+    },
+    "password-peak": {
+      xp: 250,
+      badge: "Password Master Badge",
+      intro: [
+        { speaker: "villain", text: "password123… fluffy… mybirthday… Your passwords are embarrassingly easy!" },
+        { speaker: "guide", text: "Every strong password you create is a lock he can't pick. Build the fortress!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Password Peak is ours! The Keybreaker's credential database is destroyed." },
+        { speaker: "villain", text: "My passwords… YEARS of work! You'll pay for this, Guardian!" },
+        { speaker: "guide", text: "Password Master Badge earned! Arctic Archive is now unlocked." },
+      ],
+    },
+    "arctic-archive": {
+      xp: 275,
+      badge: "Data Guardian Badge",
+      intro: [
+        { speaker: "villain", text: "Cold storage won't save your secrets forever. My bots never get cold…" },
+        { speaker: "guide", text: "Learn the 3-2-1 backup rule and protect the Archive!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Arctic Archive is safe! Every backup is secured." },
+        { speaker: "guide", text: "Data Guardian Badge earned! Shadow Station in Mexico City is now open." },
+      ],
+    },
+    "shadow-station": {
+      xp: 275,
+      badge: "Game Guardian Badge",
+      intro: [
+        { speaker: "villain", text: "Want free in-game items? Just give me your password… such a simple trap." },
+        { speaker: "guide", text: "Help kids here learn who to trust in online games!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Shadow Station is clear! The fake gaming networks are shut down." },
+        { speaker: "guide", text: "Game Guardian Badge earned! Firewall Fortress in Atlanta is now unlocked." },
+      ],
+    },
+    "firewall-fortress": {
+      xp: 300,
+      badge: "Firewall Builder Badge",
+      intro: [
+        { speaker: "villain", text: "Your firewalls are useless against me! I phase right through them!" },
+        { speaker: "guide", text: "Build the strongest firewall you can — then we go after the Keybreaker himself!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Firewall Fortress is holding! The Keybreaker can't get through anymore." },
+        { speaker: "guide", text: "Firewall Builder Badge earned. One zone left — the Keybreaker's Vault!" },
+      ],
+    },
+    "boss-keybreaker": {
+      xp: 500,
+      badge: "North America Champion",
+      intro: [
+        { speaker: "guide", text: "This is it, Guardian. The Keybreaker's Vault — his true stronghold." },
+        { speaker: "villain", text: "Welcome to my domain. No one leaves the Vault with their data intact." },
+        { speaker: "guide", text: "You've trained for this. Go show him what a true CyberGuardian can do!" },
+      ],
+      completion: [
+        { speaker: "villain", text: "I… I don't believe it. No Guardian has ever defeated me. It's over." },
+        { speaker: "guide", text: "GUARDIAN! You did it! North America is free!" },
+        { speaker: "guide", text: "North America Champion Badge earned! The Phisher King stirs in Europe…" },
+      ],
+    },
   },
-  hq: {
-    xp: 100,
-    badge: "CyberGuardian Recruit",
-    villainName: "The Keybreaker",
-    intro: [
-      { speaker: "guide", text: "Welcome to Cyber Hero Command! This is where every Guardian's journey begins." },
-      { speaker: "villain", text: "A training room? While you study, I'll crack every account in the city…" },
-      { speaker: "guide", text: "Ignore him. Complete your orientation to unlock your first mission!" },
-    ],
-    completion: [
-      { speaker: "guide", text: "Orientation complete — you're officially a CyberGuardian recruit!" },
-      { speaker: "guide", text: "Pixel Port in Los Angeles is now unlocked. Time to deploy!" },
-      { speaker: "villain", text: "One city. There are thousands more. Enjoy this tiny victory…" },
-    ],
+
+  /* ── EUROPE ── */
+  europe: {
+    "phish-lagoon": {
+      xp: 150,
+      badge: "Phish Spotter Badge",
+      intro: [
+        { speaker: "villain", text: "Click the link… it's from your bank, I promise! 🎣 Heh heh heh…" },
+        {
+          speaker: "guide",
+          text: "Phish Lagoon is crawling with fake emails. Learn to spot every one of the Phisher King's traps!",
+        },
+      ],
+      completion: [
+        {
+          speaker: "guide",
+          text: "Phish Lagoon is clear! The people of London can now spot a phishing email instantly.",
+        },
+        { speaker: "guide", text: "Phish Spotter Badge earned! Download Dungeon in Berlin is now unlocked." },
+      ],
+    },
+    "download-dungeon": {
+      xp: 175,
+      badge: "Safe Download Badge",
+      intro: [
+        { speaker: "villain", text: "Free games! Free movies! Download everything… and let my malware in! 😈" },
+        {
+          speaker: "guide",
+          text: "Only download from official sources. Never click suspicious links. Let's clean this dungeon out!",
+        },
+      ],
+      completion: [
+        { speaker: "guide", text: "Download Dungeon cleared! Every piece of malware has been destroyed." },
+        { speaker: "guide", text: "Safe Download Badge earned! Code Castle in Paris is now unlocked." },
+      ],
+    },
+    "code-castle": {
+      xp: 200,
+      badge: "2FA Champion Badge",
+      intro: [
+        { speaker: "villain", text: "Stolen your password already… but wait, what's this 2FA code? Curse you!" },
+        {
+          speaker: "guide",
+          text: "Two-factor authentication stops hackers even when they have your password. Master it!",
+        },
+      ],
+      completion: [
+        { speaker: "guide", text: "Code Castle is secured! Two-factor authentication is now protecting everyone." },
+        { speaker: "guide", text: "2FA Champion Badge earned! WiFi Watch in Oslo is now open." },
+      ],
+    },
+    "wifi-watch": {
+      xp: 200,
+      badge: "Network Guardian Badge",
+      intro: [
+        { speaker: "villain", text: "Connect to my free WiFi… I'll intercept everything you send! 📶" },
+        { speaker: "guide", text: "Public WiFi is dangerous. Learn to spot safe networks and protect your data!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "WiFi Watch secured! Oslo's networks are clean and safe again." },
+        { speaker: "guide", text: "Network Guardian Badge earned! Data Fortress in Budapest is now unlocked." },
+      ],
+    },
+    "data-fortress": {
+      xp: 225,
+      badge: "Data Defender Badge",
+      intro: [
+        { speaker: "villain", text: "Your personal data… address, birthday, school — all mine now!" },
+        {
+          speaker: "guide",
+          text: "The Phisher King is harvesting personal data. Learn what to share and what to protect!",
+        },
+      ],
+      completion: [
+        { speaker: "guide", text: "Data Fortress is secure! Personal information is protected across Hungary." },
+        { speaker: "guide", text: "Data Defender Badge earned! Cyber Citadel in Madrid is now unlocked." },
+      ],
+    },
+    "cyber-citadel": {
+      xp: 250,
+      badge: "Cyber Shield Badge",
+      intro: [
+        { speaker: "villain", text: "The citadel falls to me! Every defence you build, I tear down!" },
+        {
+          speaker: "guide",
+          text: "This is the Phisher King's last foothold before his lair. Hold the line, Guardian!",
+        },
+      ],
+      completion: [
+        { speaker: "guide", text: "Cyber Citadel is ours! The Phisher King is cornered." },
+        { speaker: "guide", text: "Cyber Shield Badge earned! The Phisher King's Lair in Rome is now unlocked!" },
+      ],
+    },
+    "boss-phisher": {
+      xp: 500,
+      badge: "Europe Champion",
+      intro: [
+        { speaker: "guide", text: "The Phisher King's Lair — Rome, Italy. His operation ends here." },
+        {
+          speaker: "villain",
+          text: "One last link to click, Guardian… and everything you've built comes crashing down.",
+        },
+        { speaker: "guide", text: "Don't click anything he offers. Use everything you know. Let's finish this!" },
+      ],
+      completion: [
+        { speaker: "villain", text: "My phishing empire… ruined! How did you see through every trap?!" },
+        { speaker: "guide", text: "Europe is free! The Phisher King's nets are empty!" },
+        { speaker: "guide", text: "Europe Champion Badge earned! The Troll Lord awaits in Africa…" },
+      ],
+    },
   },
-  "pixel-port": {
-    xp: 150,
-    badge: "Digital Balance Badge",
-    villainName: "The Keybreaker",
-    intro: [
-      { speaker: "villain", text: "Pixel Port — my favourite hunting ground. These kids have no idea!" },
-      { speaker: "guide", text: "Teach them about digital balance and online safety." },
-    ],
-    completion: [
-      { speaker: "guide", text: "Pixel Port is secure! The kids here know how to balance their digital lives." },
-      { speaker: "guide", text: "Digital Balance Badge earned! Signal Summit in Denver is now unlocked." },
-    ],
+
+  /* ── AFRICA ── */
+  africa: {
+    "stranger-shore": {
+      xp: 150,
+      badge: "Stranger Safety Badge",
+      intro: [
+        { speaker: "villain", text: "Trust me, little Guardian… I'm your friend! Tell me where you live!" },
+        {
+          speaker: "guide",
+          text: "Stranger Shore is full of online predators pretending to be friends. Teach kids who to trust!",
+        },
+      ],
+      completion: [
+        { speaker: "guide", text: "Stranger Shore is safe! Everyone here now knows how to handle online strangers." },
+        { speaker: "guide", text: "Stranger Safety Badge earned! Dark Web Den in Cairo is now unlocked." },
+      ],
+    },
+    "dark-web-den": {
+      xp: 175,
+      badge: "Shadow Buster Badge",
+      intro: [
+        { speaker: "villain", text: "The dark web is MY domain, Guardian. You don't belong here!" },
+        { speaker: "guide", text: "The Troll Lord hides his worst operations here. Shine light into the shadows!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Dark Web Den exposed! The Troll Lord's secret operation is shut down." },
+        { speaker: "guide", text: "Shadow Buster Badge earned! Kindness Citadel in Nairobi is now unlocked." },
+      ],
+    },
+    "kindness-citadel": {
+      xp: 200,
+      badge: "Kindness Champion Badge",
+      intro: [
+        { speaker: "villain", text: "I'll make everyone feel terrible! Nobody can stop my trolls!" },
+        { speaker: "guide", text: "Be an upstander, not a bystander. Kindness is the most powerful shield there is!" },
+      ],
+      completion: [
+        {
+          speaker: "guide",
+          text: "Kindness Citadel is glowing! The trolls have been driven out by courage and kindness.",
+        },
+        { speaker: "guide", text: "Kindness Champion Badge earned! Signal Savanna in Accra is now open." },
+      ],
+    },
+    "signal-savanna": {
+      xp: 200,
+      badge: "Signal Safe Badge",
+      intro: [
+        { speaker: "villain", text: "My troll signals spread across the savanna! Nothing can stop them!" },
+        { speaker: "guide", text: "The Troll Lord is using fake signals to spread misinformation. Let's stop them!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Signal Savanna is clear! Accra's networks are troll-free." },
+        { speaker: "guide", text: "Signal Safe Badge earned! Code Cape in Cape Town is now unlocked." },
+      ],
+    },
+    "code-cape": {
+      xp: 225,
+      badge: "Code Cape Badge",
+      intro: [
+        { speaker: "villain", text: "The Cape of Good Hacking — that's what I call it now! Heh heh heh!" },
+        { speaker: "guide", text: "The Troll Lord has corrupted Cape Town's systems. Time to clean them up!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Code Cape is secured! Cape Town's systems are running clean again." },
+        { speaker: "guide", text: "Code Cape Badge earned! Data Delta in Addis Ababa is now unlocked." },
+      ],
+    },
+    "data-delta": {
+      xp: 250,
+      badge: "Data Delta Badge",
+      intro: [
+        { speaker: "villain", text: "Data flows through me now! Every byte in the Delta is mine!" },
+        {
+          speaker: "guide",
+          text: "The Data Delta is the Troll Lord's last stronghold before his bridge. Clear it out!",
+        },
+      ],
+      completion: [
+        { speaker: "guide", text: "Data Delta cleared! The Troll Lord is running out of places to hide." },
+        { speaker: "guide", text: "Data Delta Badge earned! The Troll Lord's Bridge in the Sahara is now unlocked!" },
+      ],
+    },
+    "boss-troll": {
+      xp: 500,
+      badge: "Africa Champion",
+      intro: [
+        {
+          speaker: "guide",
+          text: "The Troll Lord's Bridge — the Sahara Desert. His reign of online cruelty ends here.",
+        },
+        { speaker: "villain", text: "You want to cross MY bridge, Guardian? You'll have to defeat every troll first!" },
+        { speaker: "guide", text: "Kindness, courage, and everything you've learned. Let's bring him down!" },
+      ],
+      completion: [
+        { speaker: "villain", text: "My trolls… scattered! How did a little Guardian defeat them all?!" },
+        { speaker: "guide", text: "Africa is free! The Troll Lord's bridge is destroyed!" },
+        { speaker: "guide", text: "Africa Champion Badge earned! The Firewall Phantom haunts Asia…" },
+      ],
+    },
   },
-  "signal-summit": {
-    xp: 175,
-    badge: "WiFi Watchdog Badge",
-    villainName: "The Keybreaker",
-    intro: [
-      { speaker: "villain", text: "All your WiFi passwords are mine! I own every network!" },
-      { speaker: "guide", text: "Learn to spot safe versus fake networks. Secure the relay stations!" },
-    ],
-    completion: [
-      { speaker: "guide", text: "Signal Summit is clean! The Keybreaker's fake hotspots are destroyed." },
-      { speaker: "guide", text: "WiFi Watchdog Badge earned! Code Canyon in Chicago is now open." },
-    ],
+
+  /* ── ASIA ── */
+  asia: {
+    "privacy-palace": {
+      xp: 150,
+      badge: "Privacy Pro Badge",
+      intro: [
+        { speaker: "villain", text: "Your app permissions are open doors to me. Every app you install… I'm watching!" },
+        { speaker: "guide", text: "Learn to manage app permissions. Not every app needs access to everything!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Privacy Palace is secured! App permissions are locked down across Dubai." },
+        { speaker: "guide", text: "Privacy Pro Badge earned! Browse Bazaar in Mumbai is now unlocked." },
+      ],
+    },
+    "browse-bazaar": {
+      xp: 175,
+      badge: "Safe Browser Badge",
+      intro: [
+        {
+          speaker: "villain",
+          text: "Every link in this bazaar leads somewhere dangerous. Click wisely… or not at all!",
+        },
+        {
+          speaker: "guide",
+          text: "Learn to spot safe websites, check for HTTPS, and never enter info on suspicious sites!",
+        },
+      ],
+      completion: [
+        { speaker: "guide", text: "Browse Bazaar is safe! Mumbai's web users can now navigate safely." },
+        { speaker: "guide", text: "Safe Browser Badge earned! Firewall Frontier in Seoul is now unlocked." },
+      ],
+    },
+    "firewall-frontier": {
+      xp: 200,
+      badge: "Firewall Master Badge",
+      intro: [
+        {
+          speaker: "villain",
+          text: "I phase through firewalls like they're not even there. Because for me — they aren't!",
+        },
+        {
+          speaker: "guide",
+          text: "Seoul's firewalls are under attack. Learn how to build ones even a phantom can't phase through!",
+        },
+      ],
+      completion: [
+        { speaker: "guide", text: "Firewall Frontier is holding! The Phantom can't breach Seoul's defences." },
+        { speaker: "guide", text: "Firewall Master Badge earned! CyberGuard Academy in Tokyo is now unlocked." },
+      ],
+    },
+    "cyberguard-academy": {
+      xp: 225,
+      badge: "Academy Honours Badge",
+      intro: [
+        { speaker: "villain", text: "An academy? I've already hacked the teacher's password! The irony…" },
+        { speaker: "guide", text: "CyberGuard Academy is the heart of cyber defence in Asia. Protect it!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "CyberGuard Academy is secured! Tokyo's cyber defenders are stronger than ever." },
+        { speaker: "guide", text: "Academy Honours Badge earned! Network Nexus in Singapore is now unlocked." },
+      ],
+    },
+    "network-nexus": {
+      xp: 225,
+      badge: "Network Nexus Badge",
+      intro: [
+        { speaker: "villain", text: "Singapore's network nexus is mine. Every packet of data flows through ME!" },
+        { speaker: "guide", text: "The Phantom controls the Network Nexus. Cut his connection and take it back!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Network Nexus secured! Singapore's data flows safely again." },
+        { speaker: "guide", text: "Network Nexus Badge earned! Hack Haven in Bangkok is now unlocked." },
+      ],
+    },
+    "hack-haven": {
+      xp: 250,
+      badge: "Ethical Hacker Badge",
+      intro: [
+        {
+          speaker: "villain",
+          text: "Bangkok's Hack Haven — where all the best exploits are born. Welcome to my workshop!",
+        },
+        {
+          speaker: "guide",
+          text: "This is where the Phantom plans his attacks. Learn ethical hacking to shut him down!",
+        },
+      ],
+      completion: [
+        { speaker: "guide", text: "Hack Haven cleared! The Phantom's workshop is destroyed." },
+        { speaker: "guide", text: "Ethical Hacker Badge earned! Tech Temple in Beijing is now unlocked." },
+      ],
+    },
+    "tech-temple": {
+      xp: 275,
+      badge: "Tech Temple Badge",
+      intro: [
+        { speaker: "villain", text: "The Tech Temple — ancient wisdom, modern hacking. Both are mine now!" },
+        { speaker: "guide", text: "The Phantom's last stronghold before his Mainframe. Clear it and we end this!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Tech Temple secured! The Phantom is retreating to his Mainframe." },
+        {
+          speaker: "guide",
+          text: "Tech Temple Badge earned! The Phantom's Mainframe in the Himalayas is now unlocked!",
+        },
+      ],
+    },
+    "boss-phantom": {
+      xp: 500,
+      badge: "Asia Champion",
+      intro: [
+        { speaker: "guide", text: "The Phantom's Mainframe — hidden deep in the Himalayas. This is the final battle." },
+        { speaker: "villain", text: "You can't fight what you can't see, Guardian. And you… can't see me." },
+        {
+          speaker: "guide",
+          text: "Use encryption, firewalls, and everything you've learned. Make him visible — and defeat him!",
+        },
+      ],
+      completion: [
+        { speaker: "villain", text: "Impossible… I was a ghost. No one can catch a ghost… how?!" },
+        { speaker: "guide", text: "Asia is free! The Firewall Phantom has been locked out of every system!" },
+        { speaker: "guide", text: "Asia Champion Badge earned! The Data Thief operates in South America…" },
+      ],
+    },
   },
-  "code-canyon": {
-    xp: 200,
-    badge: "Scam Spotter Badge",
-    villainName: "The Keybreaker",
-    intro: [
-      { speaker: "villain", text: "Act NOW or your account will be DELETED! Panic makes people careless…" },
-      { speaker: "guide", text: "Slow down, think carefully, spot the scam. That's your mission here." },
-    ],
-    completion: [
-      { speaker: "guide", text: "Code Canyon secured! Chicago's residents can now spot a scam anywhere." },
-      { speaker: "guide", text: "Scam Spotter Badge earned! Encrypt Enclave in Toronto is now unlocked." },
-    ],
+
+  /* ── SOUTH AMERICA ── */
+  "south-america": {
+    "kindness-kingdom": {
+      xp: 150,
+      badge: "Social Safety Badge",
+      intro: [
+        { speaker: "villain", text: "Social media is MY playground. Every post, every photo — I'm collecting it all!" },
+        { speaker: "guide", text: "São Paulo's social networks are being harvested. Learn social media safety!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Kindness Kingdom secured! Kids in São Paulo are posting safely." },
+        { speaker: "guide", text: "Social Safety Badge earned! Social Fortress in Buenos Aires is now unlocked." },
+      ],
+    },
+    "social-fortress": {
+      xp: 175,
+      badge: "Personal Data Badge",
+      intro: [
+        { speaker: "villain", text: "Your name, address, birthday — I have it all! Identity theft is so easy…" },
+        { speaker: "guide", text: "The Data Thief is stealing personal information. Learn what to keep private!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Social Fortress secured! Personal information is protected across Buenos Aires." },
+        { speaker: "guide", text: "Personal Data Badge earned! Identity Isle in Lima is now unlocked." },
+      ],
+    },
+    "identity-isle": {
+      xp: 200,
+      badge: "Identity Shield Badge",
+      intro: [
+        { speaker: "villain", text: "I'm you now, Guardian. Same name, same details. How does it feel?!" },
+        { speaker: "guide", text: "Identity theft is the Data Thief's speciality. Learn to protect your identity!" },
+      ],
+      completion: [
+        {
+          speaker: "guide",
+          text: "Identity Isle cleared! No more fake accounts stealing people's identities in Lima.",
+        },
+        { speaker: "guide", text: "Identity Shield Badge earned! Jungle Junction in Bogotá is now unlocked." },
+      ],
+    },
+    "jungle-junction": {
+      xp: 225,
+      badge: "Jungle Junction Badge",
+      intro: [
+        { speaker: "villain", text: "Lost in the data jungle, Guardian? Every path leads to MY trap!" },
+        { speaker: "guide", text: "The Data Thief has hidden traps all through Bogotá's networks. Navigate safely!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Jungle Junction cleared! Bogotá's networks are trap-free." },
+        { speaker: "guide", text: "Jungle Junction Badge earned! Cyber Coast in Santiago is now unlocked." },
+      ],
+    },
+    "cyber-coast": {
+      xp: 250,
+      badge: "Cyber Coast Badge",
+      intro: [
+        { speaker: "villain", text: "Santiago's coastline is where I offload all my stolen data. You're too late!" },
+        { speaker: "guide", text: "The Data Thief's last stop before his vault. Intercept the stolen data here!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Cyber Coast cleared! The stolen data shipment has been stopped." },
+        { speaker: "guide", text: "Cyber Coast Badge earned! The Data Thief's Vault in the Amazon is now unlocked!" },
+      ],
+    },
+    "boss-datathief": {
+      xp: 500,
+      badge: "South America Champion",
+      intro: [
+        {
+          speaker: "guide",
+          text: "The Data Thief's Vault — deep in the Amazon Rainforest. All the stolen data is here.",
+        },
+        { speaker: "villain", text: "You came all this way just to lose to me? Bold move, little Guardian." },
+        {
+          speaker: "guide",
+          text: "Everything you know about data protection, privacy, and identity. Use it all — now!",
+        },
+      ],
+      completion: [
+        { speaker: "villain", text: "My vault… my data… all gone! You've ruined everything!" },
+        { speaker: "guide", text: "South America is free! Every piece of stolen data has been returned!" },
+        { speaker: "guide", text: "South America Champion Badge earned! Malware Max has invaded Australia…" },
+      ],
+    },
   },
-  "encrypt-enclave": {
-    xp: 225,
-    badge: "Code Breaker Badge",
-    villainName: "The Keybreaker",
-    intro: [
-      {
-        speaker: "villain",
-        text: "Your encryption is useless! I've cracked stronger codes than anything you can build!",
-      },
-      { speaker: "guide", text: "Master encryption and prove that strong codes are truly unbreakable!" },
-    ],
-    completion: [
-      { speaker: "guide", text: "Encrypt Enclave is secure! The decryption bots are destroyed." },
-      { speaker: "guide", text: "Code Breaker Badge earned! Password Peak in New York is now unlocked." },
-    ],
+
+  /* ── AUSTRALIA ── */
+  australia: {
+    "malware-maze": {
+      xp: 150,
+      badge: "Virus Hunter Badge",
+      intro: [
+        { speaker: "villain", text: "Welcome to my maze, mate! Full of viruses, trojans, and ransomware! 🦘" },
+        { speaker: "guide", text: "Navigate the Malware Maze carefully. Learn to identify every type of malware!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Malware Maze cleared! Sydney's devices are virus-free." },
+        { speaker: "guide", text: "Virus Hunter Badge earned! Update Outpost in Melbourne is now unlocked." },
+      ],
+    },
+    "update-outpost": {
+      xp: 175,
+      badge: "Update Champion Badge",
+      intro: [
+        { speaker: "villain", text: "Outdated software is my best friend! Every missed update is a door I can open!" },
+        { speaker: "guide", text: "Software updates patch the holes Malware Max exploits. Keep everything updated!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Update Outpost secured! Melbourne's devices are all up to date." },
+        { speaker: "guide", text: "Update Champion Badge earned! Antivirus Atoll in Brisbane is now unlocked." },
+      ],
+    },
+    "antivirus-atoll": {
+      xp: 200,
+      badge: "Antivirus Expert Badge",
+      intro: [
+        { speaker: "villain", text: "Antivirus? Pfft! My viruses evolve faster than any scanner, mate!" },
+        { speaker: "guide", text: "Learn how antivirus software works — and how to use it to defeat Malware Max!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Antivirus Atoll secured! Brisbane's devices are protected and scanning." },
+        { speaker: "guide", text: "Antivirus Expert Badge earned! Outback Ops in Alice Springs is now unlocked." },
+      ],
+    },
+    "outback-ops": {
+      xp: 225,
+      badge: "Outback Ops Badge",
+      intro: [
+        { speaker: "villain", text: "The Outback — where no one can hear your device get infected! Heh heh!" },
+        { speaker: "guide", text: "Malware Max has been using the Outback as a staging ground. Shut him down!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Outback Ops cleared! Alice Springs' devices are clean." },
+        { speaker: "guide", text: "Outback Ops Badge earned! Reef Recon in Cairns is now unlocked." },
+      ],
+    },
+    "reef-recon": {
+      xp: 250,
+      badge: "Reef Recon Badge",
+      intro: [
+        { speaker: "villain", text: "Even underwater I spread my malware! Nothing is safe from Malware Max!" },
+        { speaker: "guide", text: "The Great Barrier Reef's digital monitoring systems are infected. Save them!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Reef Recon complete! Cairns' systems are clean and the reef is protected." },
+        {
+          speaker: "guide",
+          text: "Reef Recon Badge earned! Malware Max's Pouch in Western Australia is now unlocked!",
+        },
+      ],
+    },
+    "boss-malware": {
+      xp: 500,
+      badge: "Australia Champion",
+      intro: [
+        {
+          speaker: "guide",
+          text: "Malware Max's Pouch — Western Australia. His entire virus collection is stored here.",
+        },
+        {
+          speaker: "villain",
+          text: "My viruses are EVERYWHERE, Guardian! You can't delete them all! I'm UNSTOPPABLE!",
+        },
+        {
+          speaker: "guide",
+          text: "Antivirus knowledge, safe downloads, updates — use everything. Let's clear him out!",
+        },
+      ],
+      completion: [
+        { speaker: "villain", text: "My pouch… empty! My viruses… gone! This can't be happening, mate!" },
+        { speaker: "guide", text: "Australia is free! Malware Max's entire virus collection is deleted!" },
+        { speaker: "guide", text: "Australia Champion Badge earned! SHADOWBYTE waits in Antarctica…" },
+      ],
+    },
   },
-  "password-peak": {
-    xp: 250,
-    badge: "Password Master Badge",
-    villainName: "The Keybreaker",
-    intro: [
-      { speaker: "villain", text: "password123… fluffy… mybirthday… Your passwords are embarrassingly easy!" },
-      { speaker: "guide", text: "Every strong password you create is a lock he can't pick. Build the fortress!" },
-    ],
-    completion: [
-      { speaker: "guide", text: "Password Peak is ours! The Keybreaker's credential database is destroyed." },
-      { speaker: "villain", text: "My passwords… YEARS of work! You'll pay for this, Guardian!" },
-      { speaker: "guide", text: "Password Master Badge earned! Arctic Archive is now unlocked." },
-    ],
-  },
-  "arctic-archive": {
-    xp: 275,
-    badge: "Data Guardian Badge",
-    villainName: "The Keybreaker",
-    intro: [
-      { speaker: "villain", text: "Cold storage won't save your secrets forever. My bots never get cold…" },
-      { speaker: "guide", text: "Learn the 3-2-1 backup rule and protect the Archive!" },
-    ],
-    completion: [
-      { speaker: "guide", text: "Arctic Archive is safe! Every backup is secured." },
-      { speaker: "guide", text: "Data Guardian Badge earned! Shadow Station in Mexico City is now open." },
-    ],
-  },
-  "shadow-station": {
-    xp: 275,
-    badge: "Game Guardian Badge",
-    villainName: "The Keybreaker",
-    intro: [
-      { speaker: "villain", text: "Want free in-game items? Just give me your password… such a simple trap." },
-      { speaker: "guide", text: "Help kids here learn who to trust in online games!" },
-    ],
-    completion: [
-      { speaker: "guide", text: "Shadow Station is clear! The fake gaming networks are shut down." },
-      { speaker: "guide", text: "Game Guardian Badge earned! Firewall Fortress in Atlanta is now unlocked." },
-    ],
-  },
-  "firewall-fortress": {
-    xp: 300,
-    badge: "Firewall Builder Badge",
-    villainName: "The Keybreaker",
-    intro: [
-      { speaker: "villain", text: "Your firewalls are useless against me! I phase right through them!" },
-      { speaker: "guide", text: "Build the strongest firewall you can — then we go after the Keybreaker himself!" },
-    ],
-    completion: [
-      { speaker: "guide", text: "Firewall Fortress is holding! The Keybreaker can't get through anymore." },
-      { speaker: "guide", text: "Firewall Builder Badge earned. One zone left — the Keybreaker's Vault." },
-    ],
-  },
-  "boss-keybreaker": {
-    xp: 500,
-    badge: "North America Champion",
-    villainName: "The Keybreaker",
-    intro: [
-      { speaker: "guide", text: "This is it, Guardian. The Keybreaker's Vault — his true stronghold." },
-      { speaker: "villain", text: "Welcome to my domain. No one leaves the Vault with their data intact." },
-      { speaker: "guide", text: "You've trained for this. Go show him what a true CyberGuardian can do!" },
-    ],
-    completion: [
-      { speaker: "villain", text: "I… I don't believe it. No Guardian has ever defeated me. It's over." },
-      { speaker: "guide", text: "GUARDIAN! You did it! North America is free!" },
-      { speaker: "guide", text: "North America Champion Badge earned! The Phisher King stirs in Europe…" },
-    ],
+
+  /* ── ANTARCTICA ── */
+  antarctica: {
+    "crypto-cavern": {
+      xp: 200,
+      badge: "Crypto Expert Badge",
+      intro: [
+        {
+          speaker: "villain",
+          text: "You've made it to my domain, Guardian. Every step forward is a step into my trap.",
+        },
+        {
+          speaker: "guide",
+          text: "Crypto Cavern holds SHADOWBYTE's encryption keys. Master cryptography to break through!",
+        },
+      ],
+      completion: [
+        { speaker: "guide", text: "Crypto Cavern cleared! SHADOWBYTE's encryption keys are in our hands now." },
+        { speaker: "guide", text: "Crypto Expert Badge earned! Algorithm Abyss on the Ice Shelf is now accessible." },
+      ],
+    },
+    "algorithm-abyss": {
+      xp: 225,
+      badge: "Algorithm Master Badge",
+      intro: [
+        { speaker: "villain", text: "My algorithms are perfect. They've never been cracked. Until now… maybe." },
+        {
+          speaker: "guide",
+          text: "SHADOWBYTE's attack patterns are hidden in these algorithms. Find them and break them!",
+        },
+      ],
+      completion: [
+        { speaker: "guide", text: "Algorithm Abyss conquered! SHADOWBYTE's attack patterns are exposed." },
+        {
+          speaker: "guide",
+          text: "Algorithm Master Badge earned! Code Citadel at SHADOWBYTE's Fortress is now unlocked.",
+        },
+      ],
+    },
+    "code-citadel": {
+      xp: 250,
+      badge: "Code Citadel Badge",
+      intro: [
+        { speaker: "villain", text: "My citadel. My rules. My code. You're playing MY game now, Guardian." },
+        { speaker: "guide", text: "This is SHADOWBYTE's command centre. Break through and we end this for good!" },
+      ],
+      completion: [
+        { speaker: "guide", text: "Code Citadel breached! SHADOWBYTE's command centre is offline." },
+        { speaker: "guide", text: "Code Citadel Badge earned! Ice Intelligence at McMurdo Station is now unlocked." },
+      ],
+    },
+    "ice-intelligence": {
+      xp: 275,
+      badge: "Ice Intelligence Badge",
+      intro: [
+        { speaker: "villain", text: "Intelligence gathering is my speciality, Guardian. I know everything about you." },
+        {
+          speaker: "guide",
+          text: "SHADOWBYTE has been collecting intelligence on every Guardian. Stop the data leak!",
+        },
+      ],
+      completion: [
+        { speaker: "guide", text: "Ice Intelligence cleared! SHADOWBYTE's intelligence files are destroyed." },
+        {
+          speaker: "guide",
+          text: "Ice Intelligence Badge earned! SHADOWBYTE's Core awaits. This is the final battle.",
+        },
+      ],
+    },
+    "boss-shadowbyte": {
+      xp: 1000,
+      badge: "WORLD CHAMPION",
+      intro: [
+        {
+          speaker: "guide",
+          text: "SHADOWBYTE's Core — the centre of Antarctica. Every threat you've ever faced is inside.",
+        },
+        {
+          speaker: "villain",
+          text: "Impressive, Guardian. You've defeated every villain across every continent. But I am ALL of them.",
+        },
+        {
+          speaker: "guide",
+          text: "This is it. Use every skill from every continent. The Digital World is counting on you!",
+        },
+      ],
+      completion: [
+        { speaker: "villain", text: "…Impossible. I had every advantage. Every power. And still… you won." },
+        {
+          speaker: "guide",
+          text: "GUARDIAN! You've done it! SHADOWBYTE is defeated — the entire Digital World is FREE!",
+        },
+        {
+          speaker: "guide",
+          text: "WORLD CHAMPION! You are the greatest CyberGuardian who has ever lived. Congratulations!",
+        },
+      ],
+    },
   },
 };
 
-/* ── Story engine (no ambient) ──────────────────────── */
+/* ── Helper: get script for current continent + zone ── */
+function getScript(continentId: string, zoneId: string): ZoneStoryScript | null {
+  return ALL_ZONE_SCRIPTS[continentId]?.[zoneId] ?? null;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STORY ENGINE
+   ═══════════════════════════════════════════════════════════ */
 function useStoryEngine(childId: string | null, continentId: string) {
   const key = `cga_story_${continentId}_${childId ?? "guest"}`;
   const [seenIntros, setSeenIntros] = useState<Set<string>>(() => {
@@ -265,7 +913,7 @@ function useStoryEngine(childId: string | null, continentId: string) {
         onEnter();
         return;
       }
-      const script = NA_ZONE_SCRIPTS[zoneId];
+      const script = getScript(continentId, zoneId);
       if (!script?.intro?.length) {
         setSeenIntros((p) => new Set(p).add(zoneId));
         onEnter();
@@ -281,26 +929,26 @@ function useStoryEngine(childId: string | null, continentId: string) {
         },
       });
     },
-    [seenIntros],
+    [seenIntros, continentId],
   );
 
   const triggerMapIntro = useCallback(() => {
     if (seenIntros.has("__map__")) return;
-    const script = NA_ZONE_SCRIPTS["__map__"];
-    if (!script?.intro?.length) return;
+    const lines = CONTINENT_MAP_INTROS[continentId];
+    if (!lines?.length) return;
     setCutscene({
-      lines: script.intro,
+      lines,
       index: 0,
       onDone: () => {
         setSeenIntros((p) => new Set(p).add("__map__"));
         setCutscene(null);
       },
     });
-  }, [seenIntros]);
+  }, [seenIntros, continentId]);
 
   const triggerCompletion = useCallback(
     (zoneId: string, zoneName: string, unlocksZoneName: string | undefined, onDone: () => void) => {
-      const script = NA_ZONE_SCRIPTS[zoneId];
+      const script = getScript(continentId, zoneId);
       if (!script?.completion?.length) {
         onDone();
         return;
@@ -315,7 +963,7 @@ function useStoryEngine(childId: string | null, continentId: string) {
         onDone,
       });
     },
-    [],
+    [continentId],
   );
 
   const advanceCutscene = useCallback(() => {
@@ -368,7 +1016,7 @@ function useStoryEngine(childId: string | null, continentId: string) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   CUTSCENE PLAYER
+   VILLAIN ASSETS
    ═══════════════════════════════════════════════════════════ */
 const VILLAIN_ASSETS: Record<string, { img: string; color: string }> = {
   "The Keybreaker": { img: keybreakerImg, color: "140, 85%, 50%" },
@@ -377,6 +1025,9 @@ const VILLAIN_ASSETS: Record<string, { img: string; color: string }> = {
   "The Data Thief": { img: dataThiefImg, color: "175, 85%, 45%" },
 };
 
+/* ═══════════════════════════════════════════════════════════
+   TYPEWRITER
+   ═══════════════════════════════════════════════════════════ */
 function useTypewriter(text: string, speed = 24) {
   const [shown, setShown] = useState("");
   const [done, setDone] = useState(false);
@@ -401,6 +1052,9 @@ function useTypewriter(text: string, speed = 24) {
   return { shown, done, finish };
 }
 
+/* ═══════════════════════════════════════════════════════════
+   CUTSCENE PLAYER
+   ═══════════════════════════════════════════════════════════ */
 function CutscenePlayer({
   lines,
   index,
@@ -472,14 +1126,13 @@ function CutscenePlayer({
         key={index}
         initial={{ y: 14, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className={`w-full max-w-lg rounded-2xl border-2 overflow-hidden`}
+        className="w-full max-w-lg rounded-2xl border-2 overflow-hidden"
         style={{
           borderColor: isVillain ? `hsla(${hue},70%,50%,0.45)` : "hsl(195,80%,50%,0.45)",
           background: isVillain ? `hsla(${hue},35%,7%,0.97)` : "hsl(210,50%,11%,0.97)",
           boxShadow: `0 0 40px ${isVillain ? `hsla(${hue},70%,40%,0.12)` : "hsl(195,80%,40%,0.12)"}`,
         }}
       >
-        {/* Speaker strip */}
         <div
           className="flex items-center gap-2 px-5 pt-4 pb-3 border-b"
           style={{ borderColor: isVillain ? `hsla(${hue},60%,40%,0.2)` : "hsl(195,80%,50%,0.15)" }}
@@ -499,8 +1152,6 @@ function CutscenePlayer({
             </span>
           )}
         </div>
-
-        {/* Avatar + text */}
         <div className="flex items-start gap-4 px-5 py-5">
           <div className="flex-shrink-0 flex flex-col items-center gap-2">
             <div
@@ -636,7 +1287,6 @@ function ZoneCompletionPanel({
         transition={{ type: "spring", damping: 22, stiffness: 280 }}
         className="w-full max-w-md rounded-3xl border border-[hsl(160_65%_50%/0.3)] bg-[hsl(210_40%_11%)] p-6 shadow-[0_0_60px_hsl(160_65%_50%/0.1)]"
       >
-        {/* Header */}
         <div className="mb-5 flex items-center gap-3">
           <motion.div
             initial={{ scale: 0 }}
@@ -651,8 +1301,6 @@ function ZoneCompletionPanel({
             <p className="text-lg font-bold text-white">{zoneName}</p>
           </div>
         </div>
-
-        {/* Dialogue */}
         <div className="mb-5 space-y-2 max-h-52 overflow-y-auto">
           {lines.map((l, i) => {
             const iv = l.speaker === "villain";
@@ -702,8 +1350,6 @@ function ZoneCompletionPanel({
             );
           })}
         </div>
-
-        {/* Rewards */}
         {isLast && (
           <div className="mb-5 flex gap-3 flex-wrap">
             <div className="flex-1 min-w-[90px] rounded-xl border border-[hsl(45_90%_55%/0.25)] bg-[hsl(45_90%_55%/0.08)] p-3 text-center">
@@ -734,8 +1380,6 @@ function ZoneCompletionPanel({
             )}
           </div>
         )}
-
-        {/* Actions */}
         <div className="flex items-center gap-3">
           {!isLast ? (
             <>
@@ -804,7 +1448,7 @@ function UnlockBurst({ onDone }: { onDone: () => void }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   VILLAIN CHARACTER (original — unchanged)
+   VILLAIN CHARACTER (unchanged from original)
    ═══════════════════════════════════════════════════════════ */
 const VILLAIN_TAUNTS: Record<string, string[]> = {
   "The Keybreaker": [
@@ -850,7 +1494,6 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
     "The digital world is already mine.",
   ],
 };
-
 const VILLAIN_DYNAMIC_TAUNTS: Record<
   string,
   { locked: string; available: string; completed: string; boss: string; first?: string; lastLocked?: string }
@@ -867,21 +1510,35 @@ const VILLAIN_DYNAMIC_TAUNTS: Record<
     completed: "You spotted that one... impressive.",
     boss: "One click is all I need!",
   },
+  "The Troll Lord": {
+    locked: "That zone stays dark. I like it that way.",
+    available: "Come on then. My trolls are ready.",
+    completed: "One zone. My trolls have a hundred more.",
+    boss: "You want to cross MY bridge?! Try it!",
+  },
   "The Firewall Phantom": {
     locked: "That zone is sealed. I sealed it myself.",
     available: "Brave. Let's see if you're ready.",
     completed: "You got lucky.",
     boss: "You actually made it here? ...Impressive.",
-    first: "So it begins.",
-    lastLocked: "One more wall between you and me.",
   },
   "The Data Thief": {
     locked: "That one stays locked until I say.",
     available: "You can try. I've seen better fail.",
     completed: "Fine. That zone is yours.",
     boss: "You came all this way just to lose? Bold.",
-    first: "Welcome to my network.",
-    lastLocked: "One more gate. Good luck.",
+  },
+  "Malware Max": {
+    locked: "Infected and locked, mate!",
+    available: "Come on then. My viruses are waiting!",
+    completed: "Cleaned that one? I've got thousands more!",
+    boss: "Think you can beat Malware Max? Heh!",
+  },
+  SHADOWBYTE: {
+    locked: "That zone is mine. Stay away.",
+    available: "You dare approach?",
+    completed: "One zone. I have everything else.",
+    boss: "You want to face my Core? Your funeral.",
   },
 };
 
@@ -1077,7 +1734,9 @@ function ZoneMissionPanel({
         {zone.isBoss ? (
           <div className="text-center py-6">
             <span className="text-4xl mb-3 block">⚔️</span>
-            <p className="text-sm text-white/70 mb-4">Defeat {continent.villain} to secure North America!</p>
+            <p className="text-sm text-white/70 mb-4">
+              Defeat {continent.villain} to secure {continent.name}!
+            </p>
             {hasGames ? (
               <Button onClick={onDeploy} className="bg-[hsl(0_70%_45%)] hover:bg-[hsl(0_70%_40%)] text-white font-bold">
                 ⚔️ START BOSS BATTLE
@@ -1178,15 +1837,15 @@ export default function ContinentMapScreen() {
   const projection = CONTINENT_PROJECTIONS[continentId || ""];
   const countryCodes = CONTINENT_COUNTRIES[continentId || ""] || [];
 
+  // Story engine — keyed per continent so each continent has its own seen intros
   const story = useStoryEngine(activeChildId, continentId ?? "unknown");
 
-  // Fire map intro once on first load
   useEffect(() => {
     const t = setTimeout(() => story.triggerMapIntro(), 900);
     return () => clearTimeout(t);
-  }, []);
+  }, [continentId]); // re-fire when continent changes
 
-  // Handle ?completed= param from zone game screen
+  // Handle ?completed= from zone game screen
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const completedId = params.get("completed");
@@ -1195,9 +1854,11 @@ export default function ContinentMapScreen() {
     queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId, continentId] });
     const zone = continent.zones.find((z) => z.id === completedId);
     if (!zone) return;
-    const idx = NA_UNLOCK_ORDER.indexOf(completedId);
-    const nextId = idx >= 0 ? NA_UNLOCK_ORDER[idx + 1] : undefined;
-    const nextZone = nextId ? continent.zones.find((z) => z.id === nextId) : undefined;
+
+    // Find next zone in this continent's order
+    const currentIdx = continent.zones.findIndex((z) => z.id === completedId);
+    const nextZone = continent.zones[currentIdx + 1];
+
     setShowUnlockBurst(true);
     setTimeout(() => {
       story.triggerCompletion(completedId, zone.name, nextZone?.name, () => {});
@@ -1433,7 +2094,6 @@ export default function ContinentMapScreen() {
         </motion.div>
       </div>
 
-      {/* Player avatar */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1445,10 +2105,8 @@ export default function ContinentMapScreen() {
         </div>
       </motion.div>
 
-      {/* Unlock burst */}
       <AnimatePresence>{showUnlockBurst && <UnlockBurst onDone={() => setShowUnlockBurst(false)} />}</AnimatePresence>
 
-      {/* Cutscene player */}
       <AnimatePresence>
         {story.cutscene && (
           <CutscenePlayer
@@ -1463,7 +2121,6 @@ export default function ContinentMapScreen() {
         )}
       </AnimatePresence>
 
-      {/* Zone completion panel */}
       <AnimatePresence>
         {story.completion && (
           <ZoneCompletionPanel
@@ -1482,7 +2139,6 @@ export default function ContinentMapScreen() {
         )}
       </AnimatePresence>
 
-      {/* Zone mission panel */}
       <AnimatePresence>
         {selectedZone && (
           <ZoneMissionPanel
