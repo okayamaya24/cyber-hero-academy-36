@@ -1667,8 +1667,8 @@ function VillainCharacter({
         </motion.div>
       </AnimatePresence>
       <motion.div
-        animate={{ y: [0, -10, 0] }}
-        transition={{ repeat: Infinity, duration: 3 }}
+        animate={{ y: isShadowbyte ? [0, -8, 0] : [0, -10, 0] }}
+        transition={{ repeat: Infinity, duration: isShadowbyte ? 4 : 3, ease: "easeInOut" }}
         whileHover={{ scale: 1.06 }}
         className="relative cursor-default"
       >
