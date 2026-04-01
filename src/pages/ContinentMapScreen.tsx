@@ -1576,6 +1576,8 @@ function VillainCharacter({
   }, [taunts.length, hoveredNodeStatus]);
 
   useEffect(() => {
+    const baseDelay = isShadowbyte ? 8000 : 6000;
+    const randRange = isShadowbyte ? 2000 : 3000;
     const schedule = () =>
       setTimeout(
         () => {
@@ -1583,11 +1585,11 @@ function VillainCharacter({
           setTimeout(() => setShowShimmer(false), 600);
           schedule();
         },
-        6000 + Math.random() * 3000,
+        baseDelay + Math.random() * randRange,
       );
     const t = schedule();
     return () => clearTimeout(t as any);
-  }, []);
+  }, [isShadowbyte]);
 
   const bubbleText =
     hoveredNodeStatus && dynamicTaunts
