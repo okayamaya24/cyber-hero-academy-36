@@ -106,6 +106,7 @@ export type Database = {
           age: number
           avatar: string
           avatar_config: Json
+          class_id: string | null
           created_at: string
           hq_completed: boolean
           id: string
@@ -125,6 +126,7 @@ export type Database = {
           age: number
           avatar?: string
           avatar_config?: Json
+          class_id?: string | null
           created_at?: string
           hq_completed?: boolean
           id?: string
@@ -144,6 +146,7 @@ export type Database = {
           age?: number
           avatar?: string
           avatar_config?: Json
+          class_id?: string | null
           created_at?: string
           hq_completed?: boolean
           id?: string
@@ -158,6 +161,38 @@ export type Database = {
           updated_at?: string
           villains_defeated?: number
           worlds_completed?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "child_profiles_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          created_at: string | null
+          grade: string
+          id: string
+          name: string
+          teacher_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          grade: string
+          id?: string
+          name: string
+          teacher_id: string
+        }
+        Update: {
+          created_at?: string | null
+          grade?: string
+          id?: string
+          name?: string
+          teacher_id?: string
         }
         Relationships: []
       }
@@ -669,6 +704,30 @@ export type Database = {
           role?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      world_locks: {
+        Row: {
+          admin_override: boolean | null
+          created_at: string | null
+          id: string
+          locked: boolean | null
+          name: string
+        }
+        Insert: {
+          admin_override?: boolean | null
+          created_at?: string | null
+          id: string
+          locked?: boolean | null
+          name: string
+        }
+        Update: {
+          admin_override?: boolean | null
+          created_at?: string | null
+          id?: string
+          locked?: boolean | null
+          name?: string
         }
         Relationships: []
       }
