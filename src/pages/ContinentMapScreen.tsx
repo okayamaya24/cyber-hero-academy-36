@@ -18,6 +18,7 @@ import keybreakerImg from "@/assets/villains/keybreaker.png";
 import phisherKingImg from "@/assets/villains/phisher-king.png";
 import firewallPhantomImg from "@/assets/villains/firewall-phantom.png";
 import dataThiefImg from "@/assets/villains/data-thief.png";
+import malwareMaxImg from "@/assets/villains/malware-max.png";
 
 /* ═══════════════════════════════════════════════════════════
    UNLOCK LOGIC
