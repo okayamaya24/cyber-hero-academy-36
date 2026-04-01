@@ -1688,6 +1688,38 @@ function VillainCharacter({
         ) : (
           <VillainSprite villainName={villainName} size={120} menacing />
         )}
+        {villainName === "Malware Max" && (
+          <>
+            <motion.span
+              animate={{ y: [0, -4, 0], opacity: [0.7, 1, 0.7] }}
+              transition={{ repeat: Infinity, duration: 2.2, delay: 0.3 }}
+              className="absolute -top-1 -left-3 z-30 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-widest"
+              style={{
+                background: "hsla(110,100%,55%,0.12)",
+                border: "1px solid hsla(110,100%,55%,0.35)",
+                color: "#39FF14",
+                fontFamily: "'Orbitron', monospace",
+                textShadow: "0 0 6px hsla(110,100%,55%,0.5)",
+              }}
+            >
+              BUG DETECTED
+            </motion.span>
+            <motion.span
+              animate={{ y: [0, -3, 0], opacity: [0.6, 0.9, 0.6] }}
+              transition={{ repeat: Infinity, duration: 1.8, delay: 1.0 }}
+              className="absolute -bottom-1 -left-2 z-30 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-widest"
+              style={{
+                background: "hsla(25,100%,50%,0.12)",
+                border: "1px solid hsla(25,100%,50%,0.35)",
+                color: "#FF6B00",
+                fontFamily: "'Orbitron', monospace",
+                textShadow: "0 0 6px hsla(25,100%,50%,0.5)",
+              }}
+            >
+              ERROR
+            </motion.span>
+          </>
+        )}
       </motion.div>
     </motion.div>
   );
