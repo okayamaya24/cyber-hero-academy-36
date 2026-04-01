@@ -70,17 +70,20 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
 import keybreakerImg from "@/assets/villains/keybreaker.png";
 import phisherKingImg from "@/assets/villains/phisher-king.png";
 import firewallPhantomImg from "@/assets/villains/firewall-phantom.png";
+import dataThiefImg from "@/assets/villains/data-thief.png";
 
 const VILLAIN_ASSETS: Record<string, { img: string; hue: number; glowHsl: string; textHsl: string; borderHsl: string }> = {
   "The Keybreaker": { img: keybreakerImg, hue: 140, glowHsl: "140, 85%, 50%", textHsl: "hsl(140, 80%, 70%)", borderHsl: "hsla(140, 80%, 50%, 0.3)" },
   "The Phisher King": { img: phisherKingImg, hue: 195, glowHsl: "195, 85%, 50%", textHsl: "hsl(195, 80%, 70%)", borderHsl: "hsla(195, 80%, 50%, 0.3)" },
   "The Firewall Phantom": { img: firewallPhantomImg, hue: 300, glowHsl: "300, 85%, 50%", textHsl: "hsl(340, 80%, 75%)", borderHsl: "hsla(300, 80%, 50%, 0.3)" },
+  "The Data Thief": { img: dataThiefImg, hue: 175, glowHsl: "175, 85%, 45%", textHsl: "hsl(175, 80%, 70%)", borderHsl: "hsla(175, 80%, 50%, 0.3)" },
 };
 
 const VILLAIN_DYNAMIC_TAUNTS: Record<string, { locked: string; available: string; completed: string; boss: string; first?: string; lastLocked?: string }> = {
   "The Keybreaker": { locked: "Too weak. I broke that instantly.", available: "Let's see if you're actually secure.", completed: "Hmm… not bad.", boss: "You'll never break my code!" },
   "The Phisher King": { locked: "Locked out? Maybe this email can help...", available: "Go ahead... click something.", completed: "You spotted that one... impressive.", boss: "One click is all I need!" },
   "The Firewall Phantom": { locked: "That zone is sealed. I sealed it myself.", available: "Brave. Let's see if you're ready for this one.", completed: "You got lucky. Don't expect that again.", boss: "You actually made it here? ...Impressive.", first: "So it begins. I've been waiting.", lastLocked: "One more wall between you and me." },
+  "The Data Thief": { locked: "That one stays locked until I say otherwise.", available: "You can try. I've seen better fail.", completed: "Fine. That zone is yours. Enjoy it while it lasts.", boss: "You came all this way just to lose to me? Bold.", first: "Welcome to my network. You won't leave easily.", lastLocked: "One more gate. My gate. Good luck." },
 };
 
 interface VillainCharacterProps {
