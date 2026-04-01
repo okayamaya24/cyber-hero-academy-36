@@ -1585,20 +1585,24 @@ function VillainCharacter({
   }, [taunts.length, hoveredNodeStatus]);
 
   useEffect(() => {
-    const baseDelay = isShadowbyte ? 8000 : 6000;
-    const randRange = isShadowbyte ? 2000 : 3000;
+    const baseDelay = isShadowbyte ? 8000 : isTrollLord ? 5000 : 6000;
+    const randRange = isShadowbyte ? 2000 : isTrollLord ? 2000 : 3000;
     const schedule = () =>
       setTimeout(
         () => {
           setShowShimmer(true);
           setTimeout(() => setShowShimmer(false), 600);
+          if (isTrollLord) {
+            setEmojiBurst(true);
+            setTimeout(() => setEmojiBurst(false), 800);
+          }
           schedule();
         },
         baseDelay + Math.random() * randRange,
       );
     const t = schedule();
     return () => clearTimeout(t as any);
-  }, [isShadowbyte]);
+  }, [isShadowbyte, isTrollLord]);
 
   const bubbleText =
     hoveredNodeStatus && dynamicTaunts
