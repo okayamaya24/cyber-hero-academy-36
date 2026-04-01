@@ -11,7 +11,6 @@ import { getAgeTier, getPointsPerCorrect } from "@/data/missions";
 import { getNextZone } from "@/data/zoneOrder";
 import { getZoneNarration } from "@/data/zoneNarrations";
 import StarfieldBackground from "@/components/world/StarfieldBackground";
-import VillainSprite from "@/components/world/VillainSprite";
 import ZoneQuizGame from "@/components/minigames/ZoneQuizGame";
 import WordSearchGame from "@/components/minigames/WordSearchGame";
 import CrosswordGame from "@/components/training/CrosswordGame";
@@ -22,8 +21,294 @@ import ZoneCutsceneIntro from "@/components/zone/ZoneCutsceneIntro";
 import ZoneStoryPanel from "@/components/zone/ZoneStoryPanel";
 import ZoneCompleteScreen from "@/components/zone/ZoneCompleteScreen";
 import BossUnlockedCutscene from "@/components/zone/BossUnlockedCutscene";
+import HeroAvatar from "@/components/avatar/HeroAvatar";
 import { Button } from "@/components/ui/button";
 
+import keybreakerImg from "@/assets/villains/keybreaker.png";
+import phisherKingImg from "@/assets/villains/phisher-king.png";
+import firewallPhantomImg from "@/assets/villains/firewall-phantom.png";
+import dataThiefImg from "@/assets/villains/data-thief.png";
+
+/* ── Villain assets ─────────────────────────────────── */
+const VILLAIN_ASSETS: Record<string, { img: string; color: string }> = {
+  "The Keybreaker": { img: keybreakerImg, color: "140, 85%, 50%" },
+  "The Phisher King": { img: phisherKingImg, color: "195, 85%, 50%" },
+  "The Firewall Phantom": { img: firewallPhantomImg, color: "300, 85%, 50%" },
+  "The Data Thief": { img: dataThiefImg, color: "175, 85%, 45%" },
+};
+
+/* ── Zone XP & badge config ─────────────────────────── */
+const ZONE_REWARDS: Record<string, { xp: number; badge?: string }> = {
+  hq: { xp: 100, badge: "CyberGuardian Recruit" },
+  "pixel-port": { xp: 150, badge: "Digital Balance Badge" },
+  "signal-summit": { xp: 175, badge: "WiFi Watchdog Badge" },
+  "code-canyon": { xp: 200, badge: "Scam Spotter Badge" },
+  "encrypt-enclave": { xp: 225, badge: "Code Breaker Badge" },
+  "password-peak": { xp: 250, badge: "Password Master Badge" },
+  "arctic-archive": { xp: 275, badge: "Data Guardian Badge" },
+  "shadow-station": { xp: 275, badge: "Game Guardian Badge" },
+  "firewall-fortress": { xp: 300, badge: "Firewall Builder Badge" },
+  "boss-keybreaker": { xp: 500, badge: "North America Champion" },
+};
+
+/* ── Completion dialogue per zone ───────────────────── */
+interface CompletionLine {
+  speaker: "guide" | "villain";
+  text: string;
+}
+
+const ZONE_COMPLETION_DIALOGUE: Record<string, CompletionLine[]> = {
+  hq: [
+    { speaker: "guide", text: "Orientation complete — you're officially a CyberGuardian recruit!" },
+    {
+      speaker: "guide",
+      text: "Pixel Port in Los Angeles is now unlocked. The Keybreaker has been causing chaos there!",
+    },
+    { speaker: "villain", text: "One city. There are thousands more. Enjoy this tiny victory…" },
+  ],
+  "pixel-port": [
+    { speaker: "guide", text: "Pixel Port secured! The kids here now know how to balance their digital lives." },
+    { speaker: "villain", text: "Hmph. One port. I have the whole coastline!" },
+    { speaker: "guide", text: "Digital Balance Badge earned! Signal Summit in Denver is now unlocked." },
+  ],
+  "signal-summit": [
+    { speaker: "guide", text: "Signal Summit is clean! The Keybreaker's fake hotspots are destroyed." },
+    { speaker: "villain", text: "You cleared one relay tower. I have hundreds. This changes nothing!" },
+    { speaker: "guide", text: "WiFi Watchdog Badge earned! Code Canyon in Chicago is now open." },
+  ],
+  "code-canyon": [
+    { speaker: "guide", text: "Code Canyon secured! Chicago's residents can now spot a scam from a mile away." },
+    { speaker: "villain", text: "You think you've won? I invented social engineering!" },
+    { speaker: "guide", text: "Scam Spotter Badge earned! Encrypt Enclave in Toronto is now unlocked." },
+  ],
+  "encrypt-enclave": [
+    { speaker: "guide", text: "Encrypt Enclave is secure! The Keybreaker's decryption bots are destroyed." },
+    { speaker: "guide", text: "Code Breaker Badge earned! Password Peak in New York is now unlocked." },
+  ],
+  "password-peak": [
+    { speaker: "guide", text: "Password Peak is ours! The Keybreaker's stolen credential database is destroyed." },
+    { speaker: "villain", text: "My… my passwords… YEARS of work! You'll pay for this, Guardian!" },
+    { speaker: "guide", text: "Password Master Badge earned! Arctic Archive in Vancouver is now unlocked." },
+  ],
+  "arctic-archive": [
+    {
+      speaker: "guide",
+      text: "Arctic Archive is safe! Every backup is secured — the Keybreaker's bots are shut down.",
+    },
+    { speaker: "guide", text: "Data Guardian Badge earned! Shadow Station in Mexico City is now open." },
+  ],
+  "shadow-station": [
+    { speaker: "guide", text: "Shadow Station is clear! The fake gaming networks are shut down." },
+    { speaker: "villain", text: "Fine. But the Firewall Fortress won't fall so easily…" },
+    { speaker: "guide", text: "Game Guardian Badge earned! Firewall Fortress in Atlanta is now unlocked." },
+  ],
+  "firewall-fortress": [
+    { speaker: "guide", text: "Firewall Fortress is holding! The Keybreaker can't get through anymore." },
+    { speaker: "villain", text: "You think you've won? My Vault still stands, Guardian." },
+    { speaker: "guide", text: "Firewall Builder Badge earned. There's only one zone left… the Keybreaker's Vault." },
+  ],
+};
+
+const DEFAULT_COMPLETION: CompletionLine[] = [
+  { speaker: "guide", text: "Zone secured! Outstanding work, Guardian!" },
+  { speaker: "guide", text: "The Digital World is safer because of you." },
+];
+
+/* ── Zone completion debrief overlay ────────────────── */
+function ZoneCompletionDebrief({
+  zoneId,
+  zoneName,
+  zoneIcon,
+  villainName,
+  stars,
+  xp,
+  badge,
+  avatarConfig,
+  playerName,
+  onDone,
+}: {
+  zoneId: string;
+  zoneName: string;
+  zoneIcon: string;
+  villainName: string;
+  stars: number;
+  xp: number;
+  badge?: string;
+  avatarConfig: Record<string, any> | null;
+  playerName: string;
+  onDone: () => void;
+}) {
+  const lines = ZONE_COMPLETION_DIALOGUE[zoneId] ?? DEFAULT_COMPLETION;
+  const [lineIndex, setLineIndex] = useState(0);
+  const isLast = lineIndex >= lines.length - 1;
+  const [xpCount, setXpCount] = useState(0);
+  const [showBadge, setShowBadge] = useState(false);
+  const villainAsset = VILLAIN_ASSETS[villainName];
+  const hue = villainAsset?.color.split(",")[0] ?? "195";
+
+  useEffect(() => {
+    if (!isLast) return;
+    let n = 0;
+    const step = Math.ceil(xp / 40);
+    const id = setInterval(() => {
+      n = Math.min(n + step, xp);
+      setXpCount(n);
+      if (n >= xp) clearInterval(id);
+    }, 28);
+    const t = setTimeout(() => setShowBadge(true), 600);
+    return () => {
+      clearInterval(id);
+      clearTimeout(t);
+    };
+  }, [isLast, xp]);
+
+  const handleClick = useCallback(() => {
+    if (isLast) onDone();
+    else setLineIndex((i) => i + 1);
+  }, [isLast, onDone]);
+
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        handleClick();
+      }
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [handleClick]);
+
+  const currentLine = lines[lineIndex];
+  const isVillain = currentLine.speaker === "villain";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4"
+      onClick={handleClick}
+    >
+      <motion.div
+        initial={{ scale: 0.88, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        transition={{ type: "spring", damping: 22, stiffness: 280 }}
+        className="w-full max-w-md rounded-3xl border border-[hsl(160_65%_50%/0.3)] bg-[hsl(210_40%_10%)] p-6 shadow-[0_0_60px_hsl(160_65%_50%/0.12)]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="mb-5 flex items-center gap-3">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", delay: 0.1 }}
+            className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-[hsl(160_65%_50%/0.6)] bg-[hsl(160_65%_50%/0.12)] text-xl"
+          >
+            ✅
+          </motion.div>
+          <div>
+            <p className="text-[10px] font-bold tracking-widest text-[hsl(160_65%_55%)] uppercase">Zone Secured!</p>
+            <p className="text-lg font-bold text-white">
+              {zoneIcon} {zoneName}
+            </p>
+          </div>
+          {/* Stars */}
+          <div className="ml-auto flex gap-1">
+            {[1, 2, 3].map((s) => (
+              <motion.span
+                key={s}
+                initial={{ scale: 0 }}
+                animate={{ scale: s <= stars ? 1 : 0.6 }}
+                transition={{ delay: 0.1 * s, type: "spring" }}
+                className={`text-xl ${s <= stars ? "opacity-100" : "opacity-20"}`}
+              >
+                ⭐
+              </motion.span>
+            ))}
+          </div>
+        </div>
+
+        {/* Dialogue lines */}
+        <div className="mb-5 space-y-2 max-h-52 overflow-y-auto">
+          {lines.map((l, i) => {
+            const iv = l.speaker === "villain";
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: i <= lineIndex ? 1 : 0.12, x: 0 }}
+                transition={{ delay: i * 0.06 }}
+                className={`flex items-start gap-2.5 rounded-xl p-3 text-sm ${
+                  i === lineIndex
+                    ? iv
+                      ? "bg-[hsl(0_30%_12%/0.7)] border border-[hsl(0_60%_45%/0.2)]"
+                      : "bg-[hsl(195_80%_50%/0.1)] border border-[hsl(195_80%_50%/0.2)]"
+                    : "border border-transparent"
+                }`}
+              >
+                <div className="flex-shrink-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded-full overflow-hidden border border-white/10">
+                  {iv && villainAsset ? (
+                    <img src={villainAsset.img} alt={villainName} className="w-full h-full object-cover object-top" />
+                  ) : iv ? (
+                    <span className="text-xs">🦹</span>
+                  ) : (
+                    <HeroAvatar avatarConfig={avatarConfig} size={20} fallbackEmoji="🦸" />
+                  )}
+                </div>
+                <div>
+                  <p
+                    className={`text-[9px] font-bold tracking-wide uppercase mb-0.5 ${
+                      iv ? `text-[hsla(${hue},65%,62%,1)]` : "text-[hsl(195_80%_60%)]"
+                    }`}
+                  >
+                    {iv ? villainName : playerName}
+                  </p>
+                  <p className="text-white/80 leading-snug">{l.text}</p>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Rewards — shown on last line */}
+        {isLast && (
+          <div className="mb-5 flex gap-3 flex-wrap">
+            <div className="flex-1 min-w-[90px] rounded-xl border border-[hsl(45_90%_55%/0.25)] bg-[hsl(45_90%_55%/0.08)] p-3 text-center">
+              <p className="text-[9px] text-white/40 uppercase tracking-wide mb-1">XP Earned</p>
+              <p className="text-2xl font-bold text-[hsl(45_90%_60%)] tabular-nums">+{xpCount}</p>
+            </div>
+            {badge && (
+              <motion.div
+                animate={{ opacity: showBadge ? 1 : 0, scale: showBadge ? 1 : 0.85 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="flex-1 min-w-[110px] rounded-xl border border-[hsl(160_65%_50%/0.25)] bg-[hsl(160_65%_50%/0.08)] p-3 text-center"
+              >
+                <p className="text-lg mb-0.5">🏅</p>
+                <p className="text-[9px] text-[hsl(160_65%_55%)] uppercase tracking-wide">New Badge</p>
+                <p className="text-[10px] font-bold text-white/70 mt-0.5 leading-tight">{badge}</p>
+              </motion.div>
+            )}
+          </div>
+        )}
+
+        {/* Action */}
+        <div onClick={handleClick}>
+          {!isLast ? (
+            <Button className="w-full bg-[hsl(195_80%_50%)] hover:bg-[hsl(195_80%_45%)] text-white border-0 font-bold">
+              Continue →
+            </Button>
+          ) : (
+            <Button className="w-full border border-[hsl(160_65%_50%/0.3)] bg-[hsl(160_65%_50%/0.12)] hover:bg-[hsl(160_65%_50%/0.2)] text-[hsl(160_65%_60%)] font-bold">
+              Back to Map →
+            </Button>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ── Game tabs ──────────────────────────────────────── */
 const GAME_TABS = [
   { key: "quiz", label: "Story Quiz", icon: "📖" },
   { key: "mini", label: "Mini Game", icon: "🎮" },
@@ -31,8 +316,9 @@ const GAME_TABS = [
   { key: "dragdrop", label: "Drag & Drop", icon: "🎯" },
 ];
 
-type AdventurePhase = "cutscene" | "playing" | "story_panel" | "complete" | "boss_unlocked";
+type AdventurePhase = "cutscene" | "playing" | "story_panel" | "debrief" | "complete" | "boss_unlocked";
 
+/* ── Main screen ────────────────────────────────────── */
 export default function ZoneGameScreen() {
   const { continentId, zoneId } = useParams<{ continentId: string; zoneId: string }>();
   const { user, activeChildId } = useAuth();
@@ -53,6 +339,7 @@ export default function ZoneGameScreen() {
   const [totalMistakes, setTotalMistakes] = useState(0);
   const [pendingNextTab, setPendingNextTab] = useState<number | null>(null);
   const [bossZoneForUnlock, setBossZoneForUnlock] = useState<string | null>(null);
+  const [finalStars, setFinalStars] = useState(3);
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -60,7 +347,6 @@ export default function ZoneGameScreen() {
     else if (!continent || !zone) navigate("/world-map");
   }, [user, activeChildId, continent, zone, navigate]);
 
-  // Skip cutscene for boss zones
   useEffect(() => {
     if (isBoss) setPhase("playing");
   }, [isBoss]);
@@ -99,13 +385,13 @@ export default function ZoneGameScreen() {
     });
     if (done.size > 0) {
       setCompletedGames(done);
-      setPhase("playing"); // skip cutscene if resuming
+      setPhase("playing");
     }
   }, [existingProgress]);
 
-  const ageTier = child ? getAgeTier(child.age) : "defender" as const;
+  const ageTier = child ? getAgeTier(child.age) : ("defender" as const);
   const pointsPerGame = getPointsPerCorrect(ageTier) * 5;
-  const XP_PER_ZONE = 100;
+  const zoneRewards = ZONE_REWARDS[zoneId ?? ""] ?? { xp: 100 };
 
   const computeStars = useCallback((mistakes: number) => {
     if (mistakes === 0) return 3;
@@ -116,40 +402,44 @@ export default function ZoneGameScreen() {
   const handleZoneComplete = async (stars: number) => {
     if (!activeChildId || !zoneId || !continentId) return;
 
-    await supabase.from("zone_progress").upsert({
-      child_id: activeChildId,
-      continent_id: continentId,
-      zone_id: zoneId,
-      status: "completed",
-      games_completed: 4,
-      total_games: 4,
-      stars_earned: stars,
-    }, { onConflict: "child_id,zone_id" });
+    await supabase.from("zone_progress").upsert(
+      {
+        child_id: activeChildId,
+        continent_id: continentId,
+        zone_id: zoneId,
+        status: "completed",
+        games_completed: 4,
+        total_games: 4,
+        stars_earned: stars,
+      },
+      { onConflict: "child_id,zone_id" },
+    );
 
     if (isHQ) {
       await supabase.from("child_profiles").update({ hq_completed: true }).eq("id", activeChildId);
     }
 
-    // Award flat XP
     if (child) {
-      const newPoints = (child.points || 0) + XP_PER_ZONE;
+      const newPoints = (child.points || 0) + zoneRewards.xp;
       const newLevel = Math.floor(newPoints / 500) + 1;
       await supabase.from("child_profiles").update({ points: newPoints, level: newLevel }).eq("id", activeChildId);
     }
 
     const nextZoneId = getNextZone(continentId, zoneId);
     if (nextZoneId) {
-      await supabase.from("zone_progress").upsert({
-        child_id: activeChildId,
-        continent_id: continentId,
-        zone_id: nextZoneId,
-        status: "available",
-        games_completed: 0,
-        total_games: 4,
-        stars_earned: 0,
-      }, { onConflict: "child_id,zone_id" });
+      await supabase.from("zone_progress").upsert(
+        {
+          child_id: activeChildId,
+          continent_id: continentId,
+          zone_id: nextZoneId,
+          status: "available",
+          games_completed: 0,
+          total_games: 4,
+          stars_earned: 0,
+        },
+        { onConflict: "child_id,zone_id" },
+      );
 
-      // Check if next zone is the boss (all regular zones done)
       const bossZone = continent?.zones.find((z) => z.isBoss);
       if (bossZone && nextZoneId === bossZone.id) {
         setBossZoneForUnlock(bossZone.id);
@@ -169,28 +459,30 @@ export default function ZoneGameScreen() {
     const gameKeys = ["quiz", "mini", "puzzle", "dragdrop"];
     const missionId = `zone_${zoneId}_${gameKeys[gameIndex]}`;
 
-    await supabase.from("mission_progress").upsert({
-      child_id: activeChildId,
-      mission_id: missionId,
-      status: "completed",
-      score: stars,
-      max_score: 3,
-      stars_earned: stars,
-      game_type: gameKeys[gameIndex],
-      completed_at: new Date().toISOString(),
-    }, { onConflict: "child_id,mission_id" });
+    await supabase.from("mission_progress").upsert(
+      {
+        child_id: activeChildId,
+        mission_id: missionId,
+        status: "completed",
+        score: stars,
+        max_score: 3,
+        stars_earned: stars,
+        game_type: gameKeys[gameIndex],
+        completed_at: new Date().toISOString(),
+      },
+      { onConflict: "child_id,mission_id" },
+    );
 
     const newCompleted = new Set(completedGames);
     newCompleted.add(gameIndex);
     setCompletedGames(newCompleted);
 
     if (newCompleted.size >= 4) {
-      // All games done — show complete screen
-      const finalStars = computeStars(totalMistakes + mistakes);
-      await handleZoneComplete(finalStars);
-      setPhase("complete");
+      const fs = computeStars(totalMistakes + mistakes);
+      setFinalStars(fs);
+      await handleZoneComplete(fs);
+      setPhase("debrief");
     } else {
-      // Find next uncompleted tab and show story panel
       let nextTab = gameIndex;
       for (let i = gameIndex + 1; i < 4; i++) {
         if (!newCompleted.has(i)) {
@@ -213,28 +505,37 @@ export default function ZoneGameScreen() {
     setPhase("playing");
   }, [pendingNextTab]);
 
+  const handleDebriefDone = useCallback(() => {
+    setPhase("complete");
+  }, []);
+
   const handleBossComplete = async (won: boolean, stars: number) => {
     if (!activeChildId || !zoneId || !continentId) return;
-
     const isFinalBoss = zoneId === "boss-shadowbyte";
 
-    await supabase.from("zone_progress").upsert({
-      child_id: activeChildId,
-      continent_id: continentId,
-      zone_id: zoneId,
-      status: "completed",
-      games_completed: 4,
-      total_games: 4,
-      stars_earned: stars,
-    }, { onConflict: "child_id,zone_id" });
+    await supabase.from("zone_progress").upsert(
+      {
+        child_id: activeChildId,
+        continent_id: continentId,
+        zone_id: zoneId,
+        status: "completed",
+        games_completed: 4,
+        total_games: 4,
+        stars_earned: stars,
+      },
+      { onConflict: "child_id,zone_id" },
+    );
 
-    await supabase.from("continent_progress").upsert({
-      child_id: activeChildId,
-      continent_id: continentId,
-      status: "completed",
-      boss_defeated: true,
-      completed_at: new Date().toISOString(),
-    }, { onConflict: "child_id,continent_id" });
+    await supabase.from("continent_progress").upsert(
+      {
+        child_id: activeChildId,
+        continent_id: continentId,
+        status: "completed",
+        boss_defeated: true,
+        completed_at: new Date().toISOString(),
+      },
+      { onConflict: "child_id,continent_id" },
+    );
 
     if (child) {
       const updates: any = {
@@ -252,15 +553,23 @@ export default function ZoneGameScreen() {
     queryClient.invalidateQueries({ queryKey: ["continent_progress"] });
     queryClient.invalidateQueries({ queryKey: ["child"] });
 
-    setTimeout(() => {
-      if (isFinalBoss) navigate("/certificate");
-      else navigate(`/world-map/${continentId}`);
-    }, isFinalBoss ? 5000 : 3000);
+    setTimeout(
+      () => {
+        if (isFinalBoss) navigate("/certificate");
+        else navigate(`/world-map/${continentId}?completed=${zoneId}`);
+      },
+      isFinalBoss ? 5000 : 2500,
+    );
   };
 
   if (!continent || !zone) return null;
 
-  // ─── Cutscene Intro ──────────────────────────
+  const villainAsset = VILLAIN_ASSETS[continent.villain];
+  const hue = villainAsset?.color.split(",")[0] ?? "195";
+  const avatarConfig = child?.avatar_config as Record<string, any> | null;
+  const playerName = (child as any)?.name ?? "Guardian";
+
+  /* ── Cutscene intro ── */
   if (phase === "cutscene" && !isBoss) {
     return (
       <AnimatePresence>
@@ -268,6 +577,7 @@ export default function ZoneGameScreen() {
           villainName={continent.villain}
           zoneName={zone.name}
           zoneIcon={zone.icon}
+          zoneId={zoneId}
           storyNarration={narration.intro}
           villainTaunt={narration.villainTaunts[0] || continent.villainTaunt}
           onStart={() => setPhase("playing")}
@@ -276,7 +586,7 @@ export default function ZoneGameScreen() {
     );
   }
 
-  // ─── Story Panel Between Games ────────────────
+  /* ── Story panel between games ── */
   if (phase === "story_panel") {
     const gamesDone = completedGames.size;
     return (
@@ -285,8 +595,12 @@ export default function ZoneGameScreen() {
           <StarfieldBackground />
           <ZoneStoryPanel
             villainName={continent.villain}
-            narration={narration.afterGame[Math.min(gamesDone - 1, narration.afterGame.length - 1)] || "Keep going, Guardian!"}
-            villainTaunt={narration.villainTaunts[Math.min(gamesDone, narration.villainTaunts.length - 1)] || "You won't win!"}
+            narration={
+              narration.afterGame[Math.min(gamesDone - 1, narration.afterGame.length - 1)] || "Keep going, Guardian!"
+            }
+            villainTaunt={
+              narration.villainTaunts[Math.min(gamesDone, narration.villainTaunts.length - 1)] || "You won't win!"
+            }
             gameIndex={gamesDone}
             onContinue={handleStoryPanelContinue}
           />
@@ -295,9 +609,31 @@ export default function ZoneGameScreen() {
     );
   }
 
-  // ─── Zone Complete Screen ─────────────────────
+  /* ── Zone completion debrief ── */
+  if (phase === "debrief" && zone && continent) {
+    return (
+      <AnimatePresence>
+        <div className="min-h-screen relative" style={{ background: "#050a14" }}>
+          <StarfieldBackground />
+          <ZoneCompletionDebrief
+            zoneId={zoneId ?? ""}
+            zoneName={zone.name}
+            zoneIcon={zone.icon}
+            villainName={continent.villain}
+            stars={finalStars}
+            xp={zoneRewards.xp}
+            badge={zoneRewards.badge}
+            avatarConfig={avatarConfig}
+            playerName={playerName}
+            onDone={handleDebriefDone}
+          />
+        </div>
+      </AnimatePresence>
+    );
+  }
+
+  /* ── Zone complete screen ── */
   if (phase === "complete") {
-    const finalStars = computeStars(totalMistakes);
     return (
       <AnimatePresence>
         <ZoneCompleteScreen
@@ -305,12 +641,12 @@ export default function ZoneGameScreen() {
           zoneIcon={zone.icon}
           villainName={continent.villain}
           stars={finalStars}
-          xpEarned={XP_PER_ZONE}
+          xpEarned={zoneRewards.xp}
           onBackToMap={() => {
             if (bossZoneForUnlock) {
               setPhase("boss_unlocked" as AdventurePhase);
             } else {
-              navigate(`/world-map/${continentId}`);
+              navigate(`/world-map/${continentId}?completed=${zoneId}`);
             }
           }}
         />
@@ -318,7 +654,7 @@ export default function ZoneGameScreen() {
     );
   }
 
-  // ─── Boss Unlocked Cutscene ───────────────────
+  /* ── Boss unlocked cutscene ── */
   if (phase === "boss_unlocked" && bossZoneForUnlock) {
     const bossZone = continent.zones.find((z) => z.id === bossZoneForUnlock);
     return (
@@ -328,20 +664,24 @@ export default function ZoneGameScreen() {
           bossZoneName={bossZone?.name || "Boss Vault"}
           villainTaunt={continent.villainTaunt}
           onFaceBoss={() => navigate(`/zone/${continentId}/${bossZoneForUnlock}`)}
-          onReturnToMap={() => navigate(`/world-map/${continentId}`)}
+          onReturnToMap={() => navigate(`/world-map/${continentId}?completed=${zoneId}`)}
         />
       </AnimatePresence>
     );
   }
 
-  // ─── Boss Battle ─────────────────────────────
+  /* ── Boss battle ── */
   if (isBoss && bossContent) {
     return (
       <div className="min-h-screen pb-24 pt-20 relative overflow-hidden" style={{ background: "#050a14" }}>
         <StarfieldBackground />
-        <div className="pointer-events-none absolute inset-0 z-[1]" style={{
-          background: "repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(0 80% 60% / 0.02) 2px, hsl(0 80% 60% / 0.02) 4px)",
-        }} />
+        <div
+          className="pointer-events-none absolute inset-0 z-[1]"
+          style={{
+            background:
+              "repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(0 80% 60% / 0.02) 2px, hsl(0 80% 60% / 0.02) 4px)",
+          }}
+        />
         <div className="relative z-[2] mx-auto max-w-4xl px-4">
           <BossBattleScreen
             villainName={continent.villain}
@@ -355,7 +695,7 @@ export default function ZoneGameScreen() {
     );
   }
 
-  // ─── No game content ────────────────────────
+  /* ── No game content ── */
   if (!gameContent) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#050a14" }}>
@@ -370,19 +710,23 @@ export default function ZoneGameScreen() {
     );
   }
 
-  // ─── Regular Zone Games ─────────────────────
+  /* ── Regular zone games ── */
   const hasCrossword = !!gameContent.crossword;
   const puzzleLabel = hasCrossword ? "Crossword" : "Word Search";
 
   return (
     <div className="min-h-screen pb-24 pt-20 relative overflow-hidden" style={{ background: "#050a14" }}>
       <StarfieldBackground />
-      <div className="pointer-events-none absolute inset-0 z-[1]" style={{
-        background: "repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(195 80% 60% / 0.015) 2px, hsl(195 80% 60% / 0.015) 4px)",
-      }} />
+      <div
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{
+          background:
+            "repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(195 80% 60% / 0.015) 2px, hsl(195 80% 60% / 0.015) 4px)",
+        }}
+      />
 
       <div className="relative z-[2] mx-auto max-w-4xl px-4">
-        {/* Header */}
+        {/* ── Header ── */}
         <div className="flex items-center justify-between mb-4">
           <Button
             onClick={() => navigate(`/world-map/${continentId}`)}
@@ -392,11 +736,36 @@ export default function ZoneGameScreen() {
             <ChevronLeft className="h-4 w-4 mr-1" /> BACK TO MAP
           </Button>
 
+          {/* Villain avatar — actual image instead of VillainSprite emoji */}
           <div className="flex items-center gap-2">
-            <VillainSprite villainName={continent.villain} size={32} menacing />
+            <div
+              className="relative flex h-9 w-9 items-center justify-center rounded-full border overflow-hidden"
+              style={{ borderColor: `hsla(${hue},70%,50%,0.4)`, background: `hsla(${hue},50%,10%,0.8)` }}
+            >
+              {villainAsset ? (
+                <img
+                  src={villainAsset.img}
+                  alt={continent.villain}
+                  className="w-full h-full object-cover object-top scale-125"
+                />
+              ) : (
+                <span className="text-base">🦹</span>
+              )}
+              {/* Pulse ring */}
+              <motion.div
+                animate={{ opacity: [0.4, 0.8, 0.4] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="absolute inset-0 rounded-full"
+                style={{ boxShadow: `0 0 10px hsla(${hue},70%,50%,0.5)` }}
+              />
+            </div>
+            <span className="text-[10px] font-bold hidden sm:block" style={{ color: `hsla(${hue},70%,65%,1)` }}>
+              {continent.villain}
+            </span>
           </div>
         </div>
 
+        {/* Zone title */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-4">
           <h1 className="text-lg md:text-xl font-bold text-white">
             {zone.icon} {zone.name.toUpperCase()} <span className="text-white/40">// {zone.city}</span>
@@ -406,13 +775,12 @@ export default function ZoneGameScreen() {
           </p>
         </motion.div>
 
-        {/* Game Tabs */}
+        {/* Game tabs */}
         <div className="flex gap-1 mb-4 overflow-x-auto">
           {GAME_TABS.map((tab, i) => {
             const isCompleted = completedGames.has(i);
             const isLocked = i > 0 && !completedGames.has(i - 1) && !isCompleted;
             const isActive = activeTab === i;
-
             return (
               <button
                 key={tab.key}
@@ -435,7 +803,7 @@ export default function ZoneGameScreen() {
           })}
         </div>
 
-        {/* Game Content */}
+        {/* Game content */}
         <div className="rounded-2xl border border-[hsl(195_80%_50%/0.15)] bg-[hsl(210_40%_12%/0.8)] backdrop-blur-md min-h-[400px]">
           {activeTab === 0 && !completedGames.has(0) && (
             <ZoneQuizGame
@@ -445,7 +813,16 @@ export default function ZoneGameScreen() {
             />
           )}
           {activeTab === 0 && completedGames.has(0) && (
-            <CompletedState label="Story Quiz" onReplay={() => { setCompletedGames((s) => { const n = new Set(s); n.delete(0); return n; }); }} />
+            <CompletedState
+              label="Story Quiz"
+              onReplay={() =>
+                setCompletedGames((s) => {
+                  const n = new Set(s);
+                  n.delete(0);
+                  return n;
+                })
+              }
+            />
           )}
 
           {activeTab === 1 && !completedGames.has(1) && (
@@ -457,7 +834,16 @@ export default function ZoneGameScreen() {
             />
           )}
           {activeTab === 1 && completedGames.has(1) && (
-            <CompletedState label="Mini Game" onReplay={() => { setCompletedGames((s) => { const n = new Set(s); n.delete(1); return n; }); }} />
+            <CompletedState
+              label="Mini Game"
+              onReplay={() =>
+                setCompletedGames((s) => {
+                  const n = new Set(s);
+                  n.delete(1);
+                  return n;
+                })
+              }
+            />
           )}
 
           {activeTab === 2 && !completedGames.has(2) && gameContent.wordSearch && (
@@ -489,7 +875,16 @@ export default function ZoneGameScreen() {
             </div>
           )}
           {activeTab === 2 && completedGames.has(2) && (
-            <CompletedState label={puzzleLabel} onReplay={() => { setCompletedGames((s) => { const n = new Set(s); n.delete(2); return n; }); }} />
+            <CompletedState
+              label={puzzleLabel}
+              onReplay={() =>
+                setCompletedGames((s) => {
+                  const n = new Set(s);
+                  n.delete(2);
+                  return n;
+                })
+              }
+            />
           )}
 
           {activeTab === 3 && !completedGames.has(3) && (
@@ -501,15 +896,25 @@ export default function ZoneGameScreen() {
             />
           )}
           {activeTab === 3 && completedGames.has(3) && (
-            <CompletedState label="Drag & Drop" onReplay={() => { setCompletedGames((s) => { const n = new Set(s); n.delete(3); return n; }); }} />
+            <CompletedState
+              label="Drag & Drop"
+              onReplay={() =>
+                setCompletedGames((s) => {
+                  const n = new Set(s);
+                  n.delete(3);
+                  return n;
+                })
+              }
+            />
           )}
         </div>
 
+        {/* DEV button — now wires up ?completed= so the map shows the debrief */}
         {import.meta.env.DEV && (
           <button
             onClick={async () => {
               await handleZoneComplete(3);
-              navigate(`/world-map/${continentId}`);
+              navigate(`/world-map/${continentId}?completed=${zoneId}`);
             }}
             className="fixed bottom-4 left-4 z-[9999] rounded-lg bg-yellow-600/80 px-3 py-1.5 text-xs font-bold text-white hover:bg-yellow-500"
           >
