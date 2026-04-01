@@ -1568,7 +1568,7 @@ function VillainCharacter({
   const [showShimmer, setShowShimmer] = useState(false);
   const asset = VILLAIN_ASSETS[villainName];
   const dynamicTaunts = VILLAIN_DYNAMIC_TAUNTS[villainName];
-
+  const isShadowbyte = villainName === "SHADOWBYTE";
   useEffect(() => {
     if (hoveredNodeStatus) return;
     const interval = setInterval(() => setTauntIdx((i) => (i + 1) % taunts.length), 3000);
