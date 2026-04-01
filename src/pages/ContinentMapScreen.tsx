@@ -1547,10 +1547,12 @@ const VILLAIN_DYNAMIC_TAUNTS: Record<
     lastLocked: "Almost there! My best bugs are waiting for you.",
   },
   SHADOWBYTE: {
-    locked: "That zone is mine. Stay away.",
-    available: "You dare approach?",
-    completed: "One zone. I have everything else.",
-    boss: "You want to face my Core? Your funeral.",
+    locked: "That zone is frozen solid. I made sure of it.",
+    available: "Go ahead. Walk into the cold.",
+    completed: "Hmm. You cleared that one. I underestimated you.",
+    boss: "You reached the void. Few ever do. Fewer survive.",
+    first: "Into the darkness you go. I'll be watching.",
+    lastLocked: "One last gate stands between you and me.",
   },
 };
 
