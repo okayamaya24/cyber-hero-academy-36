@@ -1636,12 +1636,19 @@ function VillainCharacter({
             border: `1px solid ${borderColor}`,
             boxShadow: isShadowbyte
               ? `0 0 20px rgba(91,77,255,0.3)`
+              : isTrollLord
+              ? `0 0 20px rgba(170,255,0,0.3)`
               : `0 0 18px hsla(${hueVal},80%,50%,0.15)`,
           }}
         >
           {isShadowbyte && (
             <span className="block mb-1 text-[8px] tracking-[0.2em] uppercase" style={{ color: "#5B4DFF", fontFamily: "'Share Tech Mono', 'Orbitron', monospace" }}>
               // SHADOWBYTE.exe
+            </span>
+          )}
+          {isTrollLord && (
+            <span className="block mb-1 text-[8px] tracking-[0.2em] uppercase" style={{ color: "#AAFF00", fontFamily: "'Share Tech Mono', 'Orbitron', monospace" }}>
+              // TROLL_LORD.exe
             </span>
           )}
           <motion.div
