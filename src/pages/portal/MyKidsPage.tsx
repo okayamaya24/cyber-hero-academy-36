@@ -23,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   Plus,
@@ -36,6 +37,7 @@ import {
   AlertCircle,
   Trophy,
   Lightbulb,
+  BookOpen,
 } from "lucide-react";
 import { MISSIONS, ALL_BADGES } from "@/data/missions";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
@@ -52,7 +54,6 @@ interface KidForm {
 }
 const emptyForm: KidForm = { name: "", age: "", username: "", password: "" };
 
-// Grade to age mapping
 const GRADE_TO_AGE: Record<string, number> = {
   K: 5,
   "1": 6,
@@ -112,10 +113,48 @@ export default function MyKidsPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [form, setForm] = useState<KidForm>(emptyForm);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  // Teacher-specific state
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [grade, setGrade] = useState("");
+  const [selectedClassId, setSelectedClassId] = useState<string>("all");
+  const [newClassDialogOpen, setNewClassDialogOpen] = useState(false);
+  const [newClassName, setNewClassName] = useState("");
+  const [newClassGrade, setNewClassGrade] = useState("");
+  const [studentClassId, setStudentClassId] = useState("");
+
+  // Classes query (teacher only)
+  const { data: classes = [] } = useQuery({
+    queryKey: ["classes", user?.id],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("classes")
+        .select("*")
+        .eq("teacher_id", user!.id)
+        .order("created_at");
+      if (error) throw error;
+      return data as { id: string; name: string; grade: string }[];
+    },
+    enabled: !!user && isSchool,
+  });
+
+  const createClassMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await (supabase as any).from("classes").insert({
+        teacher_id: user!.id,
+        name: newClassName.trim(),
+        grade: newClassGrade,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["classes"] });
+      setNewClassDialogOpen(false);
+      setNewClassName("");
+      setNewClassGrade("");
+      toast.success("Class created!");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
 
   const { data: children = [], isLoading } = useQuery({
     queryKey: ["children", user?.id],
@@ -131,32 +170,46 @@ export default function MyKidsPage() {
     enabled: !!user,
   });
 
-  const childIds = useMemo(() => children.map((c) => c.id), [children]);
+  // Filter children by selected class
+  const filteredChildren = useMemo(() => {
+    if (!isSchool || selectedClassId === "all") return children;
+    return children.filter((c) => (c as any).class_id === selectedClassId);
+  }, [children, selectedClassId, isSchool]);
+
+  const childIds = useMemo(() => filteredChildren.map((c) => c.id), [filteredChildren]);
+  const allChildIds = useMemo(() => children.map((c) => c.id), [children]);
 
   const { data: allProgress = [] } = useQuery({
-    queryKey: ["all_mission_progress", user?.id, childIds.join(",")],
+    queryKey: ["all_mission_progress", user?.id, allChildIds.join(",")],
     queryFn: async () => {
-      if (childIds.length === 0) return [];
-      const { data, error } = await supabase.from("mission_progress").select("*").in("child_id", childIds);
+      if (allChildIds.length === 0) return [];
+      const { data, error } = await supabase.from("mission_progress").select("*").in("child_id", allChildIds);
       if (error) throw error;
       return data;
     },
-    enabled: !!user && childIds.length > 0,
+    enabled: !!user && allChildIds.length > 0,
   });
 
   const { data: allBadges = [] } = useQuery({
-    queryKey: ["all_badges", user?.id, childIds.join(",")],
+    queryKey: ["all_badges", user?.id, allChildIds.join(",")],
     queryFn: async () => {
-      if (childIds.length === 0) return [];
-      const { data, error } = await supabase.from("earned_badges").select("*").in("child_id", childIds);
+      if (allChildIds.length === 0) return [];
+      const { data, error } = await supabase.from("earned_badges").select("*").in("child_id", allChildIds);
       if (error) throw error;
       return data;
     },
-    enabled: !!user && childIds.length > 0,
+    enabled: !!user && allChildIds.length > 0,
   });
 
-  const getChildMissions = (childId: string) => allProgress.filter((p) => p.child_id === childId);
-  const getChildBadges = (childId: string) => allBadges.filter((b) => b.child_id === childId);
+  const filteredProgress = useMemo(
+    () => allProgress.filter((p) => childIds.includes(p.child_id)),
+    [allProgress, childIds],
+  );
+
+  const filteredBadges = useMemo(() => allBadges.filter((b) => childIds.includes(b.child_id)), [allBadges, childIds]);
+
+  const getChildMissions = (childId: string) => filteredProgress.filter((p) => p.child_id === childId);
+  const getChildBadges = (childId: string) => filteredBadges.filter((b) => b.child_id === childId);
 
   const getChildSummary = (childId: string) => {
     const childMissions = getChildMissions(childId);
@@ -185,17 +238,17 @@ export default function MyKidsPage() {
     return { completedCount: completedMissions.length, totalStars, strongestTopic, needsReviewTopic };
   };
 
-  const totalMissionsDone = allProgress.filter((p) => p.status === "completed").length;
-  const totalBadgesEarned = allBadges.length;
+  const totalMissionsDone = filteredProgress.filter((p) => p.status === "completed").length;
+  const totalBadgesEarned = filteredBadges.length;
 
   const areasNeedingReview = useMemo(() => {
-    if (children.length === 0) return [];
+    if (filteredChildren.length === 0) return [];
     const areas: { missionTitle: string; childNames: string[]; status: string }[] = [];
     for (const mission of MISSIONS) {
       const needingWork: string[] = [];
       let worstStatus = "completed";
-      for (const child of children) {
-        const progress = allProgress.find((p) => p.child_id === child.id && p.mission_id === mission.id);
+      for (const child of filteredChildren) {
+        const progress = filteredProgress.find((p) => p.child_id === child.id && p.mission_id === mission.id);
         if (!progress) {
           needingWork.push(child.name);
           worstStatus = "not started";
@@ -211,43 +264,44 @@ export default function MyKidsPage() {
         areas.push({ missionTitle: mission.title, childNames: needingWork, status: worstStatus });
     }
     return areas.slice(0, 6);
-  }, [children, allProgress]);
+  }, [filteredChildren, filteredProgress]);
 
   const conversationStarter = useMemo(() => {
     if (areasNeedingReview.length === 0) return discussionPrompts[Math.floor(Math.random() * discussionPrompts.length)];
     const topic = areasNeedingReview[0];
     return (
       conversationStarters[topic.missionTitle] ||
-      `Talk with your child about "${topic.missionTitle}" — they could use some extra practice!`
+      `Talk with your students about "${topic.missionTitle}" — they could use some extra practice!`
     );
   }, [areasNeedingReview]);
 
   const certProgress = useMemo(() => {
     const total = ALL_BADGES.length;
-    const earned = new Set(allBadges.map((b) => b.badge_id)).size;
+    const earned = new Set(filteredBadges.map((b) => b.badge_id)).size;
     return { earned, total, percent: total > 0 ? Math.round((earned / total) * 100) : 0 };
-  }, [allBadges]);
+  }, [filteredBadges]);
 
   const recentBadges = useMemo(() => {
-    return [...allBadges].sort((a, b) => new Date(b.earned_at).getTime() - new Date(a.earned_at).getTime()).slice(0, 8);
-  }, [allBadges]);
+    return [...filteredBadges]
+      .sort((a, b) => new Date(b.earned_at).getTime() - new Date(a.earned_at).getTime())
+      .slice(0, 8);
+  }, [filteredBadges]);
 
   const leaderboard = useMemo(() => {
     if (!isSchool) return [];
-    return [...children]
+    return [...filteredChildren]
       .map((c) => ({ ...c, completedCount: getChildMissions(c.id).filter((m) => m.status === "completed").length }))
       .sort((a, b) => b.points - a.points)
       .slice(0, 5);
-  }, [children, allProgress, isSchool]);
+  }, [filteredChildren, filteredProgress, isSchool]);
 
   const classAverage = useMemo(() => {
-    if (!isSchool || children.length === 0) return 0;
-    const totalPossible = children.length * MISSIONS.length;
+    if (!isSchool || filteredChildren.length === 0) return 0;
+    const totalPossible = filteredChildren.length * MISSIONS.length;
     if (totalPossible === 0) return 0;
     return Math.round((totalMissionsDone / totalPossible) * 100);
-  }, [isSchool, children, totalMissionsDone]);
+  }, [isSchool, filteredChildren, totalMissionsDone]);
 
-  // Auto-generated username for teachers
   const autoUsername = isSchool ? generateUsername(firstName, lastName, grade) : form.username;
   const autoPassword = isSchool ? `CyberHero${autoUsername}!` : form.password;
 
@@ -280,27 +334,27 @@ export default function MyKidsPage() {
       const kidId = signUpData.user?.id;
       if (!kidId) throw new Error("Failed to create account");
 
-      await supabase
-        .from("profiles")
-        .upsert({ id: kidId, user_id: kidId, role: "kid", account_type: "kid", display_name: name, email: fakeEmail });
-      await supabase
-        .from("child_profiles")
-        .insert({
-          id: kidId,
-          parent_id: user.id,
-          name,
-          age,
-          learning_mode: "standard",
-          avatar: "🦸",
-          level: 1,
-          points: 0,
-          streak: 0,
-        });
-      await supabase.from("parent_kid_links").insert({ parent_id: user.id, kid_id: kidId });
-
       if (parentAccessToken && parentRefreshToken) {
         await supabase.auth.setSession({ access_token: parentAccessToken, refresh_token: parentRefreshToken });
       }
+
+      await supabase
+        .from("profiles")
+        .upsert({ id: kidId, user_id: kidId, role: "kid", account_type: "kid", display_name: name, email: fakeEmail });
+      await supabase.from("child_profiles").insert({
+        id: kidId,
+        parent_id: user.id,
+        name,
+        age,
+        learning_mode: "standard",
+        avatar: "🦸",
+        level: 1,
+        points: 0,
+        streak: 0,
+        ...(isSchool && studentClassId ? { class_id: studentClassId } : {}),
+      });
+      await supabase.from("parent_kid_links").insert({ parent_id: user.id, kid_id: kidId });
+
       return { username: u, name };
     },
     onSuccess: (result) => {
@@ -310,6 +364,7 @@ export default function MyKidsPage() {
       setFirstName("");
       setLastName("");
       setGrade("");
+      setStudentClassId("");
       toast.success(`${result.name} added! Login: ${result.username}`);
     },
     onError: (e: any) => toast.error(e.message),
@@ -332,6 +387,10 @@ export default function MyKidsPage() {
   const handleCSVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
+    if (isSchool && !studentClassId) {
+      toast.error("Please select a class before uploading CSV");
+      return;
+    }
     const text = await file.text();
     const lines = text.trim().split("\n").slice(1);
     const students = lines
@@ -339,7 +398,7 @@ export default function MyKidsPage() {
         const parts = line.split(",");
         const first = parts[0]?.trim() || "";
         const last = parts[1]?.trim() || "";
-        const g = parts[2]?.trim() || "3";
+        const g = grade || "3";
         const username = generateUsername(first, last, g);
         const age = GRADE_TO_AGE[g] ?? 8;
         return { name: `${first} ${last}`, username, age, password: `CyberHero${username}!` };
@@ -347,34 +406,43 @@ export default function MyKidsPage() {
       .filter((s) => s.username && s.name.trim());
 
     const { data: sess } = await supabase.auth.getSession();
+    const teacherAccessToken = sess.session?.access_token;
+    const teacherRefreshToken = sess.session?.refresh_token;
+    const teacherId = user.id;
+
+    if (!teacherAccessToken || !teacherRefreshToken) {
+      toast.error("Session error — please log out and back in");
+      return;
+    }
+
     let created = 0;
     for (const student of students) {
       toast.info(`Creating ${student.name}... (${created + 1}/${students.length})`);
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: `${student.username}@cyberhero.app`,
-        password: student.password,
-      });
-      if (signUpError) {
-        toast.error(`Failed: ${student.name}`);
-        continue;
-      }
-      const kidId = signUpData?.user?.id;
-      if (kidId) {
-        await supabase
-          .from("profiles")
-          .upsert({
+      try {
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: `${student.username}@cyberhero.app`,
+          password: student.password,
+        });
+        await supabase.auth.setSession({ access_token: teacherAccessToken, refresh_token: teacherRefreshToken });
+        if (signUpError) {
+          toast.error(`Failed: ${student.name}`);
+          continue;
+        }
+        const kidId = signUpData?.user?.id;
+        if (kidId) {
+          await supabase
+            .from("profiles")
+            .upsert({
+              id: kidId,
+              user_id: kidId,
+              role: "kid",
+              account_type: "kid",
+              display_name: student.name,
+              email: `${student.username}@cyberhero.app`,
+            });
+          await supabase.from("child_profiles").insert({
             id: kidId,
-            user_id: kidId,
-            role: "kid",
-            account_type: "kid",
-            display_name: student.name,
-            email: `${student.username}@cyberhero.app`,
-          });
-        await supabase
-          .from("child_profiles")
-          .insert({
-            id: kidId,
-            parent_id: user.id,
+            parent_id: teacherId,
             name: student.name,
             age: student.age,
             learning_mode: "standard",
@@ -382,22 +450,23 @@ export default function MyKidsPage() {
             level: 1,
             points: 0,
             streak: 0,
+            ...(studentClassId ? { class_id: studentClassId } : {}),
           });
-        await supabase.from("parent_kid_links").insert({ parent_id: user.id, kid_id: kidId });
-        if (sess?.session)
-          await supabase.auth.setSession({
-            access_token: sess.session.access_token,
-            refresh_token: sess.session.refresh_token,
-          });
-        created++;
+          await supabase.from("parent_kid_links").insert({ parent_id: teacherId, kid_id: kidId });
+          created++;
+        }
+      } catch {
+        await supabase.auth.setSession({ access_token: teacherAccessToken, refresh_token: teacherRefreshToken });
+        toast.error(`Failed: ${student.name}`);
       }
     }
     queryClient.invalidateQueries({ queryKey: ["children"] });
-    toast.success(`✅ ${created} students imported! Password: CyberHero[username]!`);
+    toast.success(`✅ ${created}/${students.length} students imported!`);
     (e.target as HTMLInputElement).value = "";
   };
 
   const canSubmit = isSchool ? !!firstName && !!lastName && !!grade : !!form.name && !!form.username && !!form.password;
+  const activeClass = classes.find((c) => c.id === selectedClassId);
 
   return (
     <DashboardLayout>
@@ -409,6 +478,7 @@ export default function MyKidsPage() {
             setFirstName("");
             setLastName("");
             setGrade("");
+            setStudentClassId("");
             setDrawerOpen(true);
           }}
           className="bg-primary hover:bg-primary/90"
@@ -417,9 +487,44 @@ export default function MyKidsPage() {
         </Button>
       </div>
 
+      {/* Class Tabs (teacher only) */}
+      {isSchool && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedClassId("all")}
+              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${selectedClassId === "all" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+            >
+              All Students ({children.length})
+            </button>
+            {classes.map((cls) => (
+              <button
+                key={cls.id}
+                onClick={() => setSelectedClassId(cls.id)}
+                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${selectedClassId === cls.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+              >
+                {cls.name} ({children.filter((c) => (c as any).class_id === cls.id).length})
+              </button>
+            ))}
+            <button
+              onClick={() => setNewClassDialogOpen(true)}
+              className="rounded-full px-4 py-1.5 text-sm font-semibold border-2 border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-all"
+            >
+              + New Class
+            </button>
+          </div>
+          {activeClass && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              📚 {activeClass.name} · Grade {activeClass.grade} · {filteredChildren.length} students
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Stats */}
       <motion.div className="grid grid-cols-3 gap-4 mb-8" variants={container} initial="hidden" animate="show">
         {[
-          { label: terms.kidPlural, value: children.length, icon: Users, color: "text-primary" },
+          { label: terms.kidPlural, value: filteredChildren.length, icon: Users, color: "text-primary" },
           { label: "Missions Completed", value: totalMissionsDone, icon: CheckCircle2, color: "text-secondary" },
           { label: "Badges Earned", value: totalBadgesEarned, icon: Award, color: "text-accent" },
         ].map((s) => (
@@ -443,7 +548,7 @@ export default function MyKidsPage() {
             <Skeleton key={i} className="h-24 w-full rounded-2xl" />
           ))}
         </div>
-      ) : children.length === 0 ? (
+      ) : filteredChildren.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center rounded-2xl border-2 border-dashed border-border bg-card">
           <Users className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
           <p className="text-lg font-bold text-foreground">No {terms.kidPlural.toLowerCase()} yet</p>
@@ -461,9 +566,10 @@ export default function MyKidsPage() {
               <Users className="h-5 w-5 text-primary" /> {isSchool ? "Students" : "Children"}
             </h2>
             <motion.div className="grid gap-4 sm:grid-cols-2" variants={container} initial="hidden" animate="show">
-              {children.map((child) => {
+              {filteredChildren.map((child) => {
                 const childBadges = getChildBadges(child.id);
                 const summary = getChildSummary(child.id);
+                const childClass = classes.find((c) => c.id === (child as any).class_id);
                 return (
                   <motion.div
                     key={child.id}
@@ -483,7 +589,11 @@ export default function MyKidsPage() {
                           <Badge variant="secondary" className="border-0 text-xs">
                             Level {child.level}
                           </Badge>
-                          <span className="text-xs text-muted-foreground">Age {child.age}</span>
+                          {childClass && (
+                            <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+                              {childClass.name}
+                            </Badge>
+                          )}
                         </div>
                         <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
                           <span>⭐ {child.points} pts</span>
@@ -534,7 +644,8 @@ export default function MyKidsPage() {
           {isSchool && leaderboard.length > 0 && (
             <div>
               <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-accent" /> Class Leaderboard
+                <Trophy className="h-5 w-5 text-accent" />{" "}
+                {activeClass ? `${activeClass.name} Leaderboard` : "Class Leaderboard"}
               </h2>
               <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
                 <div className="space-y-3">
@@ -568,7 +679,7 @@ export default function MyKidsPage() {
             >
               {MISSIONS.map((m) => {
                 const Icon = m.icon;
-                const completedCount = allProgress.filter(
+                const completedCount = filteredProgress.filter(
                   (p) => p.mission_id === m.id && p.status === "completed",
                 ).length;
                 return (
@@ -583,17 +694,17 @@ export default function MyKidsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Progress
-                        value={children.length > 0 ? (completedCount / children.length) * 100 : 0}
+                        value={filteredChildren.length > 0 ? (completedCount / filteredChildren.length) * 100 : 0}
                         className="h-2 flex-1"
                       />
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {completedCount}/{children.length}
+                        {completedCount}/{filteredChildren.length}
                       </span>
                     </div>
                     {isSchool && (
                       <div className="mt-2 flex flex-wrap gap-1">
-                        {children.map((c) => {
-                          const p = allProgress.find((pr) => pr.child_id === c.id && pr.mission_id === m.id);
+                        {filteredChildren.map((c) => {
+                          const p = filteredProgress.find((pr) => pr.child_id === c.id && pr.mission_id === m.id);
                           const done = p?.status === "completed";
                           return (
                             <span
@@ -655,7 +766,7 @@ export default function MyKidsPage() {
                   <span className="text-sm font-semibold text-primary">{classAverage}%</span>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Average completion across {children.length} students and {MISSIONS.length} missions.
+                  Average completion across {filteredChildren.length} students and {MISSIONS.length} missions.
                 </p>
               </>
             ) : (
@@ -681,7 +792,7 @@ export default function MyKidsPage() {
               </h3>
               <div className="flex flex-wrap gap-2">
                 {recentBadges.map((b) => {
-                  const childName = children.find((c) => c.id === b.child_id)?.name || "";
+                  const childName = filteredChildren.find((c) => c.id === b.child_id)?.name || "";
                   return (
                     <div
                       key={b.id}
@@ -712,16 +823,63 @@ export default function MyKidsPage() {
         </div>
       )}
 
-      {/* Drawer */}
+      {/* New Class Dialog */}
+      <Dialog open={newClassDialogOpen} onOpenChange={setNewClassDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Class</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label>Class Name *</Label>
+              <Input
+                value={newClassName}
+                onChange={(e) => setNewClassName(e.target.value)}
+                placeholder="e.g. Period 1 - Grade 3"
+              />
+            </div>
+            <div>
+              <Label>Grade *</Label>
+              <select
+                value={newClassGrade}
+                onChange={(e) => setNewClassGrade(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                <option value="">Select grade</option>
+                <option value="K">Kindergarten</option>
+                <option value="1">Grade 1</option>
+                <option value="2">Grade 2</option>
+                <option value="3">Grade 3</option>
+                <option value="4">Grade 4</option>
+                <option value="5">Grade 5</option>
+                <option value="6">Grade 6</option>
+                <option value="7">Grade 7</option>
+                <option value="8">Grade 8+</option>
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewClassDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => createClassMutation.mutate()}
+              disabled={!newClassName || !newClassGrade || createClassMutation.isPending}
+            >
+              {createClassMutation.isPending ? "Creating..." : "Create Class"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Student Drawer */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetContent className="sm:max-w-md overflow-y-auto">
           <SheetHeader>
             <SheetTitle>{terms.addKid}</SheetTitle>
           </SheetHeader>
-
           <div className="mt-6 space-y-5">
             {isSchool ? (
-              // ── TEACHER FORM ──
               <>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -733,13 +891,12 @@ export default function MyKidsPage() {
                     <Input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Johnson" />
                   </div>
                 </div>
-
                 <div>
                   <Label>Grade *</Label>
                   <select
                     value={grade}
                     onChange={(e) => setGrade(e.target.value)}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   >
                     <option value="">Select grade</option>
                     <option value="K">Kindergarten</option>
@@ -753,10 +910,24 @@ export default function MyKidsPage() {
                     <option value="8">Grade 8+</option>
                   </select>
                 </div>
-
+                <div>
+                  <Label>Assign to Class</Label>
+                  <select
+                    value={studentClassId}
+                    onChange={(e) => setStudentClassId(e.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">No class (unassigned)</option>
+                    {classes.map((cls) => (
+                      <option key={cls.id} value={cls.id}>
+                        {cls.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 {firstName && lastName && grade && (
                   <div className="rounded-lg bg-muted/50 border border-border p-3 space-y-1">
-                    <p className="text-xs font-bold text-foreground">🔑 Auto-generated login credentials:</p>
+                    <p className="text-xs font-bold text-foreground">🔑 Auto-generated login:</p>
                     <p className="text-xs text-muted-foreground">
                       Username: <span className="font-mono font-bold text-foreground">{autoUsername}</span>
                     </p>
@@ -765,10 +936,25 @@ export default function MyKidsPage() {
                     </p>
                   </div>
                 )}
-
                 <div className="rounded-lg border border-dashed border-border p-4 text-center">
                   <p className="text-sm font-semibold text-foreground mb-1">Bulk Roster Import</p>
-                  <p className="text-xs text-muted-foreground mb-3">CSV format: first_name, last_name, grade</p>
+                  <p className="text-xs text-muted-foreground mb-1">CSV format: first_name, last_name</p>
+                  {classes.length > 0 && (
+                    <div className="mb-3">
+                      <select
+                        value={studentClassId}
+                        onChange={(e) => setStudentClassId(e.target.value)}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        <option value="">Select class for CSV import</option>
+                        {classes.map((cls) => (
+                          <option key={cls.id} value={cls.id}>
+                            {cls.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <input type="file" accept=".csv" id="csv-upload" className="hidden" onChange={handleCSVUpload} />
                   <Button variant="outline" size="sm" onClick={() => document.getElementById("csv-upload")?.click()}>
                     Upload CSV
@@ -776,7 +962,6 @@ export default function MyKidsPage() {
                 </div>
               </>
             ) : (
-              // ── PARENT FORM ──
               <>
                 <div>
                   <Label>Name *</Label>
@@ -822,7 +1007,6 @@ export default function MyKidsPage() {
               </>
             )}
           </div>
-
           <SheetFooter className="mt-6">
             <Button variant="outline" onClick={() => setDrawerOpen(false)}>
               Cancel
