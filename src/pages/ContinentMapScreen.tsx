@@ -1495,10 +1495,13 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
     "Chaos is just code that's having fun.",
   ],
   SHADOWBYTE: [
-    "You dare face ME?",
-    "I am every threat combined.",
-    "Your Cyber Hero skills end HERE.",
-    "The digital world is already mine.",
+    "Every password you've ever used... I have it.",
+    "The cold doesn't bother me. Neither do you.",
+    "I don't hack systems. I erase them.",
+    "Your credentials expired the moment I arrived.",
+    "Nothing survives the void. Not even your data.",
+    "I've been watching from the dark since you started.",
+    "Silence is my weapon. The breach already happened.",
   ],
 };
 const VILLAIN_DYNAMIC_TAUNTS: Record<
