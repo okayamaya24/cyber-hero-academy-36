@@ -1470,10 +1470,13 @@ const VILLAIN_TAUNTS: Record<string, string[]> = {
     "Open the message... if you trust me.",
   ],
   "The Troll Lord": [
-    "I'll make everyone feel bad!",
-    "My trolls are EVERYWHERE!",
-    "Kindness won't save you!",
-    "The internet is MINE!",
+    "Did you just try to argue with me? Cute. 💅",
+    "I live in the comments. I AM the comments.",
+    "Ratio incoming. Brace yourself. 🧨",
+    "Your opinion has been flagged as irrelevant.",
+    "I don't start drama. I finish it.",
+    "Every post you make feeds me stronger. 👑",
+    "Touch grass? Never heard of it.",
   ],
   "The Firewall Phantom": [
     "Your firewall means nothing to me.",
