@@ -1660,13 +1660,19 @@ function VillainCharacter({
                     `0 0 50px rgba(91,77,255,0.7)`,
                     `0 0 20px rgba(91,77,255,0.3)`,
                   ]
+                : isTrollLord
+                ? [
+                    `0 0 20px rgba(170,255,0,0.3)`,
+                    `0 0 50px rgba(170,255,0,0.7)`,
+                    `0 0 20px rgba(170,255,0,0.3)`,
+                  ]
                 : [
                     `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
                     `0 0 40px hsla(${hueVal},80%,50%,0.35)`,
                     `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
                   ],
             }}
-            transition={{ repeat: Infinity, duration: isShadowbyte ? 3 : 2.5 }}
+            transition={{ repeat: Infinity, duration: isShadowbyte ? 3 : isTrollLord ? 2 : 2.5 }}
           />
           <p className="text-[11px] md:text-xs font-medium italic leading-snug" style={{ color: textColor }}>
             "{bubbleText}"
