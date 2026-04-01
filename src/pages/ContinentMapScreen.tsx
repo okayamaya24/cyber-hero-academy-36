@@ -1026,6 +1026,7 @@ const VILLAIN_ASSETS: Record<string, { img: string; color: string }> = {
   "The Firewall Phantom": { img: firewallPhantomImg, color: "300, 85%, 50%" },
   "The Data Thief": { img: dataThiefImg, color: "175, 85%, 45%" },
   "Malware Max": { img: malwareMaxImg, color: "110, 100%, 55%" },
+  SHADOWBYTE: { img: shadowbyteImg, color: "249, 100%, 65%" },
 };
 
 /* ═══════════════════════════════════════════════════════════
