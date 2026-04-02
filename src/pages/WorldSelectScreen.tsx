@@ -407,7 +407,7 @@ export default function WorldSelectScreen() {
           transition={{ delay: 0.9 }}
           className="mt-3 flex items-center gap-3"
         >
-          <span className="text-[10px] text-white/40 whitespace-nowrap">MASTER CERTIFICATE</span>
+          <span className="text-[10px] text-white/40 whitespace-nowrap">ADVENTURE PROGRESS</span>
           <div className="flex-1">
             <Progress value={(worldsCompleted / 7) * 100} className="h-1.5 bg-white/10" />
           </div>
