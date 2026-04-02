@@ -262,7 +262,7 @@ export default function WorldSelectScreen() {
   const handleContinentClick = (continent: ContinentDef) => {
     const s = continentStatuses[continent.id];
     if (s?.status === "locked") {
-      setGuideMessage("That world is still locked! Defeat the previous villain first. 🔒");
+      setGuideMessage("That story arc is still locked! Defeat the previous villain first. 🔒");
       return;
     }
     navigate(continent.route);
