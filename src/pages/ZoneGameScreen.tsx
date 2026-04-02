@@ -425,43 +425,17 @@ export default function ZoneGameScreen() {
   const handleZoneComplete = async (stars: number) => {
     if (!activeChildId || !zoneId || !continentId) return;
 
-    await supabase.from("zone_progress").upsert(
-      {
-        child_id: activeChildId,
-        continent_id: continentId,
-        zone_id: zoneId,
-        status: "completed",
-        games_completed: 4,
-        total_games: 4,
-        stars_earned: stars,
-      },
-      { onConflict: "child_id,zone_id" },
-    );
+    await saveZoneCompletion({ childId: activeChildId, continentId, zoneId, stars });
 
     if (isHQ) {
       await supabase.from("child_profiles").update({ hq_completed: true }).eq("id", activeChildId);
     }
 
-    if (child) {
-      const newPoints = (child.points || 0) + zoneRewards.xp;
-      const newLevel = Math.floor(newPoints / 500) + 1;
-      await supabase.from("child_profiles").update({ points: newPoints, level: newLevel }).eq("id", activeChildId);
-    }
+    await awardXp(activeChildId, child?.points || 0, zoneRewards.xp);
 
     const nextZoneId = getNextZone(continentId, zoneId);
     if (nextZoneId) {
-      await supabase.from("zone_progress").upsert(
-        {
-          child_id: activeChildId,
-          continent_id: continentId,
-          zone_id: nextZoneId,
-          status: "available",
-          games_completed: 0,
-          total_games: 4,
-          stars_earned: 0,
-        },
-        { onConflict: "child_id,zone_id" },
-      );
+      await unlockNextZone({ childId: activeChildId, continentId, nextZoneId });
 
       const bossZone = continent?.zones.find((z) => z.isBoss);
       if (bossZone && nextZoneId === bossZone.id) {
