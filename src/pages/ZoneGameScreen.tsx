@@ -497,42 +497,18 @@ export default function ZoneGameScreen() {
   const handleBossComplete = async (won: boolean, stars: number) => {
     if (!activeChildId || !zoneId || !continentId) return;
     const isFinalBoss = zoneId === "boss-shadowbyte";
+    const { saveBossCompletion } = await import("@/engine");
 
-    await supabase.from("zone_progress").upsert(
-      {
-        child_id: activeChildId,
-        continent_id: continentId,
-        zone_id: zoneId,
-        status: "completed",
-        games_completed: 4,
-        total_games: 4,
-        stars_earned: stars,
-      },
-      { onConflict: "child_id,zone_id" },
-    );
-
-    await supabase.from("continent_progress").upsert(
-      {
-        child_id: activeChildId,
-        continent_id: continentId,
-        status: "completed",
-        boss_defeated: true,
-        completed_at: new Date().toISOString(),
-      },
-      { onConflict: "child_id,continent_id" },
-    );
-
-    if (child) {
-      const updates: any = {
-        villains_defeated: (child.villains_defeated || 0) + 1,
-        points: (child.points || 0) + pointsPerGame * 2,
-      };
-      if (isFinalBoss) {
-        updates.master_certificate_earned = true;
-        updates.worlds_completed = 7;
-      }
-      await supabase.from("child_profiles").update(updates).eq("id", activeChildId);
-    }
+    await saveBossCompletion({
+      childId: activeChildId,
+      continentId,
+      zoneId,
+      stars,
+      isFinalBoss,
+      childPoints: child?.points || 0,
+      villainsDefeated: child?.villains_defeated || 0,
+      xpBonus: pointsPerGame * 2,
+    });
 
     queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
     queryClient.invalidateQueries({ queryKey: ["continent_progress"] });
