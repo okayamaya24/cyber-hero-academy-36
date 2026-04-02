@@ -171,7 +171,7 @@ function ContinentCard({
 export default function WorldSelectScreen() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
-  const [guideMessage, setGuideMessage] = useState("Choose a world to begin your mission, Guardian! 🌍");
+  const [guideMessage, setGuideMessage] = useState("Choose a story arc to begin your adventure, Guardian! 🌍");
   const [idleIdx, setIdleIdx] = useState(0);
 
   useEffect(() => {
