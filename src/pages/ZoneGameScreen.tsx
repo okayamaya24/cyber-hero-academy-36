@@ -567,8 +567,9 @@ export default function ZoneGameScreen() {
             villainTaunt={
               narration.villainTaunts[Math.min(gamesDone, narration.villainTaunts.length - 1)] || "You won't win!"
             }
-            gameIndex={gamesDone}
-            onContinue={handleStoryPanelContinue}
+             gameIndex={gamesDone}
+             zoneId={zoneId}
+             onContinue={handleStoryPanelContinue}
           />
         </div>
       </AnimatePresence>
