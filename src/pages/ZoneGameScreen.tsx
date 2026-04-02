@@ -10,6 +10,16 @@ import { getZoneGames, getBossBattle } from "@/data/zoneGames";
 import { getAgeTier, getPointsPerCorrect } from "@/data/missions";
 import { getNextZone } from "@/data/zoneOrder";
 import { getZoneNarration } from "@/data/zoneNarrations";
+import {
+  isContinentMigrated,
+  getContinentConfig,
+  getNarration,
+  computeStars as engineComputeStars,
+  saveZoneCompletion,
+  saveGameCompletion,
+  unlockNextZone,
+  awardXp,
+} from "@/engine";
 import StarfieldBackground from "@/components/world/StarfieldBackground";
 import ZoneQuizGame from "@/components/minigames/ZoneQuizGame";
 import WordSearchGame from "@/components/minigames/WordSearchGame";
@@ -332,7 +342,19 @@ export default function ZoneGameScreen() {
   const isHQ = zone?.isHQ;
   const gameContent = isBoss ? null : getZoneGames(zoneId || "");
   const bossContent = isBoss ? getBossBattle(zoneId || "") : null;
-  const narration = getZoneNarration(zoneId || "");
+  const cId = continentId || "";
+  const isMigrated = isContinentMigrated(cId);
+  const engineConfig = isMigrated ? getContinentConfig(cId) : null;
+
+  // Use engine narration for migrated continents, legacy for others
+  const narration = isMigrated && engineConfig
+    ? getNarration(zoneId || "", engineConfig.zoneNarrations)
+    : getZoneNarration(zoneId || "");
+
+  // Use engine rewards for migrated continents, legacy for others
+  const zoneRewards = isMigrated && engineConfig
+    ? (engineConfig.zoneRewards[zoneId ?? ""] ?? { xp: 100 })
+    : (ZONE_REWARDS[zoneId ?? ""] ?? { xp: 100 });
 
   const [phase, setPhase] = useState<AdventurePhase>("cutscene");
   const [activeTab, setActiveTab] = useState(0);
@@ -392,54 +414,23 @@ export default function ZoneGameScreen() {
 
   const ageTier = child ? getAgeTier(child.age) : ("defender" as const);
   const pointsPerGame = getPointsPerCorrect(ageTier) * 5;
-  const zoneRewards = ZONE_REWARDS[zoneId ?? ""] ?? { xp: 100 };
+  // zoneRewards already computed above using engine or legacy
 
-  const computeStars = useCallback((mistakes: number) => {
-    if (mistakes === 0) return 3;
-    if (mistakes === 1) return 2;
-    return 1;
-  }, []);
 
   const handleZoneComplete = async (stars: number) => {
     if (!activeChildId || !zoneId || !continentId) return;
 
-    await supabase.from("zone_progress").upsert(
-      {
-        child_id: activeChildId,
-        continent_id: continentId,
-        zone_id: zoneId,
-        status: "completed",
-        games_completed: 4,
-        total_games: 4,
-        stars_earned: stars,
-      },
-      { onConflict: "child_id,zone_id" },
-    );
+    await saveZoneCompletion({ childId: activeChildId, continentId, zoneId, stars });
 
     if (isHQ) {
       await supabase.from("child_profiles").update({ hq_completed: true }).eq("id", activeChildId);
     }
 
-    if (child) {
-      const newPoints = (child.points || 0) + zoneRewards.xp;
-      const newLevel = Math.floor(newPoints / 500) + 1;
-      await supabase.from("child_profiles").update({ points: newPoints, level: newLevel }).eq("id", activeChildId);
-    }
+    await awardXp(activeChildId, child?.points || 0, zoneRewards.xp);
 
     const nextZoneId = getNextZone(continentId, zoneId);
     if (nextZoneId) {
-      await supabase.from("zone_progress").upsert(
-        {
-          child_id: activeChildId,
-          continent_id: continentId,
-          zone_id: nextZoneId,
-          status: "available",
-          games_completed: 0,
-          total_games: 4,
-          stars_earned: 0,
-        },
-        { onConflict: "child_id,zone_id" },
-      );
+      await unlockNextZone({ childId: activeChildId, continentId, nextZoneId });
 
       const bossZone = continent?.zones.find((z) => z.isBoss);
       if (bossZone && nextZoneId === bossZone.id) {
@@ -460,26 +451,19 @@ export default function ZoneGameScreen() {
     const gameKeys = ["quiz", "mini", "puzzle", "dragdrop"];
     const missionId = `zone_${zoneId}_${gameKeys[gameIndex]}`;
 
-    await supabase.from("mission_progress").upsert(
-      {
-        child_id: activeChildId,
-        mission_id: missionId,
-        status: "completed",
-        score: stars,
-        max_score: 3,
-        stars_earned: stars,
-        game_type: gameKeys[gameIndex],
-        completed_at: new Date().toISOString(),
-      },
-      { onConflict: "child_id,mission_id" },
-    );
+    await saveGameCompletion({
+      childId: activeChildId,
+      missionId,
+      stars,
+      gameType: gameKeys[gameIndex],
+    });
 
     const newCompleted = new Set(completedGames);
     newCompleted.add(gameIndex);
     setCompletedGames(newCompleted);
 
     if (newCompleted.size >= 4) {
-      const fs = computeStars(totalMistakes + mistakes);
+      const fs = engineComputeStars(totalMistakes + mistakes);
       setFinalStars(fs);
       await handleZoneComplete(fs);
       setPhase("debrief");
@@ -513,42 +497,18 @@ export default function ZoneGameScreen() {
   const handleBossComplete = async (won: boolean, stars: number) => {
     if (!activeChildId || !zoneId || !continentId) return;
     const isFinalBoss = zoneId === "boss-shadowbyte";
+    const { saveBossCompletion } = await import("@/engine");
 
-    await supabase.from("zone_progress").upsert(
-      {
-        child_id: activeChildId,
-        continent_id: continentId,
-        zone_id: zoneId,
-        status: "completed",
-        games_completed: 4,
-        total_games: 4,
-        stars_earned: stars,
-      },
-      { onConflict: "child_id,zone_id" },
-    );
-
-    await supabase.from("continent_progress").upsert(
-      {
-        child_id: activeChildId,
-        continent_id: continentId,
-        status: "completed",
-        boss_defeated: true,
-        completed_at: new Date().toISOString(),
-      },
-      { onConflict: "child_id,continent_id" },
-    );
-
-    if (child) {
-      const updates: any = {
-        villains_defeated: (child.villains_defeated || 0) + 1,
-        points: (child.points || 0) + pointsPerGame * 2,
-      };
-      if (isFinalBoss) {
-        updates.master_certificate_earned = true;
-        updates.worlds_completed = 7;
-      }
-      await supabase.from("child_profiles").update(updates).eq("id", activeChildId);
-    }
+    await saveBossCompletion({
+      childId: activeChildId,
+      continentId,
+      zoneId,
+      stars,
+      isFinalBoss,
+      childPoints: child?.points || 0,
+      villainsDefeated: child?.villains_defeated || 0,
+      xpBonus: pointsPerGame * 2,
+    });
 
     queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
     queryClient.invalidateQueries({ queryKey: ["continent_progress"] });
