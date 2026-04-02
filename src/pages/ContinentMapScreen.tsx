@@ -2101,10 +2101,13 @@ export default function ContinentMapScreen() {
         </motion.button>
 
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-          <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">
-            {continent.emoji} {continent.name.toUpperCase()} —{" "}
-            <span className="text-[hsl(0_80%_65%)]">{continent.villain.toUpperCase()}'S DOMAIN</span>
-          </h1>
+           <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">
+             {continent.emoji} {continent.name.toUpperCase()} —{" "}
+             <span className="text-[hsl(195_80%_60%)] text-sm font-bold tracking-widest">STORY ARC</span>
+           </h1>
+           <p className="text-xs text-white/40 mt-0.5">
+             Villain: <span className="text-[hsl(0_80%_65%)] font-bold">{continent.villain.toUpperCase()}</span>
+           </p>
         </motion.div>
 
         <div
