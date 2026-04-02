@@ -313,10 +313,10 @@ export default function WorldSelectScreen() {
             transition={{ delay: 0.1 }}
             className="flex items-baseline gap-3"
           >
-            <h1 className="text-2xl font-bold text-white tracking-wide">🌍 SELECT YOUR WORLD</h1>
-            <span className="text-[10px] text-[hsl(195_80%_60%)] font-bold tracking-widest uppercase opacity-70">
-              Cyber Hero Academy
-            </span>
+            <h1 className="text-2xl font-bold text-white tracking-wide">🗺️ ADVENTURE MODE</h1>
+             <span className="text-[10px] text-[hsl(195_80%_60%)] font-bold tracking-widest uppercase opacity-70">
+               Choose Your Story Arc
+             </span>
           </motion.div>
           <motion.p
             initial={{ opacity: 0 }}
