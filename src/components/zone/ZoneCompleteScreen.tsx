@@ -58,10 +58,10 @@ export default function ZoneCompleteScreen({
         transition={{ delay: 1.5 }}
         className="text-center mb-6"
       >
-        <h1 className="text-2xl font-black text-white mb-1">
-          {zoneIcon} {zoneName.toUpperCase()}
-        </h1>
-        <p className="text-lg font-bold text-[hsl(160_65%_60%)]">SECURED ✅</p>
+         <h1 className="text-2xl font-black text-white mb-1">
+           {zoneIcon} {zoneName.toUpperCase()}
+         </h1>
+         <p className="text-lg font-bold text-[hsl(160_65%_60%)]">CHAPTER COMPLETE ✅</p>
       </motion.div>
 
       {/* XP */}
