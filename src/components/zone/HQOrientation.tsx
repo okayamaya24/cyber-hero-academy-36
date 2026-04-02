@@ -51,7 +51,7 @@ const HQOrientation = ({ playerName, avatarConfig, onComplete }: HQOrientationPr
           </div>
 
           <div className="flex items-center gap-3">
-            <HeroAvatar config={avatarConfig} size={48} />
+            <HeroAvatar avatarConfig={avatarConfig} size={48} />
             <span className="text-cyan-300 font-bold text-lg font-mono">{playerName}</span>
           </div>
 
