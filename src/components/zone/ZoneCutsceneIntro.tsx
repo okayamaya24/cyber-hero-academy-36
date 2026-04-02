@@ -164,9 +164,14 @@ export default function ZoneCutsceneIntro({
       finish();
       return;
     }
-    if (lineIndex < lines.length - 1) setLineIndex((i) => i + 1);
-    else onStart();
-  }, [done, finish, lineIndex, lines.length, onStart]);
+    if (lineIndex < lines.length - 1) {
+      setLineIndex((i) => i + 1);
+    } else if (narrativeChoices?.cutsceneChoice && !showChoice) {
+      setShowChoice(true);
+    } else {
+      onStart();
+    }
+  }, [done, finish, lineIndex, lines.length, onStart, narrativeChoices, showChoice]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
