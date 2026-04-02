@@ -456,26 +456,19 @@ export default function ZoneGameScreen() {
     const gameKeys = ["quiz", "mini", "puzzle", "dragdrop"];
     const missionId = `zone_${zoneId}_${gameKeys[gameIndex]}`;
 
-    await supabase.from("mission_progress").upsert(
-      {
-        child_id: activeChildId,
-        mission_id: missionId,
-        status: "completed",
-        score: stars,
-        max_score: 3,
-        stars_earned: stars,
-        game_type: gameKeys[gameIndex],
-        completed_at: new Date().toISOString(),
-      },
-      { onConflict: "child_id,mission_id" },
-    );
+    await saveGameCompletion({
+      childId: activeChildId,
+      missionId,
+      stars,
+      gameType: gameKeys[gameIndex],
+    });
 
     const newCompleted = new Set(completedGames);
     newCompleted.add(gameIndex);
     setCompletedGames(newCompleted);
 
     if (newCompleted.size >= 4) {
-      const fs = computeStars(totalMistakes + mistakes);
+      const fs = engineComputeStars(totalMistakes + mistakes);
       setFinalStars(fs);
       await handleZoneComplete(fs);
       setPhase("debrief");
