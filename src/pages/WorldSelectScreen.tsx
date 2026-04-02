@@ -324,7 +324,7 @@ export default function WorldSelectScreen() {
             transition={{ delay: 0.2 }}
             className="text-[10px] text-[hsl(45_90%_65%/0.75)] mt-0.5"
           >
-            🏆 Complete all 7 worlds to earn your Master Cyber Guardian Certificate!
+            🏆 Complete all 7 story arcs to earn your Master Cyber Guardian Certificate!
           </motion.p>
         </div>
 
