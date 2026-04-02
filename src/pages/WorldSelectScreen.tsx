@@ -133,7 +133,7 @@ function ContinentCard({
         </div>
       </div>
 
-      <p className="text-[9px] text-white/35 text-center">{totalZones} Zones + 1 Boss Battle</p>
+      <p className="text-[9px] text-white/35 text-center">{totalZones} Chapters + 1 Final Battle</p>
 
       {!isLocked && (
         <div className="w-full space-y-0.5">
