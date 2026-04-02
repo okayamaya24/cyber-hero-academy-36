@@ -269,12 +269,12 @@ export default function WorldSelectScreen() {
   };
 
   const IDLE_MSGS = [
-    "Choose a world to begin your mission, Guardian! 🌍",
-    "Each world has a villain to defeat! 💪",
-    "Complete all zones to face the boss battle! ⚔️",
+    "Choose a story arc to begin your adventure, Guardian! 🌍",
+    "Each arc has a villain to defeat! 💪",
+    "Complete all chapters to face the final battle! ⚔️",
     "You're doing amazing, Cyber Hero! 🌟",
     "Defeat all 7 villains to earn your Master Certificate! 🏆",
-    "Stay safe online — you've got this! 🛡️",
+    "Your adventure continues — you've got this! 🛡️",
   ];
 
   const cycleIdle = useCallback(() => {
