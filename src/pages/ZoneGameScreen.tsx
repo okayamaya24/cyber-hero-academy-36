@@ -569,7 +569,12 @@ export default function ZoneGameScreen() {
   const avatarConfig = child?.avatar_config as Record<string, any> | null;
   const playerName = (child as any)?.name ?? "Guardian";
 
-  /* ── Cutscene intro ── */
+  /* ── HQ Orientation (replaces cutscene for HQ only) ── */
+  if (phase === "cutscene" && isHQ) {
+    return <HQOrientation playerName={playerName} avatarConfig={avatarConfig} onComplete={() => setPhase("playing")} />;
+  }
+
+  /* ── Cutscene intro (all other zones) ── */
   if (phase === "cutscene" && !isBoss) {
     return (
       <AnimatePresence>
