@@ -10,7 +10,30 @@ import { getZoneGames, getBossBattle } from "@/data/zoneGames";
 import { getAgeTier, getPointsPerCorrect } from "@/data/missions";
 import { getNextZone } from "@/data/zoneOrder";
 import { getZoneNarration } from "@/data/zoneNarrations";
+import {
+  isContinentMigrated,
+  getContinentConfig,
+  getNarration,
+  computeStars as engineComputeStars,
+  saveZoneCompletion,
+  saveGameCompletion,
+  unlockNextZone,
+  awardXp,
+} from "@/engine";
 import StarfieldBackground from "@/components/world/StarfieldBackground";
+import ZoneQuizGame from "@/components/minigames/ZoneQuizGame";
+import WordSearchGame from "@/components/minigames/WordSearchGame";
+import CrosswordGame from "@/components/training/CrosswordGame";
+import ZoneDragDropGame, { CONVEYOR_ZONES } from "@/components/minigames/ZoneDragDropGame";
+import MiniGamePlaceholder from "@/components/minigames/MiniGamePlaceholder";
+import BossBattleScreen from "@/components/minigames/BossBattleScreen";
+import ZoneCutsceneIntro from "@/components/zone/ZoneCutsceneIntro";
+import ZoneStoryPanel from "@/components/zone/ZoneStoryPanel";
+import ZoneCompleteScreen from "@/components/zone/ZoneCompleteScreen";
+import BossUnlockedCutscene from "@/components/zone/BossUnlockedCutscene";
+import HeroAvatar from "@/components/avatar/HeroAvatar";
+import HQOrientation from "@/components/zone/HQOrientation";
+import { Button } from "@/components/ui/button";
 import ZoneQuizGame from "@/components/minigames/ZoneQuizGame";
 import WordSearchGame from "@/components/minigames/WordSearchGame";
 import CrosswordGame from "@/components/training/CrosswordGame";
