@@ -1304,7 +1304,7 @@ function ZoneCompletionPanel({
             ✅
           </motion.div>
           <div>
-            <p className="text-[10px] font-bold tracking-widest text-[hsl(160_65%_55%)] uppercase">Zone Secured!</p>
+            <p className="text-[10px] font-bold tracking-widest text-[hsl(160_65%_55%)] uppercase">Chapter Complete!</p>
             <p className="text-lg font-bold text-white">{zoneName}</p>
           </div>
         </div>
