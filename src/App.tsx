@@ -1,5 +1,3 @@
-// Register continent configs with the adventure engine
-import "@/engine/configs/northAmerica";
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";

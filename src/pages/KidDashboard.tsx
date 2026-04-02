@@ -399,14 +399,9 @@ export default function KidDashboard() {
               <Badge className="border-0 bg-primary/10 text-xs text-primary">
                 {modeConfig.emoji} {modeConfig.label}
               </Badge>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/world-map">🗺️ World Map</Link>
-                </Button>
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/missions">View All</Link>
-                </Button>
-              </div>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/missions">View All</Link>
+              </Button>
             </div>
           </div>
 
