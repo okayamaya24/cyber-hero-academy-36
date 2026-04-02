@@ -198,33 +198,6 @@ const App = () => (
                 }
               />
               <Route
-                path="/world-map"
-                element={
-                  <>
-                    <Navbar />
-                    <WorldSelectScreen />
-                  </>
-                }
-              />
-              <Route
-                path="/world-map/:continentId"
-                element={
-                  <>
-                    <Navbar />
-                    <ContinentMapScreen />
-                  </>
-                }
-              />
-              <Route
-                path="/world-map/:continentId/:zoneId"
-                element={
-                  <>
-                    <Navbar />
-                    <ZoneGameScreen />
-                  </>
-                }
-              />
-              <Route
                 path="/edit-avatar"
                 element={
                   <>
