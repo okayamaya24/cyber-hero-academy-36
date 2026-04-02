@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { CONTINENTS, type ContinentDef } from "@/data/continents";
+import { useChildProfile } from "@/engine";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import VillainSprite from "@/components/world/VillainSprite";
 import StarfieldBackground from "@/components/world/StarfieldBackground";
