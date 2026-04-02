@@ -1982,7 +1982,7 @@ function ZoneMissionPanel({
         ) : (
           <div className="text-center py-8">
             <span className="text-4xl mb-3 block">🚧</span>
-            <p className="text-sm text-white/70 mb-1">Mission content coming soon</p>
+            <p className="text-sm text-white/70 mb-1">Chapter content coming soon</p>
           </div>
         )}
       </motion.div>
