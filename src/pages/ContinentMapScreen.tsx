@@ -1970,13 +1970,13 @@ function ZoneMissionPanel({
             </Button>
           </div>
         ) : hasGames ? (
-          <div className="text-center py-6">
-            <p className="text-sm text-white/70 mb-4">4 games await you in this zone!</p>
-            <Button
-              onClick={onDeploy}
-              className="bg-[hsl(195_80%_50%)] hover:bg-[hsl(195_80%_45%)] text-white font-bold"
-            >
-              🚀 DEPLOY MISSION
+           <div className="text-center py-6">
+             <p className="text-sm text-white/70 mb-4">4 challenges await in this chapter!</p>
+             <Button
+               onClick={onDeploy}
+               className="bg-[hsl(195_80%_50%)] hover:bg-[hsl(195_80%_45%)] text-white font-bold"
+             >
+               📖 BEGIN CHAPTER
             </Button>
           </div>
         ) : (
