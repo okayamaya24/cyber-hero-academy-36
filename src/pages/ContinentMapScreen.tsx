@@ -1935,10 +1935,10 @@ function ZoneMissionPanel({
             {zone.icon}
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-bold text-white">{zone.name.toUpperCase()}</h2>
-            <p className="text-xs text-[hsl(195_60%_60%)]">
-              {zone.city} · {continent.name}
-            </p>
+             <h2 className="text-lg font-bold text-white">{zone.name.toUpperCase()}</h2>
+             <p className="text-xs text-[hsl(195_60%_60%)]">
+               📖 Chapter · {zone.city} · {continent.name}
+             </p>
           </div>
           <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10 transition-colors">
             <X className="h-5 w-5 text-white/50" />
