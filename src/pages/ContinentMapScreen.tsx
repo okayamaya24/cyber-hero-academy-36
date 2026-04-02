@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getContinentById, type ContinentDef, type ZoneDef } from "@/data/continents";
+import { computeZoneStatus, useZoneProgress, useChildProfile, isContinentMigrated } from "@/engine";
 import { getZoneGames, getBossBattle } from "@/data/zoneGames";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import VillainSprite from "@/components/world/VillainSprite";
@@ -2010,31 +2011,9 @@ export default function ContinentMapScreen() {
     else if (!continent) navigate("/world-map");
   }, [user, activeChildId, continent, navigate]);
 
-  const { data: child } = useQuery({
-    queryKey: ["child", activeChildId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("child_profiles").select("*").eq("id", activeChildId!).single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!activeChildId,
-  });
+  const { data: child } = useChildProfile(activeChildId);
 
-  const { data: zoneProgress = [] } = useQuery({
-    queryKey: ["zone_progress", activeChildId, continentId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("zone_progress")
-        .select("*")
-        .eq("child_id", activeChildId!)
-        .eq("continent_id", continentId!);
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!activeChildId && !!continentId,
-    refetchOnMount: "always",
-    staleTime: 0,
-  });
+  const { data: zoneProgress = [] } = useZoneProgress(activeChildId, continentId ?? null);
 
   const avatarConfig = child?.avatar_config as Record<string, any> | null;
   const playerName = (child as any)?.name ?? "Guardian";
@@ -2042,7 +2021,12 @@ export default function ContinentMapScreen() {
 
   const zoneStatuses = useMemo(() => {
     if (!continent) return [];
-    return continent.zones.map((zone) => getZoneStatus(zone, continent.zones, zoneProgress, continentId ?? ""));
+    const cId = continentId ?? "";
+    // Use engine's computeZoneStatus for migrated continents, fallback to inline for others
+    if (isContinentMigrated(cId)) {
+      return continent.zones.map((zone) => computeZoneStatus(zone, continent.zones, zoneProgress, cId));
+    }
+    return continent.zones.map((zone) => getZoneStatus(zone, continent.zones, zoneProgress, cId));
   }, [continent, zoneProgress, continentId]);
 
   const zoneCoords = useMemo(() => ZONE_COORDINATES[continentId || ""] || [], [continentId]);

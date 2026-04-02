@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { CONTINENTS, type ContinentDef } from "@/data/continents";
+import { useChildProfile } from "@/engine";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import VillainSprite from "@/components/world/VillainSprite";
 import StarfieldBackground from "@/components/world/StarfieldBackground";
@@ -178,15 +179,7 @@ export default function WorldSelectScreen() {
     else if (!activeChildId) navigate("/dashboard");
   }, [user, activeChildId, navigate]);
 
-  const { data: child } = useQuery({
-    queryKey: ["child", activeChildId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("child_profiles").select("*").eq("id", activeChildId!).single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!activeChildId,
-  });
+  const { data: child } = useChildProfile(activeChildId);
 
   const { data: continentProgress = [] } = useQuery({
     queryKey: ["continent_progress", activeChildId],
