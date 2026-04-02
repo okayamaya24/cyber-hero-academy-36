@@ -24,11 +24,12 @@ export default function ZoneStoryPanel({
   const [showChoice, setShowChoice] = useState(false);
   const narrativeChoices = getZoneNarrativeChoices(zoneId || "");
   const storyChoice = narrativeChoices?.storyChoices?.[gameIndex];
-  // Auto-dismiss after 6 seconds
+  // Auto-dismiss after 8 seconds (longer if there's a choice)
   useEffect(() => {
+    if (storyChoice) return; // don't auto-dismiss when there's a choice
     const t = setTimeout(onContinue, 6000);
     return () => clearTimeout(t);
-  }, [onContinue]);
+  }, [onContinue, storyChoice]);
 
   const villainSize = Math.max(40, 60 - gameIndex * 8); // shrinks as player wins
 
