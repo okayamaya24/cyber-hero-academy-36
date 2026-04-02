@@ -18,8 +18,12 @@ export default function ZoneStoryPanel({
   narration,
   villainTaunt,
   gameIndex,
+  zoneId,
   onContinue,
 }: ZoneStoryPanelProps) {
+  const [showChoice, setShowChoice] = useState(false);
+  const narrativeChoices = getZoneNarrativeChoices(zoneId || "");
+  const storyChoice = narrativeChoices?.storyChoices?.[gameIndex];
   // Auto-dismiss after 6 seconds
   useEffect(() => {
     const t = setTimeout(onContinue, 6000);
