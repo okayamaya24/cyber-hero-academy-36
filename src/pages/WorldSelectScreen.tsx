@@ -179,15 +179,7 @@ export default function WorldSelectScreen() {
     else if (!activeChildId) navigate("/dashboard");
   }, [user, activeChildId, navigate]);
 
-  const { data: child } = useQuery({
-    queryKey: ["child", activeChildId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("child_profiles").select("*").eq("id", activeChildId!).single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!activeChildId,
-  });
+  const { data: child } = useChildProfile(activeChildId);
 
   const { data: continentProgress = [] } = useQuery({
     queryKey: ["continent_progress", activeChildId],

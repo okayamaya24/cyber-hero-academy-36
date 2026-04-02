@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getContinentById, type ContinentDef, type ZoneDef } from "@/data/continents";
+import { computeZoneStatus, useZoneProgress, useChildProfile, isContinentMigrated } from "@/engine";
 import { getZoneGames, getBossBattle } from "@/data/zoneGames";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import VillainSprite from "@/components/world/VillainSprite";
