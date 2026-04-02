@@ -22,6 +22,7 @@ import ZoneStoryPanel from "@/components/zone/ZoneStoryPanel";
 import ZoneCompleteScreen from "@/components/zone/ZoneCompleteScreen";
 import BossUnlockedCutscene from "@/components/zone/BossUnlockedCutscene";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
+import HQOrientation from "@/components/zone/HQOrientation";
 import { Button } from "@/components/ui/button";
 
 import keybreakerImg from "@/assets/villains/keybreaker.png";
