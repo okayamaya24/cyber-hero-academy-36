@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Lock } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -38,7 +38,7 @@ const VILLAIN_ASSETS: Record<string, { img: string; color: string }> = {
   "The Data Thief": { img: dataThiefImg, color: "175, 85%, 45%" },
 };
 
-/* ── Zone XP & badge config ─────────────────────────── */
+/* ── Zone rewards ───────────────────────────────────── */
 const ZONE_REWARDS: Record<string, { xp: number; badge?: string }> = {
   hq: { xp: 100, badge: "CyberGuardian Recruit" },
   "pixel-port": { xp: 150, badge: "Digital Balance Badge" },
@@ -52,7 +52,7 @@ const ZONE_REWARDS: Record<string, { xp: number; badge?: string }> = {
   "boss-keybreaker": { xp: 500, badge: "North America Champion" },
 };
 
-/* ── Completion dialogue per zone ───────────────────── */
+/* ── Completion dialogue ────────────────────────────── */
 interface CompletionLine {
   speaker: "guide" | "villain";
   text: string;
@@ -115,7 +115,7 @@ const DEFAULT_COMPLETION: CompletionLine[] = [
   { speaker: "guide", text: "The Digital World is safer because of you." },
 ];
 
-/* ── Zone completion debrief overlay ────────────────── */
+/* ── Zone completion debrief ────────────────────────── */
 function ZoneCompletionDebrief({
   zoneId,
   zoneName,
@@ -197,7 +197,6 @@ function ZoneCompletionDebrief({
         className="w-full max-w-md rounded-3xl border border-[hsl(160_65%_50%/0.3)] bg-[hsl(210_40%_10%)] p-6 shadow-[0_0_60px_hsl(160_65%_50%/0.12)]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="mb-5 flex items-center gap-3">
           <motion.div
             initial={{ scale: 0 }}
@@ -213,7 +212,6 @@ function ZoneCompletionDebrief({
               {zoneIcon} {zoneName}
             </p>
           </div>
-          {/* Stars */}
           <div className="ml-auto flex gap-1">
             {[1, 2, 3].map((s) => (
               <motion.span
@@ -229,7 +227,6 @@ function ZoneCompletionDebrief({
           </div>
         </div>
 
-        {/* Dialogue lines */}
         <div className="mb-5 space-y-2 max-h-52 overflow-y-auto">
           {lines.map((l, i) => {
             const iv = l.speaker === "villain";
@@ -249,7 +246,17 @@ function ZoneCompletionDebrief({
               >
                 <div className="flex-shrink-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded-full overflow-hidden border border-white/10">
                   {iv && villainAsset ? (
-                    <img src={villainAsset.img} alt={villainName} className="w-full h-full object-cover object-top" />
+                    <img
+                      src={villainAsset.img}
+                      alt={villainName}
+                      className="w-full h-full object-cover object-top"
+                      style={{
+                        transform:
+                          villainName === "The Data Thief"
+                            ? "scale(2.2) translateY(28px)"
+                            : "scale(1.4) translateY(4px)",
+                      }}
+                    />
                   ) : iv ? (
                     <span className="text-xs">🦹</span>
                   ) : (
@@ -258,9 +265,7 @@ function ZoneCompletionDebrief({
                 </div>
                 <div>
                   <p
-                    className={`text-[9px] font-bold tracking-wide uppercase mb-0.5 ${
-                      iv ? `text-[hsla(${hue},65%,62%,1)]` : "text-[hsl(195_80%_60%)]"
-                    }`}
+                    className={`text-[9px] font-bold tracking-wide uppercase mb-0.5 ${iv ? `text-[hsla(${hue},65%,62%,1)]` : "text-[hsl(195_80%_60%)]"}`}
                   >
                     {iv ? villainName : playerName}
                   </p>
@@ -271,7 +276,6 @@ function ZoneCompletionDebrief({
           })}
         </div>
 
-        {/* Rewards — shown on last line */}
         {isLast && (
           <div className="mb-5 flex gap-3 flex-wrap">
             <div className="flex-1 min-w-[90px] rounded-xl border border-[hsl(45_90%_55%/0.25)] bg-[hsl(45_90%_55%/0.08)] p-3 text-center">
@@ -292,7 +296,6 @@ function ZoneCompletionDebrief({
           </div>
         )}
 
-        {/* Action */}
         <div onClick={handleClick}>
           {!isLast ? (
             <Button className="w-full bg-[hsl(195_80%_50%)] hover:bg-[hsl(195_80%_45%)] text-white border-0 font-bold">
@@ -309,17 +312,12 @@ function ZoneCompletionDebrief({
   );
 }
 
-/* ── Game tabs ──────────────────────────────────────── */
-const GAME_TABS = [
-  { key: "quiz", label: "Story Quiz", icon: "📖" },
-  { key: "mini", label: "Mini Game", icon: "🎮" },
-  { key: "puzzle", label: "Puzzle", icon: "🧩" },
-  { key: "dragdrop", label: "Drag & Drop", icon: "🎯" },
-];
-
+/* ── Phase type ─────────────────────────────────────── */
 type AdventurePhase = "cutscene" | "playing" | "story_panel" | "debrief" | "complete" | "boss_unlocked";
 
-/* ── Main screen ────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════
+   MAIN SCREEN
+   ══════════════════════════════════════════════════════ */
 export default function ZoneGameScreen() {
   const { continentId, zoneId } = useParams<{ continentId: string; zoneId: string }>();
   const { user, activeChildId } = useAuth();
@@ -402,7 +400,6 @@ export default function ZoneGameScreen() {
 
   const handleZoneComplete = async (stars: number) => {
     if (!activeChildId || !zoneId || !continentId) return;
-
     await supabase.from("zone_progress").upsert(
       {
         child_id: activeChildId,
@@ -416,9 +413,7 @@ export default function ZoneGameScreen() {
       { onConflict: "child_id,zone_id" },
     );
 
-    if (isHQ) {
-      await supabase.from("child_profiles").update({ hq_completed: true }).eq("id", activeChildId);
-    }
+    if (isHQ) await supabase.from("child_profiles").update({ hq_completed: true }).eq("id", activeChildId);
 
     if (child) {
       const newPoints = (child.points || 0) + zoneRewards.xp;
@@ -440,11 +435,8 @@ export default function ZoneGameScreen() {
         },
         { onConflict: "child_id,zone_id" },
       );
-
       const bossZone = continent?.zones.find((z) => z.isBoss);
-      if (bossZone && nextZoneId === bossZone.id) {
-        setBossZoneForUnlock(bossZone.id);
-      }
+      if (bossZone && nextZoneId === bossZone.id) setBossZoneForUnlock(bossZone.id);
     }
 
     queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
@@ -453,17 +445,14 @@ export default function ZoneGameScreen() {
 
   const handleGameComplete = async (gameIndex: number, passed: boolean, stars: number) => {
     if (!activeChildId || !zoneId) return;
-
     const mistakes = stars === 3 ? 0 : stars === 2 ? 1 : 2;
     setTotalMistakes((prev) => prev + mistakes);
 
     const gameKeys = ["quiz", "mini", "puzzle", "dragdrop"];
-    const missionId = `zone_${zoneId}_${gameKeys[gameIndex]}`;
-
     await supabase.from("mission_progress").upsert(
       {
         child_id: activeChildId,
-        mission_id: missionId,
+        mission_id: `zone_${zoneId}_${gameKeys[gameIndex]}`,
         status: "completed",
         score: stars,
         max_score: 3,
@@ -494,7 +483,6 @@ export default function ZoneGameScreen() {
       setPendingNextTab(nextTab);
       setPhase("story_panel");
     }
-
     queryClient.invalidateQueries({ queryKey: ["child", activeChildId] });
   };
 
@@ -506,9 +494,7 @@ export default function ZoneGameScreen() {
     setPhase("playing");
   }, [pendingNextTab]);
 
-  const handleDebriefDone = useCallback(() => {
-    setPhase("complete");
-  }, []);
+  const handleDebriefDone = useCallback(() => setPhase("complete"), []);
 
   const handleBossComplete = async (won: boolean, stars: number) => {
     if (!activeChildId || !zoneId || !continentId) return;
@@ -570,12 +556,12 @@ export default function ZoneGameScreen() {
   const avatarConfig = child?.avatar_config as Record<string, any> | null;
   const playerName = (child as any)?.name ?? "Guardian";
 
-  /* ── HQ Orientation (replaces cutscene for HQ only) ── */
+  /* ── HQ Orientation ── */
   if (phase === "cutscene" && isHQ) {
     return <HQOrientation playerName={playerName} avatarConfig={avatarConfig} onComplete={() => setPhase("playing")} />;
   }
 
-  /* ── Cutscene intro (all other zones) ── */
+  /* ── Cutscene intro ── */
   if (phase === "cutscene" && !isBoss) {
     return (
       <AnimatePresence>
@@ -649,11 +635,8 @@ export default function ZoneGameScreen() {
           stars={finalStars}
           xpEarned={zoneRewards.xp}
           onBackToMap={() => {
-            if (bossZoneForUnlock) {
-              setPhase("boss_unlocked" as AdventurePhase);
-            } else {
-              navigate(`/world-map/${continentId}?completed=${zoneId}`);
-            }
+            if (bossZoneForUnlock) setPhase("boss_unlocked" as AdventurePhase);
+            else navigate(`/world-map/${continentId}?completed=${zoneId}`);
           }}
         />
       </AnimatePresence>
@@ -716,12 +699,86 @@ export default function ZoneGameScreen() {
     );
   }
 
-  /* ── Regular zone games ── */
+  /* ══════════════════════════════════════════════════════
+     REGULAR ZONE GAMES — LINEAR FLOW
+     ══════════════════════════════════════════════════════ */
   const hasCrossword = !!gameContent.crossword;
-  const puzzleLabel = hasCrossword ? "Crossword" : "Word Search";
+  const currentGame = activeTab;
+  const villainTaunt = narration.villainTaunts[currentGame] || "You won't stop me, Guardian!";
+  const guideNarration = narration.afterGame[currentGame] || "Keep going, you've got this!";
+  const GAME_LABELS = ["Story Quiz", "Mini Game", hasCrossword ? "Crossword" : "Word Search", "Drag & Drop"];
+  const GAME_ICONS = ["📖", "🎮", "🧩", "🎯"];
+
+  const renderCurrentGame = () => {
+    if (currentGame === 0 && !completedGames.has(0)) {
+      return (
+        <ZoneQuizGame
+          title={gameContent.quiz.title}
+          questions={gameContent.quiz.questions}
+          onComplete={(passed, stars) => handleGameComplete(0, passed, stars)}
+        />
+      );
+    }
+    if (currentGame === 1 && !completedGames.has(1)) {
+      return (
+        <MiniGamePlaceholder
+          type={gameContent.miniGame.type}
+          title={gameContent.miniGame.title}
+          description={gameContent.miniGame.description}
+          onComplete={(passed) => handleGameComplete(1, passed, passed ? 3 : 1)}
+          villainName={continent?.villain}
+        />
+      );
+    }
+    if (currentGame === 2 && !completedGames.has(2)) {
+      if (gameContent.wordSearch) {
+        return (
+          <div className="p-4">
+            <WordSearchGame
+              ageTier={ageTier}
+              guideImage=""
+              guideName=""
+              onComplete={(passed) => handleGameComplete(2, passed, passed ? 3 : 1)}
+              customWords={gameContent.wordSearch[ageTier].words}
+              customGridSize={gameContent.wordSearch[ageTier].size}
+            />
+          </div>
+        );
+      }
+      if (gameContent.crossword) {
+        return (
+          <div className="p-4">
+            <CrosswordGame
+              puzzle={{
+                id: `zone_${zoneId}_crossword`,
+                title: zone.name + " Crossword",
+                zone: zone.name,
+                zoneIcon: zone.icon,
+                description: "",
+                clues: gameContent.crossword.clues,
+              }}
+              ageTier={ageTier}
+              onComplete={(passed, stars) => handleGameComplete(2, passed, stars)}
+            />
+          </div>
+        );
+      }
+    }
+    if (currentGame === 3 && !completedGames.has(3)) {
+      return (
+        <ZoneDragDropGame
+          items={gameContent.dragDrop.items}
+          buckets={gameContent.dragDrop.buckets}
+          mode={CONVEYOR_ZONES.has(zoneId || "") ? "conveyor" : "physics"}
+          onComplete={(passed, stars) => handleGameComplete(3, passed, stars)}
+        />
+      );
+    }
+    return null;
+  };
 
   return (
-    <div className="min-h-screen pb-24 pt-20 relative overflow-hidden" style={{ background: "#050a14" }}>
+    <div className="min-h-screen relative overflow-hidden" style={{ background: "#050a14" }}>
       <StarfieldBackground />
       <div
         className="pointer-events-none absolute inset-0 z-[1]"
@@ -731,192 +788,156 @@ export default function ZoneGameScreen() {
         }}
       />
 
-      <div className="relative z-[2] mx-auto max-w-4xl px-4">
-        {/* ── Header ── */}
-        <div className="flex items-center justify-between mb-4">
+      <div className="relative z-[2] flex flex-col min-h-screen">
+        {/* ── Top bar ── */}
+        <div className="flex items-center justify-between px-4 pt-5 pb-3 border-b border-white/5">
           <Button
             onClick={() => navigate(`/world-map/${continentId}`)}
             variant="ghost"
-            className="text-[hsl(195_80%_70%)] hover:bg-white/5 text-sm"
+            className="text-[hsl(195_80%_70%)] hover:bg-white/5 text-sm px-2"
           >
-            <ChevronLeft className="h-4 w-4 mr-1" /> BACK TO MAP
+            <ChevronLeft className="h-4 w-4 mr-1" /> MAP
           </Button>
 
-          {/* Villain avatar — actual image instead of VillainSprite emoji */}
-          <div className="flex items-center gap-2">
-            <div
-              className="relative flex h-9 w-9 items-center justify-center rounded-full border overflow-hidden"
-              style={{ borderColor: `hsla(${hue},70%,50%,0.4)`, background: `hsla(${hue},50%,10%,0.8)` }}
-            >
-              {villainAsset ? (
-                <img
-                  src={villainAsset.img}
-                  alt={continent.villain}
-                  className="w-full h-full object-cover object-top scale-125"
-                />
-              ) : (
-                <span className="text-base">🦹</span>
-              )}
-              {/* Pulse ring */}
-              <motion.div
-                animate={{ opacity: [0.4, 0.8, 0.4] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                className="absolute inset-0 rounded-full"
-                style={{ boxShadow: `0 0 10px hsla(${hue},70%,50%,0.5)` }}
+          <div className="flex flex-col items-center">
+            <p className="text-[11px] font-bold tracking-widest text-white/50 uppercase">
+              {zone.icon} {zone.name}
+            </p>
+            <p className="text-[9px] text-white/20">{zone.city}</p>
+          </div>
+
+          <div
+            className="relative flex h-9 w-9 items-center justify-center rounded-full border overflow-hidden flex-shrink-0"
+            style={{ borderColor: `hsla(${hue},70%,50%,0.4)`, background: `hsla(${hue},50%,10%,0.8)` }}
+          >
+            {villainAsset ? (
+              <img
+                src={villainAsset.img}
+                alt={continent.villain}
+                className="w-full h-full object-cover object-top"
+                style={{
+                  transform:
+                    continent.villain === "The Data Thief"
+                      ? "scale(2.2) translateY(28px)"
+                      : "scale(1.4) translateY(8px)",
+                }}
               />
-            </div>
-            <span className="text-[10px] font-bold hidden sm:block" style={{ color: `hsla(${hue},70%,65%,1)` }}>
-              {continent.villain}
-            </span>
+            ) : (
+              <span className="text-base">🦹</span>
+            )}
+            <motion.div
+              animate={{ opacity: [0.4, 0.8, 0.4] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="absolute inset-0 rounded-full"
+              style={{ boxShadow: `0 0 10px hsla(${hue},70%,50%,0.5)` }}
+            />
           </div>
         </div>
 
-        {/* Zone title */}
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-4">
-          <h1 className="text-lg md:text-xl font-bold text-white">
-            {zone.icon} {zone.name.toUpperCase()} <span className="text-white/40">// {zone.city}</span>
-          </h1>
-          <p className="text-xs text-[hsl(195_80%_60%)] mt-1 font-mono">
-            ZONE PROGRESS: {completedGames.size}/4 GAMES COMPLETE
-          </p>
-        </motion.div>
-
-        {/* Game tabs */}
-        <div className="flex gap-1 mb-4 overflow-x-auto">
-          {GAME_TABS.map((tab, i) => {
-            const isCompleted = completedGames.has(i);
-            const isLocked = i > 0 && !completedGames.has(i - 1) && !isCompleted;
-            const isActive = activeTab === i;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => !isLocked && setActiveTab(i)}
-                disabled={isLocked}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition-all whitespace-nowrap ${
-                  isActive
-                    ? "bg-[hsl(195_80%_50%/0.2)] text-[hsl(195_80%_70%)] border border-[hsl(195_80%_50%/0.3)]"
-                    : isCompleted
-                      ? "bg-[hsl(160_65%_30%/0.2)] text-[hsl(160_65%_60%)] border border-[hsl(160_65%_50%/0.2)]"
-                      : isLocked
-                        ? "bg-white/[0.03] text-white/20 border border-white/5 cursor-not-allowed"
-                        : "bg-white/[0.05] text-white/40 border border-white/10 hover:bg-white/10"
-                }`}
+        {/* ── Main layout: villain | game | hero ── */}
+        <div className="flex flex-1 gap-4 px-4 py-5 max-w-5xl mx-auto w-full">
+          {/* Villain column */}
+          <div className="hidden md:flex flex-col items-center gap-3 w-32 flex-shrink-0 pt-2">
+            {villainAsset ? (
+              <motion.img
+                src={villainAsset.img}
+                alt={continent.villain}
+                animate={{ y: [0, -8, 0] }}
+                transition={{ repeat: Infinity, duration: 3 }}
+                className="w-28 h-auto drop-shadow-lg"
+                style={{ filter: `drop-shadow(0 0 14px hsla(${hue},80%,50%,0.45))` }}
+                draggable={false}
+              />
+            ) : (
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ repeat: Infinity, duration: 3 }}
+                className="text-7xl"
               >
-                {isLocked ? <Lock className="h-3 w-3" /> : isCompleted ? "✅" : tab.icon}
-                {i === 2 ? puzzleLabel : tab.label}
-              </button>
-            );
-          })}
+                🦹
+              </motion.div>
+            )}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`taunt-${currentGame}`}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="rounded-xl rounded-tl-sm border px-3 py-2 text-center w-full"
+                style={{ borderColor: `hsla(${hue},60%,45%,0.35)`, background: `hsla(${hue},40%,8%,0.85)` }}
+              >
+                <p className="text-[9px] font-semibold italic leading-snug" style={{ color: `hsla(${hue},70%,68%,1)` }}>
+                  "{villainTaunt}"
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Game column */}
+          <div className="flex-1 flex flex-col gap-3 min-w-0">
+            {/* Challenge label + progress dots */}
+            <div className="flex items-center gap-2 px-1">
+              <span className="text-lg">{GAME_ICONS[currentGame]}</span>
+              <div>
+                <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">
+                  Challenge {currentGame + 1} of 4
+                </p>
+                <p className="text-sm font-bold text-white">{GAME_LABELS[currentGame]}</p>
+              </div>
+              <div className="ml-auto flex gap-2">
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className={`h-2 rounded-full transition-all ${
+                      completedGames.has(i)
+                        ? "w-6 bg-[hsl(160_65%_50%)]"
+                        : i === currentGame
+                          ? "w-6 bg-[hsl(195_80%_60%)]"
+                          : "w-2 bg-white/15"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Game card */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`game-${currentGame}`}
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -24 }}
+                transition={{ type: "spring", stiffness: 260, damping: 24 }}
+                className="rounded-2xl border border-[hsl(195_80%_50%/0.15)] bg-[hsl(210_40%_12%/0.85)] backdrop-blur-md overflow-hidden"
+              >
+                {renderCurrentGame()}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Hero column */}
+          <div className="hidden md:flex flex-col items-center gap-3 w-32 flex-shrink-0 pt-2">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-[hsl(195_80%_50%/0.45)] bg-[hsl(210_40%_16%/0.85)] shadow-[0_0_20px_hsl(195_80%_50%/0.15)]">
+              <HeroAvatar avatarConfig={avatarConfig} size={70} fallbackEmoji="🦸" />
+            </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`guide-${currentGame}`}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ delay: 0.15 }}
+                className="rounded-xl rounded-tr-sm border border-[hsl(195_80%_50%/0.3)] bg-[hsl(210_60%_12%/0.85)] px-3 py-2 text-center w-full"
+              >
+                <p className="text-[9px] font-semibold text-[hsl(195_80%_68%)] leading-snug italic">
+                  "{guideNarration}"
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
 
-        {/* Game content */}
-        <div className="rounded-2xl border border-[hsl(195_80%_50%/0.15)] bg-[hsl(210_40%_12%/0.8)] backdrop-blur-md min-h-[400px]">
-          {activeTab === 0 && !completedGames.has(0) && (
-            <ZoneQuizGame
-              title={gameContent.quiz.title}
-              questions={gameContent.quiz.questions}
-              onComplete={(passed, stars) => handleGameComplete(0, passed, stars)}
-            />
-          )}
-          {activeTab === 0 && completedGames.has(0) && (
-            <CompletedState
-              label="Story Quiz"
-              onReplay={() =>
-                setCompletedGames((s) => {
-                  const n = new Set(s);
-                  n.delete(0);
-                  return n;
-                })
-              }
-            />
-          )}
-
-          {activeTab === 1 && !completedGames.has(1) && (
-            <MiniGamePlaceholder
-              type={gameContent.miniGame.type}
-              title={gameContent.miniGame.title}
-              description={gameContent.miniGame.description}
-              onComplete={(passed) => handleGameComplete(1, passed, passed ? 3 : 1)}
-              villainName={continent?.villain}
-            />
-          )}
-          {activeTab === 1 && completedGames.has(1) && (
-            <CompletedState
-              label="Mini Game"
-              onReplay={() =>
-                setCompletedGames((s) => {
-                  const n = new Set(s);
-                  n.delete(1);
-                  return n;
-                })
-              }
-            />
-          )}
-
-          {activeTab === 2 && !completedGames.has(2) && gameContent.wordSearch && (
-            <div className="p-4">
-              <WordSearchGame
-                ageTier={ageTier}
-                guideImage=""
-                guideName=""
-                onComplete={(passed) => handleGameComplete(2, passed, passed ? 3 : 1)}
-                customWords={gameContent.wordSearch[ageTier].words}
-                customGridSize={gameContent.wordSearch[ageTier].size}
-              />
-            </div>
-          )}
-          {activeTab === 2 && !completedGames.has(2) && gameContent.crossword && (
-            <div className="p-4">
-              <CrosswordGame
-                puzzle={{
-                  id: `zone_${zoneId}_crossword`,
-                  title: zone.name + " Crossword",
-                  zone: zone.name,
-                  zoneIcon: zone.icon,
-                  description: "",
-                  clues: gameContent.crossword.clues,
-                }}
-                ageTier={ageTier}
-                onComplete={(passed, stars) => handleGameComplete(2, passed, stars)}
-              />
-            </div>
-          )}
-          {activeTab === 2 && completedGames.has(2) && (
-            <CompletedState
-              label={puzzleLabel}
-              onReplay={() =>
-                setCompletedGames((s) => {
-                  const n = new Set(s);
-                  n.delete(2);
-                  return n;
-                })
-              }
-            />
-          )}
-
-          {activeTab === 3 && !completedGames.has(3) && (
-            <ZoneDragDropGame
-              items={gameContent.dragDrop.items}
-              buckets={gameContent.dragDrop.buckets}
-              mode={CONVEYOR_ZONES.has(zoneId || "") ? "conveyor" : "physics"}
-              onComplete={(passed, stars) => handleGameComplete(3, passed, stars)}
-            />
-          )}
-          {activeTab === 3 && completedGames.has(3) && (
-            <CompletedState
-              label="Drag & Drop"
-              onReplay={() =>
-                setCompletedGames((s) => {
-                  const n = new Set(s);
-                  n.delete(3);
-                  return n;
-                })
-              }
-            />
-          )}
-        </div>
-
-        {/* DEV button — now wires up ?completed= so the map shows the debrief */}
+        {/* DEV button */}
         {import.meta.env.DEV && (
           <button
             onClick={async () => {
