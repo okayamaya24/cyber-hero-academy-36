@@ -342,7 +342,19 @@ export default function ZoneGameScreen() {
   const isHQ = zone?.isHQ;
   const gameContent = isBoss ? null : getZoneGames(zoneId || "");
   const bossContent = isBoss ? getBossBattle(zoneId || "") : null;
-  const narration = getZoneNarration(zoneId || "");
+  const cId = continentId || "";
+  const isMigrated = isContinentMigrated(cId);
+  const engineConfig = isMigrated ? getContinentConfig(cId) : null;
+
+  // Use engine narration for migrated continents, legacy for others
+  const narration = isMigrated && engineConfig
+    ? getNarration(zoneId || "", engineConfig.zoneNarrations)
+    : getZoneNarration(zoneId || "");
+
+  // Use engine rewards for migrated continents, legacy for others
+  const zoneRewards = isMigrated && engineConfig
+    ? (engineConfig.zoneRewards[zoneId ?? ""] ?? { xp: 100 })
+    : (ZONE_REWARDS[zoneId ?? ""] ?? { xp: 100 });
 
   const [phase, setPhase] = useState<AdventurePhase>("cutscene");
   const [activeTab, setActiveTab] = useState(0);
