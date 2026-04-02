@@ -38,11 +38,11 @@ function HUDBar({
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="flex items-center gap-1.5 text-xs text-[hsl(195_80%_70%)]">
-          <Shield className="h-3.5 w-3.5" />
-          WORLDS:
-          <span className="font-bold text-white">{worldsCompleted}/7</span>
-        </span>
+         <span className="flex items-center gap-1.5 text-xs text-[hsl(195_80%_70%)]">
+           <Shield className="h-3.5 w-3.5" />
+           ARCS:
+           <span className="font-bold text-white">{worldsCompleted}/7</span>
+         </span>
         <span
           className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
             worldsCompleted === 7
