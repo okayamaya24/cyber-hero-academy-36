@@ -1966,7 +1966,7 @@ function ZoneMissionPanel({
               onClick={onDeploy}
               className="bg-[hsl(45_90%_50%)] hover:bg-[hsl(45_90%_45%)] text-[hsl(210_40%_10%)] font-bold"
             >
-              🚀 BEGIN ORIENTATION
+              🚀 BEGIN PROLOGUE
             </Button>
           </div>
         ) : hasGames ? (
