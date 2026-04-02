@@ -2259,7 +2259,7 @@ export default function ContinentMapScreen() {
                         fill={zone.isBoss ? "#ff6b8a" : zone.isHQ ? "#f5c518" : "#00ffe7"}
                         style={{ pointerEvents: "none", userSelect: "none" }}
                       >
-                        {zone.isBoss ? "⚔️ FIGHT" : zone.isHQ ? "▶ START" : "▶ DEPLOY"}
+                        {zone.isBoss ? "⚔️ FIGHT" : zone.isHQ ? "▶ START" : "▶ PLAY"}
                         <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite" />
                       </text>
                     )}
