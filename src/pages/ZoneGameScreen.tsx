@@ -430,9 +430,9 @@ export default function ZoneGameScreen() {
     await awardXp(activeChildId, child?.points || 0, zoneRewards.xp);
 
     const nextZoneId = getNextZone(continentId, zoneId);
-    if (nextZoneId) {
-      // Direct upsert — bypass engine to guarantee unlock works
-      await supabase.from("zone_progress").upsert(
+
+    if (nextZoneId && activeChildId && continentId) {
+      const { error } = await supabase.from("zone_progress").upsert(
         {
           child_id: activeChildId,
           continent_id: continentId,
@@ -445,6 +445,9 @@ export default function ZoneGameScreen() {
         { onConflict: "child_id,zone_id" },
       );
 
+      if (error) console.error("Failed to unlock next zone:", error);
+      else console.log("Unlocked next zone:", nextZoneId);
+
       const bossZone = continent?.zones.find((z) => z.isBoss);
       if (bossZone && nextZoneId === bossZone.id) {
         setBossZoneForUnlock(bossZone.id);
@@ -452,10 +455,7 @@ export default function ZoneGameScreen() {
     }
 
     queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
-    queryClient.invalidateQueries({ queryKey: ["child"] });
-
-    queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
-    queryClient.invalidateQueries({ queryKey: ["child"] });
+    queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId, continentId] });
   };
 
   const handleGameComplete = async (gameIndex: number, passed: boolean, stars: number) => {
