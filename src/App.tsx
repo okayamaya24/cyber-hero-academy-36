@@ -1,5 +1,3 @@
-// Register continent configs with the adventure engine
-import "@/engine/configs/northAmerica";
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -23,9 +21,6 @@ import ChildSelectPage from "./pages/ChildSelectPage";
 import CreateChildPage from "./pages/CreateChildPage";
 import CertificatePage from "./pages/CertificatePage";
 import ForParentsPage from "./pages/ForParentsPage";
-import WorldSelectScreen from "./pages/WorldSelectScreen";
-import ContinentMapScreen from "./pages/ContinentMapScreen";
-import ZoneGameScreen from "./pages/ZoneGameScreen";
 import EditAvatarPage from "./pages/EditAvatarPage";
 import ProtectedParentRoute from "./components/ProtectedParentRoute";
 import NotFound from "./pages/NotFound";
@@ -197,33 +192,6 @@ const App = () => (
                   <>
                     <Navbar />
                     <MissionsPage />
-                  </>
-                }
-              />
-              <Route
-                path="/world-map"
-                element={
-                  <>
-                    <Navbar />
-                    <WorldSelectScreen />
-                  </>
-                }
-              />
-              <Route
-                path="/world-map/:continentId"
-                element={
-                  <>
-                    <Navbar />
-                    <ContinentMapScreen />
-                  </>
-                }
-              />
-              <Route
-                path="/world-map/:continentId/:zoneId"
-                element={
-                  <>
-                    <Navbar />
-                    <ZoneGameScreen />
                   </>
                 }
               />
