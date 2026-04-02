@@ -830,7 +830,8 @@ export default function ZoneGameScreen() {
               type={gameContent.miniGame.type}
               title={gameContent.miniGame.title}
               description={gameContent.miniGame.description}
-              onComplete={(passed) => handleGameComplete(1, passed, 3)}
+              onComplete={(passed) => handleGameComplete(1, passed, passed ? 3 : 1)}
+              villainName={continent?.villain}
             />
           )}
           {activeTab === 1 && completedGames.has(1) && (
