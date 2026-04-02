@@ -1,12 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import VillainSprite from "@/components/world/VillainSprite";
+import NarrativeChoice from "@/components/zone/NarrativeChoice";
+import { getZoneNarrativeChoices } from "@/data/narrativeChoices";
 
 interface ZoneStoryPanelProps {
   villainName: string;
   narration: string;
   villainTaunt: string;
   gameIndex: number; // 0-3, used for villain anger
+  zoneId?: string;
   onContinue: () => void;
 }
 
