@@ -1379,7 +1379,7 @@ function ZoneCompletionPanel({
                 animate={{ opacity: showUnlock ? 1 : 0, y: showUnlock ? 0 : 8 }}
                 className="w-full rounded-xl border border-[hsl(195_80%_50%/0.2)] bg-[hsl(195_80%_50%/0.06)] p-3"
               >
-                <p className="text-[9px] text-[hsl(195_80%_60%)] uppercase tracking-wide mb-1.5">🔓 Zone Unlocked</p>
+                <p className="text-[9px] text-[hsl(195_80%_60%)] uppercase tracking-wide mb-1.5">🔓 Next Chapter Unlocked</p>
                 <span className="rounded-full bg-[hsl(195_80%_50%/0.12)] border border-[hsl(195_80%_50%/0.2)] px-3 py-1 text-[11px] font-bold text-[hsl(195_80%_70%)]">
                   {unlocksZoneName}
                 </span>
