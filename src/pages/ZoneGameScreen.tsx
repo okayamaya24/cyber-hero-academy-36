@@ -414,7 +414,7 @@ export default function ZoneGameScreen() {
 
   const ageTier = child ? getAgeTier(child.age) : ("defender" as const);
   const pointsPerGame = getPointsPerCorrect(ageTier) * 5;
-  const zoneRewards = ZONE_REWARDS[zoneId ?? ""] ?? { xp: 100 };
+  // zoneRewards already computed above using engine or legacy
 
   const computeStars = useCallback((mistakes: number) => {
     if (mistakes === 0) return 3;
