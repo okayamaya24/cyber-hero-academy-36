@@ -139,8 +139,8 @@ function ContinentCard({
         <div className="w-full space-y-0.5">
           <div className="flex justify-between text-[8px] text-white/35">
             <span>
-              {zonesCompleted}/{totalZones} zones
-            </span>
+               {zonesCompleted}/{totalZones} chapters
+             </span>
             <span>{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-1.5 bg-white/10" />
