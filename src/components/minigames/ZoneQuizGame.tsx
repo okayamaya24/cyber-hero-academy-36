@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import type { ZoneQuizQuestion } from "@/data/zoneGames";
@@ -15,7 +15,16 @@ export default function ZoneQuizGame({ title, questions, onComplete }: Props) {
   const [selected, setSelected] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [done, setDone] = useState(false);
+  const hasMounted = useRef(false);
 
+  if (!questions || questions.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 gap-3">
+        <span className="text-4xl">⚠️</span>
+        <p className="text-white/60 text-sm">No quiz questions available.</p>
+      </div>
+    );
+  }
   const q = questions[currentIndex];
 
   const handleSelect = (idx: number) => {
@@ -72,9 +81,10 @@ export default function ZoneQuizGame({ title, questions, onComplete }: Props) {
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
-          initial={{ x: 20, opacity: 0 }}
+          initial={hasMounted.current ? { x: 20, opacity: 0 } : false}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -20, opacity: 0 }}
+          onAnimationComplete={() => { hasMounted.current = true; }}
         >
           <h3 className="text-base font-bold text-white mb-4">{q.q}</h3>
 
