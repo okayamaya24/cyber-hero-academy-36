@@ -2011,31 +2011,9 @@ export default function ContinentMapScreen() {
     else if (!continent) navigate("/world-map");
   }, [user, activeChildId, continent, navigate]);
 
-  const { data: child } = useQuery({
-    queryKey: ["child", activeChildId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("child_profiles").select("*").eq("id", activeChildId!).single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!activeChildId,
-  });
+  const { data: child } = useChildProfile(activeChildId);
 
-  const { data: zoneProgress = [] } = useQuery({
-    queryKey: ["zone_progress", activeChildId, continentId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("zone_progress")
-        .select("*")
-        .eq("child_id", activeChildId!)
-        .eq("continent_id", continentId!);
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!activeChildId && !!continentId,
-    refetchOnMount: "always",
-    staleTime: 0,
-  });
+  const { data: zoneProgress = [] } = useZoneProgress(activeChildId, continentId ?? null);
 
   const avatarConfig = child?.avatar_config as Record<string, any> | null;
   const playerName = (child as any)?.name ?? "Guardian";
