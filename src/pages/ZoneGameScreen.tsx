@@ -322,9 +322,9 @@ function ZoneCompletionDebrief({
 /* ── Game tabs ──────────────────────────────────────── */
 const GAME_TABS = [
   { key: "quiz", label: "Story Quiz", icon: "📖" },
-  { key: "mini", label: "Mini Game", icon: "🎮" },
+  { key: "mini", label: "Challenge", icon: "🎮" },
   { key: "puzzle", label: "Puzzle", icon: "🧩" },
-  { key: "dragdrop", label: "Drag & Drop", icon: "🎯" },
+  { key: "dragdrop", label: "Sort & Solve", icon: "🎯" },
 ];
 
 type AdventurePhase = "cutscene" | "playing" | "story_panel" | "debrief" | "complete" | "boss_unlocked";
