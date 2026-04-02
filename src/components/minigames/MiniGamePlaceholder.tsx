@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import ScamSorter from "@/components/minigames/ScamSorter";
+import ShieldDodge from "@/components/minigames/ShieldDodge";
 
 interface Props {
   type: string;
   title: string;
   description: string;
   onComplete: (passed: boolean) => void;
+  villainName?: string;
 }
 
 const ICONS: Record<string, string> = {
@@ -18,10 +21,28 @@ const ICONS: Record<string, string> = {
   "stranger-danger": "👤",
   "safe-sites-detector": "🌐",
   "kindness-shield": "💙",
+  "scam-spotter": "🚨",
+  "shield-dodge": "🛡️",
+  "wifi-detective": "📡",
+  "balance-builder": "⚖️",
+  "backup-builder": "🧊",
+  "game-guardian": "🎮",
+  "firewall-builder": "🔥",
 };
 
-export default function MiniGamePlaceholder({ type, title, description, onComplete }: Props) {
+export default function MiniGamePlaceholder({ type, title, description, onComplete, villainName }: Props) {
   const [completed, setCompleted] = useState(false);
+
+  /* ── Route to real games ── */
+  if (type === "scam-spotter") {
+    return <ScamSorter onComplete={(stars) => onComplete(stars >= 2)} />;
+  }
+
+  if (type === "shield-dodge") {
+    return <ShieldDodge onComplete={(stars) => onComplete(stars >= 2)} villainName={villainName} />;
+  }
+
+  /* ── Placeholder for unbuilt games ── */
   const icon = ICONS[type] || "🎮";
 
   const handleComplete = () => {
@@ -39,22 +60,14 @@ export default function MiniGamePlaceholder({ type, title, description, onComple
         <span className="text-5xl">{icon}</span>
         <h3 className="text-xl font-bold text-white">{title}</h3>
         <p className="text-sm text-white/60">{description}</p>
-
         <div className="mt-2 rounded-xl border border-[hsl(195_80%_50%/0.1)] bg-[hsl(210_40%_18%/0.6)] p-4 w-full">
           <p className="text-xs text-[hsl(195_80%_60%)] font-mono">
             // MINI GAME: {type.toUpperCase().replace(/-/g, "_")}
           </p>
-          <p className="text-xs text-white/40 mt-1">
-            Full interactive gameplay coming soon!
-          </p>
+          <p className="text-xs text-white/40 mt-1">Full interactive gameplay coming soon!</p>
         </div>
-
         {completed ? (
-          <motion.div
-            initial={{ scale: 0.5 }}
-            animate={{ scale: 1 }}
-            className="text-3xl"
-          >
+          <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} className="text-3xl">
             ✅
           </motion.div>
         ) : (
