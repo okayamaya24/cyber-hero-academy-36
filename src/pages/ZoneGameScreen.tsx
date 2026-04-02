@@ -218,8 +218,8 @@ function ZoneCompletionDebrief({
             ✅
           </motion.div>
           <div>
-             <p className="text-[10px] font-bold tracking-widest text-[hsl(160_65%_55%)] uppercase">Chapter Complete!</p>
-             <p className="text-lg font-bold text-white">
+            <p className="text-[10px] font-bold tracking-widest text-[hsl(160_65%_55%)] uppercase">Chapter Complete!</p>
+            <p className="text-lg font-bold text-white">
               {zoneIcon} {zoneName}
             </p>
           </div>
@@ -347,14 +347,16 @@ export default function ZoneGameScreen() {
   const engineConfig = isMigrated ? getContinentConfig(cId) : null;
 
   // Use engine narration for migrated continents, legacy for others
-  const narration = isMigrated && engineConfig
-    ? getNarration(zoneId || "", engineConfig.zoneNarrations)
-    : getZoneNarration(zoneId || "");
+  const narration =
+    isMigrated && engineConfig
+      ? getNarration(zoneId || "", engineConfig.zoneNarrations)
+      : getZoneNarration(zoneId || "");
 
   // Use engine rewards for migrated continents, legacy for others
-  const zoneRewards = isMigrated && engineConfig
-    ? (engineConfig.zoneRewards[zoneId ?? ""] ?? { xp: 100 })
-    : (ZONE_REWARDS[zoneId ?? ""] ?? { xp: 100 });
+  const zoneRewards =
+    isMigrated && engineConfig
+      ? (engineConfig.zoneRewards[zoneId ?? ""] ?? { xp: 100 })
+      : (ZONE_REWARDS[zoneId ?? ""] ?? { xp: 100 });
 
   const [phase, setPhase] = useState<AdventurePhase>("cutscene");
   const [activeTab, setActiveTab] = useState(0);
@@ -416,7 +418,6 @@ export default function ZoneGameScreen() {
   const pointsPerGame = getPointsPerCorrect(ageTier) * 5;
   // zoneRewards already computed above using engine or legacy
 
-
   const handleZoneComplete = async (stars: number) => {
     if (!activeChildId || !zoneId || !continentId) return;
 
@@ -430,13 +431,28 @@ export default function ZoneGameScreen() {
 
     const nextZoneId = getNextZone(continentId, zoneId);
     if (nextZoneId) {
-      await unlockNextZone({ childId: activeChildId, continentId, nextZoneId });
+      // Direct upsert — bypass engine to guarantee unlock works
+      await supabase.from("zone_progress").upsert(
+        {
+          child_id: activeChildId,
+          continent_id: continentId,
+          zone_id: nextZoneId,
+          status: "available",
+          games_completed: 0,
+          total_games: 4,
+          stars_earned: 0,
+        },
+        { onConflict: "child_id,zone_id" },
+      );
 
       const bossZone = continent?.zones.find((z) => z.isBoss);
       if (bossZone && nextZoneId === bossZone.id) {
         setBossZoneForUnlock(bossZone.id);
       }
     }
+
+    queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
+    queryClient.invalidateQueries({ queryKey: ["child"] });
 
     queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
     queryClient.invalidateQueries({ queryKey: ["child"] });
@@ -567,9 +583,9 @@ export default function ZoneGameScreen() {
             villainTaunt={
               narration.villainTaunts[Math.min(gamesDone, narration.villainTaunts.length - 1)] || "You won't win!"
             }
-             gameIndex={gamesDone}
-             zoneId={zoneId}
-             onContinue={handleStoryPanelContinue}
+            gameIndex={gamesDone}
+            zoneId={zoneId}
+            onContinue={handleStoryPanelContinue}
           />
         </div>
       </AnimatePresence>
@@ -734,12 +750,12 @@ export default function ZoneGameScreen() {
 
         {/* Zone title */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-4">
-           <h1 className="text-lg md:text-xl font-bold text-white">
-             {zone.icon} {zone.name.toUpperCase()} <span className="text-white/40">// {zone.city}</span>
-           </h1>
-           <p className="text-xs text-[hsl(195_80%_60%)] mt-1 font-mono">
-             CHAPTER PROGRESS: {completedGames.size}/4 CHALLENGES COMPLETE
-           </p>
+          <h1 className="text-lg md:text-xl font-bold text-white">
+            {zone.icon} {zone.name.toUpperCase()} <span className="text-white/40">// {zone.city}</span>
+          </h1>
+          <p className="text-xs text-[hsl(195_80%_60%)] mt-1 font-mono">
+            CHAPTER PROGRESS: {completedGames.size}/4 CHALLENGES COMPLETE
+          </p>
         </motion.div>
 
         {/* Game tabs */}
