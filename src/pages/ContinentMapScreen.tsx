@@ -2021,7 +2021,12 @@ export default function ContinentMapScreen() {
 
   const zoneStatuses = useMemo(() => {
     if (!continent) return [];
-    return continent.zones.map((zone) => getZoneStatus(zone, continent.zones, zoneProgress, continentId ?? ""));
+    const cId = continentId ?? "";
+    // Use engine's computeZoneStatus for migrated continents, fallback to inline for others
+    if (isContinentMigrated(cId)) {
+      return continent.zones.map((zone) => computeZoneStatus(zone, continent.zones, zoneProgress, cId));
+    }
+    return continent.zones.map((zone) => getZoneStatus(zone, continent.zones, zoneProgress, cId));
   }, [continent, zoneProgress, continentId]);
 
   const zoneCoords = useMemo(() => ZONE_COORDINATES[continentId || ""] || [], [continentId]);
