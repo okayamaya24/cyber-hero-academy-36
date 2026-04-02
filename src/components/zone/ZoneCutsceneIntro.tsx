@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import NarrativeChoice from "@/components/zone/NarrativeChoice";
+import { getZoneNarrativeChoices } from "@/data/narrativeChoices";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
