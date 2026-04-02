@@ -2097,7 +2097,7 @@ export default function ContinentMapScreen() {
           onClick={() => navigate("/world-map")}
           className="mb-4 flex items-center gap-2 rounded-xl border border-[hsl(195_80%_50%/0.2)] bg-[hsl(210_40%_14%/0.8)] px-4 py-2 text-sm font-bold text-[hsl(195_80%_70%)] backdrop-blur-md hover:bg-[hsl(210_40%_14%)] transition-colors"
         >
-          <ChevronLeft className="h-4 w-4" /> BACK TO WORLD SELECT
+          <ChevronLeft className="h-4 w-4" /> BACK TO ADVENTURE
         </motion.button>
 
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
