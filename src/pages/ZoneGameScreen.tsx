@@ -733,12 +733,12 @@ export default function ZoneGameScreen() {
 
         {/* Zone title */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-4">
-          <h1 className="text-lg md:text-xl font-bold text-white">
-            {zone.icon} {zone.name.toUpperCase()} <span className="text-white/40">// {zone.city}</span>
-          </h1>
-          <p className="text-xs text-[hsl(195_80%_60%)] mt-1 font-mono">
-            ZONE PROGRESS: {completedGames.size}/4 GAMES COMPLETE
-          </p>
+           <h1 className="text-lg md:text-xl font-bold text-white">
+             {zone.icon} {zone.name.toUpperCase()} <span className="text-white/40">// {zone.city}</span>
+           </h1>
+           <p className="text-xs text-[hsl(195_80%_60%)] mt-1 font-mono">
+             CHAPTER PROGRESS: {completedGames.size}/4 CHALLENGES COMPLETE
+           </p>
         </motion.div>
 
         {/* Game tabs */}

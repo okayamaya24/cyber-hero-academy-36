@@ -219,7 +219,7 @@ export default function ZoneCutsceneIntro({
         transition={{ delay: 0.15 }}
         className="text-center"
       >
-        <p className="text-[10px] font-bold tracking-[0.25em] text-white/30 uppercase mb-1">Entering Zone</p>
+        <p className="text-[10px] font-bold tracking-[0.25em] text-white/30 uppercase mb-1">Chapter Begins</p>
         <h1 className="text-2xl md:text-3xl font-black text-white tracking-wide">
           {zoneIcon} {zoneName.toUpperCase()}
         </h1>
