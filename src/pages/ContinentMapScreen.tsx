@@ -1961,7 +1961,7 @@ function ZoneMissionPanel({
         ) : zone.isHQ ? (
           <div className="text-center py-6">
             <span className="text-4xl mb-3 block">🏠</span>
-            <p className="text-sm text-white/70 mb-4">Welcome, Guardian! Complete your orientation!</p>
+            <p className="text-sm text-white/70 mb-4">Welcome, Guardian! Complete your prologue!</p>
             <Button
               onClick={onDeploy}
               className="bg-[hsl(45_90%_50%)] hover:bg-[hsl(45_90%_45%)] text-[hsl(210_40%_10%)] font-bold"
