@@ -38,11 +38,11 @@ function HUDBar({
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="flex items-center gap-1.5 text-xs text-[hsl(195_80%_70%)]">
-          <Shield className="h-3.5 w-3.5" />
-          WORLDS:
-          <span className="font-bold text-white">{worldsCompleted}/7</span>
-        </span>
+         <span className="flex items-center gap-1.5 text-xs text-[hsl(195_80%_70%)]">
+           <Shield className="h-3.5 w-3.5" />
+           ARCS:
+           <span className="font-bold text-white">{worldsCompleted}/7</span>
+         </span>
         <span
           className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
             worldsCompleted === 7
@@ -133,14 +133,14 @@ function ContinentCard({
         </div>
       </div>
 
-      <p className="text-[9px] text-white/35 text-center">{totalZones} Zones + 1 Boss Battle</p>
+      <p className="text-[9px] text-white/35 text-center">{totalZones} Chapters + 1 Final Battle</p>
 
       {!isLocked && (
         <div className="w-full space-y-0.5">
           <div className="flex justify-between text-[8px] text-white/35">
             <span>
-              {zonesCompleted}/{totalZones} zones
-            </span>
+               {zonesCompleted}/{totalZones} chapters
+             </span>
             <span>{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-1.5 bg-white/10" />
@@ -171,7 +171,7 @@ function ContinentCard({
 export default function WorldSelectScreen() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
-  const [guideMessage, setGuideMessage] = useState("Choose a world to begin your mission, Guardian! 🌍");
+  const [guideMessage, setGuideMessage] = useState("Choose a story arc to begin your adventure, Guardian! 🌍");
   const [idleIdx, setIdleIdx] = useState(0);
 
   useEffect(() => {
@@ -262,19 +262,19 @@ export default function WorldSelectScreen() {
   const handleContinentClick = (continent: ContinentDef) => {
     const s = continentStatuses[continent.id];
     if (s?.status === "locked") {
-      setGuideMessage("That world is still locked! Defeat the previous villain first. 🔒");
+      setGuideMessage("That story arc is still locked! Defeat the previous villain first. 🔒");
       return;
     }
     navigate(continent.route);
   };
 
   const IDLE_MSGS = [
-    "Choose a world to begin your mission, Guardian! 🌍",
-    "Each world has a villain to defeat! 💪",
-    "Complete all zones to face the boss battle! ⚔️",
+    "Choose a story arc to begin your adventure, Guardian! 🌍",
+    "Each arc has a villain to defeat! 💪",
+    "Complete all chapters to face the final battle! ⚔️",
     "You're doing amazing, Cyber Hero! 🌟",
     "Defeat all 7 villains to earn your Master Certificate! 🏆",
-    "Stay safe online — you've got this! 🛡️",
+    "Your adventure continues — you've got this! 🛡️",
   ];
 
   const cycleIdle = useCallback(() => {
@@ -313,10 +313,10 @@ export default function WorldSelectScreen() {
             transition={{ delay: 0.1 }}
             className="flex items-baseline gap-3"
           >
-            <h1 className="text-2xl font-bold text-white tracking-wide">🌍 SELECT YOUR WORLD</h1>
-            <span className="text-[10px] text-[hsl(195_80%_60%)] font-bold tracking-widest uppercase opacity-70">
-              Cyber Hero Academy
-            </span>
+            <h1 className="text-2xl font-bold text-white tracking-wide">🗺️ ADVENTURE MODE</h1>
+             <span className="text-[10px] text-[hsl(195_80%_60%)] font-bold tracking-widest uppercase opacity-70">
+               Choose Your Story Arc
+             </span>
           </motion.div>
           <motion.p
             initial={{ opacity: 0 }}
@@ -324,7 +324,7 @@ export default function WorldSelectScreen() {
             transition={{ delay: 0.2 }}
             className="text-[10px] text-[hsl(45_90%_65%/0.75)] mt-0.5"
           >
-            🏆 Complete all 7 worlds to earn your Master Cyber Guardian Certificate!
+            🏆 Complete all 7 story arcs to earn your Master Cyber Guardian Certificate!
           </motion.p>
         </div>
 
@@ -407,7 +407,7 @@ export default function WorldSelectScreen() {
           transition={{ delay: 0.9 }}
           className="mt-3 flex items-center gap-3"
         >
-          <span className="text-[10px] text-white/40 whitespace-nowrap">MASTER CERTIFICATE</span>
+          <span className="text-[10px] text-white/40 whitespace-nowrap">ADVENTURE PROGRESS</span>
           <div className="flex-1">
             <Progress value={(worldsCompleted / 7) * 100} className="h-1.5 bg-white/10" />
           </div>

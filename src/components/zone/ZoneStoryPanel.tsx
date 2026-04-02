@@ -1,12 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import VillainSprite from "@/components/world/VillainSprite";
+import NarrativeChoice from "@/components/zone/NarrativeChoice";
+import { getZoneNarrativeChoices } from "@/data/narrativeChoices";
 
 interface ZoneStoryPanelProps {
   villainName: string;
   narration: string;
   villainTaunt: string;
   gameIndex: number; // 0-3, used for villain anger
+  zoneId?: string;
   onContinue: () => void;
 }
 
@@ -15,13 +18,18 @@ export default function ZoneStoryPanel({
   narration,
   villainTaunt,
   gameIndex,
+  zoneId,
   onContinue,
 }: ZoneStoryPanelProps) {
-  // Auto-dismiss after 6 seconds
+  const [showChoice, setShowChoice] = useState(false);
+  const narrativeChoices = getZoneNarrativeChoices(zoneId || "");
+  const storyChoice = narrativeChoices?.storyChoices?.[gameIndex];
+  // Auto-dismiss after 8 seconds (longer if there's a choice)
   useEffect(() => {
+    if (storyChoice) return; // don't auto-dismiss when there's a choice
     const t = setTimeout(onContinue, 6000);
     return () => clearTimeout(t);
-  }, [onContinue]);
+  }, [onContinue, storyChoice]);
 
   const villainSize = Math.max(40, 60 - gameIndex * 8); // shrinks as player wins
 
@@ -61,14 +69,45 @@ export default function ZoneStoryPanel({
           </div>
         </div>
 
-        <motion.button
-          onClick={onContinue}
-          className="mt-4 w-full rounded-lg bg-[hsl(195_80%_50%/0.2)] border border-[hsl(195_80%_50%/0.3)] py-2 text-sm font-bold text-[hsl(195_80%_70%)] tracking-wider"
-          animate={{ opacity: [1, 0.6, 1] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-        >
-          CONTINUE ▶
-        </motion.button>
+        {/* Narrative choice — if available for this game index */}
+        {storyChoice && !showChoice && (
+          <motion.button
+            onClick={() => setShowChoice(true)}
+            className="mt-3 w-full rounded-lg bg-[hsl(45_90%_50%/0.15)] border border-[hsl(45_90%_50%/0.3)] py-2 text-sm font-bold text-[hsl(45_90%_65%)] tracking-wider"
+            animate={{ opacity: [1, 0.7, 1] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          >
+            ⚡ MAKE A CHOICE
+          </motion.button>
+        )}
+
+        {showChoice && storyChoice && (
+          <NarrativeChoice
+            prompt={storyChoice.prompt}
+            options={storyChoice.options}
+            onChoose={() => onContinue()}
+          />
+        )}
+
+        {!storyChoice && (
+          <motion.button
+            onClick={onContinue}
+            className="mt-4 w-full rounded-lg bg-[hsl(195_80%_50%/0.2)] border border-[hsl(195_80%_50%/0.3)] py-2 text-sm font-bold text-[hsl(195_80%_70%)] tracking-wider"
+            animate={{ opacity: [1, 0.6, 1] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          >
+            CONTINUE ▶
+          </motion.button>
+        )}
+
+        {storyChoice && !showChoice && (
+          <button
+            onClick={onContinue}
+            className="mt-2 w-full text-[10px] text-white/30 hover:text-white/50 transition-colors"
+          >
+            Skip →
+          </button>
+        )}
       </motion.div>
     </motion.div>
   );

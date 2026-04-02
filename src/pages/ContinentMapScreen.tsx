@@ -1304,7 +1304,7 @@ function ZoneCompletionPanel({
             ✅
           </motion.div>
           <div>
-            <p className="text-[10px] font-bold tracking-widest text-[hsl(160_65%_55%)] uppercase">Zone Secured!</p>
+            <p className="text-[10px] font-bold tracking-widest text-[hsl(160_65%_55%)] uppercase">Chapter Complete!</p>
             <p className="text-lg font-bold text-white">{zoneName}</p>
           </div>
         </div>
@@ -1379,7 +1379,7 @@ function ZoneCompletionPanel({
                 animate={{ opacity: showUnlock ? 1 : 0, y: showUnlock ? 0 : 8 }}
                 className="w-full rounded-xl border border-[hsl(195_80%_50%/0.2)] bg-[hsl(195_80%_50%/0.06)] p-3"
               >
-                <p className="text-[9px] text-[hsl(195_80%_60%)] uppercase tracking-wide mb-1.5">🔓 Zone Unlocked</p>
+                <p className="text-[9px] text-[hsl(195_80%_60%)] uppercase tracking-wide mb-1.5">🔓 Next Chapter Unlocked</p>
                 <span className="rounded-full bg-[hsl(195_80%_50%/0.12)] border border-[hsl(195_80%_50%/0.2)] px-3 py-1 text-[11px] font-bold text-[hsl(195_80%_70%)]">
                   {unlocksZoneName}
                 </span>
@@ -1935,10 +1935,10 @@ function ZoneMissionPanel({
             {zone.icon}
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-bold text-white">{zone.name.toUpperCase()}</h2>
-            <p className="text-xs text-[hsl(195_60%_60%)]">
-              {zone.city} · {continent.name}
-            </p>
+             <h2 className="text-lg font-bold text-white">{zone.name.toUpperCase()}</h2>
+             <p className="text-xs text-[hsl(195_60%_60%)]">
+               📖 Chapter · {zone.city} · {continent.name}
+             </p>
           </div>
           <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10 transition-colors">
             <X className="h-5 w-5 text-white/50" />
@@ -1961,28 +1961,28 @@ function ZoneMissionPanel({
         ) : zone.isHQ ? (
           <div className="text-center py-6">
             <span className="text-4xl mb-3 block">🏠</span>
-            <p className="text-sm text-white/70 mb-4">Welcome, Guardian! Complete your orientation!</p>
+            <p className="text-sm text-white/70 mb-4">Welcome, Guardian! Complete your prologue!</p>
             <Button
               onClick={onDeploy}
               className="bg-[hsl(45_90%_50%)] hover:bg-[hsl(45_90%_45%)] text-[hsl(210_40%_10%)] font-bold"
             >
-              🚀 BEGIN ORIENTATION
+              🚀 BEGIN PROLOGUE
             </Button>
           </div>
         ) : hasGames ? (
-          <div className="text-center py-6">
-            <p className="text-sm text-white/70 mb-4">4 games await you in this zone!</p>
-            <Button
-              onClick={onDeploy}
-              className="bg-[hsl(195_80%_50%)] hover:bg-[hsl(195_80%_45%)] text-white font-bold"
-            >
-              🚀 DEPLOY MISSION
+           <div className="text-center py-6">
+             <p className="text-sm text-white/70 mb-4">4 challenges await in this chapter!</p>
+             <Button
+               onClick={onDeploy}
+               className="bg-[hsl(195_80%_50%)] hover:bg-[hsl(195_80%_45%)] text-white font-bold"
+             >
+               📖 BEGIN CHAPTER
             </Button>
           </div>
         ) : (
           <div className="text-center py-8">
             <span className="text-4xl mb-3 block">🚧</span>
-            <p className="text-sm text-white/70 mb-1">Mission content coming soon</p>
+            <p className="text-sm text-white/70 mb-1">Chapter content coming soon</p>
           </div>
         )}
       </motion.div>
@@ -2097,14 +2097,17 @@ export default function ContinentMapScreen() {
           onClick={() => navigate("/world-map")}
           className="mb-4 flex items-center gap-2 rounded-xl border border-[hsl(195_80%_50%/0.2)] bg-[hsl(210_40%_14%/0.8)] px-4 py-2 text-sm font-bold text-[hsl(195_80%_70%)] backdrop-blur-md hover:bg-[hsl(210_40%_14%)] transition-colors"
         >
-          <ChevronLeft className="h-4 w-4" /> BACK TO WORLD SELECT
+          <ChevronLeft className="h-4 w-4" /> BACK TO ADVENTURE
         </motion.button>
 
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-          <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">
-            {continent.emoji} {continent.name.toUpperCase()} —{" "}
-            <span className="text-[hsl(0_80%_65%)]">{continent.villain.toUpperCase()}'S DOMAIN</span>
-          </h1>
+           <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">
+             {continent.emoji} {continent.name.toUpperCase()} —{" "}
+             <span className="text-[hsl(195_80%_60%)] text-sm font-bold tracking-widest">STORY ARC</span>
+           </h1>
+           <p className="text-xs text-white/40 mt-0.5">
+             Villain: <span className="text-[hsl(0_80%_65%)] font-bold">{continent.villain.toUpperCase()}</span>
+           </p>
         </motion.div>
 
         <div
@@ -2256,7 +2259,7 @@ export default function ContinentMapScreen() {
                         fill={zone.isBoss ? "#ff6b8a" : zone.isHQ ? "#f5c518" : "#00ffe7"}
                         style={{ pointerEvents: "none", userSelect: "none" }}
                       >
-                        {zone.isBoss ? "⚔️ FIGHT" : zone.isHQ ? "▶ START" : "▶ DEPLOY"}
+                        {zone.isBoss ? "⚔️ FIGHT" : zone.isHQ ? "▶ START" : "▶ PLAY"}
                         <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite" />
                       </text>
                     )}

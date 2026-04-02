@@ -218,8 +218,8 @@ function ZoneCompletionDebrief({
             ✅
           </motion.div>
           <div>
-            <p className="text-[10px] font-bold tracking-widest text-[hsl(160_65%_55%)] uppercase">Zone Secured!</p>
-            <p className="text-lg font-bold text-white">
+             <p className="text-[10px] font-bold tracking-widest text-[hsl(160_65%_55%)] uppercase">Chapter Complete!</p>
+             <p className="text-lg font-bold text-white">
               {zoneIcon} {zoneName}
             </p>
           </div>
@@ -322,9 +322,9 @@ function ZoneCompletionDebrief({
 /* ── Game tabs ──────────────────────────────────────── */
 const GAME_TABS = [
   { key: "quiz", label: "Story Quiz", icon: "📖" },
-  { key: "mini", label: "Mini Game", icon: "🎮" },
+  { key: "mini", label: "Challenge", icon: "🎮" },
   { key: "puzzle", label: "Puzzle", icon: "🧩" },
-  { key: "dragdrop", label: "Drag & Drop", icon: "🎯" },
+  { key: "dragdrop", label: "Sort & Solve", icon: "🎯" },
 ];
 
 type AdventurePhase = "cutscene" | "playing" | "story_panel" | "debrief" | "complete" | "boss_unlocked";
@@ -567,8 +567,9 @@ export default function ZoneGameScreen() {
             villainTaunt={
               narration.villainTaunts[Math.min(gamesDone, narration.villainTaunts.length - 1)] || "You won't win!"
             }
-            gameIndex={gamesDone}
-            onContinue={handleStoryPanelContinue}
+             gameIndex={gamesDone}
+             zoneId={zoneId}
+             onContinue={handleStoryPanelContinue}
           />
         </div>
       </AnimatePresence>
@@ -733,12 +734,12 @@ export default function ZoneGameScreen() {
 
         {/* Zone title */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-4">
-          <h1 className="text-lg md:text-xl font-bold text-white">
-            {zone.icon} {zone.name.toUpperCase()} <span className="text-white/40">// {zone.city}</span>
-          </h1>
-          <p className="text-xs text-[hsl(195_80%_60%)] mt-1 font-mono">
-            ZONE PROGRESS: {completedGames.size}/4 GAMES COMPLETE
-          </p>
+           <h1 className="text-lg md:text-xl font-bold text-white">
+             {zone.icon} {zone.name.toUpperCase()} <span className="text-white/40">// {zone.city}</span>
+           </h1>
+           <p className="text-xs text-[hsl(195_80%_60%)] mt-1 font-mono">
+             CHAPTER PROGRESS: {completedGames.size}/4 CHALLENGES COMPLETE
+           </p>
         </motion.div>
 
         {/* Game tabs */}

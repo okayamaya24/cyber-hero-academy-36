@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import NarrativeChoice from "@/components/zone/NarrativeChoice";
+import { getZoneNarrativeChoices } from "@/data/narrativeChoices";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -130,6 +132,8 @@ export default function ZoneCutsceneIntro({
 }: ZoneCutsceneIntroProps) {
   const { activeChildId } = useAuth();
   const [lineIndex, setLineIndex] = useState(0);
+  const [showChoice, setShowChoice] = useState(false);
+  const narrativeChoices = getZoneNarrativeChoices(zoneId || "");
 
   const { data: child } = useQuery({
     queryKey: ["child", activeChildId],
@@ -160,9 +164,14 @@ export default function ZoneCutsceneIntro({
       finish();
       return;
     }
-    if (lineIndex < lines.length - 1) setLineIndex((i) => i + 1);
-    else onStart();
-  }, [done, finish, lineIndex, lines.length, onStart]);
+    if (lineIndex < lines.length - 1) {
+      setLineIndex((i) => i + 1);
+    } else if (narrativeChoices?.cutsceneChoice && !showChoice) {
+      setShowChoice(true);
+    } else {
+      onStart();
+    }
+  }, [done, finish, lineIndex, lines.length, onStart, narrativeChoices, showChoice]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -219,7 +228,7 @@ export default function ZoneCutsceneIntro({
         transition={{ delay: 0.15 }}
         className="text-center"
       >
-        <p className="text-[10px] font-bold tracking-[0.25em] text-white/30 uppercase mb-1">Entering Zone</p>
+        <p className="text-[10px] font-bold tracking-[0.25em] text-white/30 uppercase mb-1">Chapter Begins</p>
         <h1 className="text-2xl md:text-3xl font-black text-white tracking-wide">
           {zoneIcon} {zoneName.toUpperCase()}
         </h1>
@@ -351,20 +360,33 @@ export default function ZoneCutsceneIntro({
             </div>
           </div>
         </motion.div>
+       </AnimatePresence>
+
+      {/* Narrative choice — shown after last dialogue line */}
+      <AnimatePresence>
+        {showChoice && narrativeChoices?.cutsceneChoice && (
+          <NarrativeChoice
+            prompt={narrativeChoices.cutsceneChoice.prompt}
+            options={narrativeChoices.cutsceneChoice.options}
+            onChoose={() => onStart()}
+          />
+        )}
       </AnimatePresence>
 
       {/* Progress dots */}
-      <div className="flex gap-2">
-        {lines.map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{ width: i === lineIndex ? 22 : 7 }}
-            className={`h-1.5 rounded-full transition-colors ${
-              i === lineIndex ? "bg-[hsl(195_80%_60%)]" : i < lineIndex ? "bg-white/40" : "bg-white/15"
-            }`}
-          />
-        ))}
-      </div>
+      {!showChoice && (
+        <div className="flex gap-2">
+          {lines.map((_, i) => (
+            <motion.div
+              key={i}
+              animate={{ width: i === lineIndex ? 22 : 7 }}
+              className={`h-1.5 rounded-full transition-colors ${
+                i === lineIndex ? "bg-[hsl(195_80%_60%)]" : i < lineIndex ? "bg-white/40" : "bg-white/15"
+              }`}
+            />
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }
