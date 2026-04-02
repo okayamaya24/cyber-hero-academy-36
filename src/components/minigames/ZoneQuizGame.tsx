@@ -81,9 +81,10 @@ export default function ZoneQuizGame({ title, questions, onComplete }: Props) {
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
-          initial={{ x: 20, opacity: 0 }}
+          initial={hasMounted.current ? { x: 20, opacity: 0 } : false}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -20, opacity: 0 }}
+          onAnimationComplete={() => { hasMounted.current = true; }}
         >
           <h3 className="text-base font-bold text-white mb-4">{q.q}</h3>
 
