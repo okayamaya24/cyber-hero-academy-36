@@ -360,20 +360,33 @@ export default function ZoneCutsceneIntro({
             </div>
           </div>
         </motion.div>
+       </AnimatePresence>
+
+      {/* Narrative choice — shown after last dialogue line */}
+      <AnimatePresence>
+        {showChoice && narrativeChoices?.cutsceneChoice && (
+          <NarrativeChoice
+            prompt={narrativeChoices.cutsceneChoice.prompt}
+            options={narrativeChoices.cutsceneChoice.options}
+            onChoose={() => onStart()}
+          />
+        )}
       </AnimatePresence>
 
       {/* Progress dots */}
-      <div className="flex gap-2">
-        {lines.map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{ width: i === lineIndex ? 22 : 7 }}
-            className={`h-1.5 rounded-full transition-colors ${
-              i === lineIndex ? "bg-[hsl(195_80%_60%)]" : i < lineIndex ? "bg-white/40" : "bg-white/15"
-            }`}
-          />
-        ))}
-      </div>
+      {!showChoice && (
+        <div className="flex gap-2">
+          {lines.map((_, i) => (
+            <motion.div
+              key={i}
+              animate={{ width: i === lineIndex ? 22 : 7 }}
+              className={`h-1.5 rounded-full transition-colors ${
+                i === lineIndex ? "bg-[hsl(195_80%_60%)]" : i < lineIndex ? "bg-white/40" : "bg-white/15"
+              }`}
+            />
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }
