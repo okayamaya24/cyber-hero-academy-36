@@ -132,6 +132,8 @@ export default function ZoneCutsceneIntro({
 }: ZoneCutsceneIntroProps) {
   const { activeChildId } = useAuth();
   const [lineIndex, setLineIndex] = useState(0);
+  const [showChoice, setShowChoice] = useState(false);
+  const narrativeChoices = getZoneNarrativeChoices(zoneId || "");
 
   const { data: child } = useQuery({
     queryKey: ["child", activeChildId],
