@@ -416,11 +416,6 @@ export default function ZoneGameScreen() {
   const pointsPerGame = getPointsPerCorrect(ageTier) * 5;
   // zoneRewards already computed above using engine or legacy
 
-  const computeStars = useCallback((mistakes: number) => {
-    if (mistakes === 0) return 3;
-    if (mistakes === 1) return 2;
-    return 1;
-  }, []);
 
   const handleZoneComplete = async (stars: number) => {
     if (!activeChildId || !zoneId || !continentId) return;
