@@ -252,5 +252,6 @@ export default function WorldZonesPage() {
         size={90}
       />
     </div>
+    </>
   );
 }
