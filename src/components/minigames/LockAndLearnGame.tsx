@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import type { MiniGameConfig } from "@/data/adventureZones";
@@ -14,6 +14,7 @@ export default function LockAndLearnGame({ config, onComplete }: Props) {
   const [finished, setFinished] = useState(false);
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
+  const scoreRef = useRef(0);
 
   useEffect(() => {
     if (finished) return;
@@ -32,6 +33,7 @@ export default function LockAndLearnGame({ config, onComplete }: Props) {
       if (item.correct && tapped.has(i)) s++;
       if (!item.correct && !tapped.has(i)) s++;
     });
+    scoreRef.current = s;
     setScore(s);
     setTimeout(() => setShowResults(true), 600);
     const pct = Math.round((s / config.items.length) * 100);
@@ -98,7 +100,7 @@ export default function LockAndLearnGame({ config, onComplete }: Props) {
               whileTap={!finished ? { scale: 0.88 } : {}}
               onClick={() => handleTap(i)}
               disabled={finished}
-              className={`relative flex h-24 flex-col items-center justify-center gap-1 rounded-2xl border-2 text-2xl transition-all duration-200 ${
+              className={`relative flex h-24 flex-col items-center justify-center gap-1 rounded-2xl border-2 transition-all duration-200 ${
                 wasRight
                   ? "border-green-500 bg-green-500/15 shadow-[0_0_14px_rgba(34,197,94,0.4)]"
                   : wasWrong
@@ -111,10 +113,10 @@ export default function LockAndLearnGame({ config, onComplete }: Props) {
               {/* All locks look identical during play — reveal only after finish */}
               <span className="text-3xl">{finished ? (isCorrect ? "🔒" : "🔓") : "🔐"}</span>
 
-              {/* Label hint so kids have something to read and reason about */}
-              {"label" in item && item.label && (
-                <span className="px-1 text-center text-[10px] font-medium leading-tight text-muted-foreground">
-                  {item.label as string}
+              {/* Label: real scenario for kids to evaluate */}
+              {item.label && (
+                <span className="px-2 text-center text-[10px] font-medium leading-tight text-muted-foreground whitespace-pre-line">
+                  {item.label}
                 </span>
               )}
 
@@ -143,16 +145,16 @@ export default function LockAndLearnGame({ config, onComplete }: Props) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             className={`rounded-2xl border p-4 text-center ${
-              score / config.items.length >= 0.6
+              scoreRef.current / config.items.length >= 0.6
                 ? "border-green-500/30 bg-green-500/15"
                 : "border-orange-500/30 bg-orange-500/15"
             }`}
           >
             <p className="text-2xl font-bold">
-              {score / config.items.length >= 0.6 ? "🎉 Great job, Hero!" : "💪 Keep training!"}
+              {scoreRef.current / config.items.length >= 0.6 ? "🎉 Great job, Hero!" : "💪 Keep training!"}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              You got <span className="font-bold text-foreground">{score}</span> out of{" "}
+              You got <span className="font-bold text-foreground">{scoreRef.current}</span> out of{" "}
               <span className="font-bold text-foreground">{config.items.length}</span> right!
             </p>
           </motion.div>
