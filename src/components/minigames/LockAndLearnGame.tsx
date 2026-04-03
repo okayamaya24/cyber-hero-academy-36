@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import type { MiniGameConfig } from "@/data/adventureZones";
@@ -11,20 +11,19 @@ interface Props {
 export default function LockAndLearnGame({ config, onComplete }: Props) {
   const [tapped, setTapped] = useState<Set<number>>(new Set());
   const [finished, setFinished] = useState(false);
-  const [showResults, setShowResults] = useState(false);
-  const scoreRef = useRef(0);
+  const [finalScore, setFinalScore] = useState<number | null>(null);
 
   const endGame = useCallback(() => {
-    setFinished(true);
     let s = 0;
     config.items.forEach((item, i) => {
       if (item.correct && tapped.has(i)) s++;
       if (!item.correct && !tapped.has(i)) s++;
     });
-    scoreRef.current = s;
-    setTimeout(() => setShowResults(true), 600);
+    setFinalScore(s);
+    setFinished(true);
+    // Delay onComplete so the results screen is visible before any navigation
     const pct = Math.round((s / config.items.length) * 100);
-    onComplete(pct >= 60 ? 1 : 0, 1);
+    setTimeout(() => onComplete(pct >= 60 ? 1 : 0, 1), 2500);
   }, [tapped, config, onComplete]);
 
   const handleTap = (idx: number) => {
@@ -52,9 +51,7 @@ export default function LockAndLearnGame({ config, onComplete }: Props) {
         {config.items.map((item, i) => {
           const selected = tapped.has(i);
           const isProtected = item.correct;
-          // After reveal: green = password-protected, red = not protected
-          // Badge shows if the player got it right or wrong
-          const playerWasRight = finished && ((isProtected && selected) || (!isProtected && !selected));
+          const gotItRight = (isProtected && selected) || (!isProtected && !selected);
 
           return (
             <motion.button
@@ -67,7 +64,7 @@ export default function LockAndLearnGame({ config, onComplete }: Props) {
               disabled={finished}
               className={`relative flex h-24 flex-col items-center justify-center gap-1 rounded-2xl border-2 transition-all duration-200 ${
                 finished
-                  ? isProtected
+                  ? gotItRight
                     ? "border-green-500 bg-green-500/15 shadow-[0_0_14px_rgba(34,197,94,0.4)]"
                     : "border-red-500 bg-red-500/10"
                   : selected
@@ -75,7 +72,7 @@ export default function LockAndLearnGame({ config, onComplete }: Props) {
                     : "border-border bg-card hover:border-primary/40 hover:bg-primary/5"
               }`}
             >
-              {/* All locks look identical during play — reveal after finish */}
+              {/* Neutral lock during play, reveal true state after */}
               <span className="text-3xl">{finished ? (isProtected ? "🔒" : "🔓") : "🔐"}</span>
 
               {/* Scenario label */}
@@ -85,7 +82,7 @@ export default function LockAndLearnGame({ config, onComplete }: Props) {
                 </span>
               )}
 
-              {/* ✅ = player got it right, ❌ = player missed or tapped wrong */}
+              {/* ✅ got it right, ❌ got it wrong */}
               <AnimatePresence>
                 {finished && (
                   <motion.span
@@ -94,7 +91,7 @@ export default function LockAndLearnGame({ config, onComplete }: Props) {
                     transition={{ delay: i * 0.04, type: "spring" }}
                     className="absolute -right-1 -top-1 text-sm"
                   >
-                    {playerWasRight ? "✅" : "❌"}
+                    {gotItRight ? "✅" : "❌"}
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -103,23 +100,23 @@ export default function LockAndLearnGame({ config, onComplete }: Props) {
         })}
       </div>
 
-      {/* Results banner */}
+      {/* Results banner — shows immediately when finished */}
       <AnimatePresence>
-        {showResults && (
+        {finished && finalScore !== null && (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             className={`rounded-2xl border p-4 text-center ${
-              scoreRef.current / config.items.length >= 0.6
+              finalScore / config.items.length >= 0.6
                 ? "border-green-500/30 bg-green-500/15"
                 : "border-orange-500/30 bg-orange-500/15"
             }`}
           >
             <p className="text-2xl font-bold">
-              {scoreRef.current / config.items.length >= 0.6 ? "🎉 Great job, Hero!" : "💪 Keep training!"}
+              {finalScore / config.items.length >= 0.6 ? "🎉 Great job, Hero!" : "💪 Keep training!"}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              You got <span className="font-bold text-foreground">{scoreRef.current}</span> out of{" "}
+              You got <span className="font-bold text-foreground">{finalScore}</span> out of{" "}
               <span className="font-bold text-foreground">{config.items.length}</span> right!
             </p>
           </motion.div>
