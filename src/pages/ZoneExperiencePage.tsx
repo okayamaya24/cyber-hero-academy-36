@@ -125,9 +125,8 @@ export default function ZoneExperiencePage() {
     }
   };
 
-  const handleMiniGameComplete = useCallback((_score: number, _total: number) => {
-    setMiniGameDone(true);
-  }, []);
+
+
 
   const stars =
     screen === "complete"
