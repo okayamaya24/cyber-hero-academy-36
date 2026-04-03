@@ -20,7 +20,10 @@ export default function StrongOrSmashGame({ config, onComplete }: Props) {
 
   useEffect(() => {
     if (finished) return;
-    if (timeLeft <= 0) { endGame(); return; }
+    if (timeLeft <= 0) {
+      endGame();
+      return;
+    }
     const t = setTimeout(() => setTimeLeft((p) => p - 1), 1000);
     return () => clearTimeout(t);
   }, [timeLeft, finished]);
@@ -57,31 +60,30 @@ export default function StrongOrSmashGame({ config, onComplete }: Props) {
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold">💪 Strong or Smash?</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Swipe right for STRONG passwords, left for WEAK ones!
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Swipe right for STRONG passwords, left for WEAK ones!</p>
       </div>
 
       {/* Timer */}
       <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted/30">
-        <motion.div className="absolute inset-y-0 left-0 rounded-full bg-primary" animate={{ width: `${pct}%` }} transition={{ duration: 0.5 }} />
+        <motion.div
+          className="absolute inset-y-0 left-0 rounded-full bg-primary"
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.5 }}
+        />
       </div>
 
       <div className="flex items-center justify-between text-sm font-bold text-muted-foreground">
         <span>{timeLeft}s</span>
-        <span>{currentIdx}/{total}</span>
+        <span>
+          {currentIdx}/{total}
+        </span>
       </div>
 
       {/* Card */}
       {!finished && currentIdx < total && (
         <div className="relative flex min-h-[200px] items-center justify-center">
           <AnimatePresence mode="wait">
-            <PasswordCard
-              key={currentIdx}
-              label={items[currentIdx].label}
-              onSwipe={handleSwipe}
-              feedback={feedback}
-            />
+            <PasswordCard key={currentIdx} label={items[currentIdx].label} onSwipe={handleSwipe} feedback={feedback} />
           </AnimatePresence>
         </div>
       )}
@@ -89,10 +91,20 @@ export default function StrongOrSmashGame({ config, onComplete }: Props) {
       {/* Buttons as alternative to swipe */}
       {!finished && currentIdx < total && (
         <div className="flex gap-3">
-          <Button variant="outline" size="lg" className="flex-1 border-destructive/30 text-destructive" onClick={() => handleSwipe("left")}>
+          <Button
+            variant="outline"
+            size="lg"
+            className="flex-1 border-destructive/30 text-destructive"
+            onClick={() => handleSwipe("left")}
+          >
             ← WEAK
           </Button>
-          <Button variant="outline" size="lg" className="flex-1 border-secondary/30 text-secondary" onClick={() => handleSwipe("right")}>
+          <Button
+            variant="outline"
+            size="lg"
+            className="flex-1 border-secondary/30 text-secondary"
+            onClick={() => handleSwipe("right")}
+          >
             STRONG →
           </Button>
         </div>
@@ -100,14 +112,24 @@ export default function StrongOrSmashGame({ config, onComplete }: Props) {
 
       {finished && (
         <div className="text-center">
-          <p className="text-xl font-bold">{score}/{total} Correct!</p>
+          <p className="text-xl font-bold">
+            {score}/{total} Correct!
+          </p>
         </div>
       )}
     </div>
   );
 }
 
-function PasswordCard({ label, onSwipe, feedback }: { label: string; onSwipe: (d: "left" | "right") => void; feedback: "correct" | "wrong" | null }) {
+function PasswordCard({
+  label,
+  onSwipe,
+  feedback,
+}: {
+  label: string;
+  onSwipe: (d: "left" | "right") => void;
+  feedback: "correct" | "wrong" | null;
+}) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-15, 15]);
   const bgLeft = useTransform(x, [-100, 0], [0.3, 0]);
@@ -129,13 +151,13 @@ function PasswordCard({ label, onSwipe, feedback }: { label: string; onSwipe: (d
       onDragEnd={handleDragEnd}
       className={`w-full cursor-grab rounded-3xl border-2 p-8 text-center shadow-lg active:cursor-grabbing ${
         feedback === "correct"
-          ? "border-secondary bg-secondary/10"
+          ? "border-emerald-400/50 bg-emerald-400/10"
           : feedback === "wrong"
-          ? "border-destructive bg-destructive/10"
-          : "border-primary/20 bg-card"
+            ? "border-destructive/50 bg-destructive/10"
+            : "border-cyan-400/20 bg-[hsl(220,30%,12%)]"
       }`}
     >
-      <p className="select-none font-mono text-2xl font-bold tracking-wide sm:text-3xl">{label}</p>
+      <p className="select-none font-mono text-2xl font-bold tracking-wide sm:text-3xl text-white">{label}</p>
       {feedback && (
         <p className={`mt-3 text-lg font-bold ${feedback === "correct" ? "text-secondary" : "text-destructive"}`}>
           {feedback === "correct" ? "✅ Correct!" : "❌ Wrong!"}
