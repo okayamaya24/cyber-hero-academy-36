@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
 import type { MiniGameConfig } from "@/data/adventureZones";
 
 interface Props {
@@ -8,172 +9,125 @@ interface Props {
 }
 
 export default function LockAndLearnGame({ config, onComplete }: Props) {
-  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
-  const [submitted, setSubmitted] = useState(false);
+  const [tapped, setTapped] = useState<Set<number>>(new Set());
+  const [finished, setFinished] = useState(false);
+  const [finalScore, setFinalScore] = useState<number | null>(null);
 
-  const totalItems = config.items.length;
-
-  const results = useMemo(() => {
-    let correctCount = 0;
-
-    const itemResults = config.items.map((item, index) => {
-      const isSelected = selectedItems.has(index);
-      const isCorrectChoice = item.correct;
-
-      const gotItRight = (isCorrectChoice && isSelected) || (!isCorrectChoice && !isSelected);
-
-      if (gotItRight) correctCount++;
-
-      return {
-        ...item,
-        index,
-        isSelected,
-        gotItRight,
-      };
+  const endGame = useCallback(() => {
+    let s = 0;
+    config.items.forEach((item, i) => {
+      if (item.correct && tapped.has(i)) s++;
+      if (!item.correct && !tapped.has(i)) s++;
     });
+    setFinalScore(s);
+    setFinished(true);
+    // Delay onComplete so the results screen is visible before any navigation
+    const pct = Math.round((s / config.items.length) * 100);
+    setTimeout(() => onComplete(pct >= 60 ? 1 : 0, 1), 2500);
+  }, [tapped, config, onComplete]);
 
-    return {
-      itemResults,
-      correctCount,
-      passed: correctCount / totalItems >= (config.passThreshold ?? 60) / 100,
-    };
-  }, [config.items, config.passThreshold, selectedItems, totalItems]);
-
-  const handleToggle = (index: number) => {
-    if (submitted) return;
-
-    setSelectedItems((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      return next;
+  const handleTap = (idx: number) => {
+    if (finished) return;
+    setTapped((prev) => {
+      const n = new Set(prev);
+      if (n.has(idx)) n.delete(idx);
+      else n.add(idx);
+      return n;
     });
-  };
-
-  const handleSubmit = () => {
-    setSubmitted(true);
-  };
-
-  const handleContinue = () => {
-    onComplete(results.passed ? 1 : 0, 1);
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl">
-      <div className="rounded-[30px] border border-white/10 bg-[#151d28] p-4 shadow-[0_10px_40px_rgba(0,0,0,0.45)] sm:p-6">
-        {/* inner frame */}
-        <div className="rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,#1b2432_0%,#171f2c_100%)] p-4 sm:p-6">
-          {/* Header */}
-          <div className="mb-6 text-center">
-            <h2 className="text-[28px] font-extrabold tracking-tight text-white sm:text-[34px]">🔐 Lock &amp; Learn</h2>
-            <p className="mt-2 text-sm text-[#8ea0b7] sm:text-base">
-              Tap the locks that are <span className="font-bold text-[#36c8ff]">password-protected!</span>
-            </p>
-          </div>
-
-          {/* Grid */}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {results.itemResults.map((item) => {
-              const showSelected = item.isSelected && !submitted;
-              const showCorrectReveal = submitted && item.gotItRight;
-              const showWrongReveal = submitted && !item.gotItRight;
-
-              return (
-                <motion.button
-                  key={item.index}
-                  type="button"
-                  initial={{ opacity: 0, y: 12, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: item.index * 0.04 }}
-                  whileTap={!submitted ? { scale: 0.97 } : undefined}
-                  onClick={() => handleToggle(item.index)}
-                  disabled={submitted}
-                  className={[
-                    "relative min-h-[124px] rounded-[24px] border px-4 py-4 text-center transition-all duration-200",
-                    "flex flex-col items-center justify-center",
-                    showCorrectReveal
-                      ? "border-[#39ff6d] bg-[#173f33] shadow-[0_0_18px_rgba(57,255,109,0.32),inset_0_0_12px_rgba(57,255,109,0.08)]"
-                      : showWrongReveal
-                        ? "border-[#ff6b81] bg-[#3a2130]"
-                        : showSelected
-                          ? "border-[#36c8ff] bg-[#193247] shadow-[0_0_14px_rgba(54,200,255,0.24)]"
-                          : "border-[#2a394c] bg-[#182230] hover:border-[#36c8ff]/40 hover:bg-[#1a2635]",
-                  ].join(" ")}
-                >
-                  {/* status badge */}
-                  <AnimatePresence>
-                    {(submitted ? item.gotItRight : item.isSelected) && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
-                        className={`absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-md text-xs font-bold text-white shadow-lg ${
-                          submitted ? (item.gotItRight ? "bg-[#43db59]" : "bg-[#ff5b72]") : "bg-[#36c8ff]"
-                        }`}
-                      >
-                        {submitted ? (item.gotItRight ? "✓" : "✕") : "✓"}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* lock icon */}
-                  <div className="mb-2 text-3xl sm:text-4xl">{submitted ? (item.correct ? "🔒" : "🔓") : "🔒"}</div>
-
-                  {/* text */}
-                  <div className="max-w-[150px] whitespace-pre-line text-[11px] font-medium leading-[1.25] text-[#90a5b8] sm:text-xs">
-                    {item.label}
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
-
-          {/* Results */}
-          <AnimatePresence>
-            {submitted && (
-              <motion.div
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`mt-6 rounded-[24px] border px-6 py-5 text-center ${
-                  results.passed ? "border-[#2ecf73]/30 bg-[#1f4b3d]" : "border-[#f59e0b]/30 bg-[#4a3820]"
-                }`}
-              >
-                <p className="text-2xl font-extrabold text-white sm:text-3xl">
-                  {results.passed ? "🎉 Great job, Hero!" : "💪 Keep training, Hero!"}
-                </p>
-                <p className="mt-2 text-sm text-[#9eb1be] sm:text-base">
-                  You got <span className="font-bold text-[#36c8ff]">{results.correctCount}</span> out of{" "}
-                  <span className="font-bold text-[#36c8ff]">{totalItems}</span> right!
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Button */}
-          <div className="mt-6">
-            {!submitted ? (
-              <button
-                type="button"
-                onClick={handleSubmit}
-                className="w-full rounded-[20px] bg-gradient-to-r from-[#46b6e8] to-[#42d96f] px-6 py-4 text-base font-extrabold text-white shadow-[0_10px_28px_rgba(66,217,111,0.25)] transition-transform duration-200 hover:scale-[1.01]"
-              >
-                Check My Answers →
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleContinue}
-                className="w-full rounded-[20px] bg-gradient-to-r from-[#46b6e8] to-[#42d96f] px-6 py-4 text-base font-extrabold text-white shadow-[0_10px_28px_rgba(66,217,111,0.25)] transition-transform duration-200 hover:scale-[1.01]"
-              >
-                Start Challenge Questions →
-              </button>
-            )}
-          </div>
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center">
+        <h2 className="text-2xl font-bold">🔐 Lock & Learn</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Tap the locks that are <span className="font-bold text-primary">password-protected!</span>
+        </p>
       </div>
+
+      {/* Lock grid */}
+      <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+        {config.items.map((item, i) => {
+          const selected = tapped.has(i);
+          const isProtected = item.correct;
+          const gotItRight = (isProtected && selected) || (!isProtected && !selected);
+
+          return (
+            <motion.button
+              key={i}
+              initial={{ scale: 0, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: i * 0.06, type: "spring" }}
+              whileTap={!finished ? { scale: 0.88 } : {}}
+              onClick={() => handleTap(i)}
+              disabled={finished}
+              className={`relative flex h-24 flex-col items-center justify-center gap-1 rounded-2xl border-2 transition-all duration-200 ${
+                finished
+                  ? gotItRight
+                    ? "border-green-500 bg-green-500/15 shadow-[0_0_14px_rgba(34,197,94,0.4)]"
+                    : "border-red-500 bg-red-500/10"
+                  : selected
+                    ? "border-primary bg-primary/15 shadow-[0_0_12px_hsl(var(--primary)/0.35)] scale-[1.04]"
+                    : "border-border bg-card hover:border-primary/40 hover:bg-primary/5"
+              }`}
+            >
+              {/* Neutral lock during play, reveal true state after */}
+              <span className="text-3xl">{finished ? (isProtected ? "🔒" : "🔓") : "🔐"}</span>
+
+              {/* Scenario label */}
+              {item.label && (
+                <span className="px-2 text-center text-[10px] font-medium leading-tight text-muted-foreground whitespace-pre-line">
+                  {item.label}
+                </span>
+              )}
+
+              {/* ✅ got it right, ❌ got it wrong */}
+              <AnimatePresence>
+                {finished && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: i * 0.04, type: "spring" }}
+                    className="absolute -right-1 -top-1 text-sm"
+                  >
+                    {gotItRight ? "✅" : "❌"}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Results banner — shows immediately when finished */}
+      <AnimatePresence>
+        {finished && finalScore !== null && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`rounded-2xl border p-4 text-center ${
+              finalScore / config.items.length >= 0.6
+                ? "border-green-500/30 bg-green-500/15"
+                : "border-orange-500/30 bg-orange-500/15"
+            }`}
+          >
+            <p className="text-2xl font-bold">
+              {finalScore / config.items.length >= 0.6 ? "🎉 Great job, Hero!" : "💪 Keep training!"}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              You got <span className="font-bold text-foreground">{finalScore}</span> out of{" "}
+              <span className="font-bold text-foreground">{config.items.length}</span> right!
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {!finished && (
+        <Button variant="hero" size="lg" className="w-full" onClick={endGame}>
+          Submit Answers →
+        </Button>
+      )}
     </div>
   );
 }
