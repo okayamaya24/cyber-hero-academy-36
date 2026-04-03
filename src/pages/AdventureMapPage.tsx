@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Globe, Zap, Shield, ChevronRight } from "lucide-react";
@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WORLDS, getDifficultyTier } from "@/data/adventureZones";
 import ByteSidekick from "@/components/adventure/ByteSidekick";
+import AdventureCutscene from "@/components/adventure/AdventureCutscene";
 import { Progress } from "@/components/ui/progress";
 
 /* ── floating particles ────────────────────────────────── */
@@ -45,6 +46,11 @@ export default function AdventureMapPage() {
   const [byteMessage, setByteMessage] = useState<string | null>(null);
   const [pendingWorld, setPendingWorld] = useState<string | null>(null);
   const [showByte, setShowByte] = useState(true);
+  const [showCutscene, setShowCutscene] = useState(true);
+
+  const handleCutsceneComplete = useCallback(() => {
+    setShowCutscene(false);
+  }, []);
 
   const { data: child } = useQuery({
     queryKey: ["child", activeChildId],
@@ -93,6 +99,14 @@ export default function AdventureMapPage() {
   const worldsCompleted = child?.worlds_completed ?? 0;
 
   return (
+    <>
+      {/* Cutscene overlay */}
+      <AnimatePresence>
+        {showCutscene && (
+          <AdventureCutscene tier={tier} onComplete={handleCutsceneComplete} />
+        )}
+      </AnimatePresence>
+
     <div className="relative min-h-screen bg-[hsl(220,30%,8%)] text-white overflow-hidden">
       <Particles />
 
@@ -252,5 +266,6 @@ export default function AdventureMapPage() {
         onDismiss={byteMessage ? handleByteDismiss : undefined}
       />
     </div>
+    </>
   );
 }
