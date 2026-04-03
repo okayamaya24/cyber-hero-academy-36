@@ -52,16 +52,16 @@ export default function WorldZonesPage() {
 
   const tier = child ? getDifficultyTier(child.age) : "hero";
 
-  // Show Byte intro when page loads
+  // Show Byte intro when page loads (after villain intro if applicable)
   useEffect(() => {
-    if (world && !byteIntroShown) {
+    if (world && !byteIntroShown && villainIntroDone) {
       const timer = setTimeout(() => {
         setByteMessage(world.byteIntro[tier]);
         setByteIntroShown(true);
       }, 600);
       return () => clearTimeout(timer);
     }
-  }, [world, tier, byteIntroShown]);
+  }, [world, tier, byteIntroShown, villainIntroDone]);
 
   const handleByteDismiss = () => {
     setByteMessage(null);
