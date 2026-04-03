@@ -46,6 +46,11 @@ export default function AdventureMapPage() {
   const [byteMessage, setByteMessage] = useState<string | null>(null);
   const [pendingWorld, setPendingWorld] = useState<string | null>(null);
   const [showByte, setShowByte] = useState(true);
+  const [showCutscene, setShowCutscene] = useState(true);
+
+  const handleCutsceneComplete = useCallback(() => {
+    setShowCutscene(false);
+  }, []);
 
   const { data: child } = useQuery({
     queryKey: ["child", activeChildId],
