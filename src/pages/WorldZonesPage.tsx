@@ -63,8 +63,16 @@ export default function WorldZonesPage() {
     }
   }, [world, tier, byteIntroShown, villainIntroDone]);
 
+  // Auto-skip villain intro for non-NA worlds
+  useEffect(() => {
+    if (worldId !== "north-america") setVillainIntroDone(true);
+  }, [worldId]);
+
   const handleByteDismiss = () => {
     setByteMessage(null);
+  };
+
+  if (!world) {
   };
 
   if (!world) {
