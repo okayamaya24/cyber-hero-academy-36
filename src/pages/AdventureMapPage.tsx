@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WORLDS, getDifficultyTier } from "@/data/adventureZones";
 import AdventureCutscene from "@/components/adventure/AdventureCutscene";
-import AdventureCutscene from "@/components/adventure/AdventureCutscene";
 import { Progress } from "@/components/ui/progress";
 
 /* ── floating particles ────────────────────────────────── */
