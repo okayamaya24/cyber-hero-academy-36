@@ -266,5 +266,6 @@ export default function AdventureMapPage() {
         onDismiss={byteMessage ? handleByteDismiss : undefined}
       />
     </div>
+    </>
   );
 }
