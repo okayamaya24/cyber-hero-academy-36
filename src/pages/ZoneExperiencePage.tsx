@@ -41,6 +41,10 @@ export default function ZoneExperiencePage() {
     enabled: !!activeChildId,
   });
 
+  const handleMiniGameComplete = useCallback((_score: number, _total: number) => {
+    setMiniGameDone(true);
+  }, []);
+
   const world = WORLDS.find((w) => w.id === worldId);
   const zone = world?.zones.find((z) => z.id === zoneId);
   const tier = child ? getDifficultyTier(child.age) : "hero";
@@ -53,9 +57,6 @@ export default function ZoneExperiencePage() {
       </div>
     );
   }
-
-  const questions = content.questions;
-  const totalQ = questions.length;
 
   const handleAnswer = (idx: number) => {
     if (answered !== null) return;
