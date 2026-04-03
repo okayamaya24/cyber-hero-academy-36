@@ -14,6 +14,8 @@ export default function ByteSidekick({
   onDismiss,
   size = 100,
 }: ByteSidekickProps) {
+  const isClickable = !!onDismiss;
+
   return (
     <AnimatePresence>
       {visible && (
@@ -26,15 +28,18 @@ export default function ByteSidekick({
         >
           {message && (
             <motion.div
-              className="max-w-xs rounded-2xl border-2 border-primary/30 bg-card px-4 py-3 shadow-playful"
+              className="max-w-xs rounded-2xl border border-cyan-400/30 bg-[hsl(220,30%,14%)] px-4 py-3 shadow-[0_0_20px_hsl(185_80%_48%/0.15)]"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ delay: 0.2 }}
               onClick={onDismiss}
+              style={{ cursor: isClickable ? "pointer" : "default" }}
             >
-              <p className="text-sm font-semibold leading-snug">{message}</p>
-              <p className="mt-1 text-[10px] text-muted-foreground">Tap to continue</p>
+              <p className="text-sm font-semibold leading-snug text-white">{message}</p>
+              {isClickable && (
+                <p className="mt-1 text-[10px] text-cyan-400/60">Tap to continue →</p>
+              )}
             </motion.div>
           )}
 
@@ -42,11 +47,12 @@ export default function ByteSidekick({
             src={byteSrc}
             alt="Byte the sidekick"
             style={{ width: size, height: size }}
-            className="cursor-pointer drop-shadow-lg"
-            animate={{ y: [0, -6, 0] }}
-            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            className="drop-shadow-[0_0_12px_hsl(185_80%_48%/0.4)]"
+            animate={{ y: [0, -8, 0] }}
+            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
             draggable={false}
             onClick={onDismiss}
+            style={{ width: size, height: size, cursor: isClickable ? "pointer" : "default" }}
           />
         </motion.div>
       )}
