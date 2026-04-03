@@ -46,7 +46,6 @@ export default function ByteSidekick({
           <motion.img
             src={byteSrc}
             alt="Byte the sidekick"
-            style={{ width: size, height: size }}
             className="drop-shadow-[0_0_12px_hsl(185_80%_48%/0.4)]"
             animate={{ y: [0, -8, 0] }}
             transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
