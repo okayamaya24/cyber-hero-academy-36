@@ -244,12 +244,6 @@ export default function AdventureMapPage() {
         </div>
       </div>
 
-      {/* ── Byte sidekick (always visible with default msg, or world intro) ── */}
-      <ByteSidekick
-        visible={showByte}
-        message={byteMessage ?? "Choose a world to begin your mission, Guardian! 🌍"}
-        onDismiss={byteMessage ? handleByteDismiss : undefined}
-      />
     </div>
     </>
   );
