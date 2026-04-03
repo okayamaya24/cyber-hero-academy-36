@@ -146,6 +146,12 @@ export default function ZoneExperiencePage() {
         return <StrongOrSmashGame config={cfg} onComplete={handleMiniGameComplete} />;
       case "password-chef":
         return <PasswordChefGame config={cfg} onComplete={handleMiniGameComplete} />;
+      case "who-do-you-trust":
+        return <WhoDoYouTrustGame config={cfg} onComplete={handleMiniGameComplete} />;
+      case "key-matcher":
+        return <KeyMatcherGame config={cfg} onComplete={handleMiniGameComplete} />;
+      case "real-or-fake":
+        return <RealOrFakeGame config={cfg} onComplete={handleMiniGameComplete} />;
       default:
         return (
           <div className="text-center">
