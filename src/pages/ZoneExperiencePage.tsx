@@ -58,7 +58,9 @@ export default function ZoneExperiencePage() {
     );
   }
 
-  const handleAnswer = (idx: number) => {
+  const questions = content.questions;
+  const totalQ = questions.length;
+
     if (answered !== null) return;
     setAnswered(idx);
     const correct = idx === questions[currentQ].correctIndex;
