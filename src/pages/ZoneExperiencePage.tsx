@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Star, CheckCircle2, XCircle, Gamepad2 } from "lucide-react";
+import { ArrowLeft, Star, CheckCircle2, XCircle, Gamepad2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -29,6 +29,7 @@ export default function ZoneExperiencePage() {
   const [answered, setAnswered] = useState<number | null>(null);
   const [byteMsg, setByteMsg] = useState<string | null>(null);
   const [miniGameDone, setMiniGameDone] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const { data: child } = useQuery({
     queryKey: ["child", activeChildId],
@@ -53,6 +54,10 @@ export default function ZoneExperiencePage() {
   const tier = child ? getDifficultyTier(child.age) : "hero";
   const content: ZoneContent | undefined = zone?.content[tier];
 
+  // Find the current zone index and next zone
+  const currentZoneIndex = world?.zones.findIndex((z) => z.id === zoneId) ?? -1;
+  const nextZone = world?.zones[currentZoneIndex + 1] ?? null;
+
   if (!world || !zone || !content) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -75,34 +80,34 @@ export default function ZoneExperiencePage() {
         setCurrentQ((q) => q + 1);
         setAnswered(null);
       } else {
-        handleComplete(correct ? score + 1 : score);
+        const fs = correct ? score + 1 : score;
+        handleComplete(fs);
       }
     }, 1200);
   };
 
-  const handleComplete = async (finalScore: number) => {
-    const stars = finalScore === totalQ ? 3 : finalScore >= totalQ * 0.6 ? 2 : 1;
-    setScore(finalScore);
+  const handleComplete = async (fs: number) => {
+    const stars = fs === totalQ ? 3 : fs >= totalQ * 0.6 ? 2 : 1;
+    setFinalScore(fs);
+    setScore(fs);
     setScreen("complete");
     setByteMsg(content.completeMessage);
 
     if (activeChildId) {
-      // Update mission progress
       await supabase.from("mission_progress").upsert(
         {
           child_id: activeChildId,
           mission_id: `${worldId}-${zoneId}`,
           status: "completed",
-          score: finalScore,
+          score: fs,
           max_score: totalQ,
           stars_earned: stars,
           completed_at: new Date().toISOString(),
           current_question: totalQ,
         },
-        { onConflict: "child_id,mission_id" }
+        { onConflict: "child_id,mission_id" },
       );
 
-      // Update zone progress
       await supabase.from("zone_progress").upsert(
         {
           child_id: activeChildId,
@@ -113,15 +118,11 @@ export default function ZoneExperiencePage() {
           games_completed: 4,
           total_games: 4,
         },
-        { onConflict: "child_id,zone_id" }
+        { onConflict: "child_id,zone_id" },
       );
 
-      // Update points
       const newPoints = (child?.points ?? 0) + content.xpReward;
-      await supabase
-        .from("child_profiles")
-        .update({ points: newPoints })
-        .eq("id", activeChildId);
+      await supabase.from("child_profiles").update({ points: newPoints }).eq("id", activeChildId);
 
       queryClient.invalidateQueries({ queryKey: ["child", activeChildId] });
       queryClient.invalidateQueries({ queryKey: ["mission_progress", activeChildId] });
@@ -129,13 +130,24 @@ export default function ZoneExperiencePage() {
     }
   };
 
+  const handleNextZone = () => {
+    if (nextZone) {
+      // Reset all state and navigate to next zone
+      setScreen("story");
+      setCurrentQ(0);
+      setScore(0);
+      setFinalScore(0);
+      setAnswered(null);
+      setByteMsg(null);
+      setMiniGameDone(false);
+      navigate(`/adventure/${worldId}/${nextZone.id}`);
+    } else {
+      // All zones done — go back to world page
+      navigate(`/adventure/${worldId}`);
+    }
+  };
 
-
-
-  const stars =
-    screen === "complete"
-      ? score === totalQ ? 3 : score >= totalQ * 0.6 ? 2 : 1
-      : 0;
+  const stars = finalScore === totalQ ? 3 : finalScore >= totalQ * 0.6 ? 2 : 1;
 
   const renderMiniGame = () => {
     const cfg = content.miniGame;
@@ -176,11 +188,15 @@ export default function ZoneExperiencePage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-lg font-bold">
               {zone.emoji} {zone.name}
             </h1>
             <p className="text-xs text-white/70">{world.name}</p>
+          </div>
+          {/* Zone progress pill */}
+          <div className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold backdrop-blur">
+            Zone {currentZoneIndex + 1} of {world.zones.length}
           </div>
         </div>
       </div>
@@ -205,7 +221,10 @@ export default function ZoneExperiencePage() {
                 variant="hero"
                 size="lg"
                 className="mt-6 w-full"
-                onClick={() => { setScreen("minigame"); setMiniGameDone(false); }}
+                onClick={() => {
+                  setScreen("minigame");
+                  setMiniGameDone(false);
+                }}
               >
                 Continue →
               </Button>
@@ -281,9 +300,7 @@ export default function ZoneExperiencePage() {
                       onClick={() => handleAnswer(idx)}
                       className={`flex w-full items-center gap-3 rounded-2xl border-2 p-4 text-left font-semibold transition-colors ${style}`}
                     >
-                      {answered !== null && isCorrect && (
-                        <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" />
-                      )}
+                      {answered !== null && isCorrect && <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" />}
                       {answered !== null && wasChosen && !isCorrect && (
                         <XCircle className="h-5 w-5 shrink-0 text-destructive" />
                       )}
@@ -303,11 +320,7 @@ export default function ZoneExperiencePage() {
               animate={{ opacity: 1, scale: 1 }}
               className="rounded-3xl border-2 border-amber-400/20 bg-white/5 p-8 text-center backdrop-blur"
             >
-              <motion.div
-                className="text-6xl"
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 0.6 }}
-              >
+              <motion.div className="text-6xl" animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 0.6 }}>
                 🏆
               </motion.div>
               <h2 className="mt-4 text-2xl font-bold">Zone Complete!</h2>
@@ -323,16 +336,16 @@ export default function ZoneExperiencePage() {
                     animate={{ scale: 1 }}
                     transition={{ delay: s * 0.2, type: "spring" }}
                   >
-                    <Star
-                      className={`h-10 w-10 ${s <= stars ? "fill-amber-400 text-amber-400" : "text-white/20"}`}
-                    />
+                    <Star className={`h-10 w-10 ${s <= stars ? "fill-amber-400 text-amber-400" : "text-white/20"}`} />
                   </motion.div>
                 ))}
               </div>
 
               <div className="flex justify-center gap-6 text-sm">
                 <div>
-                  <p className="font-bold text-2xl text-primary">{score}/{totalQ}</p>
+                  <p className="font-bold text-2xl text-primary">
+                    {finalScore}/{totalQ}
+                  </p>
                   <p className="text-white/50">Correct</p>
                 </div>
                 <div>
@@ -341,34 +354,59 @@ export default function ZoneExperiencePage() {
                 </div>
               </div>
 
-              <div className="mt-6 flex gap-3">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="flex-1 border-white/20 text-white hover:bg-white/10"
-                  onClick={() => navigate(`/adventure/${worldId}`)}
+              {/* Next zone preview card */}
+              {nextZone && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="mt-6 rounded-2xl border border-cyan-400/20 bg-cyan-400/5 p-4 text-left"
                 >
-                  Back to Zones
+                  <p className="text-xs font-bold uppercase tracking-wider text-cyan-400/60">Up Next</p>
+                  <div className="mt-2 flex items-center gap-3">
+                    <span className="text-3xl">{nextZone.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-white">{nextZone.name}</p>
+                      <p className="text-xs text-white/50 truncate">{nextZone.description}</p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 shrink-0 text-cyan-400/50" />
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Action buttons */}
+              <div className="mt-4 flex flex-col gap-3">
+                {/* Primary button — Next Zone or World Complete */}
+                <Button variant="hero" size="lg" className="w-full" onClick={handleNextZone}>
+                  {nextZone ? `Next Zone: ${nextZone.name} →` : "🎉 All Zones Complete! Back to World"}
                 </Button>
-                <Button
-                  variant="hero"
-                  size="lg"
-                  className="flex-1"
-                  onClick={() => navigate("/adventure")}
-                >
-                  Adventure Map
-                </Button>
+
+                {/* Secondary buttons */}
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="flex-1 border-white/20 text-white hover:bg-white/10"
+                    onClick={() => navigate(`/adventure/${worldId}`)}
+                  >
+                    Zone List
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="flex-1 border-white/20 text-white hover:bg-white/10"
+                    onClick={() => navigate("/adventure")}
+                  >
+                    Adventure Map
+                  </Button>
+                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      <ByteSidekick
-        visible={!!byteMsg}
-        message={byteMsg ?? undefined}
-        onDismiss={() => setByteMsg(null)}
-      />
+      <ByteSidekick visible={!!byteMsg} message={byteMsg ?? undefined} onDismiss={() => setByteMsg(null)} />
     </div>
   );
 }
