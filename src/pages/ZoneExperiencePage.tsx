@@ -11,6 +11,9 @@ import ByteSidekick from "@/components/adventure/ByteSidekick";
 import LockAndLearnGame from "@/components/minigames/LockAndLearnGame";
 import StrongOrSmashGame from "@/components/minigames/StrongOrSmashGame";
 import PasswordChefGame from "@/components/minigames/PasswordChefGame";
+import WhoDoYouTrustGame from "@/components/minigames/WhoDoYouTrustGame";
+import KeyMatcherGame from "@/components/minigames/KeyMatcherGame";
+import RealOrFakeGame from "@/components/minigames/RealOrFakeGame";
 
 type Screen = "story" | "minigame" | "challenge" | "complete";
 
@@ -143,6 +146,12 @@ export default function ZoneExperiencePage() {
         return <StrongOrSmashGame config={cfg} onComplete={handleMiniGameComplete} />;
       case "password-chef":
         return <PasswordChefGame config={cfg} onComplete={handleMiniGameComplete} />;
+      case "who-do-you-trust":
+        return <WhoDoYouTrustGame config={cfg} onComplete={handleMiniGameComplete} />;
+      case "key-matcher":
+        return <KeyMatcherGame config={cfg} onComplete={handleMiniGameComplete} />;
+      case "real-or-fake":
+        return <RealOrFakeGame config={cfg} onComplete={handleMiniGameComplete} />;
       default:
         return (
           <div className="text-center">
