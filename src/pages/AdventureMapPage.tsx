@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WORLDS, getDifficultyTier } from "@/data/adventureZones";
-import ByteSidekick from "@/components/adventure/ByteSidekick";
+import AdventureCutscene from "@/components/adventure/AdventureCutscene";
 import AdventureCutscene from "@/components/adventure/AdventureCutscene";
 import { Progress } from "@/components/ui/progress";
 
