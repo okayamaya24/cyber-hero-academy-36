@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Globe, Zap, Shield, ChevronRight } from "lucide-react";
@@ -6,7 +6,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WORLDS, getDifficultyTier } from "@/data/adventureZones";
-import ByteSidekick from "@/components/adventure/ByteSidekick";
 import AdventureCutscene from "@/components/adventure/AdventureCutscene";
 import { Progress } from "@/components/ui/progress";
 
@@ -43,9 +42,6 @@ function Particles() {
 export default function AdventureMapPage() {
   const navigate = useNavigate();
   const { activeChildId } = useAuth();
-  const [byteMessage, setByteMessage] = useState<string | null>(null);
-  const [pendingWorld, setPendingWorld] = useState<string | null>(null);
-  const [showByte, setShowByte] = useState(true);
   const [showCutscene, setShowCutscene] = useState(true);
 
   const handleCutsceneComplete = useCallback(() => {
@@ -82,18 +78,7 @@ export default function AdventureMapPage() {
   const tier = child ? getDifficultyTier(child.age) : "hero";
 
   const handleWorldClick = (worldId: string) => {
-    const world = WORLDS.find((w) => w.id === worldId);
-    if (!world) return;
-    setByteMessage(world.byteIntro[tier]);
-    setPendingWorld(worldId);
-  };
-
-  const handleByteDismiss = () => {
-    if (pendingWorld) {
-      navigate(`/adventure/${pendingWorld}`);
-    }
-    setByteMessage(null);
-    setPendingWorld(null);
+    navigate(`/adventure/${worldId}`);
   };
 
   const worldsCompleted = child?.worlds_completed ?? 0;
@@ -259,12 +244,6 @@ export default function AdventureMapPage() {
         </div>
       </div>
 
-      {/* ── Byte sidekick (always visible with default msg, or world intro) ── */}
-      <ByteSidekick
-        visible={showByte}
-        message={byteMessage ?? "Choose a world to begin your mission, Guardian! 🌍"}
-        onDismiss={byteMessage ? handleByteDismiss : undefined}
-      />
     </div>
     </>
   );
