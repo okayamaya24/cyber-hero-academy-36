@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import ByteSidekick from "@/components/adventure/ByteSidekick";
+import VillainIntro from "@/components/adventure/VillainIntro";
 
 export default function WorldZonesPage() {
   const { worldId } = useParams<{ worldId: string }>();
@@ -16,6 +17,8 @@ export default function WorldZonesPage() {
 
   const [byteMessage, setByteMessage] = useState<string | null>(null);
   const [byteIntroShown, setByteIntroShown] = useState(false);
+  const [villainIntroDone, setVillainIntroDone] = useState(false);
+  const showVillainIntro = worldId === "north-america" && !villainIntroDone;
 
   const world = WORLDS.find((w) => w.id === worldId);
 
