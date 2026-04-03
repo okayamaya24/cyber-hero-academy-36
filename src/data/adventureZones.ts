@@ -20,11 +20,26 @@ export interface ZoneQuestion {
   correctIndex: number;
 }
 
+export interface MiniGameConfig {
+  type: string;
+  timerSeconds: number;
+  items: MiniGameItem[];
+  hints: boolean;
+  passThreshold?: number;
+}
+
+export interface MiniGameItem {
+  label: string;
+  correct: boolean;
+}
+
 export interface ZoneContent {
   storyTitle: string;
   storyText: string;
+  miniGame: MiniGameConfig;
   questions: ZoneQuestion[];
   xpReward: number;
+  completeMessage: string;
 }
 
 export interface WorldZone {
