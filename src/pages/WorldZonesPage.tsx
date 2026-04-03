@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import ByteSidekick from "@/components/adventure/ByteSidekick";
+import VillainIntro from "@/components/adventure/VillainIntro";
 
 export default function WorldZonesPage() {
   const { worldId } = useParams<{ worldId: string }>();
@@ -16,6 +17,8 @@ export default function WorldZonesPage() {
 
   const [byteMessage, setByteMessage] = useState<string | null>(null);
   const [byteIntroShown, setByteIntroShown] = useState(false);
+  const [villainIntroDone, setVillainIntroDone] = useState(false);
+  const showVillainIntro = worldId === "north-america" && !villainIntroDone;
 
   const world = WORLDS.find((w) => w.id === worldId);
 
@@ -49,19 +52,27 @@ export default function WorldZonesPage() {
 
   const tier = child ? getDifficultyTier(child.age) : "hero";
 
-  // Show Byte intro when page loads
+  // Show Byte intro when page loads (after villain intro if applicable)
   useEffect(() => {
-    if (world && !byteIntroShown) {
+    if (world && !byteIntroShown && villainIntroDone) {
       const timer = setTimeout(() => {
         setByteMessage(world.byteIntro[tier]);
         setByteIntroShown(true);
       }, 600);
       return () => clearTimeout(timer);
     }
-  }, [world, tier, byteIntroShown]);
+  }, [world, tier, byteIntroShown, villainIntroDone]);
+
+  // Auto-skip villain intro for non-NA worlds
+  useEffect(() => {
+    if (worldId !== "north-america") setVillainIntroDone(true);
+  }, [worldId]);
 
   const handleByteDismiss = () => {
     setByteMessage(null);
+  };
+
+  if (!world) {
   };
 
   if (!world) {
@@ -87,6 +98,10 @@ export default function WorldZonesPage() {
   };
 
   return (
+    <>
+      {showVillainIntro && (
+        <VillainIntro onComplete={() => setVillainIntroDone(true)} />
+      )}
     <div className="relative min-h-screen bg-[hsl(220,30%,8%)] text-white overflow-hidden pb-32">
       {/* Header */}
       <div className={`relative bg-gradient-to-br ${world.color} py-8`}>
@@ -237,5 +252,6 @@ export default function WorldZonesPage() {
         size={90}
       />
     </div>
+    </>
   );
 }
