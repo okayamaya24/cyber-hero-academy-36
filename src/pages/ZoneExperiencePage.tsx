@@ -61,6 +61,7 @@ export default function ZoneExperiencePage() {
   const questions = content.questions;
   const totalQ = questions.length;
 
+  const handleAnswer = (idx: number) => {
     if (answered !== null) return;
     setAnswered(idx);
     const correct = idx === questions[currentQ].correctIndex;
