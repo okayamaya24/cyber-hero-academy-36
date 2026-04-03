@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Star, CheckCircle2, XCircle, Gamepad2 } from "lucide-react";
@@ -8,6 +8,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WORLDS, getDifficultyTier, type ZoneContent } from "@/data/adventureZones";
 import ByteSidekick from "@/components/adventure/ByteSidekick";
+import LockAndLearnGame from "@/components/minigames/LockAndLearnGame";
+import StrongOrSmashGame from "@/components/minigames/StrongOrSmashGame";
+import PasswordChefGame from "@/components/minigames/PasswordChefGame";
 
 type Screen = "story" | "minigame" | "challenge" | "complete";
 
@@ -22,6 +25,7 @@ export default function ZoneExperiencePage() {
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState<number | null>(null);
   const [byteMsg, setByteMsg] = useState<string | null>(null);
+  const [miniGameDone, setMiniGameDone] = useState(false);
 
   const { data: child } = useQuery({
     queryKey: ["child", activeChildId],
@@ -71,16 +75,12 @@ export default function ZoneExperiencePage() {
 
   const handleComplete = async (finalScore: number) => {
     const stars = finalScore === totalQ ? 3 : finalScore >= totalQ * 0.6 ? 2 : 1;
+    setScore(finalScore);
     setScreen("complete");
-
-    const reactions: Record<number, string> = {
-      3: "🎉 PERFECT! You're a true Cyber Hero!",
-      2: "Nice work, hero! Almost perfect!",
-      1: "Good try! Practice makes perfect!",
-    };
-    setByteMsg(reactions[stars]);
+    setByteMsg(content.completeMessage);
 
     if (activeChildId) {
+      // Update mission progress
       await supabase.from("mission_progress").upsert(
         {
           child_id: activeChildId,
@@ -95,6 +95,21 @@ export default function ZoneExperiencePage() {
         { onConflict: "child_id,mission_id" }
       );
 
+      // Update zone progress
+      await supabase.from("zone_progress").upsert(
+        {
+          child_id: activeChildId,
+          continent_id: worldId!,
+          zone_id: zoneId!,
+          status: "completed",
+          stars_earned: stars,
+          games_completed: 4,
+          total_games: 4,
+        },
+        { onConflict: "child_id,zone_id" }
+      );
+
+      // Update points
       const newPoints = (child?.points ?? 0) + content.xpReward;
       await supabase
         .from("child_profiles")
@@ -103,36 +118,57 @@ export default function ZoneExperiencePage() {
 
       queryClient.invalidateQueries({ queryKey: ["child", activeChildId] });
       queryClient.invalidateQueries({ queryKey: ["mission_progress", activeChildId] });
+      queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId, worldId] });
     }
   };
 
+  const handleMiniGameComplete = useCallback((_score: number, _total: number) => {
+    setMiniGameDone(true);
+  }, []);
+
   const stars =
     screen === "complete"
-      ? score === totalQ
-        ? 3
-        : score >= totalQ * 0.6
-          ? 2
-          : 1
+      ? score === totalQ ? 3 : score >= totalQ * 0.6 ? 2 : 1
       : 0;
 
+  const renderMiniGame = () => {
+    const cfg = content.miniGame;
+    switch (cfg.type) {
+      case "lock-and-learn":
+        return <LockAndLearnGame config={cfg} onComplete={handleMiniGameComplete} />;
+      case "strong-or-smash":
+        return <StrongOrSmashGame config={cfg} onComplete={handleMiniGameComplete} />;
+      case "password-chef":
+        return <PasswordChefGame config={cfg} onComplete={handleMiniGameComplete} />;
+      default:
+        return (
+          <div className="text-center">
+            <Gamepad2 className="mx-auto mb-4 h-16 w-16 text-primary" />
+            <h2 className="text-2xl font-bold">Mini Game</h2>
+            <p className="mt-2 text-muted-foreground">Coming soon!</p>
+          </div>
+        );
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-[hsl(220,30%,8%)] text-white pb-24">
       {/* Header */}
-      <div className="gradient-hero py-4">
+      <div className={`relative bg-gradient-to-br ${world.color} py-4`}>
         <div className="container mx-auto flex items-center gap-3 px-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(`/adventure/${worldId}`)}
-            className="text-primary-foreground"
+            className="text-white hover:bg-white/10"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-lg font-bold text-primary-foreground">
+            <h1 className="text-lg font-bold">
               {zone.emoji} {zone.name}
             </h1>
-            <p className="text-xs text-primary-foreground/80">{world.name}</p>
+            <p className="text-xs text-white/70">{world.name}</p>
           </div>
         </div>
       </div>
@@ -146,56 +182,51 @@ export default function ZoneExperiencePage() {
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -40 }}
-              className="rounded-3xl border-2 border-primary/20 bg-card p-6 shadow-card"
+              className="rounded-3xl border-2 border-white/10 bg-white/5 p-6 backdrop-blur"
             >
               <h2 className="text-2xl font-bold">{content.storyTitle}</h2>
-              <div className="my-6 flex items-center justify-center rounded-2xl bg-muted/50 py-12 text-6xl">
+              <div className="my-6 flex items-center justify-center rounded-2xl bg-white/5 py-12 text-6xl">
                 {zone.emoji}
               </div>
-              <p className="leading-relaxed text-muted-foreground">
-                {content.storyText}
-              </p>
+              <p className="leading-relaxed text-white/70">{content.storyText}</p>
               <Button
                 variant="hero"
                 size="lg"
                 className="mt-6 w-full"
-                onClick={() => setScreen("minigame")}
+                onClick={() => { setScreen("minigame"); setMiniGameDone(false); }}
               >
                 Continue →
               </Button>
             </motion.div>
           )}
 
-          {/* ===== SCREEN 2: MINI GAME (placeholder) ===== */}
+          {/* ===== SCREEN 2: MINI GAME ===== */}
           {screen === "minigame" && (
             <motion.div
               key="minigame"
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -40 }}
-              className="rounded-3xl border-2 border-primary/20 bg-card p-6 text-center shadow-card"
+              className="rounded-3xl border-2 border-white/10 bg-white/5 p-6 backdrop-blur"
             >
-              <Gamepad2 className="mx-auto mb-4 h-16 w-16 text-primary" />
-              <h2 className="text-2xl font-bold">Mini Game</h2>
-              <p className="mt-2 text-muted-foreground">
-                Interactive challenge coming soon!
-              </p>
-              <div className="my-8 rounded-2xl bg-muted/40 py-16 text-5xl">
-                🎮
-              </div>
-              <Button
-                variant="hero"
-                size="lg"
-                className="w-full"
-                onClick={() => {
-                  setScreen("challenge");
-                  setCurrentQ(0);
-                  setScore(0);
-                  setAnswered(null);
-                }}
-              >
-                Start Challenge Questions →
-              </Button>
+              {renderMiniGame()}
+              {miniGameDone && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                  <Button
+                    variant="hero"
+                    size="lg"
+                    className="mt-6 w-full"
+                    onClick={() => {
+                      setScreen("challenge");
+                      setCurrentQ(0);
+                      setScore(0);
+                      setAnswered(null);
+                    }}
+                  >
+                    Start Challenge Questions →
+                  </Button>
+                </motion.div>
+              )}
             </motion.div>
           )}
 
@@ -206,30 +237,28 @@ export default function ZoneExperiencePage() {
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -40 }}
-              className="rounded-3xl border-2 border-primary/20 bg-card p-6 shadow-card"
+              className="rounded-3xl border-2 border-white/10 bg-white/5 p-6 backdrop-blur"
             >
               <div className="mb-4 flex items-center justify-between">
-                <span className="text-sm font-bold text-muted-foreground">
+                <span className="text-sm font-bold text-white/50">
                   Question {currentQ + 1} of {totalQ}
                 </span>
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary">
+                <span className="rounded-full bg-primary/15 px-3 py-1 text-sm font-bold text-primary">
                   {score}/{currentQ} correct
                 </span>
               </div>
 
-              <h3 className="text-lg font-bold leading-snug">
-                {questions[currentQ].question}
-              </h3>
+              <h3 className="text-lg font-bold leading-snug">{questions[currentQ].question}</h3>
 
               <div className="mt-6 space-y-3">
                 {questions[currentQ].options.map((opt, idx) => {
                   const isCorrect = idx === questions[currentQ].correctIndex;
                   const wasChosen = answered === idx;
 
-                  let style = "border-border bg-card hover:border-primary/50 hover:bg-primary/5";
+                  let style = "border-white/10 bg-white/5 hover:border-primary/40 hover:bg-primary/5";
                   if (answered !== null) {
-                    if (isCorrect) style = "border-secondary bg-secondary/10";
-                    else if (wasChosen) style = "border-destructive bg-destructive/10";
+                    if (isCorrect) style = "border-emerald-400/50 bg-emerald-400/10";
+                    else if (wasChosen) style = "border-destructive/50 bg-destructive/10";
                   }
 
                   return (
@@ -241,7 +270,7 @@ export default function ZoneExperiencePage() {
                       className={`flex w-full items-center gap-3 rounded-2xl border-2 p-4 text-left font-semibold transition-colors ${style}`}
                     >
                       {answered !== null && isCorrect && (
-                        <CheckCircle2 className="h-5 w-5 shrink-0 text-secondary" />
+                        <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" />
                       )}
                       {answered !== null && wasChosen && !isCorrect && (
                         <XCircle className="h-5 w-5 shrink-0 text-destructive" />
@@ -260,7 +289,7 @@ export default function ZoneExperiencePage() {
               key="complete"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="rounded-3xl border-2 border-accent/30 bg-card p-8 text-center shadow-playful"
+              className="rounded-3xl border-2 border-amber-400/20 bg-white/5 p-8 text-center backdrop-blur"
             >
               <motion.div
                 className="text-6xl"
@@ -270,7 +299,7 @@ export default function ZoneExperiencePage() {
                 🏆
               </motion.div>
               <h2 className="mt-4 text-2xl font-bold">Zone Complete!</h2>
-              <p className="mt-1 text-muted-foreground">
+              <p className="mt-1 text-white/50">
                 {zone.name} — {world.name}
               </p>
 
@@ -283,7 +312,7 @@ export default function ZoneExperiencePage() {
                     transition={{ delay: s * 0.2, type: "spring" }}
                   >
                     <Star
-                      className={`h-10 w-10 ${s <= stars ? "fill-accent text-accent" : "text-muted"}`}
+                      className={`h-10 w-10 ${s <= stars ? "fill-amber-400 text-amber-400" : "text-white/20"}`}
                     />
                   </motion.div>
                 ))}
@@ -291,16 +320,12 @@ export default function ZoneExperiencePage() {
 
               <div className="flex justify-center gap-6 text-sm">
                 <div>
-                  <p className="font-bold text-2xl text-primary">
-                    {score}/{totalQ}
-                  </p>
-                  <p className="text-muted-foreground">Correct</p>
+                  <p className="font-bold text-2xl text-primary">{score}/{totalQ}</p>
+                  <p className="text-white/50">Correct</p>
                 </div>
                 <div>
-                  <p className="font-bold text-2xl text-accent">
-                    +{content.xpReward}
-                  </p>
-                  <p className="text-muted-foreground">XP Earned</p>
+                  <p className="font-bold text-2xl text-amber-400">+{content.xpReward}</p>
+                  <p className="text-white/50">XP Earned</p>
                 </div>
               </div>
 
@@ -308,7 +333,7 @@ export default function ZoneExperiencePage() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="flex-1"
+                  className="flex-1 border-white/20 text-white hover:bg-white/10"
                   onClick={() => navigate(`/adventure/${worldId}`)}
                 >
                   Back to Zones
