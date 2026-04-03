@@ -11,6 +11,9 @@ import ByteSidekick from "@/components/adventure/ByteSidekick";
 import LockAndLearnGame from "@/components/minigames/LockAndLearnGame";
 import StrongOrSmashGame from "@/components/minigames/StrongOrSmashGame";
 import PasswordChefGame from "@/components/minigames/PasswordChefGame";
+import WhoDoYouTrustGame from "@/components/minigames/WhoDoYouTrustGame";
+import KeyMatcherGame from "@/components/minigames/KeyMatcherGame";
+import RealOrFakeGame from "@/components/minigames/RealOrFakeGame";
 
 type Screen = "story" | "minigame" | "challenge" | "complete";
 
