@@ -98,6 +98,10 @@ export default function WorldZonesPage() {
   };
 
   return (
+    <>
+      {showVillainIntro && (
+        <VillainIntro onComplete={() => setVillainIntroDone(true)} />
+      )}
     <div className="relative min-h-screen bg-[hsl(220,30%,8%)] text-white overflow-hidden pb-32">
       {/* Header */}
       <div className={`relative bg-gradient-to-br ${world.color} py-8`}>
