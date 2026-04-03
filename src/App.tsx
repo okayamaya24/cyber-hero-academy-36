@@ -22,6 +22,9 @@ import CreateChildPage from "./pages/CreateChildPage";
 import CertificatePage from "./pages/CertificatePage";
 import ForParentsPage from "./pages/ForParentsPage";
 import EditAvatarPage from "./pages/EditAvatarPage";
+import AdventureMapPage from "./pages/AdventureMapPage";
+import WorldZonesPage from "./pages/WorldZonesPage";
+import ZoneExperiencePage from "./pages/ZoneExperiencePage";
 import ProtectedParentRoute from "./components/ProtectedParentRoute";
 import NotFound from "./pages/NotFound";
 import AdminGamesPage from "./pages/admin/AdminGamesPage";
@@ -201,6 +204,33 @@ const App = () => (
                   <>
                     <Navbar />
                     <EditAvatarPage />
+                  </>
+                }
+              />
+              <Route
+                path="/adventure"
+                element={
+                  <>
+                    <Navbar />
+                    <AdventureMapPage />
+                  </>
+                }
+              />
+              <Route
+                path="/adventure/:worldId"
+                element={
+                  <>
+                    <Navbar />
+                    <WorldZonesPage />
+                  </>
+                }
+              />
+              <Route
+                path="/adventure/:worldId/:zoneId"
+                element={
+                  <>
+                    <Navbar />
+                    <ZoneExperiencePage />
                   </>
                 }
               />
