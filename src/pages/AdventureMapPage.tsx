@@ -99,6 +99,14 @@ export default function AdventureMapPage() {
   const worldsCompleted = child?.worlds_completed ?? 0;
 
   return (
+    <>
+      {/* Cutscene overlay */}
+      <AnimatePresence>
+        {showCutscene && (
+          <AdventureCutscene tier={tier} onComplete={handleCutsceneComplete} />
+        )}
+      </AnimatePresence>
+
     <div className="relative min-h-screen bg-[hsl(220,30%,8%)] text-white overflow-hidden">
       <Particles />
 
