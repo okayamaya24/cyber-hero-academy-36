@@ -261,6 +261,13 @@ export default function KidDashboard() {
             >
               <Link to="/edit-avatar">✏️ Customize Hero</Link>
             </Button>
+            <Button
+              variant="hero"
+              size="sm"
+              asChild
+            >
+              <Link to="/adventure">🗺️ Adventure Zone</Link>
+            </Button>
           </div>
         </div>
       </div>

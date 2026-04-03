@@ -208,6 +208,33 @@ const App = () => (
                 }
               />
               <Route
+                path="/adventure"
+                element={
+                  <>
+                    <Navbar />
+                    <AdventureMapPage />
+                  </>
+                }
+              />
+              <Route
+                path="/adventure/:worldId"
+                element={
+                  <>
+                    <Navbar />
+                    <WorldZonesPage />
+                  </>
+                }
+              />
+              <Route
+                path="/adventure/:worldId/:zoneId"
+                element={
+                  <>
+                    <Navbar />
+                    <ZoneExperiencePage />
+                  </>
+                }
+              />
+              <Route
                 path="/parent-dashboard"
                 element={
                   <>
