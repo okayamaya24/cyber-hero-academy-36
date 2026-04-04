@@ -96,9 +96,11 @@ const HQOrientation = ({ playerName, avatarConfig, onComplete }: HQOrientationPr
             className="relative z-10 flex flex-col items-center gap-6 max-w-md px-6 text-center py-12"
           >
             {/* Byte avatar placeholder */}
-            <div className="w-24 h-24 rounded-full bg-cyan-500/20 border-2 border-cyan-500/50 flex items-center justify-center text-5xl">
-              🦊
-            </div>
+            <img
+              src="/byte-character.png"
+              alt="Byte"
+              className="w-32 h-32 object-contain drop-shadow-[0_0_12px_rgba(34,211,238,0.5)]"
+            />
 
             <div className="flex items-center gap-3">
               <HeroAvatar avatarConfig={avatarConfig} size={48} />
