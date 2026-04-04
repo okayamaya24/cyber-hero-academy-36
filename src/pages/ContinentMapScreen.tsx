@@ -2003,6 +2003,8 @@ export default function ContinentMapScreen() {
   const [selectedZone, setSelectedZone] = useState<ZoneDef | null>(null);
   const [hoveredNodeStatus, setHoveredNodeStatus] = useState<string | null>(null);
   const [showUnlockBurst, setShowUnlockBurst] = useState(false);
+  const [showHQOrientation, setShowHQOrientation] = useState(false);
+  const [showHQBubble, setShowHQBubble] = useState(false);
 
   const continent = getContinentById(continentId || "");
 
