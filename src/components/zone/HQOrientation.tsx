@@ -77,7 +77,6 @@ const HQOrientation = ({ playerName, avatarConfig, onComplete }: HQOrientationPr
   };
 
   const TOTAL_STEPS = 5;
-
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
 
   return (
@@ -95,11 +94,11 @@ const HQOrientation = ({ playerName, avatarConfig, onComplete }: HQOrientationPr
             transition={{ duration: 0.4 }}
             className="relative z-10 flex flex-col items-center gap-6 max-w-md px-6 text-center py-12"
           >
-            {/* Byte avatar placeholder */}
+            {/* Byte character */}
             <img
               src="/byte-character.png"
               alt="Byte"
-              className="w-32 h-32 object-contain drop-shadow-[0_0_12px_rgba(34,211,238,0.5)]"
+              className="w-32 h-32 object-contain drop-shadow-[0_0_16px_rgba(34,211,238,0.6)]"
             />
 
             <div className="flex items-center gap-3">
@@ -153,7 +152,7 @@ const HQOrientation = ({ playerName, avatarConfig, onComplete }: HQOrientationPr
             transition={{ duration: 0.4 }}
             className="relative z-10 flex flex-col items-center gap-6 max-w-md px-6 text-center py-12"
           >
-            {/* Keybreaker alert card */}
+            {/* Keybreaker threat card */}
             <div className="w-full bg-red-950/60 border border-red-500/50 rounded-2xl px-6 py-4 flex items-center gap-4">
               <div className="text-4xl shrink-0">🔐</div>
               <div className="text-left">
@@ -280,7 +279,6 @@ const HQOrientation = ({ playerName, avatarConfig, onComplete }: HQOrientationPr
               })}
             </div>
 
-            {/* Submit / Next */}
             {!minigameSubmitted ? (
               <Button
                 disabled={!allGuessed}
@@ -312,7 +310,13 @@ const HQOrientation = ({ playerName, avatarConfig, onComplete }: HQOrientationPr
             transition={{ duration: 0.4 }}
             className="relative z-10 flex flex-col items-center gap-5 max-w-md px-6 text-center py-12 w-full"
           >
-            <img src="/byte-character.png" alt="Byte" className="w-20 h-20 object-contain" />
+            {/* Byte character */}
+            <img
+              src="/byte-character.png"
+              alt="Byte"
+              className="w-24 h-24 object-contain drop-shadow-[0_0_12px_rgba(34,211,238,0.5)]"
+            />
+
             <h2 className="text-xl font-bold text-white font-['Orbitron']">Before you go…</h2>
 
             <div className="bg-cyan-950/80 border border-cyan-500/40 rounded-2xl px-5 py-4 text-left w-full">
@@ -322,7 +326,6 @@ const HQOrientation = ({ playerName, avatarConfig, onComplete }: HQOrientationPr
               </p>
             </div>
 
-            {/* Choice buttons */}
             {!choiceConfirmed && (
               <div className="flex flex-col gap-3 w-full">
                 {CHOICES.map((c) => (
@@ -341,7 +344,6 @@ const HQOrientation = ({ playerName, avatarConfig, onComplete }: HQOrientationPr
               </div>
             )}
 
-            {/* Byte response after selection */}
             {selectedChoice && !choiceConfirmed && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
