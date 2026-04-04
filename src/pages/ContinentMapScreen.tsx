@@ -47,8 +47,8 @@ function getZoneStatus(
   continentId: string,
 ): "completed" | "available" | "locked" {
   const progress = zoneProgress.find((p) => p.zone_id === zone.id);
-  if (progress?.status === "completed" || progress?.completed_at) return "completed";
-  if (progress?.unlocked_at && !progress?.status) return "available";
+  if (progress?.status === "completed") return "completed";
+  if (progress?.status === "available") return "available";
 
   if (continentId === "north-america") {
     const idx = NA_UNLOCK_ORDER.indexOf(zone.id);
@@ -2090,30 +2090,39 @@ export default function ContinentMapScreen() {
   const handleHQOrientationComplete = async (choiceId: string) => {
     setShowHQOrientation(false);
     if (activeChildId) {
-      const now = new Date().toISOString();
-
-      // Mark HQ as done on the child profile
       await supabase.from("child_profiles").update({ hq_completed: true }).eq("id", activeChildId);
 
-      // Record HQ as unlocked
-      await supabase
-        .from("zone_progress")
-        .upsert(
-          { child_id: activeChildId, continent_id: continentId!, zone_id: "hq", unlocked_at: now },
-          { onConflict: "child_id,zone_id" },
-        );
+      await supabase.from("zone_progress").upsert(
+        {
+          child_id: activeChildId,
+          continent_id: continentId!,
+          zone_id: "hq",
+          status: "completed",
+          games_completed: 1,
+          total_games: 1,
+          stars_earned: 3,
+        },
+        { onConflict: "child_id,zone_id" },
+      );
 
-      // Unlock Password Peak — Zone 1
-      await supabase
-        .from("zone_progress")
-        .upsert(
-          { child_id: activeChildId, continent_id: continentId!, zone_id: "password-peak", unlocked_at: now },
-          { onConflict: "child_id,zone_id" },
-        );
+      await supabase.from("zone_progress").upsert(
+        {
+          child_id: activeChildId,
+          continent_id: continentId!,
+          zone_id: "password-peak",
+          status: "available",
+          games_completed: 0,
+          total_games: 4,
+          stars_earned: 0,
+        },
+        { onConflict: "child_id,zone_id" },
+      );
 
       queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
+      queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId] });
       queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId, continentId] });
       queryClient.invalidateQueries({ queryKey: ["child_profile", activeChildId] });
+      queryClient.invalidateQueries({ queryKey: ["child-profile", activeChildId] });
     }
   };
 
