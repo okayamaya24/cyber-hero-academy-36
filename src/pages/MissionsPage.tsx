@@ -1010,157 +1010,364 @@ export default function MissionsPage() {
   }
 
   /* ═══════════════════════════════════════════
-     VIEW: Training Center — 4 Sections
+     VIEW: Training Center Hub (Redesigned)
      ═══════════════════════════════════════════ */
 
-  const completedMissions = MISSIONS.filter((m) => {
-    const totalGames = getTotalGames(learningMode);
-    const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
-    return mp?.status === "completed";
-  });
+  const points = child?.points ?? 0;
+  const streak = child?.streak ?? 0;
+  const level = child?.level ?? 1;
+  const rank = getLevelRank(level);
+  const xpProgress = getProgressToNextLevel(points);
+  const nextRank = getNextRank(level);
 
-  const WORLD_LABELS: Record<string, string> = {
-    "password-safety": "🏔️ Password Peak",
-    "scam-detection": "🐟 Phish Lagoon",
-    "safe-websites": "🏪 Browse Bazaar",
-    "personal-info": "🏰 Privacy Palace",
-  };
+  const completedMissionIds = new Set(
+    MISSIONS.filter((m) => {
+      const totalGames = getTotalGames(learningMode);
+      const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
+      return mp?.status === "completed";
+    }).map((m) => m.id),
+  );
 
   const getStandaloneStars = (gameId: string) => {
     const mp = missionProgress.find((p) => p.mission_id === gameId);
     return mp ? getStarsFromProgress(mp) : 0;
   };
 
+  /* Game catalog — each section */
+  const arcadeGames = [
+    { id: "virus-vaporizer", title: "Virus Vaporizer", desc: "Blast viruses before they spread!", badge: "Arcade", locked: true },
+    { id: "hacker-chase", title: "Hacker Chase", desc: "Outrun the hackers through cyberspace!", badge: "Arcade", locked: true },
+    { id: "firewall-blitz", title: "Firewall Blitz", desc: "Build firewalls to block incoming threats!", badge: "Arcade", locked: true },
+  ];
+  const puzzleGames = [
+    { id: "code-breaker", title: "Code Breaker", desc: "Crack the code to unlock the vault!", badge: "Puzzle", locked: true },
+    { id: "cyber-escape", title: "Cyber Escape Room", desc: "Solve puzzles to escape the cyber dungeon!", badge: "Puzzle", locked: true },
+    { id: "password-tower", title: "Password Tower", desc: "Stack strong passwords to build a tower!", badge: "Puzzle", locked: true },
+  ];
+  const sortGames = [
+    ...MISSIONS.filter((m) => m.id === "scam-detection").map((m) => ({
+      id: m.id, title: "Spot the Phish", desc: "Sort real from fake messages!", badge: "Sort & Decide",
+      locked: !completedMissionIds.has(m.id), stars: getStandaloneStars(m.id), mission: m,
+    })),
+    ...DRAG_DROP_GAMES.filter((g) => g.subType === "sort").map((g) => ({
+      id: g.id, title: g.title, desc: g.description, badge: "Sort & Decide",
+      locked: false, stars: getStandaloneStars(g.id), dragdrop: g,
+    })),
+    { id: "real-or-fake", title: "Real or Fake?", desc: "Spot legitimate vs spoofed URLs!", badge: "Sort & Decide", locked: true },
+  ];
+  const speedGames = [
+    { id: "quiz-blitz", title: "Byte's Quiz Blitz", desc: "Answer cyber questions at lightning speed!", badge: "Speed", locked: true },
+    { id: "daily-trivia", title: "Daily Trivia", desc: "Test your knowledge with daily questions!", badge: "Speed", locked: true },
+    { id: "lightning-round", title: "Lightning Round", desc: "How many can you get right in 60 seconds?", badge: "Speed", locked: true },
+  ];
+  const memoryGames = [
+    ...MISSIONS.filter(() => false).map(() => ({} as any)), // placeholder
+    { id: "cyber-memory", title: "Cyber Memory Match", desc: "Match pairs of cyber safety concepts!", badge: "Memory", locked: true },
+    { id: "threat-safe", title: "Threat or Safe?", desc: "Remember which items are threats!", badge: "Memory", locked: true },
+  ];
+
+  const sections = [
+    { icon: "🕹️", title: "Arcade Games", games: arcadeGames },
+    { icon: "🧩", title: "Puzzle Games", games: puzzleGames },
+    { icon: "🎯", title: "Sort & Decide", games: sortGames },
+    { icon: "⚡", title: "Speed Rounds", games: speedGames },
+    { icon: "🃏", title: "Memory & Match", games: memoryGames.filter((g) => g.id) },
+    {
+      icon: "🔍", title: "Word Games", games: WORD_SEARCH_PUZZLES.map((p) => ({
+        id: p.id, title: p.title, desc: p.description, badge: "Word Search",
+        locked: false, stars: getStandaloneStars(p.id), wordsearch: p,
+      })),
+    },
+    {
+      icon: "✏️", title: "Crossword Puzzles", games: CROSSWORD_PUZZLES.map((p) => ({
+        id: p.id, title: p.title, desc: p.description, badge: "Crossword",
+        locked: false, stars: getStandaloneStars(p.id), crossword: p,
+      })),
+    },
+    {
+      icon: "🖱️", title: "Drag & Drop", games: DRAG_DROP_GAMES.map((g) => ({
+        id: g.id, title: g.title, desc: g.description, badge: "Drag & Drop",
+        locked: false, stars: getStandaloneStars(g.id), dragdrop: g,
+      })),
+    },
+  ];
+
+  // Quiz missions that are playable
+  const quizMissions = MISSIONS.map((m) => ({
+    id: m.id, title: m.title, desc: m.description, badge: "Quiz",
+    locked: !completedMissionIds.has(m.id),
+    stars: (() => {
+      const totalGames = getTotalGames(learningMode);
+      const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
+      return getStarsFromProgress(mp);
+    })(),
+    mission: m,
+  }));
+
+  // Featured game (Byte's Pick)
+  const featuredGame = WORD_SEARCH_PUZZLES[0];
+
+  // Fake daily missions
+  const dailyMissions = [
+    { name: "Play any Arcade game", xp: 30, done: false },
+    { name: "Get 3 stars on a quiz", xp: 50, done: false },
+    { name: "Beat your Phish score", xp: 40, done: false },
+  ];
+  const allDailyDone = dailyMissions.every((d) => d.done);
+
+  // Fake leaderboard
+  const leaderboard = [
+    { rank: 1, name: "CyberNinja42", xp: 1820 },
+    { rank: 2, name: "ShieldMaster", xp: 1650 },
+    { rank: 3, name: "PixelGuard", xp: 1540 },
+    { rank: 4, name: "DataDefender", xp: 1320 },
+    { rank: 5, name: "FirewallFox", xp: 1280 },
+  ];
+
+  const handleGameClick = (game: any) => {
+    if (game.locked) return;
+    if (game.mission) { startMission(game.mission); return; }
+    if (game.wordsearch) {
+      const p = game.wordsearch;
+      launchStandaloneGame("wordsearch", p.id, p.title, { words: p.wordsByTier[tier], gridSize: p.gridSizeByTier[tier] });
+      return;
+    }
+    if (game.crossword) { launchStandaloneGame("crossword", game.crossword.id, game.crossword.title, game.crossword); return; }
+    if (game.dragdrop) { launchStandaloneGame("dragdrop", game.dragdrop.id, game.dragdrop.title, game.dragdrop); return; }
+  };
+
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="container mx-auto px-4 max-w-5xl">
-        {/* Header */}
-        <motion.div className="mb-6 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl font-bold md:text-4xl">🏆 Training Center</h1>
-          <p className="mt-2 text-muted-foreground">Replay completed missions to sharpen your skills!</p>
-          {child && (
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-              <Badge variant="outline" className="px-4 py-1 text-sm">
-                {tierEmoji} {tierLabel} · {pointsPerCorrect} pts per question
-              </Badge>
-              <Badge className="border-0 bg-primary/10 px-4 py-1 text-sm text-primary">
-                {modeConfig.emoji} {modeConfig.label}
-              </Badge>
-            </div>
-          )}
-        </motion.div>
-
-        {/* ─── Section 1: Quiz Challenges ─── */}
-        <SectionHeader icon="🕹️" title="Quiz Challenges" />
-        {completedMissions.length === 0 ? (
-          <div className="rounded-2xl border-2 border-dashed border-border bg-card p-8 text-center mb-4">
-            <p className="text-3xl mb-2">🗺️</p>
-            <p className="font-bold mb-1">No quizzes completed yet!</p>
-            <p className="text-sm text-muted-foreground mb-3">Complete missions on the Adventure Map first.</p>
-            <Button variant="hero" size="sm" onClick={() => navigate("/world-map")}>
-              Go to Adventure Map 🚀
-            </Button>
-          </div>
-        ) : (
-          <motion.div
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4"
-            initial="hidden"
-            animate="show"
-            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
-          >
-            {completedMissions.map((m) => {
-              const totalGames = getTotalGames(learningMode);
-              const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
-              const stars = getStarsFromProgress(mp);
-              return (
-                <GameCard
-                  key={m.id}
-                  title={m.title}
-                  zone={WORLD_LABELS[m.id] || m.title}
-                  zoneIcon={m.badgeIcon}
-                  description={m.description}
-                  stars={stars}
-                  bestScore={mp?.score}
-                  maxScore={mp?.max_score}
-                  typeBadge="🎮 Quiz"
-                  guideImage={m.guide.image}
-                  onClick={() => startMission(m)}
-                />
-              );
-            })}
+    <div className="min-h-screen bg-[#0a0e1a] pb-20 relative">
+      {/* ── Hero Section ── */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#00d4ff]/5 via-transparent to-transparent" />
+        <div className="container mx-auto px-4 max-w-5xl pt-10 pb-6 relative z-10">
+          <motion.div className="text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-[0_0_20px_rgba(0,212,255,0.4)]">
+              ⚡ Training Center
+            </h1>
+            <p className="mt-2 text-gray-400 text-lg">Level up your cyber skills, Guardian!</p>
           </motion.div>
-        )}
 
-        {/* ─── Section 2: Word Search Games ─── */}
-        <SectionHeader icon="🔍" title="Word Search Games" isNew />
+          {/* Stat chips */}
+          <motion.div
+            className="mt-5 flex flex-wrap items-center justify-center gap-3"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-2 text-sm font-bold text-orange-400">
+              <Flame className="h-4 w-4" /> {streak}-Day Streak
+            </div>
+            <div className="flex items-center gap-2 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-sm font-bold text-yellow-400">
+              ⭐ {points} XP
+            </div>
+            <div className="flex items-center gap-2 rounded-full border border-[#00d4ff]/30 bg-[#00d4ff]/10 px-4 py-2 text-sm font-bold text-[#00d4ff]">
+              🏆 Rank: {rank.title}
+            </div>
+          </motion.div>
+
+          {/* XP Progress bar */}
+          <motion.div
+            className="mt-5 mx-auto max-w-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+              <span>Level {level}</span>
+              <span>{nextRank ? `Next: ${nextRank.title}` : "Max Rank!"}</span>
+            </div>
+            <div className="h-3 w-full rounded-full bg-[#1a2035] border border-[#00d4ff]/20 overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-gradient-to-r from-[#00d4ff] to-[#00ff88]"
+                initial={{ width: 0 }}
+                animate={{ width: `${xpProgress.percent}%` }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                style={{ boxShadow: "0 0 12px rgba(0,212,255,0.5)" }}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1 text-center">
+              {xpProgress.current} / {xpProgress.needed} XP to next level
+            </p>
+          </motion.div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 max-w-5xl">
+        {/* ── Daily Missions ── */}
         <motion.div
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4"
-          initial="hidden"
-          animate="show"
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+          className="mt-6 rounded-2xl border border-[#00ff88]/30 bg-gradient-to-r from-[#00ff88]/5 to-[#00d4ff]/5 p-5"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
         >
-          {WORD_SEARCH_PUZZLES.map((puzzle) => (
-            <GameCard
-              key={puzzle.id}
-              title={puzzle.title}
-              zone={puzzle.zone}
-              zoneIcon={puzzle.zoneIcon}
-              description={puzzle.description}
-              stars={getStandaloneStars(puzzle.id)}
-              typeBadge="🔤 Word Search"
-              onClick={() =>
-                launchStandaloneGame("wordsearch", puzzle.id, puzzle.title, {
-                  words: puzzle.wordsByTier[tier],
-                  gridSize: puzzle.gridSizeByTier[tier],
-                })
-              }
-            />
-          ))}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-extrabold text-white">
+              TODAY'S MISSIONS 🎯
+            </h2>
+            <span className="text-xs text-gray-400 font-mono">Resets in 14h 22m</span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {dailyMissions.map((dm, i) => (
+              <div
+                key={i}
+                className={`rounded-xl border p-4 ${
+                  dm.done
+                    ? "border-[#00ff88]/40 bg-[#00ff88]/10"
+                    : "border-white/10 bg-[#0f1729]"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`mt-0.5 h-5 w-5 shrink-0 rounded border-2 flex items-center justify-center ${
+                    dm.done ? "border-[#00ff88] bg-[#00ff88]" : "border-gray-600"
+                  }`}>
+                    {dm.done && <CheckCircle2 className="h-3.5 w-3.5 text-[#0a0e1a]" />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{dm.name}</p>
+                    <p className="text-xs text-[#00ff88] font-bold mt-1">+{dm.xp} XP</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex justify-center">
+            <button
+              disabled={!allDailyDone}
+              className={`rounded-full px-6 py-2.5 text-sm font-bold transition-all ${
+                allDailyDone
+                  ? "bg-[#00ff88] text-[#0a0e1a] shadow-[0_0_20px_rgba(0,255,136,0.4)] hover:bg-[#00ff88]/80"
+                  : "bg-gray-700 text-gray-500 cursor-not-allowed"
+              }`}
+            >
+              {allDailyDone ? "🎁 Claim Bonus!" : "🔒 Complete all to claim bonus"}
+            </button>
+          </div>
         </motion.div>
 
-        {/* ─── Section 3: Crossword Puzzles ─── */}
-        <SectionHeader icon="✏️" title="Crossword Puzzles" isNew />
+        {/* ── Byte's Pick ── */}
         <motion.div
-          className="grid gap-4 sm:grid-cols-2 mb-4"
-          initial="hidden"
-          animate="show"
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+          className="mt-8 rounded-2xl border border-[#00d4ff]/30 bg-gradient-to-r from-[#0f1729] to-[#131b2e] p-5 flex items-center gap-5"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
         >
-          {CROSSWORD_PUZZLES.map((puzzle) => (
-            <GameCard
-              key={puzzle.id}
-              title={puzzle.title}
-              zone={puzzle.zone}
-              zoneIcon={puzzle.zoneIcon}
-              description={puzzle.description}
-              stars={getStandaloneStars(puzzle.id)}
-              typeBadge="✏️ Crossword"
-              onClick={() => launchStandaloneGame("crossword", puzzle.id, puzzle.title, puzzle)}
-            />
-          ))}
+          <img
+            src={heroCharacter}
+            alt="Byte"
+            className="h-20 w-20 object-contain drop-shadow-[0_0_10px_rgba(0,212,255,0.3)]"
+          />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-[#00d4ff] font-bold uppercase tracking-wider mb-1">Byte's Pick</p>
+            <p className="text-gray-400 text-sm mb-1">Byte says: Try this one today, Guardian! 👾</p>
+            <p className="text-lg font-bold text-white">{featuredGame.title}</p>
+          </div>
+          <button
+            onClick={() =>
+              launchStandaloneGame("wordsearch", featuredGame.id, featuredGame.title, {
+                words: featuredGame.wordsByTier[tier],
+                gridSize: featuredGame.gridSizeByTier[tier],
+              })
+            }
+            className="shrink-0 rounded-full bg-[#00d4ff] px-6 py-2.5 text-sm font-bold text-[#0a0e1a] transition-all hover:bg-[#00d4ff]/80 hover:shadow-[0_0_16px_rgba(0,212,255,0.4)]"
+          >
+            Play Now
+          </button>
         </motion.div>
 
-        {/* ─── Section 4: Drag & Drop Games ─── */}
-        <SectionHeader icon="🎯" title="Drag & Drop Games" />
-        <motion.div
-          className="grid gap-4 sm:grid-cols-2 mb-4"
-          initial="hidden"
-          animate="show"
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
-        >
-          {DRAG_DROP_GAMES.map((game) => (
-            <GameCard
-              key={game.id}
-              title={game.title}
-              zone={game.zone}
-              zoneIcon={game.zoneIcon}
-              description={game.description}
-              stars={getStandaloneStars(game.id)}
-              typeBadge="🎯 Drag & Drop"
-              onClick={() => launchStandaloneGame("dragdrop", game.id, game.title, game)}
-            />
+        {/* ── Quiz Challenges section ── */}
+        <SectionHeader icon="🎮" title="Quiz Challenges" />
+        <HScrollSection>
+          {quizMissions.map((g) => (
+            <div key={g.id} className="min-w-[240px] snap-start md:min-w-0">
+              <NeonGameCard
+                title={g.title}
+                description={g.desc}
+                stars={g.stars}
+                typeBadge={g.badge}
+                locked={g.locked}
+                onClick={() => handleGameClick(g)}
+              />
+            </div>
           ))}
+        </HScrollSection>
+
+        {/* ── All other game sections ── */}
+        {sections.map((section) => (
+          <div key={section.title}>
+            <SectionHeader icon={section.icon} title={section.title} />
+            <HScrollSection>
+              {section.games.map((g: any) => (
+                <div key={g.id} className="min-w-[240px] snap-start md:min-w-0">
+                  <NeonGameCard
+                    title={g.title}
+                    description={g.desc}
+                    stars={g.stars ?? 0}
+                    typeBadge={g.badge}
+                    locked={g.locked ?? false}
+                    onClick={() => handleGameClick(g)}
+                  />
+                </div>
+              ))}
+            </HScrollSection>
+          </div>
+        ))}
+
+        {/* ── Leaderboard ── */}
+        <motion.div
+          className="mt-10 rounded-2xl border border-yellow-500/20 bg-[#0f1729] p-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <h2 className="text-lg font-extrabold text-yellow-400 mb-4 drop-shadow-[0_0_8px_rgba(255,200,0,0.3)]">
+            🏆 Top Guardians This Week
+          </h2>
+          <div className="space-y-2">
+            {leaderboard.map((entry) => (
+              <div
+                key={entry.rank}
+                className="flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.02] px-4 py-3"
+              >
+                <span className={`text-lg font-extrabold ${
+                  entry.rank === 1 ? "text-yellow-400" : entry.rank === 2 ? "text-gray-300" : entry.rank === 3 ? "text-orange-400" : "text-gray-500"
+                }`}>
+                  #{entry.rank}
+                </span>
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#00d4ff]/30 to-[#00ff88]/30 border border-white/10" />
+                <span className="flex-1 text-sm font-bold text-white">{entry.name}</span>
+                <span className="text-sm font-bold text-yellow-400">{entry.xp} XP</span>
+              </div>
+            ))}
+            {/* Your position */}
+            <div className="flex items-center gap-4 rounded-xl border border-[#00d4ff]/30 bg-[#00d4ff]/5 px-4 py-3">
+              <span className="text-lg font-extrabold text-[#00d4ff]">#12</span>
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#00d4ff]/50 to-[#00ff88]/50 border border-[#00d4ff]/30" />
+              <span className="flex-1 text-sm font-bold text-[#00d4ff]">You</span>
+              <span className="text-sm font-bold text-[#00d4ff]">{points} XP</span>
+            </div>
+          </div>
         </motion.div>
+      </div>
+
+      {/* ── Byte floating character ── */}
+      <div className="fixed bottom-4 right-4 z-30 flex flex-col items-end gap-2">
+        <motion.div
+          className="rounded-2xl rounded-br-sm border border-[#00d4ff]/30 bg-[#0f1729]/95 backdrop-blur px-4 py-2.5 max-w-[200px] shadow-lg"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 1 }}
+        >
+          <p className="text-xs text-gray-300">Pick a game and let's train, Guardian! 💪</p>
+        </motion.div>
+        <motion.img
+          src={heroCharacter}
+          alt="Byte"
+          className="h-16 w-16 object-contain drop-shadow-[0_0_12px_rgba(0,212,255,0.4)]"
+          animate={{ y: [0, -6, 0] }}
+          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+        />
       </div>
     </div>
   );
