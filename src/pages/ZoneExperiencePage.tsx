@@ -66,7 +66,7 @@ export default function ZoneExperiencePage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("child_profiles")
-        .select("age, points")
+        .select("age, points, avatar_config")
         .eq("id", activeChildId!)
         .single();
       if (error) throw error;
