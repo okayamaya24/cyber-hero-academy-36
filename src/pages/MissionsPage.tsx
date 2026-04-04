@@ -1132,7 +1132,7 @@ export default function MissionsPage() {
   // Quiz missions
   const quizMissions = MISSIONS.map((m) => ({
     id: m.id, title: m.title, desc: m.description, badge: "Quiz",
-    locked: !completedMissionIds.has(m.id),
+    locked: isGameLockedByAdmin(m.id),
     stars: (() => {
       const totalGames = getTotalGames(learningMode);
       const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
