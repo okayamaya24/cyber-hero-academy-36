@@ -1036,6 +1036,9 @@ export default function MissionsPage() {
   const rank = getLevelRank(level);
   const xpProgress = getProgressToNextLevel(points);
   const nextRank = getNextRank(level);
+  const isJuniorTier = tier === "junior";
+  const trainingTierLabel = getTrainingTierLabel(tier);
+  const trainingTierEmoji = getTrainingTierEmoji(tier);
 
   const completedMissionIds = new Set(
     MISSIONS.filter((m) => {
@@ -1050,66 +1053,73 @@ export default function MissionsPage() {
     return mp ? getStarsFromProgress(mp) : 0;
   };
 
-  /* Game catalog — each section */
+  /* ── Full Game Catalog ── */
   const arcadeGames = [
-    { id: "virus-vaporizer", title: "Virus Vaporizer", desc: "Blast viruses before they spread!", badge: "Arcade", locked: true },
-    { id: "hacker-chase", title: "Hacker Chase", desc: "Outrun the hackers through cyberspace!", badge: "Arcade", locked: true },
-    { id: "firewall-blitz", title: "Firewall Blitz", desc: "Build firewalls to block incoming threats!", badge: "Arcade", locked: true },
+    { id: "virus-vaporizer", title: "Virus Vaporizer", desc: "Zap viruses before they infect your files!", badge: "Arcade", locked: true },
+    { id: "spot-the-phish", title: "Spot the Phish", desc: "Swipe safe or phishing on emails and texts!", badge: "Arcade", locked: true },
+    { id: "firewall-blitz", title: "Firewall Blitz", desc: "Block threats flying across the screen in lanes!", badge: "Arcade", locked: true },
+    { id: "hacker-chase", title: "Hacker Chase", desc: "Chase the hacker through the digital world!", badge: "Arcade", locked: true },
   ];
+
+  const keyboardGames = [
+    { id: "type-to-defend", title: "Type to Defend", desc: "Type the word fast to destroy threats before they reach your base!", badge: "Keyboard", locked: true },
+    { id: "password-cracker-race", title: "Password Cracker Race", desc: "Race a hacker bot — type strong passwords before it guesses them!", badge: "Keyboard", locked: true },
+    { id: "code-typer", title: "Code Typer", desc: "Type safe commands to neutralize malicious code before it executes!", badge: "Keyboard", locked: true },
+    { id: "decrypt-message", title: "Decrypt the Message", desc: "Decode a scrambled secret message letter by letter!", badge: "Keyboard", locked: true },
+    { id: "firewall-typer", title: "Firewall Typer", desc: "Words fly in from both sides — type them to block them!", badge: "Keyboard", locked: true },
+  ];
+
   const puzzleGames = [
-    { id: "code-breaker", title: "Code Breaker", desc: "Crack the code to unlock the vault!", badge: "Puzzle", locked: true },
-    { id: "cyber-escape", title: "Cyber Escape Room", desc: "Solve puzzles to escape the cyber dungeon!", badge: "Puzzle", locked: true },
-    { id: "password-tower", title: "Password Tower", desc: "Stack strong passwords to build a tower!", badge: "Puzzle", locked: true },
+    { id: "cyber-escape", title: "Cyber Escape Room", desc: "Solve 4 puzzles to escape the hacker's lair!", badge: "Puzzle", locked: true },
+    { id: "code-breaker", title: "Code Breaker", desc: "Crack the cipher and decode the secret message!", badge: "Puzzle", locked: true },
+    { id: "password-tower", title: "Password Tower", desc: "Stack password ingredients to build the strongest password!", badge: "Puzzle", locked: true },
+    { id: "lock-the-vault-puzzle", title: "Lock the Vault", desc: "Solve the sequence to seal the vault before the hacker gets in!", badge: "Puzzle", locked: true },
   ];
+
   const sortGames = [
+    { id: "safe-danger-sort", title: "Safe or Danger? Rapid Sort", desc: "Items flash fast — hit Safe or Danger as quick as you can!", badge: "Sort", locked: true },
+    { id: "real-or-fake", title: "Real or Fake Website", desc: "Spot the fake website before you click!", badge: "Sort", locked: true },
+    { id: "trust-or-trash", title: "Trust or Trash", desc: "Decide if messages and links are trustworthy or trash!", badge: "Sort", locked: true },
     ...MISSIONS.filter((m) => m.id === "scam-detection").map((m) => ({
-      id: m.id, title: "Spot the Phish", desc: "Sort real from fake messages!", badge: "Sort & Decide",
-      locked: !completedMissionIds.has(m.id), stars: getStandaloneStars(m.id), mission: m,
+      id: m.id, title: "Spot the Phish (Quiz)", desc: "Sort real from fake messages!", badge: "Sort",
+      locked: false, stars: getStandaloneStars(m.id), mission: m,
     })),
     ...DRAG_DROP_GAMES.filter((g) => g.subType === "sort").map((g) => ({
-      id: g.id, title: g.title, desc: g.description, badge: "Sort & Decide",
+      id: g.id, title: g.title, desc: g.description, badge: "Sort",
       locked: false, stars: getStandaloneStars(g.id), dragdrop: g,
     })),
-    { id: "real-or-fake", title: "Real or Fake?", desc: "Spot legitimate vs spoofed URLs!", badge: "Sort & Decide", locked: true },
   ];
+
   const speedGames = [
-    { id: "quiz-blitz", title: "Byte's Quiz Blitz", desc: "Answer cyber questions at lightning speed!", badge: "Speed", locked: true },
-    { id: "daily-trivia", title: "Daily Trivia", desc: "Test your knowledge with daily questions!", badge: "Speed", locked: true },
-    { id: "lightning-round", title: "Lightning Round", desc: "How many can you get right in 60 seconds?", badge: "Speed", locked: true },
+    { id: "quiz-blitz", title: "Byte's Quiz Blitz", desc: "Byte fires questions for 60 seconds — answer as many as you can!", badge: "Speed", locked: true },
+    { id: "true-false-lightning", title: "True or False Lightning", desc: "Cyber facts flash fast — TRUE or FALSE? Streak multiplier!", badge: "Speed", locked: true },
+    { id: "beat-the-clock", title: "Beat the Clock Trivia", desc: "Answer before the timer hits zero — every second counts!", badge: "Speed", locked: true },
   ];
+
   const memoryGames = [
-    ...MISSIONS.filter(() => false).map(() => ({} as any)), // placeholder
-    { id: "cyber-memory", title: "Cyber Memory Match", desc: "Match pairs of cyber safety concepts!", badge: "Memory", locked: true },
-    { id: "threat-safe", title: "Threat or Safe?", desc: "Remember which items are threats!", badge: "Memory", locked: true },
+    { id: "cyber-memory", title: "Cyber Memory Match", desc: "Flip cards to match cyber threat pairs!", badge: "Memory", locked: true },
+    { id: "sequence-shield", title: "Sequence Shield", desc: "Remember and repeat the sequence to activate your shield!", badge: "Memory", locked: true },
   ];
 
-  const sections = [
-    { icon: "🕹️", title: "Arcade Games", games: arcadeGames },
-    { icon: "🧩", title: "Puzzle Games", games: puzzleGames },
-    { icon: "🎯", title: "Sort & Decide", games: sortGames },
-    { icon: "⚡", title: "Speed Rounds", games: speedGames },
-    { icon: "🃏", title: "Memory & Match", games: memoryGames.filter((g) => g.id) },
-    {
-      icon: "🔍", title: "Word Games", games: WORD_SEARCH_PUZZLES.map((p) => ({
-        id: p.id, title: p.title, desc: p.description, badge: "Word Search",
-        locked: false, stars: getStandaloneStars(p.id), wordsearch: p,
-      })),
-    },
-    {
-      icon: "✏️", title: "Crossword Puzzles", games: CROSSWORD_PUZZLES.map((p) => ({
-        id: p.id, title: p.title, desc: p.description, badge: "Crossword",
-        locked: false, stars: getStandaloneStars(p.id), crossword: p,
-      })),
-    },
-    {
-      icon: "🖱️", title: "Drag & Drop", games: DRAG_DROP_GAMES.map((g) => ({
-        id: g.id, title: g.title, desc: g.description, badge: "Drag & Drop",
-        locked: false, stars: getStandaloneStars(g.id), dragdrop: g,
-      })),
-    },
+  const wordSearchGames = WORD_SEARCH_PUZZLES.map((p) => ({
+    id: p.id, title: p.title, desc: p.description, badge: "Word Search",
+    locked: false, stars: getStandaloneStars(p.id), wordsearch: p,
+  }));
+
+  const crosswordGames = CROSSWORD_PUZZLES.map((p) => ({
+    id: p.id, title: p.title, desc: p.description, badge: "Crossword",
+    locked: false, stars: getStandaloneStars(p.id), crossword: p,
+  }));
+
+  const dragDropGames = [
+    ...DRAG_DROP_GAMES.map((g) => ({
+      id: g.id, title: g.title, desc: g.description, badge: "Drag & Drop",
+      locked: false, stars: getStandaloneStars(g.id), dragdrop: g,
+    })),
+    { id: "lock-the-vault-dd", title: "Lock the Vault", desc: "Drag the correct keys into the right locks before time runs out!", badge: "Drag & Drop", locked: true },
   ];
 
-  // Quiz missions that are playable
+  // Quiz missions
   const quizMissions = MISSIONS.map((m) => ({
     id: m.id, title: m.title, desc: m.description, badge: "Quiz",
     locked: !completedMissionIds.has(m.id),
@@ -1121,24 +1131,48 @@ export default function MissionsPage() {
     mission: m,
   }));
 
+  const sections = [
+    { icon: "🕹️", title: "Arcade Games", games: arcadeGames, color: "border-[#00d4ff]" },
+    ...(tier !== "junior" ? [{ icon: "⌨️", title: "Keyboard Games", games: keyboardGames, color: "border-[#ff6b6b]" }] : []),
+    { icon: "🧩", title: "Puzzle Games", games: puzzleGames, color: "border-[#a855f7]" },
+    { icon: "🎯", title: "Sort & Decide", games: sortGames, color: "border-[#00ff88]" },
+    { icon: "⚡", title: "Speed Rounds", games: speedGames, color: "border-yellow-400" },
+    { icon: "🃏", title: "Memory & Match", games: memoryGames, color: "border-pink-400" },
+    { icon: "🔍", title: "Word Search Games", games: wordSearchGames, color: "border-[#00d4ff]" },
+    { icon: "✏️", title: "Crossword Puzzles", games: crosswordGames, color: "border-orange-400" },
+    { icon: "🖱️", title: "Drag & Drop Games", games: dragDropGames, color: "border-[#00ff88]" },
+  ];
+
   // Featured game (Byte's Pick)
   const featuredGame = WORD_SEARCH_PUZZLES[0];
 
-  // Fake daily missions
-  const dailyMissions = [
-    { name: "Play any Arcade game", xp: 30, done: false },
-    { name: "Get 3 stars on a quiz", xp: 50, done: false },
-    { name: "Beat your Phish score", xp: 40, done: false },
-  ];
+  // Daily missions (tier-aware text)
+  const dailyMissions = tier === "junior"
+    ? [
+        { name: "Play any Word Search game", xp: 20, done: false },
+        { name: "Try a Drag & Drop game", xp: 25, done: false },
+        { name: "Complete a Crossword puzzle", xp: 30, done: false },
+      ]
+    : tier === "defender"
+      ? [
+          { name: "Play any Arcade game", xp: 30, done: false },
+          { name: "Get 3 stars on a Speed Round", xp: 50, done: false },
+          { name: "Complete a Puzzle game", xp: 40, done: false },
+        ]
+      : [
+          { name: "Get 3 stars on any game", xp: 50, done: false },
+          { name: "Complete a Keyboard challenge", xp: 60, done: false },
+          { name: "Beat your best Sort score", xp: 40, done: false },
+        ];
   const allDailyDone = dailyMissions.every((d) => d.done);
 
-  // Fake leaderboard
+  // Leaderboard
   const leaderboard = [
-    { rank: 1, name: "CyberNinja42", xp: 1820 },
-    { rank: 2, name: "ShieldMaster", xp: 1650 },
-    { rank: 3, name: "PixelGuard", xp: 1540 },
-    { rank: 4, name: "DataDefender", xp: 1320 },
-    { rank: 5, name: "FirewallFox", xp: 1280 },
+    { rank: 1, name: "CyberNova", xp: 1240 },
+    { rank: 2, name: "StarGuard", xp: 980 },
+    { rank: 3, name: "ByteRunner", xp: 875 },
+    { rank: 4, name: "DataDefender", xp: 720 },
+    { rank: 5, name: "FirewallFox", xp: 650 },
   ];
 
   const handleGameClick = (game: any) => {
@@ -1154,15 +1188,31 @@ export default function MissionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] pb-20 relative">
+    <div className="min-h-screen bg-[#0a0e1a] pb-24 relative">
       {/* ── Hero Section ── */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#00d4ff]/5 via-transparent to-transparent" />
         <div className="container mx-auto px-4 max-w-5xl pt-10 pb-6 relative z-10">
           <motion.div className="text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-[0_0_20px_rgba(0,212,255,0.4)]">
-              ⚡ Training Center
-            </h1>
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-[0_0_20px_rgba(0,212,255,0.4)]">
+                ⚡ Training Center
+              </h1>
+              <div className="group relative">
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold border ${
+                  tier === "junior"
+                    ? "border-yellow-400/40 bg-yellow-400/10 text-yellow-300"
+                    : tier === "defender"
+                      ? "border-[#00d4ff]/40 bg-[#00d4ff]/10 text-[#00d4ff]"
+                      : "border-red-400/40 bg-red-400/10 text-red-300"
+                }`}>
+                  {trainingTierEmoji} {trainingTierLabel}
+                </span>
+                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#1a2035] border border-white/10 px-3 py-2 text-xs text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-lg pointer-events-none">
+                  Based on your age at signup
+                </div>
+              </div>
+            </div>
             <p className="mt-2 text-gray-400 text-lg">Level up your cyber skills, Guardian!</p>
           </motion.div>
 
@@ -1221,7 +1271,7 @@ export default function MissionsPage() {
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-extrabold text-white">
-              TODAY'S MISSIONS 🎯
+              🎯 Daily Missions
             </h2>
             <span className="text-xs text-gray-400 font-mono">Resets in 14h 22m</span>
           </div>
@@ -1254,11 +1304,11 @@ export default function MissionsPage() {
               disabled={!allDailyDone}
               className={`rounded-full px-6 py-2.5 text-sm font-bold transition-all ${
                 allDailyDone
-                  ? "bg-[#00ff88] text-[#0a0e1a] shadow-[0_0_20px_rgba(0,255,136,0.4)] hover:bg-[#00ff88]/80"
+                  ? "bg-gradient-to-r from-yellow-400 to-amber-500 text-[#0a0e1a] shadow-[0_0_20px_rgba(255,200,0,0.4)] hover:shadow-[0_0_30px_rgba(255,200,0,0.6)]"
                   : "bg-gray-700 text-gray-500 cursor-not-allowed"
               }`}
             >
-              {allDailyDone ? "🎁 Claim Bonus!" : "🔒 Complete all to claim bonus"}
+              {allDailyDone ? "🎁 Claim Bonus XP!" : "🔒 Complete all to claim bonus"}
             </button>
           </div>
         </motion.div>
@@ -1273,12 +1323,12 @@ export default function MissionsPage() {
           <img
             src={heroCharacter}
             alt="Byte"
-            className="h-20 w-20 object-contain drop-shadow-[0_0_10px_rgba(0,212,255,0.3)]"
+            className={`object-contain drop-shadow-[0_0_10px_rgba(0,212,255,0.3)] ${isJuniorTier ? "h-24 w-24" : "h-20 w-20"}`}
           />
           <div className="flex-1 min-w-0">
             <p className="text-xs text-[#00d4ff] font-bold uppercase tracking-wider mb-1">Byte's Pick</p>
             <p className="text-gray-400 text-sm mb-1">Byte says: Try this one today, Guardian! 👾</p>
-            <p className="text-lg font-bold text-white">{featuredGame.title}</p>
+            <p className="text-lg font-bold text-white">Virus Vaporizer</p>
           </div>
           <button
             onClick={() =>
@@ -1295,39 +1345,41 @@ export default function MissionsPage() {
 
         {/* ── Quiz Challenges section ── */}
         <SectionHeader icon="🎮" title="Quiz Challenges" />
-        <HScrollSection>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {quizMissions.map((g) => (
-            <div key={g.id} className="min-w-[240px] snap-start md:min-w-0">
-              <NeonGameCard
-                title={g.title}
-                description={g.desc}
-                stars={g.stars}
-                typeBadge={g.badge}
-                locked={g.locked}
-                onClick={() => handleGameClick(g)}
-              />
-            </div>
+            <NeonGameCard
+              key={g.id}
+              title={g.title}
+              description={g.desc}
+              stars={g.stars}
+              typeBadge={g.badge}
+              locked={g.locked}
+              onClick={() => handleGameClick(g)}
+            />
           ))}
-        </HScrollSection>
+        </div>
 
         {/* ── All other game sections ── */}
         {sections.map((section) => (
           <div key={section.title}>
-            <SectionHeader icon={section.icon} title={section.title} />
-            <HScrollSection>
+            <div className="flex items-center gap-3 mb-5 mt-10">
+              <div className={`w-1 h-8 rounded-full ${section.color}`} />
+              <span className="text-2xl">{section.icon}</span>
+              <h2 className="text-xl font-extrabold tracking-wide text-white drop-shadow-[0_0_8px_rgba(0,212,255,0.5)]">{section.title}</h2>
+            </div>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {section.games.map((g: any) => (
-                <div key={g.id} className="min-w-[240px] snap-start md:min-w-0">
-                  <NeonGameCard
-                    title={g.title}
-                    description={g.desc}
-                    stars={g.stars ?? 0}
-                    typeBadge={g.badge}
-                    locked={g.locked ?? false}
-                    onClick={() => handleGameClick(g)}
-                  />
-                </div>
+                <NeonGameCard
+                  key={g.id}
+                  title={g.title}
+                  description={g.desc}
+                  stars={g.stars ?? 0}
+                  typeBadge={g.badge}
+                  locked={g.locked ?? false}
+                  onClick={() => handleGameClick(g)}
+                />
               ))}
-            </HScrollSection>
+            </div>
           </div>
         ))}
 
@@ -1338,9 +1390,10 @@ export default function MissionsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <h2 className="text-lg font-extrabold text-yellow-400 mb-4 drop-shadow-[0_0_8px_rgba(255,200,0,0.3)]">
+          <h2 className="text-lg font-extrabold text-yellow-400 mb-1 drop-shadow-[0_0_8px_rgba(255,200,0,0.3)]">
             🏆 Top Guardians This Week
           </h2>
+          <p className="text-xs text-gray-500 mb-4">Leaderboard resets every Monday</p>
           <div className="space-y-2">
             {leaderboard.map((entry) => (
               <div
@@ -1354,7 +1407,7 @@ export default function MissionsPage() {
                 </span>
                 <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#00d4ff]/30 to-[#00ff88]/30 border border-white/10" />
                 <span className="flex-1 text-sm font-bold text-white">{entry.name}</span>
-                <span className="text-sm font-bold text-yellow-400">{entry.xp} XP</span>
+                <span className="text-sm font-bold text-yellow-400">{entry.xp.toLocaleString()} XP</span>
               </div>
             ))}
             {/* Your position */}
@@ -1371,19 +1424,23 @@ export default function MissionsPage() {
       {/* ── Byte floating character ── */}
       <div className="fixed bottom-4 right-4 z-30 flex flex-col items-end gap-2">
         <motion.div
-          className="rounded-2xl rounded-br-sm border border-[#00d4ff]/30 bg-[#0f1729]/95 backdrop-blur px-4 py-2.5 max-w-[200px] shadow-lg"
+          className="rounded-2xl rounded-br-sm border border-[#00d4ff]/30 bg-[#0f1729]/95 backdrop-blur px-4 py-2.5 max-w-[220px] shadow-lg"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 1 }}
         >
-          <p className="text-xs text-gray-300">Pick a game and let's train, Guardian! 💪</p>
+          <p className="text-xs text-gray-300">
+            {isJuniorTier
+              ? "Let's play a game together! You're doing AMAZING! 🌟💪"
+              : "Pick a game and let's train, Guardian! 💪"}
+          </p>
         </motion.div>
         <motion.img
           src={heroCharacter}
           alt="Byte"
-          className="h-16 w-16 object-contain drop-shadow-[0_0_12px_rgba(0,212,255,0.4)]"
+          className={`object-contain drop-shadow-[0_0_12px_rgba(0,212,255,0.4)] ${isJuniorTier ? "h-20 w-20" : "h-16 w-16"}`}
           animate={{ y: [0, -6, 0] }}
-          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+          transition={{ repeat: Infinity, duration: isJuniorTier ? 2 : 2.5, ease: "easeInOut" }}
         />
       </div>
     </div>
