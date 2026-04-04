@@ -17,6 +17,7 @@ import {
 import { getLevelRank } from "@/data/levelTitles";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import { Button } from "@/components/ui/button";
+import HQOrientation from "@/components/zone/HQOrientation"; // ← CHANGE 1
 
 /* ─── City node definitions ─────────────────────────────── */
 const CITY_NODES = [
@@ -177,7 +178,6 @@ type SpeakerRole = "guide" | "villain" | "system";
 
 interface DialogueLine {
   speaker: SpeakerRole;
-  /** villain name shown in bubble — guide uses player name */
   villainName?: string;
   text: string;
   emotion?: "neutral" | "happy" | "serious" | "warning" | "excited";
@@ -188,10 +188,9 @@ interface ZoneScript {
   completion: DialogueLine[];
   badge?: string;
   xp: number;
-  unlocks: string[]; // zone ids
+  unlocks: string[];
 }
 
-/* ── Per-zone story scripts ─────────────────────────────── */
 const ZONE_SCRIPTS: Record<string, ZoneScript> = {
   __map__: {
     xp: 0,
@@ -613,7 +612,6 @@ const ZONE_SCRIPTS: Record<string, ZoneScript> = {
   },
 };
 
-/* ── Ambient chatter lines ──────────────────────────────── */
 interface AmbientLine {
   speaker: SpeakerRole;
   villainName?: string;
@@ -654,7 +652,6 @@ const AMBIENT_LINES: AmbientLine[] = [
   },
 ];
 
-/* ── useStoryEngine ─────────────────────────────────────── */
 function useStoryEngine(childId: string | null) {
   const storageKey = `cga_story_${childId ?? "guest"}`;
 
@@ -670,14 +667,12 @@ function useStoryEngine(childId: string | null) {
     localStorage.setItem(storageKey, JSON.stringify(Array.from(seenIntros)));
   }, [seenIntros, storageKey]);
 
-  // ── Cutscene state ──
   const [cutscene, setCutscene] = useState<{
     lines: DialogueLine[];
     index: number;
     onDone: () => void;
   } | null>(null);
 
-  // ── Completion panel state ──
   const [completion, setCompletion] = useState<{
     zoneName: string;
     lines: DialogueLine[];
@@ -688,7 +683,6 @@ function useStoryEngine(childId: string | null) {
     onDone: (unlocked: string[]) => void;
   } | null>(null);
 
-  // ── Ambient state ──
   const [ambientLine, setAmbientLine] = useState<AmbientLine | null>(null);
   const [activeZone, setActiveZone] = useState<string | null>(null);
   const ambientTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -716,7 +710,6 @@ function useStoryEngine(childId: string | null) {
     };
   }, [cutscene, completion, scheduleAmbient]);
 
-  // ── Trigger zone intro ──
   const triggerIntro = useCallback(
     (zoneId: string, onEnter: () => void) => {
       setActiveZone(zoneId);
@@ -743,7 +736,6 @@ function useStoryEngine(childId: string | null) {
     [seenIntros],
   );
 
-  // ── Trigger map world intro ──
   const triggerMapIntro = useCallback(() => {
     if (seenIntros.has("__map__")) return;
     const script = ZONE_SCRIPTS["__map__"];
@@ -758,7 +750,6 @@ function useStoryEngine(childId: string | null) {
     });
   }, [seenIntros]);
 
-  // ── Trigger zone completion ──
   const triggerCompletion = useCallback((zoneId: string, zoneName: string, onDone: (unlocked: string[]) => void) => {
     const script = ZONE_SCRIPTS[zoneId];
     if (!script) {
@@ -776,7 +767,6 @@ function useStoryEngine(childId: string | null) {
     });
   }, []);
 
-  // ── Advance cutscene ──
   const advanceCutscene = useCallback(() => {
     setCutscene((prev) => {
       if (!prev) return null;
@@ -796,7 +786,6 @@ function useStoryEngine(childId: string | null) {
     });
   }, []);
 
-  // ── Advance completion ──
   const advanceCompletion = useCallback(() => {
     setCompletion((prev) => {
       if (!prev) return null;
@@ -830,9 +819,6 @@ function useStoryEngine(childId: string | null) {
   };
 }
 
-/* ═══════════════════════════════════════════════════════════
-   CUTSCENE PLAYER
-   ═══════════════════════════════════════════════════════════ */
 function useTypewriter(text: string, speed = 25) {
   const [shown, setShown] = useState("");
   const [done, setDone] = useState(false);
@@ -901,10 +887,7 @@ function CutscenePlayer({
       style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 40%, transparent 100%)" }}
       onClick={handleClick}
     >
-      {/* Top cinematic bar */}
       <div className="absolute top-0 left-0 right-0 h-16 bg-black/70 backdrop-blur-sm" />
-
-      {/* Progress dots */}
       <div className="absolute top-5 left-1/2 -translate-x-1/2 flex gap-1.5">
         {lines.map((_, i) => (
           <motion.div
@@ -916,8 +899,6 @@ function CutscenePlayer({
           />
         ))}
       </div>
-
-      {/* Skip */}
       <button
         className="absolute top-4 right-4 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[10px] font-bold text-white/40 backdrop-blur-sm hover:text-white/70 transition-colors"
         onClick={(e) => {
@@ -927,8 +908,6 @@ function CutscenePlayer({
       >
         SKIP ▶▶
       </button>
-
-      {/* Dialogue box */}
       <motion.div
         key={index}
         initial={{ y: 12, opacity: 0 }}
@@ -940,7 +919,6 @@ function CutscenePlayer({
         }`}
       >
         <div className="flex items-start gap-4">
-          {/* Avatar */}
           <div
             className={`flex-shrink-0 flex h-14 w-14 items-center justify-center rounded-full border-2 ${
               isVillain
@@ -951,12 +929,10 @@ function CutscenePlayer({
             {isVillain ? (
               <span className="text-2xl">🦹</span>
             ) : (
-              <HeroAvatar avatarConfig={avatarConfig} size={40} fallbackEmoji="🦸" />
+              <img src="/byte-character.png" alt="Byte" className="w-10 h-10 object-contain" />
             )}
           </div>
-
           <div className="flex-1 min-w-0">
-            {/* Speaker name */}
             <p
               className={`mb-1.5 text-[10px] font-bold tracking-widest uppercase ${
                 isVillain ? "text-[hsl(0_70%_65%)]" : "text-[hsl(195_80%_65%)]"
@@ -964,8 +940,6 @@ function CutscenePlayer({
             >
               {isVillain ? (line.villainName ?? "Villain") : playerName}
             </p>
-
-            {/* Dialogue text */}
             <p className="text-sm leading-relaxed text-white min-h-[3rem]">
               {shown}
               {!done && (
@@ -978,7 +952,6 @@ function CutscenePlayer({
                 />
               )}
             </p>
-
             {done && (
               <motion.p
                 initial={{ opacity: 0 }}
@@ -996,9 +969,6 @@ function CutscenePlayer({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ZONE COMPLETION PANEL
-   ═══════════════════════════════════════════════════════════ */
 function ZoneCompletionPanel({
   zoneName,
   lines,
@@ -1060,7 +1030,6 @@ function ZoneCompletionPanel({
         transition={{ type: "spring", damping: 22, stiffness: 280 }}
         className="w-full max-w-md rounded-3xl border border-[hsl(160_65%_50%/0.3)] bg-[hsl(210_40%_11%)] p-6 shadow-[0_0_60px_hsl(160_65%_50%/0.12)]"
       >
-        {/* Header */}
         <div className="mb-5 flex items-center gap-3">
           <motion.div
             initial={{ scale: 0 }}
@@ -1075,8 +1044,6 @@ function ZoneCompletionPanel({
             <p className="text-lg font-bold text-white">{zoneName}</p>
           </div>
         </div>
-
-        {/* Debrief dialogue */}
         <div className="mb-5 space-y-2 max-h-48 overflow-y-auto">
           {lines.map((l, i) => {
             const isVillain = l.speaker === "villain";
@@ -1098,7 +1065,7 @@ function ZoneCompletionPanel({
                   {isVillain ? (
                     <span className="text-sm">🦹</span>
                   ) : (
-                    <HeroAvatar avatarConfig={avatarConfig} size={18} fallbackEmoji="🦸" />
+                    <img src="/byte-character.png" alt="Byte" className="w-5 h-5 object-contain" />
                   )}
                 </div>
                 <div>
@@ -1115,17 +1082,12 @@ function ZoneCompletionPanel({
             );
           })}
         </div>
-
-        {/* Rewards — only on last line */}
         {isLast && (
           <div className="mb-5 flex gap-3 flex-wrap">
-            {/* XP */}
             <div className="flex-1 min-w-[90px] rounded-xl border border-[hsl(45_90%_55%/0.25)] bg-[hsl(45_90%_55%/0.08)] p-3 text-center">
               <p className="text-[9px] text-white/40 uppercase tracking-wide mb-1">XP Earned</p>
               <p className="text-2xl font-bold text-[hsl(45_90%_60%)] tabular-nums">+{xpCount}</p>
             </div>
-
-            {/* Badge */}
             {badge && (
               <motion.div
                 animate={{ opacity: showBadge ? 1 : 0, scale: showBadge ? 1 : 0.85 }}
@@ -1137,8 +1099,6 @@ function ZoneCompletionPanel({
                 <p className="text-[10px] font-bold text-white/70 mt-0.5 leading-tight">{badge}</p>
               </motion.div>
             )}
-
-            {/* Unlocks */}
             {unlocks.length > 0 && (
               <motion.div
                 animate={{ opacity: showUnlocks ? 1 : 0, y: showUnlocks ? 0 : 8 }}
@@ -1159,8 +1119,6 @@ function ZoneCompletionPanel({
             )}
           </div>
         )}
-
-        {/* Actions */}
         <div className="flex items-center gap-3">
           {!isLast ? (
             <>
@@ -1188,9 +1146,6 @@ function ZoneCompletionPanel({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   AMBIENT BUBBLE
-   ═══════════════════════════════════════════════════════════ */
 function AmbientBubble({
   line,
   avatarConfig,
@@ -1216,7 +1171,7 @@ function AmbientBubble({
         {isVillain ? (
           <span className="text-base">🦹</span>
         ) : (
-          <HeroAvatar avatarConfig={avatarConfig} size={20} fallbackEmoji="🦸" />
+          <img src="/byte-character.png" alt="Byte" className="w-6 h-6 object-contain" />
         )}
       </div>
       <div>
@@ -1233,9 +1188,6 @@ function AmbientBubble({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   UNLOCK ANIMATION
-   ═══════════════════════════════════════════════════════════ */
 function UnlockBurst({ x, y, name, onDone }: { x: number; y: number; name: string; onDone: () => void }) {
   const [phase, setPhase] = useState<"in" | "label" | "out">("in");
   useEffect(() => {
@@ -1283,9 +1235,6 @@ function UnlockBurst({ x, y, name, onDone }: { x: number; y: number; name: strin
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SVG CONNECTIONS (unchanged)
-   ═══════════════════════════════════════════════════════════ */
 function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqCompleted: boolean }) {
   return (
     <svg
@@ -1358,9 +1307,6 @@ function MapConnections({ statuses, hqCompleted }: { statuses: NodeStatus[]; hqC
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   HUD BAR (unchanged)
-   ═══════════════════════════════════════════════════════════ */
 function HUDBar({
   playerName,
   level,
@@ -1407,9 +1353,6 @@ function HUDBar({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   WORLD DETAIL PANEL (preserved — no changes needed)
-   ═══════════════════════════════════════════════════════════ */
 function WorldDetailPanel({
   world,
   mission,
@@ -1445,36 +1388,23 @@ function WorldDetailPanel({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl bg-[hsl(45_80%_30%)]">
-              🏠
-            </div>
+            <img src="/byte-character.png" alt="Byte" className="w-12 h-12 object-contain" />
             <div className="flex-1">
-              <h2 className="text-lg font-bold text-white">CYBER HERO COMMAND // GLOBAL HQ</h2>
-              <p className="text-xs text-[hsl(45_90%_65%)]">Your home base and training ground</p>
+              <h2 className="text-lg font-bold text-white">CYBER HERO COMMAND // HOME BASE</h2>
+              <p className="text-xs text-[hsl(45_90%_65%)]">Orientation complete — well done, Guardian!</p>
             </div>
             <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10 transition-colors">
               <X className="h-5 w-5 text-white/50" />
             </button>
           </div>
-          <p className="mb-5 text-sm text-white/70 leading-relaxed">
-            Welcome, Guardian! This is your home base. Complete your orientation mission to unlock your first zone and
-            begin protecting the digital world.
+          <p className="text-sm text-white/70 leading-relaxed">
+            This is home base, Guardian. Everything started here. Now get back out there — Password Peak is waiting!
           </p>
-          <div className="mb-5 flex items-center gap-3 rounded-xl border-2 border-[hsl(45_90%_55%/0.3)] bg-[hsl(45_90%_55%/0.08)] p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[hsl(45_80%_45%/0.2)] text-lg">
-              🎯
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white">OP: GUARDIAN ORIENTATION</p>
-              <p className="text-[10px] text-white/40">Difficulty: ◆◇◇◇◇ · TUTORIAL</p>
-              <p className="text-[10px] text-[hsl(45_90%_65%)]">+100 XP · Unlocks: Password Peak + Encrypt Enclave</p>
-            </div>
-          </div>
           <Button
-            className="w-full text-sm font-bold bg-[hsl(45_90%_50%)] hover:bg-[hsl(45_90%_45%)] text-[hsl(210_40%_10%)] border-0 shadow-[0_0_20px_hsl(45_90%_50%/0.3)]"
-            onClick={() => onStartLevel("password-safety", 0)}
+            className="mt-5 w-full text-sm font-bold bg-[hsl(45_90%_50%)] hover:bg-[hsl(45_90%_45%)] text-[hsl(210_40%_10%)] border-0"
+            onClick={onClose}
           >
-            🚀 BEGIN ORIENTATION
+            Back to Map 🗺️
           </Button>
         </motion.div>
       </motion.div>
@@ -1631,6 +1561,7 @@ export default function MissionWorldMap() {
   const [selectedWorld, setSelectedWorld] = useState<(typeof CITY_NODES)[number] | null>(null);
   const [hasClickedHQ, setHasClickedHQ] = useState(() => localStorage.getItem("cyber_hero_hq_clicked") === "true");
   const [pendingUnlocks, setPendingUnlocks] = useState<{ id: string; x: number; y: number; name: string }[]>([]);
+  const [showHQOrientation, setShowHQOrientation] = useState(false); // ← CHANGE 2
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -1710,19 +1641,15 @@ export default function MissionWorldMap() {
   const completedCount = nodeStatuses.filter((n) => n.status === "completed").length;
   const totalPlayable = CITY_NODES.filter((n) => missionIds.has(n.id)).length;
 
-  // ── Story engine ──
   const story = useStoryEngine(activeChildId);
 
-  // Trigger world intro on first load
   useEffect(() => {
     const t = setTimeout(() => story.triggerMapIntro(), 1000);
     return () => clearTimeout(t);
   }, []);
 
-  // Zone name map for unlock labels
   const zoneNameMap = useMemo(() => Object.fromEntries(CITY_NODES.map((n) => [n.id, n.name])), []);
 
-  // Get pixel position of a node relative to map container
   const getNodePos = useCallback((zoneId: string) => {
     if (!mapRef.current) return { x: 0, y: 0 };
     const el = mapRef.current.querySelector(`[data-zone="${zoneId}"]`);
@@ -1732,13 +1659,18 @@ export default function MissionWorldMap() {
     return { x: nr.left - mr.left + nr.width / 2, y: nr.top - mr.top + nr.height / 2 };
   }, []);
 
+  // ← CHANGE 3: updated handleNodeClick
   const handleNodeClick = (node: (typeof CITY_NODES)[number], index: number) => {
     if (node.isHub) {
       if (!hasClickedHQ) {
         setHasClickedHQ(true);
         localStorage.setItem("cyber_hero_hq_clicked", "true");
       }
-      story.triggerIntro("cyberguard-academy", () => setSelectedWorld(node));
+      if (!hqCompleted) {
+        setShowHQOrientation(true);
+      } else {
+        setSelectedWorld(node);
+      }
       return;
     }
     const { status } = nodeStatuses[index];
@@ -1754,7 +1686,6 @@ export default function MissionWorldMap() {
       .eq("id", activeChildId);
     queryClient.invalidateQueries({ queryKey: ["child", activeChildId] });
     setSelectedWorld(null);
-    // Trigger HQ completion debrief
     story.triggerCompletion("cyberguard-academy", "Cyber Hero Command", (unlocked) => {
       const bursts = unlocked.map((id) => ({ id, name: zoneNameMap[id] ?? id, ...getNodePos(id) }));
       setPendingUnlocks(bursts);
@@ -1770,10 +1701,6 @@ export default function MissionWorldMap() {
     setSelectedWorld(null);
     navigate(`/missions?mission=${missionId}`);
   };
-
-  // Call this from your mission completion screen when a zone is finished:
-  // story.triggerCompletion(zoneId, zoneName, (unlocked) => { ... })
-  // For now wired to a dev helper below.
 
   const selectedMission = selectedWorld ? MISSIONS.find((m) => m.id === selectedWorld.id) : undefined;
 
@@ -1801,7 +1728,6 @@ export default function MissionWorldMap() {
         ))}
       </div>
 
-      {/* Scanlines */}
       <div
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
@@ -1830,7 +1756,6 @@ export default function MissionWorldMap() {
           </p>
         </motion.div>
 
-        {/* MAP */}
         <div className="relative mx-auto w-full" style={{ aspectRatio: "16/10", maxWidth: "900px" }}>
           <div
             className="absolute inset-0 rounded-2xl border border-[hsl(195_80%_50%/0.15)] overflow-hidden shadow-2xl"
@@ -1851,9 +1776,7 @@ export default function MissionWorldMap() {
 
           <MapConnections statuses={nodeStatuses.map((n) => n.status)} hqCompleted={hqCompleted} />
 
-          {/* Map container ref for unlock animation positioning */}
           <div ref={mapRef} className="absolute inset-0">
-            {/* Unlock burst animations */}
             {pendingUnlocks.map((u) => (
               <UnlockBurst
                 key={u.id}
@@ -1864,7 +1787,6 @@ export default function MissionWorldMap() {
               />
             ))}
 
-            {/* City Nodes */}
             {CITY_NODES.map((node, index) => {
               if (node.isHub) {
                 return (
@@ -2036,7 +1958,6 @@ export default function MissionWorldMap() {
           </div>
         </div>
 
-        {/* Legend */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -2061,7 +1982,7 @@ export default function MissionWorldMap() {
         </motion.div>
       </div>
 
-      {/* Ambient bubble — shows when no cutscene active */}
+      {/* Ambient bubble */}
       <AnimatePresence>
         {story.ambientLine && !story.cutscene && !story.completion && (
           <AmbientBubble line={story.ambientLine} avatarConfig={avatarConfig} playerName={playerName} />
@@ -2115,32 +2036,20 @@ export default function MissionWorldMap() {
           />
         )}
       </AnimatePresence>
+
+      {/* ← CHANGE 4: HQ Orientation overlay */}
+      <AnimatePresence>
+        {showHQOrientation && (
+          <HQOrientation
+            playerName={playerName}
+            avatarConfig={avatarConfig}
+            onComplete={async (choiceId) => {
+              setShowHQOrientation(false);
+              await handleHQComplete();
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-
-/*
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  HOW TO TRIGGER ZONE COMPLETION FROM YOUR MISSION PAGE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-When a player finishes all games in a zone, on your missions
-page after writing to Supabase, navigate back to the map
-with a query param:
-
-  navigate(`/world-map?completed=${missionId}`);
-
-Then in this component add a useEffect:
-
-  const completedZoneId = new URLSearchParams(window.location.search).get("completed");
-  useEffect(() => {
-    if (!completedZoneId) return;
-    const node = CITY_NODES.find(n => n.id === completedZoneId);
-    if (!node) return;
-    story.triggerCompletion(completedZoneId, node.name, (unlocked) => {
-      const bursts = unlocked.map(id => ({ id, name: zoneNameMap[id] ?? id, ...getNodePos(id) }));
-      setPendingUnlocks(bursts);
-    });
-  }, [completedZoneId]);
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*/
