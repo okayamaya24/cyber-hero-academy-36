@@ -48,7 +48,7 @@ function getZoneStatus(
 ): "completed" | "available" | "locked" {
   const progress = zoneProgress.find((p) => p.zone_id === zone.id);
   if (progress?.status === "completed") return "completed";
-  if (progress?.status === "available") return "available";
+  if (progress?.status === "available") return "available"; // ← ADD THIS
 
   if (continentId === "north-america") {
     const idx = NA_UNLOCK_ORDER.indexOf(zone.id);
@@ -2031,7 +2031,7 @@ export default function ContinentMapScreen() {
     if (!continent) return [];
     const cId = continentId ?? "";
     // Use engine's computeZoneStatus for migrated continents, fallback to inline for others
-    if (isContinentMigrated(cId)) {
+    if (false && isContinentMigrated(cId)) {
       return continent.zones.map((zone) => computeZoneStatus(zone, continent.zones, zoneProgress, cId));
     }
     return continent.zones.map((zone) => getZoneStatus(zone, continent.zones, zoneProgress, cId));
