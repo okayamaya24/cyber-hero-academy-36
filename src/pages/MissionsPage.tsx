@@ -312,6 +312,7 @@ export default function MissionsPage() {
 
   const { data: trainingSettings = [] } = useTrainingGameSettings();
 
+  const age = child?.age ?? 7;
   const isGameLockedByAdmin = (gameId: string): boolean => {
     const setting = trainingSettings.find((s) => s.id === gameId);
     if (!setting) return true; // default locked
