@@ -59,6 +59,15 @@ export default function AdminGamesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<GameForm>(emptyForm);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
+
+  const { data: trainingSettings = [] } = useTrainingGameSettings();
+  const { upsertSetting, bulkUpsert } = useTrainingGameSettingsMutations();
+
+  const getGameSetting = (gameId: string): TrainingGameSetting => {
+    const found = trainingSettings.find((s) => s.id === gameId);
+    return found ?? { id: gameId, unlocked: false, tier_junior: false, tier_hero: false, tier_elite: false, updated_at: "" };
+  };
 
   const { data: games, isLoading } = useQuery({
     queryKey: ["admin-games"],
