@@ -312,7 +312,7 @@ const HQOrientation = ({ playerName, avatarConfig, onComplete }: HQOrientationPr
             transition={{ duration: 0.4 }}
             className="relative z-10 flex flex-col items-center gap-5 max-w-md px-6 text-center py-12 w-full"
           >
-            <div className="text-4xl">🦊</div>
+            <img src="/byte-character.png" alt="Byte" className="w-20 h-20 object-contain" />
             <h2 className="text-xl font-bold text-white font-['Orbitron']">Before you go…</h2>
 
             <div className="bg-cyan-950/80 border border-cyan-500/40 rounded-2xl px-5 py-4 text-left w-full">
