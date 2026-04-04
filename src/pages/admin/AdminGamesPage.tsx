@@ -13,7 +13,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/com
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Search, Pencil, Trash2, Eye, EyeOff, Archive, Lock, Unlock } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Eye, EyeOff, Archive, Lock, Unlock, ChevronDown } from "lucide-react";
+import { useTrainingGameSettings, useTrainingGameSettingsMutations, type TrainingGameSetting } from "@/hooks/useTrainingGameSettings";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type GameStatus = "draft" | "live" | "scheduled" | "archived";
 
