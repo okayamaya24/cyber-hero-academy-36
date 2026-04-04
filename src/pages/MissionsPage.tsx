@@ -22,6 +22,7 @@ import {
   type Question,
   type LearningMode,
   type MiniGameType,
+  type AgeTier,
   getMissionGames,
   getMissionLevels,
   getTotalGames,
