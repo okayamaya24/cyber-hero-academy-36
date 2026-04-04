@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, X } from "lucide-react";
+import HQOrientation from "@/components/zone/HQOrientation";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -2002,6 +2003,8 @@ export default function ContinentMapScreen() {
   const [selectedZone, setSelectedZone] = useState<ZoneDef | null>(null);
   const [hoveredNodeStatus, setHoveredNodeStatus] = useState<string | null>(null);
   const [showUnlockBurst, setShowUnlockBurst] = useState(false);
+  const [showHQOrientation, setShowHQOrientation] = useState(false);
+  const [showHQBubble, setShowHQBubble] = useState(false);
 
   const continent = getContinentById(continentId || "");
 
@@ -2063,7 +2066,45 @@ export default function ContinentMapScreen() {
 
   const handleZoneClick = (zone: ZoneDef, index: number) => {
     if (zoneStatuses[index] === "locked") return;
+
+    // HQ is not a playable zone — it's the one-time orientation only
+    if (zone.isHQ) {
+      const hqCompleted = child?.hq_completed === true;
+      if (!hqCompleted) {
+        setShowHQOrientation(true);
+      } else {
+        setShowHQBubble(true);
+        setTimeout(() => setShowHQBubble(false), 4000);
+      }
+      return;
+    }
+
     story.triggerIntro(zone.id, () => setSelectedZone(zone));
+  };
+
+  const handleHQOrientationComplete = async (choiceId: string) => {
+    setShowHQOrientation(false);
+    if (activeChildId) {
+      await supabase
+        .from("child_profiles")
+        .update({ hq_completed: true })
+        .eq("id", activeChildId);
+      // Mark HQ zone as completed and unlock next zone
+      await supabase.from("zone_progress").upsert(
+        { child_id: activeChildId, continent_id: continentId!, zone_id: "hq", status: "completed", games_completed: 1, total_games: 1, stars_earned: 3 },
+        { onConflict: "child_id,zone_id" }
+      );
+      const nextZoneId = continent?.zones[1]?.id;
+      if (nextZoneId) {
+        await supabase.from("zone_progress").upsert(
+          { child_id: activeChildId, continent_id: continentId!, zone_id: nextZoneId, status: "available", games_completed: 0, total_games: 4, stars_earned: 0 },
+          { onConflict: "child_id,zone_id" }
+        );
+      }
+      queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
+      queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId, continentId] });
+      queryClient.invalidateQueries({ queryKey: ["child-profile"] });
+    }
   };
 
   if (!continent) return null;
@@ -2349,6 +2390,36 @@ export default function ContinentMapScreen() {
               navigate(`/world-map/${continentId}/${selectedZone.id}`);
             }}
           />
+        )}
+      </AnimatePresence>
+
+      {/* HQ Orientation overlay */}
+      <AnimatePresence>
+        {showHQOrientation && (
+          <HQOrientation
+            playerName={playerName}
+            avatarConfig={avatarConfig}
+            onComplete={handleHQOrientationComplete}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* HQ revisit speech bubble */}
+      <AnimatePresence>
+        {showHQBubble && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 max-w-sm"
+          >
+            <div className="bg-[hsl(195_60%_12%/0.95)] border border-[hsl(195_80%_50%/0.4)] rounded-2xl px-5 py-4 backdrop-blur-md shadow-lg">
+              <p className="text-[hsl(195_80%_80%)] text-sm leading-relaxed">
+                <span className="text-[hsl(195_80%_60%)] font-bold">BYTE:</span>{" "}
+                "This is where it all started, Guardian. Ready to keep going?"
+              </p>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
