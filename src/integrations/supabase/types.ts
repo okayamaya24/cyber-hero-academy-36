@@ -707,6 +707,33 @@ export type Database = {
         }
         Relationships: []
       }
+      training_game_settings: {
+        Row: {
+          id: string
+          tier_elite: boolean
+          tier_hero: boolean
+          tier_junior: boolean
+          unlocked: boolean
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          tier_elite?: boolean
+          tier_hero?: boolean
+          tier_junior?: boolean
+          unlocked?: boolean
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tier_elite?: boolean
+          tier_hero?: boolean
+          tier_junior?: boolean
+          unlocked?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       world_locks: {
         Row: {
           admin_override: boolean | null
