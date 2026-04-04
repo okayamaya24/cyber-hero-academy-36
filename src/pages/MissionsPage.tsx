@@ -154,77 +154,75 @@ function SectionHeader({ icon, title }: { icon: string; title: string }) {
   );
 }
 
-/* ─── Game Card (generic) ─── */
-function GameCard({
+/* ─── Neon Game Card ─── */
+function NeonGameCard({
   title,
-  zone,
-  zoneIcon,
   description,
   stars,
-  bestScore,
-  maxScore,
   typeBadge,
-  guideImage,
+  locked,
   onClick,
 }: {
   title: string;
-  zone: string;
-  zoneIcon: string;
   description: string;
   stars: number;
-  bestScore?: number;
-  maxScore?: number;
   typeBadge: string;
-  guideImage?: string;
+  locked?: boolean;
   onClick: () => void;
 }) {
   return (
-    <motion.div
-      variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-      className="group overflow-hidden rounded-2xl border-2 bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-playful"
-    >
-      <div className="p-5">
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-2xl">{zoneIcon}</span>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold truncate">{title}</h3>
-            <p className="text-xs text-muted-foreground">{zone}</p>
+    <div className="group relative" title={locked ? "Complete Adventure zones to unlock" : undefined}>
+      <motion.div
+        variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+        className={`relative overflow-hidden rounded-2xl border bg-[#0f1729] p-5 transition-all ${
+          locked
+            ? "border-white/10 opacity-60 cursor-not-allowed"
+            : "border-[#00d4ff]/30 hover:border-[#00d4ff]/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.15)] cursor-pointer hover:-translate-y-1"
+        }`}
+        onClick={locked ? undefined : onClick}
+        whileHover={locked ? undefined : { scale: 1.02 }}
+      >
+        {locked && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 rounded-2xl">
+            <LockIcon className="h-8 w-8 text-white/40" />
           </div>
-          {guideImage && (
-            <img
-              src={guideImage}
-              alt=""
-              className="h-10 w-10 object-contain opacity-70 group-hover:opacity-100 transition-opacity"
-            />
-          )}
-        </div>
-
-        <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{description}</p>
+        )}
 
         <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold text-white truncate">{title}</h3>
+          <span className="shrink-0 rounded-full bg-[#00d4ff]/10 border border-[#00d4ff]/20 px-2 py-0.5 text-[10px] font-bold text-[#00d4ff]">
+            {typeBadge}
+          </span>
+        </div>
+
+        <p className="text-xs text-gray-400 mb-4 line-clamp-2">{description}</p>
+
+        <div className="flex items-center justify-between">
           <div className="flex gap-0.5">
             {[1, 2, 3].map((s) => (
               <Star
                 key={s}
-                className={`h-4 w-4 ${s <= stars ? "text-accent fill-[hsl(var(--accent))]" : "text-muted"}`}
+                className={`h-4 w-4 ${s <= stars ? "text-yellow-400 fill-yellow-400" : "text-gray-600"}`}
               />
             ))}
           </div>
-          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">{typeBadge}</span>
+          {!locked && (
+            <button className="rounded-full bg-[#00d4ff] px-4 py-1.5 text-xs font-bold text-[#0a0e1a] transition-all hover:bg-[#00d4ff]/80 hover:shadow-[0_0_12px_rgba(0,212,255,0.4)]">
+              {stars > 0 ? "Play Again" : "Play Now"}
+            </button>
+          )}
         </div>
+      </motion.div>
+    </div>
+  );
+}
 
-        {bestScore !== undefined && maxScore !== undefined && (
-          <p className="text-xs text-muted-foreground mb-3">
-            Best: {bestScore}/{maxScore}
-          </p>
-        )}
-
-        <Button variant="outline" className="w-full" size="sm" onClick={onClick}>
-          <Gamepad2 className="mr-2 h-3.5 w-3.5" />
-          Play {stars > 0 ? "Again" : "Now"}
-        </Button>
-      </div>
-    </motion.div>
+/* ─── Horizontal scroll wrapper ─── */
+function HScrollSection({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory md:grid md:grid-cols-3 lg:grid-cols-4 md:overflow-visible md:pb-0">
+      {children}
+    </div>
   );
 }
 
