@@ -8,6 +8,7 @@ import { Star, CheckCircle2, ArrowRight, Mail, ExternalLink, Flame, Lock as Lock
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTrainingGameSettings, type TrainingGameSetting } from "@/hooks/useTrainingGameSettings";
 import WordSearchGame from "@/components/minigames/WordSearchGame";
 import PasswordBuilderGame from "@/components/minigames/PasswordBuilderGame";
 import SortGame from "@/components/minigames/SortGame";
