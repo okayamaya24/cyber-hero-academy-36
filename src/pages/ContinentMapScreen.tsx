@@ -2021,7 +2021,19 @@ export default function ContinentMapScreen() {
 
   const { data: child } = useChildProfile(activeChildId);
 
-  const { data: zoneProgress = [] } = useZoneProgress(activeChildId, continentId ?? null);
+  const { data: zoneProgress = [] } = useQuery({
+    queryKey: ["zone_progress", activeChildId, continentId],
+    queryFn: async () => {
+      if (!activeChildId || !continentId) return [];
+      const { data } = await supabase
+        .from("zone_progress")
+        .select("*")
+        .eq("child_id", activeChildId)
+        .eq("continent_id", continentId);
+      return data ?? [];
+    },
+    enabled: !!activeChildId && !!continentId,
+  });
 
   const avatarConfig = child?.avatar_config as Record<string, any> | null;
   const playerName = (child as any)?.name ?? "Guardian";
