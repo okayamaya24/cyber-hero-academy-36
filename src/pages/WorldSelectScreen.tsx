@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Shield, Zap, Globe, MessageCircle } from "lucide-react";
+import { Lock, Shield, Zap, Globe, MessageCircle, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -11,6 +11,44 @@ import HeroAvatar from "@/components/avatar/HeroAvatar";
 import VillainSprite from "@/components/world/VillainSprite";
 import StarfieldBackground from "@/components/world/StarfieldBackground";
 import { Progress } from "@/components/ui/progress";
+
+const CONTINENT_COLORS: Record<string, { border: string; glow: string; text: string }> = {
+  "north-america": {
+    border: "hsl(185 80% 50%)",
+    glow: "hsl(185 80% 50% / 0.25)",
+    text: "hsl(185 80% 65%)",
+  },
+  europe: {
+    border: "hsl(270 70% 55%)",
+    glow: "hsl(270 70% 55% / 0.25)",
+    text: "hsl(270 70% 70%)",
+  },
+  africa: {
+    border: "hsl(30 75% 50%)",
+    glow: "hsl(30 75% 50% / 0.25)",
+    text: "hsl(30 75% 65%)",
+  },
+  asia: {
+    border: "hsl(0 60% 45%)",
+    glow: "hsl(0 60% 45% / 0.25)",
+    text: "hsl(0 60% 65%)",
+  },
+  "south-america": {
+    border: "hsl(145 60% 45%)",
+    glow: "hsl(145 60% 45% / 0.25)",
+    text: "hsl(145 60% 60%)",
+  },
+  australia: {
+    border: "hsl(170 55% 45%)",
+    glow: "hsl(170 55% 45% / 0.25)",
+    text: "hsl(170 55% 60%)",
+  },
+  antarctica: {
+    border: "hsl(210 30% 55%)",
+    glow: "hsl(210 30% 55% / 0.25)",
+    text: "hsl(210 30% 70%)",
+  },
+};
 
 function HUDBar({
   playerName,
@@ -40,7 +78,7 @@ function HUDBar({
       <div className="flex items-center gap-2">
          <span className="flex items-center gap-1.5 text-xs text-[hsl(195_80%_70%)]">
            <Shield className="h-3.5 w-3.5" />
-           ARCS:
+           WORLDS:
            <span className="font-bold text-white">{worldsCompleted}/7</span>
          </span>
         <span
@@ -53,6 +91,28 @@ function HUDBar({
           {worldsCompleted === 7 ? "🏆 MASTER" : "🛡️ GUARDIAN MODE"}
         </span>
       </div>
+    </div>
+  );
+}
+
+function NavTabs() {
+  const navigate = useNavigate();
+  const tabs = [
+    { label: "Dashboard", path: "/kid-dashboard" },
+    { label: "Missions", path: "/missions" },
+    { label: "Parents", path: "/for-parents" },
+  ];
+  return (
+    <div className="flex items-center gap-4 mt-1.5 mb-1">
+      {tabs.map((tab) => (
+        <button
+          key={tab.label}
+          onClick={() => navigate(tab.path)}
+          className="text-xs text-white/50 hover:text-white/80 transition-colors font-medium"
+        >
+          {tab.label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -72,6 +132,7 @@ function ContinentCard({
   const isLocked = status === "locked";
   const totalZones = continent.zones.filter((z) => !z.isBoss && !z.isHQ).length;
   const progress = totalZones > 0 ? (zonesCompleted / totalZones) * 100 : 0;
+  const colors = CONTINENT_COLORS[continent.id] || CONTINENT_COLORS["north-america"];
 
   return (
     <motion.button
@@ -79,26 +140,19 @@ function ContinentCard({
       disabled={isLocked}
       whileHover={!isLocked ? { scale: 1.04, y: -5 } : {}}
       whileTap={!isLocked ? { scale: 0.97 } : {}}
-      className={`relative flex flex-col items-center gap-2.5 rounded-2xl border p-4 w-full backdrop-blur-md transition-all duration-300 min-h-[185px] justify-between text-left ${
-        isLocked
-          ? "border-white/5 bg-[hsl(210_40%_10%/0.5)] opacity-50 cursor-not-allowed"
+      className="relative flex flex-col items-start gap-2 rounded-2xl border-2 p-5 w-full backdrop-blur-md transition-all duration-300 min-h-[230px] justify-between text-left"
+      style={{
+        borderColor: isLocked ? "hsl(210 20% 20% / 0.4)" : colors.border + "66",
+        background: isLocked
+          ? "hsl(210 40% 10% / 0.5)"
           : status === "completed"
-            ? "border-[hsl(160_65%_50%/0.5)] bg-[hsl(160_65%_15%/0.25)] hover:shadow-[0_0_30px_hsl(160_65%_50%/0.25)] cursor-pointer"
-            : isAntarctica
-              ? "border-[hsl(200_60%_70%/0.3)] bg-[hsl(200_40%_15%/0.3)] hover:shadow-[0_0_30px_hsl(200_60%_70%/0.2)] cursor-pointer"
-              : "border-[hsl(195_80%_50%/0.3)] bg-[hsl(210_40%_14%/0.65)] hover:shadow-[0_0_30px_hsl(195_80%_50%/0.2)] hover:border-[hsl(195_80%_50%/0.55)] cursor-pointer"
-      }`}
+            ? `linear-gradient(180deg, hsl(160 65% 15% / 0.3), hsl(210 40% 8% / 0.8))`
+            : `linear-gradient(180deg, hsl(210 40% 16% / 0.7), hsl(210 40% 8% / 0.8))`,
+        boxShadow: isLocked ? "none" : `0 0 25px ${colors.glow}, inset 0 1px 0 ${colors.border}22`,
+        opacity: isLocked ? 0.5 : 1,
+        cursor: isLocked ? "not-allowed" : "pointer",
+      }}
     >
-      {!isLocked && (
-        <div
-          className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none ${
-            status === "completed"
-              ? "bg-[radial-gradient(ellipse_at_top,hsl(160_65%_50%/0.08),transparent_70%)]"
-              : "bg-[radial-gradient(ellipse_at_top,hsl(195_80%_50%/0.08),transparent_70%)]"
-          }`}
-        />
-      )}
-
       {isAntarctica && isLocked && (
         <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-b from-[hsl(200_60%_90%/0.05)] to-transparent" />
@@ -112,34 +166,36 @@ function ContinentCard({
         </div>
       )}
 
-      <div className="flex flex-col items-center gap-1.5 w-full">
+      <div className="flex flex-col items-start gap-1 w-full">
         <motion.span
-          className="text-4xl leading-none"
+          className="text-3xl leading-none"
           animate={!isLocked ? { y: [0, -3, 0] } : {}}
           transition={{ repeat: Infinity, duration: 3, ease: "easeInOut", delay: Math.random() * 2 }}
         >
           {continent.emoji}
         </motion.span>
-        <h3 className="text-sm font-bold text-white text-center leading-tight">{continent.name}</h3>
+        <h3 className="text-base font-bold leading-tight" style={{ color: colors.text }}>
+          {continent.name}
+        </h3>
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 w-full">
+      <div className="flex items-center gap-2 w-full">
         <VillainSprite villainName={continent.villain} size={28} />
         <div className="flex flex-col">
-          <span className="text-[8px] text-white/40 leading-none">VILLAIN</span>
-          <span className="text-[9px] font-bold text-[hsl(0_80%_65%)] leading-tight max-w-[85px]">
+          <span className="text-[9px] text-white/40 leading-none">VILLAIN</span>
+          <span className="text-[10px] font-bold text-white leading-tight max-w-[110px]">
             {continent.villain.toUpperCase()}
           </span>
         </div>
       </div>
 
-      <p className="text-[9px] text-white/35 text-center">{totalZones} Chapters + 1 Final Battle</p>
+      <p className="text-[10px] text-white/40">{totalZones} Zones + 1 Boss Battle</p>
 
       {!isLocked && (
         <div className="w-full space-y-0.5">
-          <div className="flex justify-between text-[8px] text-white/35">
+          <div className="flex justify-between text-[9px] text-white/40">
             <span>
-               {zonesCompleted}/{totalZones} chapters
+               {zonesCompleted}/{totalZones} Zones
              </span>
             <span>{Math.round(progress)}%</span>
           </div>
@@ -147,23 +203,36 @@ function ContinentCard({
         </div>
       )}
 
-      <span
-        className={`rounded-full px-2.5 py-0.5 text-[8px] font-bold border w-full text-center ${
-          status === "completed"
-            ? "bg-[hsl(160_65%_50%/0.15)] border-[hsl(160_65%_50%/0.3)] text-[hsl(160_65%_65%)]"
+      <div
+        className="rounded-full px-3 py-1.5 text-[10px] font-bold border-2 w-full text-center flex items-center justify-center gap-1"
+        style={{
+          borderColor: status === "completed"
+            ? "hsl(160 65% 50% / 0.5)"
             : status === "in_progress"
-              ? "bg-[hsl(195_80%_50%/0.12)] border-[hsl(195_80%_50%/0.3)] text-[hsl(195_80%_65%)]"
-              : "bg-white/5 border-white/10 text-white/30"
-        }`}
+              ? colors.border + "66"
+              : "hsl(210 20% 30% / 0.3)",
+          color: status === "completed"
+            ? "hsl(160 65% 65%)"
+            : status === "in_progress"
+              ? colors.text
+              : "hsl(210 20% 40%)",
+          background: status === "completed"
+            ? "hsl(160 65% 50% / 0.1)"
+            : "transparent",
+        }}
       >
-        {status === "completed"
-          ? "✅ COMPLETED"
-          : status === "in_progress"
-            ? "🔵 IN PROGRESS"
-            : isAntarctica
-              ? "🔒 Defeat all 6 villains to unlock"
-              : "🔒 LOCKED"}
-      </span>
+        {status === "completed" ? (
+          "✅ COMPLETED"
+        ) : status === "in_progress" ? (
+          <>
+            IN PROGRESS <ChevronRight className="h-3 w-3" />
+          </>
+        ) : isAntarctica ? (
+          "🔒 Defeat all 6 villains to unlock"
+        ) : (
+          "🔒 LOCKED"
+        )}
+      </div>
     </motion.button>
   );
 }
@@ -171,7 +240,7 @@ function ContinentCard({
 export default function WorldSelectScreen() {
   const { user, activeChildId } = useAuth();
   const navigate = useNavigate();
-  const [guideMessage, setGuideMessage] = useState("Choose a story arc to begin your adventure, Guardian! 🌍");
+  const [guideMessage, setGuideMessage] = useState("Choose a world to begin your adventure, Guardian! 🌍");
   const [idleIdx, setIdleIdx] = useState(0);
 
   useEffect(() => {
@@ -217,7 +286,6 @@ export default function WorldSelectScreen() {
       const progress = continentProgress.find((p: any) => p.continent_id === c.id);
       const adminLock = worldLocks.find((w: any) => w.id === c.id);
 
-      // Admin override takes priority
       if (adminLock?.admin_override) {
         map[c.id] = {
           status: adminLock.locked ? "locked" : progress?.status === "completed" ? "completed" : "in_progress",
@@ -227,7 +295,6 @@ export default function WorldSelectScreen() {
         continue;
       }
 
-      // Normal progression logic
       if (c.unlockOrder === 0) {
         map[c.id] = {
           status: progress?.status === "completed" ? "completed" : "in_progress",
@@ -262,16 +329,16 @@ export default function WorldSelectScreen() {
   const handleContinentClick = (continent: ContinentDef) => {
     const s = continentStatuses[continent.id];
     if (s?.status === "locked") {
-      setGuideMessage("That story arc is still locked! Defeat the previous villain first. 🔒");
+      setGuideMessage("That world is still locked! Defeat the previous villain first. 🔒");
       return;
     }
     navigate(continent.route);
   };
 
   const IDLE_MSGS = [
-    "Choose a story arc to begin your adventure, Guardian! 🌍",
-    "Each arc has a villain to defeat! 💪",
-    "Complete all chapters to face the final battle! ⚔️",
+    "Choose a world to begin your adventure, Guardian! 🌍",
+    "Each world has a villain to defeat! 💪",
+    "Complete all zones to face the Boss Battle! ⚔️",
     "You're doing amazing, Cyber Hero! 🌟",
     "Defeat all 7 villains to earn your Master Certificate! 🏆",
     "Your adventure continues — you've got this! 🛡️",
@@ -306,25 +373,28 @@ export default function WorldSelectScreen() {
       <div className="relative z-[2] flex flex-col h-full max-w-6xl mx-auto w-full px-5 pt-3 pb-4">
         <HUDBar playerName={playerName} level={level} points={points} worldsCompleted={worldsCompleted} />
 
-        <div className="mt-3 mb-4">
+        <NavTabs />
+
+        <div className="mt-2 mb-3">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="flex items-baseline gap-3"
           >
-            <h1 className="text-2xl font-bold text-white tracking-wide">🗺️ ADVENTURE MODE</h1>
-             <span className="text-[10px] text-[hsl(195_80%_60%)] font-bold tracking-widest uppercase opacity-70">
-               Choose Your Story Arc
+            <h1 className="text-2xl font-bold text-white tracking-wide">🌎 SELECT YOUR WORLD</h1>
+             <span className="text-[10px] text-white/40 font-bold tracking-widest uppercase">
+               CYBER HERO ACADEMY
              </span>
           </motion.div>
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-[10px] text-[hsl(45_90%_65%/0.75)] mt-0.5"
+            className="text-[11px] font-semibold mt-0.5"
+            style={{ color: "hsl(30 95% 55%)" }}
           >
-            🏆 Complete all 7 story arcs to earn your Master Cyber Guardian Certificate!
+            Complete all 7 worlds to earn your Master Cyber Guardian Certificate!
           </motion.p>
         </div>
 
