@@ -224,7 +224,11 @@ function NeonGameCard({
               />
             ))}
           </div>
-          {!locked && (
+          {locked ? (
+            <span className="rounded-full bg-gray-700 px-4 py-1.5 text-xs font-bold text-gray-500">
+              Locked
+            </span>
+          ) : (
             <button className="rounded-full bg-[#00d4ff] px-4 py-1.5 text-xs font-bold text-[#0a0e1a] transition-all hover:bg-[#00d4ff]/80 hover:shadow-[0_0_12px_rgba(0,212,255,0.4)]">
               {stars > 0 ? "Play Again" : "Play Now"}
             </button>
