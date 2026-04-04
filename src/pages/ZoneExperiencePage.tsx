@@ -307,8 +307,49 @@ export default function ZoneExperiencePage() {
     );
   }
 
+  const isZone1VN = worldId === "north-america" && zoneId === "na-zone-1" && vnMode;
+  const heroSrc = (child as any)?.avatar_config?.heroSrc as string | undefined;
+
   const totalQ = content.questions.length;
   const stars = finalScore === totalQ ? 3 : finalScore >= totalQ * 0.6 ? 2 : 1;
+
+  /* ── Mini game renderer for the SceneEngine ── */
+  const renderSceneMiniGame = (type: string, fast: boolean, onDone: () => void) => {
+    const baseCfg = content.miniGame;
+    const cfg = { ...baseCfg, type, timerSeconds: fast ? Math.max(15, baseCfg.timerSeconds - 10) : baseCfg.timerSeconds };
+    switch (type) {
+      case "lock-and-learn":
+        return <LockAndLearnGame config={cfg} onComplete={onDone} />;
+      case "strong-or-smash":
+        return <StrongOrSmashGame config={cfg} onComplete={onDone} />;
+      case "who-do-you-trust":
+        return <WhoDoYouTrustGame config={cfg} onComplete={onDone} />;
+      default:
+        return <LockAndLearnGame config={cfg} onComplete={onDone} />;
+    }
+  };
+
+  const handleVNComplete = () => {
+    setVnMode(false);
+    // Jump straight to victory for zone 1 VN
+    setScreen("victory");
+    setFinalScore(totalQ);
+    setScore(totalQ);
+    handleZoneComplete(totalQ, totalQ);
+  };
+
+  /* ── Visual Novel mode for Zone 1 ── */
+  if (isZone1VN) {
+    return (
+      <SceneEngine
+        script={ZONE1_SCRIPT}
+        heroSrc={heroSrc || null}
+        miniGameConfig={content.miniGame}
+        renderMiniGame={renderSceneMiniGame}
+        onComplete={handleVNComplete}
+      />
+    );
+  }
 
   const renderMiniGame = () => {
     const cfg = content.miniGame;
