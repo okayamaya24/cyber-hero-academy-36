@@ -32,6 +32,9 @@ export default function ZoneExperiencePage() {
   const queryClient = useQueryClient();
   const { activeChildId } = useAuth();
 
+  // Visual novel mode for zone 1
+  const [vnMode, setVnMode] = useState(true);
+
   // Screen state
   const [screen, setScreen] = useState<Screen>("threat-alert");
   const [alertCountdown, setAlertCountdown] = useState(5);
