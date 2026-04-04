@@ -2392,6 +2392,36 @@ export default function ContinentMapScreen() {
           />
         )}
       </AnimatePresence>
+
+      {/* HQ Orientation overlay */}
+      <AnimatePresence>
+        {showHQOrientation && (
+          <HQOrientation
+            playerName={playerName}
+            avatarConfig={avatarConfig}
+            onComplete={handleHQOrientationComplete}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* HQ revisit speech bubble */}
+      <AnimatePresence>
+        {showHQBubble && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 max-w-sm"
+          >
+            <div className="bg-[hsl(195_60%_12%/0.95)] border border-[hsl(195_80%_50%/0.4)] rounded-2xl px-5 py-4 backdrop-blur-md shadow-lg">
+              <p className="text-[hsl(195_80%_80%)] text-sm leading-relaxed">
+                <span className="text-[hsl(195_80%_60%)] font-bold">BYTE:</span>{" "}
+                "This is where it all started, Guardian. Ready to keep going?"
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
