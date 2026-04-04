@@ -2028,8 +2028,7 @@ export default function ContinentMapScreen() {
       const { data } = await supabase
         .from("zone_progress")
         .select("*")
-        .eq("child_id", activeChildId)
-        .eq("continent_id", continentId);
+        .eq("child_id", activeChildId);
       return data ?? [];
     },
     enabled: !!activeChildId && !!continentId,
