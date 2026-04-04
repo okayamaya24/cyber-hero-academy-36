@@ -189,7 +189,7 @@ function NeonGameCard({
   onClick: () => void;
 }) {
   return (
-    <div className="group relative" title={locked ? "Complete Adventure zones to unlock" : undefined}>
+    <div className="group relative" title={locked ? "Coming soon, Guardian! Keep training." : undefined}>
       <motion.div
         variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
         className={`relative overflow-hidden rounded-2xl border bg-[#0f1729] p-5 transition-all ${
