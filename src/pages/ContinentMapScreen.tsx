@@ -47,14 +47,15 @@ function getZoneStatus(
   continentId: string,
 ): "completed" | "available" | "locked" {
   const progress = zoneProgress.find((p) => p.zone_id === zone.id);
-  if (progress?.status === "completed") return "completed";
+  if (progress?.status === "completed" || progress?.completed_at) return "completed";
+  if (progress?.unlocked_at && !progress?.status) return "available";
 
   if (continentId === "north-america") {
     const idx = NA_UNLOCK_ORDER.indexOf(zone.id);
     if (idx === 0) return "available";
     if (idx < 0) return "locked";
     const prevId = NA_UNLOCK_ORDER[idx - 1];
-    const prevDone = zoneProgress.find((p) => p.zone_id === prevId && p.status === "completed");
+    const prevDone = zoneProgress.find((p) => p.zone_id === prevId && (p.status === "completed" || p.unlocked_at));
     return prevDone ? "available" : "locked";
   }
 
@@ -1380,7 +1381,9 @@ function ZoneCompletionPanel({
                 animate={{ opacity: showUnlock ? 1 : 0, y: showUnlock ? 0 : 8 }}
                 className="w-full rounded-xl border border-[hsl(195_80%_50%/0.2)] bg-[hsl(195_80%_50%/0.06)] p-3"
               >
-                <p className="text-[9px] text-[hsl(195_80%_60%)] uppercase tracking-wide mb-1.5">🔓 Next Chapter Unlocked</p>
+                <p className="text-[9px] text-[hsl(195_80%_60%)] uppercase tracking-wide mb-1.5">
+                  🔓 Next Chapter Unlocked
+                </p>
                 <span className="rounded-full bg-[hsl(195_80%_50%/0.12)] border border-[hsl(195_80%_50%/0.2)] px-3 py-1 text-[11px] font-bold text-[hsl(195_80%_70%)]">
                   {unlocksZoneName}
                 </span>
@@ -1613,9 +1616,13 @@ function VillainCharacter({
   const bubbleKey = hoveredNodeStatus || `idle-${tauntIdx}`;
   const glowHsl = asset?.color ?? "140, 85%, 50%";
   const hueVal = glowHsl.split(",")[0];
-  
+
   const textColor = isShadowbyte ? "#9d8cff" : isTrollLord ? "#c8ff44" : `hsl(${hueVal}, 70%, 72%)`;
-  const borderColor = isShadowbyte ? "rgba(91,77,255,0.4)" : isTrollLord ? "rgba(170,255,0,0.4)" : `hsla(${hueVal}, 75%, 50%, 0.3)`;
+  const borderColor = isShadowbyte
+    ? "rgba(91,77,255,0.4)"
+    : isTrollLord
+      ? "rgba(170,255,0,0.4)"
+      : `hsla(${hueVal}, 75%, 50%, 0.3)`;
   const bubbleBg = isShadowbyte ? "rgba(4,6,20,0.92)" : isTrollLord ? "rgba(8,14,4,0.92)" : "hsla(210,40%,10%,0.88)";
 
   return (
@@ -1639,17 +1646,23 @@ function VillainCharacter({
             boxShadow: isShadowbyte
               ? `0 0 20px rgba(91,77,255,0.3)`
               : isTrollLord
-              ? `0 0 20px rgba(170,255,0,0.3)`
-              : `0 0 18px hsla(${hueVal},80%,50%,0.15)`,
+                ? `0 0 20px rgba(170,255,0,0.3)`
+                : `0 0 18px hsla(${hueVal},80%,50%,0.15)`,
           }}
         >
           {isShadowbyte && (
-            <span className="block mb-1 text-[8px] tracking-[0.2em] uppercase" style={{ color: "#5B4DFF", fontFamily: "'Share Tech Mono', 'Orbitron', monospace" }}>
+            <span
+              className="block mb-1 text-[8px] tracking-[0.2em] uppercase"
+              style={{ color: "#5B4DFF", fontFamily: "'Share Tech Mono', 'Orbitron', monospace" }}
+            >
               // SHADOWBYTE.exe
             </span>
           )}
           {isTrollLord && (
-            <span className="block mb-1 text-[8px] tracking-[0.2em] uppercase" style={{ color: "#AAFF00", fontFamily: "'Share Tech Mono', 'Orbitron', monospace" }}>
+            <span
+              className="block mb-1 text-[8px] tracking-[0.2em] uppercase"
+              style={{ color: "#AAFF00", fontFamily: "'Share Tech Mono', 'Orbitron', monospace" }}
+            >
               // TROLL_LORD.exe
             </span>
           )}
@@ -1657,22 +1670,14 @@ function VillainCharacter({
             className="absolute inset-0 rounded-xl pointer-events-none"
             animate={{
               boxShadow: isShadowbyte
-                ? [
-                    `0 0 20px rgba(91,77,255,0.3)`,
-                    `0 0 50px rgba(91,77,255,0.7)`,
-                    `0 0 20px rgba(91,77,255,0.3)`,
-                  ]
+                ? [`0 0 20px rgba(91,77,255,0.3)`, `0 0 50px rgba(91,77,255,0.7)`, `0 0 20px rgba(91,77,255,0.3)`]
                 : isTrollLord
-                ? [
-                    `0 0 20px rgba(170,255,0,0.3)`,
-                    `0 0 50px rgba(170,255,0,0.7)`,
-                    `0 0 20px rgba(170,255,0,0.3)`,
-                  ]
-                : [
-                    `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
-                    `0 0 40px hsla(${hueVal},80%,50%,0.35)`,
-                    `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
-                  ],
+                  ? [`0 0 20px rgba(170,255,0,0.3)`, `0 0 50px rgba(170,255,0,0.7)`, `0 0 20px rgba(170,255,0,0.3)`]
+                  : [
+                      `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
+                      `0 0 40px hsla(${hueVal},80%,50%,0.35)`,
+                      `0 0 20px hsla(${hueVal},80%,50%,0.15)`,
+                    ],
             }}
             transition={{ repeat: Infinity, duration: isShadowbyte ? 3 : isTrollLord ? 2 : 2.5 }}
           />
@@ -1722,8 +1727,8 @@ function VillainCharacter({
               draggable={false}
             />
             <AnimatePresence>
-              {showShimmer && (
-                isShadowbyte ? (
+              {showShimmer &&
+                (isShadowbyte ? (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.6 }}
                     animate={{ opacity: [0, 0.5, 0], scale: [0.6, 1.6, 2] }}
@@ -1731,7 +1736,8 @@ function VillainCharacter({
                     transition={{ duration: 0.8 }}
                     className="absolute inset-0 z-20 pointer-events-none rounded-full"
                     style={{
-                      background: "radial-gradient(circle, rgba(91,77,255,0.35) 0%, rgba(91,77,255,0.1) 40%, transparent 70%)",
+                      background:
+                        "radial-gradient(circle, rgba(91,77,255,0.35) 0%, rgba(91,77,255,0.1) 40%, transparent 70%)",
                       filter: "blur(6px)",
                     }}
                   />
@@ -1747,8 +1753,7 @@ function VillainCharacter({
                       filter: "blur(4px)",
                     }}
                   />
-                )
-              )}
+                ))}
             </AnimatePresence>
           </div>
         ) : (
@@ -1936,10 +1941,10 @@ function ZoneMissionPanel({
             {zone.icon}
           </div>
           <div className="flex-1">
-             <h2 className="text-lg font-bold text-white">{zone.name.toUpperCase()}</h2>
-             <p className="text-xs text-[hsl(195_60%_60%)]">
-               📖 Chapter · {zone.city} · {continent.name}
-             </p>
+            <h2 className="text-lg font-bold text-white">{zone.name.toUpperCase()}</h2>
+            <p className="text-xs text-[hsl(195_60%_60%)]">
+              📖 Chapter · {zone.city} · {continent.name}
+            </p>
           </div>
           <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10 transition-colors">
             <X className="h-5 w-5 text-white/50" />
@@ -1971,13 +1976,13 @@ function ZoneMissionPanel({
             </Button>
           </div>
         ) : hasGames ? (
-           <div className="text-center py-6">
-             <p className="text-sm text-white/70 mb-4">4 challenges await in this chapter!</p>
-             <Button
-               onClick={onDeploy}
-               className="bg-[hsl(195_80%_50%)] hover:bg-[hsl(195_80%_45%)] text-white font-bold"
-             >
-               📖 BEGIN CHAPTER
+          <div className="text-center py-6">
+            <p className="text-sm text-white/70 mb-4">4 challenges await in this chapter!</p>
+            <Button
+              onClick={onDeploy}
+              className="bg-[hsl(195_80%_50%)] hover:bg-[hsl(195_80%_45%)] text-white font-bold"
+            >
+              📖 BEGIN CHAPTER
             </Button>
           </div>
         ) : (
@@ -2085,25 +2090,30 @@ export default function ContinentMapScreen() {
   const handleHQOrientationComplete = async (choiceId: string) => {
     setShowHQOrientation(false);
     if (activeChildId) {
+      const now = new Date().toISOString();
+
+      // Mark HQ as done on the child profile
+      await supabase.from("child_profiles").update({ hq_completed: true }).eq("id", activeChildId);
+
+      // Record HQ as unlocked
       await supabase
-        .from("child_profiles")
-        .update({ hq_completed: true })
-        .eq("id", activeChildId);
-      // Mark HQ zone as completed and unlock next zone
-      await supabase.from("zone_progress").upsert(
-        { child_id: activeChildId, continent_id: continentId!, zone_id: "hq", status: "completed", games_completed: 1, total_games: 1, stars_earned: 3 },
-        { onConflict: "child_id,zone_id" }
-      );
-      const nextZoneId = continent?.zones[1]?.id;
-      if (nextZoneId) {
-        await supabase.from("zone_progress").upsert(
-          { child_id: activeChildId, continent_id: continentId!, zone_id: nextZoneId, status: "available", games_completed: 0, total_games: 4, stars_earned: 0 },
-          { onConflict: "child_id,zone_id" }
+        .from("zone_progress")
+        .upsert(
+          { child_id: activeChildId, continent_id: continentId!, zone_id: "hq", unlocked_at: now },
+          { onConflict: "child_id,zone_id" },
         );
-      }
+
+      // Unlock Password Peak — Zone 1
+      await supabase
+        .from("zone_progress")
+        .upsert(
+          { child_id: activeChildId, continent_id: continentId!, zone_id: "password-peak", unlocked_at: now },
+          { onConflict: "child_id,zone_id" },
+        );
+
       queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
       queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId, continentId] });
-      queryClient.invalidateQueries({ queryKey: ["child-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["child_profile", activeChildId] });
     }
   };
 
@@ -2142,13 +2152,13 @@ export default function ContinentMapScreen() {
         </motion.button>
 
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-           <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">
-             {continent.emoji} {continent.name.toUpperCase()} —{" "}
-             <span className="text-[hsl(195_80%_60%)] text-sm font-bold tracking-widest">STORY ARC</span>
-           </h1>
-           <p className="text-xs text-white/40 mt-0.5">
-             Villain: <span className="text-[hsl(0_80%_65%)] font-bold">{continent.villain.toUpperCase()}</span>
-           </p>
+          <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">
+            {continent.emoji} {continent.name.toUpperCase()} —{" "}
+            <span className="text-[hsl(195_80%_60%)] text-sm font-bold tracking-widest">STORY ARC</span>
+          </h1>
+          <p className="text-xs text-white/40 mt-0.5">
+            Villain: <span className="text-[hsl(0_80%_65%)] font-bold">{continent.villain.toUpperCase()}</span>
+          </p>
         </motion.div>
 
         <div
@@ -2396,11 +2406,7 @@ export default function ContinentMapScreen() {
       {/* HQ Orientation overlay */}
       <AnimatePresence>
         {showHQOrientation && (
-          <HQOrientation
-            playerName={playerName}
-            avatarConfig={avatarConfig}
-            onComplete={handleHQOrientationComplete}
-          />
+          <HQOrientation playerName={playerName} avatarConfig={avatarConfig} onComplete={handleHQOrientationComplete} />
         )}
       </AnimatePresence>
 
@@ -2415,8 +2421,8 @@ export default function ContinentMapScreen() {
           >
             <div className="bg-[hsl(195_60%_12%/0.95)] border border-[hsl(195_80%_50%/0.4)] rounded-2xl px-5 py-4 backdrop-blur-md shadow-lg">
               <p className="text-[hsl(195_80%_80%)] text-sm leading-relaxed">
-                <span className="text-[hsl(195_80%_60%)] font-bold">BYTE:</span>{" "}
-                "This is where it all started, Guardian. Ready to keep going?"
+                <span className="text-[hsl(195_80%_60%)] font-bold">BYTE:</span> "This is where it all started,
+                Guardian. Ready to keep going?"
               </p>
             </div>
           </motion.div>
