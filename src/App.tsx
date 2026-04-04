@@ -1,3 +1,5 @@
+// Register continent configs with the adventure engine
+import "@/engine/configs/northAmerica";
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -21,10 +23,10 @@ import ChildSelectPage from "./pages/ChildSelectPage";
 import CreateChildPage from "./pages/CreateChildPage";
 import CertificatePage from "./pages/CertificatePage";
 import ForParentsPage from "./pages/ForParentsPage";
+import WorldSelectScreen from "./pages/WorldSelectScreen";
+import ContinentMapScreen from "./pages/ContinentMapScreen";
+import ZoneGameScreen from "./pages/ZoneGameScreen";
 import EditAvatarPage from "./pages/EditAvatarPage";
-import AdventureMapPage from "./pages/AdventureMapPage";
-import WorldZonesPage from "./pages/WorldZonesPage";
-import ZoneExperiencePage from "./pages/ZoneExperiencePage";
 import ProtectedParentRoute from "./components/ProtectedParentRoute";
 import NotFound from "./pages/NotFound";
 import AdminGamesPage from "./pages/admin/AdminGamesPage";
@@ -199,38 +201,38 @@ const App = () => (
                 }
               />
               <Route
+                path="/world-map"
+                element={
+                  <>
+                    <Navbar />
+                    <WorldSelectScreen />
+                  </>
+                }
+              />
+              <Route
+                path="/world-map/:continentId"
+                element={
+                  <>
+                    <Navbar />
+                    <ContinentMapScreen />
+                  </>
+                }
+              />
+              <Route
+                path="/world-map/:continentId/:zoneId"
+                element={
+                  <>
+                    <Navbar />
+                    <ZoneGameScreen />
+                  </>
+                }
+              />
+              <Route
                 path="/edit-avatar"
                 element={
                   <>
                     <Navbar />
                     <EditAvatarPage />
-                  </>
-                }
-              />
-              <Route
-                path="/adventure"
-                element={
-                  <>
-                    <Navbar />
-                    <AdventureMapPage />
-                  </>
-                }
-              />
-              <Route
-                path="/adventure/:worldId"
-                element={
-                  <>
-                    <Navbar />
-                    <WorldZonesPage />
-                  </>
-                }
-              />
-              <Route
-                path="/adventure/:worldId/:zoneId"
-                element={
-                  <>
-                    <Navbar />
-                    <ZoneExperiencePage />
                   </>
                 }
               />
