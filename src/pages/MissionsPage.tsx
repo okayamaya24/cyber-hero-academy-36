@@ -1013,7 +1013,7 @@ export default function MissionsPage() {
   }
 
   /* ═══════════════════════════════════════════
-     VIEW: Training Center — 4 Sections
+     VIEW: Training Center — Futuristic Hub
      ═══════════════════════════════════════════ */
 
   const completedMissions = MISSIONS.filter((m) => {
@@ -1022,148 +1022,451 @@ export default function MissionsPage() {
     return mp?.status === "completed";
   });
 
-  const WORLD_LABELS: Record<string, string> = {
-    "password-safety": "🏔️ Password Peak",
-    "scam-detection": "🐟 Phish Lagoon",
-    "safe-websites": "🏪 Browse Bazaar",
-    "personal-info": "🏰 Privacy Palace",
-  };
-
   const getStandaloneStars = (gameId: string) => {
     const mp = missionProgress.find((p) => p.mission_id === gameId);
     return mp ? getStarsFromProgress(mp) : 0;
   };
 
+  const level = child?.level ?? 1;
+  const points = child?.points ?? 0;
+  const streak = child?.streak ?? 0;
+  const rank = getLevelRank(level);
+  const nextRank = getNextRank(level);
+  const xpProgress = getProgressToNextLevel(points);
+
+  // Daily missions (static for now)
+  const dailyMissions = [
+    { id: "dm1", label: "Play any Arcade game", xp: 30, done: false },
+    { id: "dm2", label: "Get 3 stars on a quiz", xp: 50, done: false },
+    { id: "dm3", label: "Beat your Phish score", xp: 40, done: false },
+  ];
+  const allDailyDone = dailyMissions.every((m) => m.done);
+
+  // Featured game (Byte's Pick)
+  const featuredGame = WORD_SEARCH_PUZZLES[0];
+
+  // Game sections data
+  const GAME_SECTIONS = [
+    {
+      icon: "🕹️",
+      title: "Arcade Games",
+      badge: "Arcade",
+      color: "from-cyan-500/20 to-cyan-500/5",
+      borderColor: "border-cyan-500/30",
+      games: [
+        { id: "arcade-virus", title: "Virus Vaporizer", desc: "Blast viruses before they spread!", locked: true },
+        { id: "arcade-hacker", title: "Hacker Chase", desc: "Chase down the hacker through the network!", locked: true },
+        { id: "arcade-firewall", title: "Firewall Blitz", desc: "Build firewalls to block incoming attacks!", locked: true },
+      ],
+    },
+    {
+      icon: "🧩",
+      title: "Puzzle Games",
+      badge: "Puzzle",
+      color: "from-purple-500/20 to-purple-500/5",
+      borderColor: "border-purple-500/30",
+      games: [
+        { id: "puzzle-code", title: "Code Breaker", desc: "Crack the encrypted codes!", locked: true },
+        { id: "puzzle-escape", title: "Cyber Escape Room", desc: "Solve puzzles to escape the virus lab!", locked: true },
+        { id: "puzzle-tower", title: "Password Tower", desc: "Stack strong passwords to build the tower!", locked: true },
+      ],
+    },
+    {
+      icon: "🎯",
+      title: "Sort & Decide",
+      badge: "Sort",
+      color: "from-green-500/20 to-green-500/5",
+      borderColor: "border-green-500/30",
+      games: [
+        ...DRAG_DROP_GAMES.filter((g) => g.subType === "sort").map((g) => ({
+          id: g.id,
+          title: g.title,
+          desc: g.description,
+          locked: false,
+          action: () => launchStandaloneGame("dragdrop", g.id, g.title, g),
+          stars: getStandaloneStars(g.id),
+        })),
+        { id: "sort-real-fake", title: "Real or Fake?", desc: "Identify genuine vs spoofed login pages!", locked: true },
+      ],
+    },
+    {
+      icon: "⚡",
+      title: "Speed Rounds",
+      badge: "Speed",
+      color: "from-yellow-500/20 to-yellow-500/5",
+      borderColor: "border-yellow-500/30",
+      games: completedMissions.slice(0, 3).map((m) => {
+        const totalGames = getTotalGames(learningMode);
+        const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
+        return {
+          id: m.id,
+          title: m.title,
+          desc: m.description,
+          locked: false,
+          action: () => startMission(m),
+          stars: getStarsFromProgress(mp),
+        };
+      }),
+    },
+    {
+      icon: "🃏",
+      title: "Memory & Match",
+      badge: "Memory",
+      color: "from-pink-500/20 to-pink-500/5",
+      borderColor: "border-pink-500/30",
+      games: [
+        { id: "mem-cyber", title: "Cyber Memory Match", desc: "Match cybersecurity terms and icons!", locked: true },
+        { id: "mem-threat", title: "Threat or Safe?", desc: "Remember and classify threats!", locked: true },
+      ],
+    },
+    {
+      icon: "🔍",
+      title: "Word Games",
+      badge: "Word",
+      color: "from-teal-500/20 to-teal-500/5",
+      borderColor: "border-teal-500/30",
+      games: WORD_SEARCH_PUZZLES.map((p) => ({
+        id: p.id,
+        title: p.title,
+        desc: p.description,
+        locked: false,
+        action: () =>
+          launchStandaloneGame("wordsearch", p.id, p.title, {
+            words: p.wordsByTier[tier],
+            gridSize: p.gridSizeByTier[tier],
+          }),
+        stars: getStandaloneStars(p.id),
+      })),
+    },
+    {
+      icon: "✏️",
+      title: "Crossword Puzzles",
+      badge: "Crossword",
+      color: "from-orange-500/20 to-orange-500/5",
+      borderColor: "border-orange-500/30",
+      games: CROSSWORD_PUZZLES.map((p) => ({
+        id: p.id,
+        title: p.title,
+        desc: p.description,
+        locked: false,
+        action: () => launchStandaloneGame("crossword", p.id, p.title, p),
+        stars: getStandaloneStars(p.id),
+      })),
+    },
+    {
+      icon: "🖱️",
+      title: "Drag & Drop",
+      badge: "Drag & Drop",
+      color: "from-indigo-500/20 to-indigo-500/5",
+      borderColor: "border-indigo-500/30",
+      games: DRAG_DROP_GAMES.map((g) => ({
+        id: g.id,
+        title: g.title,
+        desc: g.description,
+        locked: false,
+        action: () => launchStandaloneGame("dragdrop", g.id, g.title, g),
+        stars: getStandaloneStars(g.id),
+      })),
+    },
+  ];
+
+  // Leaderboard placeholder
+  const leaderboard = [
+    { rank: 1, name: "CyberNinja", xp: 1850 },
+    { rank: 2, name: "PixelDefender", xp: 1620 },
+    { rank: 3, name: "ShieldMaster", xp: 1480 },
+    { rank: 4, name: "ByteHero", xp: 1340 },
+    { rank: 5, name: "FirewallKid", xp: 1200 },
+  ];
+
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="container mx-auto px-4 max-w-5xl">
-        {/* Header */}
-        <motion.div className="mb-6 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl font-bold md:text-4xl">🏆 Training Center</h1>
-          <p className="mt-2 text-muted-foreground">Replay completed missions to sharpen your skills!</p>
-          {child && (
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-              <Badge variant="outline" className="px-4 py-1 text-sm">
-                {tierEmoji} {tierLabel} · {pointsPerCorrect} pts per question
-              </Badge>
-              <Badge className="border-0 bg-primary/10 px-4 py-1 text-sm text-primary">
-                {modeConfig.emoji} {modeConfig.label}
-              </Badge>
-            </div>
-          )}
-        </motion.div>
+    <div className="min-h-screen relative" style={{ background: "linear-gradient(180deg, #0a0e1a 0%, #0f1628 40%, #0a0e1a 100%)" }}>
+      {/* Subtle grid overlay */}
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.03]" style={{
+        backgroundImage: "linear-gradient(rgba(0,212,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.3) 1px, transparent 1px)",
+        backgroundSize: "60px 60px",
+      }} />
 
-        {/* ─── Section 1: Quiz Challenges ─── */}
-        <SectionHeader icon="🕹️" title="Quiz Challenges" />
-        {completedMissions.length === 0 ? (
-          <div className="rounded-2xl border-2 border-dashed border-border bg-card p-8 text-center mb-4">
-            <p className="text-3xl mb-2">🗺️</p>
-            <p className="font-bold mb-1">No quizzes completed yet!</p>
-            <p className="text-sm text-muted-foreground mb-3">Complete missions on the Adventure Map first.</p>
-            <Button variant="hero" size="sm" onClick={() => navigate("/world-map")}>
-              Go to Adventure Map 🚀
-            </Button>
-          </div>
-        ) : (
-          <motion.div
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4"
-            initial="hidden"
-            animate="show"
-            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
-          >
-            {completedMissions.map((m) => {
-              const totalGames = getTotalGames(learningMode);
-              const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
-              const stars = getStarsFromProgress(mp);
-              return (
-                <GameCard
-                  key={m.id}
-                  title={m.title}
-                  zone={WORLD_LABELS[m.id] || m.title}
-                  zoneIcon={m.badgeIcon}
-                  description={m.description}
-                  stars={stars}
-                  bestScore={mp?.score}
-                  maxScore={mp?.max_score}
-                  typeBadge="🎮 Quiz"
-                  guideImage={m.guide.image}
-                  onClick={() => startMission(m)}
+      <div className="relative z-10">
+        {/* ═══ Hero Section ═══ */}
+        <div className="border-b border-cyan-500/10 pb-8 pt-10">
+          <div className="container mx-auto max-w-5xl px-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-6">
+              <h1 className="text-4xl md:text-5xl font-black text-white" style={{
+                textShadow: "0 0 30px rgba(0,212,255,0.4), 0 0 60px rgba(0,212,255,0.15)"
+              }}>
+                ⚡ Training Center
+              </h1>
+              <p className="mt-2 text-cyan-300/70 text-lg">Level up your cyber skills, Guardian!</p>
+            </motion.div>
+
+            {/* Stat Chips */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="flex flex-wrap items-center justify-center gap-3 mb-5"
+            >
+              {[
+                { icon: "🔥", label: `${streak}-Day Streak`, glow: "rgba(255,100,0,0.3)" },
+                { icon: "⭐", label: `${points} XP`, glow: "rgba(255,200,0,0.3)" },
+                { icon: "🏆", label: `Rank: ${rank.title}`, glow: "rgba(0,255,136,0.3)" },
+              ].map((chip) => (
+                <div
+                  key={chip.label}
+                  className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-sm"
+                  style={{ boxShadow: `0 0 15px ${chip.glow}` }}
+                >
+                  <span className="text-base">{chip.icon}</span>
+                  <span className="text-sm font-bold text-white/90">{chip.label}</span>
+                </div>
+              ))}
+            </motion.div>
+
+            {/* XP Progress Bar */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="mx-auto max-w-md"
+            >
+              <div className="flex items-center justify-between mb-1.5 text-xs">
+                <span className="text-cyan-400/70 font-semibold">Level {level}</span>
+                {nextRank && <span className="text-cyan-400/70 font-semibold">Next: {nextRank.title} {nextRank.emoji}</span>}
+              </div>
+              <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/5 border border-cyan-500/20">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ background: "linear-gradient(90deg, #00d4ff, #00ff88)" }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${xpProgress.percent}%` }}
+                  transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
                 />
-              );
-            })}
-          </motion.div>
-        )}
+              </div>
+              <p className="mt-1 text-center text-[11px] text-white/40">{xpProgress.current}/{xpProgress.needed} XP to next level</p>
+            </motion.div>
+          </div>
+        </div>
 
-        {/* ─── Section 2: Word Search Games ─── */}
-        <SectionHeader icon="🔍" title="Word Search Games" isNew />
-        <motion.div
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4"
-          initial="hidden"
-          animate="show"
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
-        >
-          {WORD_SEARCH_PUZZLES.map((puzzle) => (
-            <GameCard
-              key={puzzle.id}
-              title={puzzle.title}
-              zone={puzzle.zone}
-              zoneIcon={puzzle.zoneIcon}
-              description={puzzle.description}
-              stars={getStandaloneStars(puzzle.id)}
-              typeBadge="🔤 Word Search"
+        <div className="container mx-auto max-w-5xl px-4 py-6 space-y-8">
+
+          {/* ═══ Daily Missions ═══ */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="rounded-2xl border border-cyan-500/20 p-5 md:p-6"
+            style={{ background: "linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(0,255,136,0.04) 100%)" }}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <Target className="h-5 w-5 text-cyan-400" />
+                TODAY'S MISSIONS 🎯
+              </h2>
+              <span className="text-xs font-mono text-cyan-400/60 bg-cyan-400/10 px-3 py-1 rounded-full">Resets in 14h 22m</span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3 mb-4">
+              {dailyMissions.map((dm) => (
+                <div
+                  key={dm.id}
+                  className={`flex items-center gap-3 rounded-xl border p-3 transition-all ${
+                    dm.done
+                      ? "border-green-500/30 bg-green-500/10"
+                      : "border-white/10 bg-white/5"
+                  }`}
+                >
+                  <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
+                    dm.done ? "border-green-400 bg-green-400 text-black" : "border-white/20"
+                  }`}>
+                    {dm.done && <CheckCircle2 className="h-4 w-4" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white/90 truncate">{dm.label}</p>
+                    <p className="text-xs text-cyan-400/60">+{dm.xp} XP</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button
+              disabled={!allDailyDone}
+              className={`w-full sm:w-auto font-bold ${
+                allDailyDone
+                  ? "bg-gradient-to-r from-cyan-500 to-green-500 text-black hover:from-cyan-400 hover:to-green-400"
+                  : "bg-white/10 text-white/30 cursor-not-allowed"
+              }`}
+            >
+              {allDailyDone ? "🎉 Claim Bonus!" : "Complete all missions to claim bonus"}
+            </Button>
+          </motion.div>
+
+          {/* ═══ Byte's Pick ═══ */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="rounded-2xl border border-cyan-500/30 p-5 md:p-6 flex flex-col sm:flex-row items-center gap-4"
+            style={{
+              background: "linear-gradient(135deg, rgba(0,212,255,0.06) 0%, rgba(0,212,255,0.02) 100%)",
+              boxShadow: "0 0 30px rgba(0,212,255,0.08)",
+            }}
+          >
+            <motion.img
+              src={heroCharacter}
+              alt="Byte"
+              className="h-20 w-20 object-contain drop-shadow-lg shrink-0"
+              animate={{ y: [0, -6, 0] }}
+              transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+            />
+            <div className="flex-1 text-center sm:text-left">
+              <p className="text-cyan-400 text-sm font-bold mb-1">👾 Byte says: Try this one today, Guardian!</p>
+              <h3 className="text-xl font-bold text-white">{featuredGame.title}</h3>
+              <p className="text-sm text-white/50 mt-0.5">{featuredGame.description}</p>
+            </div>
+            <Button
               onClick={() =>
-                launchStandaloneGame("wordsearch", puzzle.id, puzzle.title, {
-                  words: puzzle.wordsByTier[tier],
-                  gridSize: puzzle.gridSizeByTier[tier],
+                launchStandaloneGame("wordsearch", featuredGame.id, featuredGame.title, {
+                  words: featuredGame.wordsByTier[tier],
+                  gridSize: featuredGame.gridSizeByTier[tier],
                 })
               }
-            />
-          ))}
-        </motion.div>
+              className="bg-gradient-to-r from-cyan-500 to-cyan-400 text-black font-bold px-6 hover:from-cyan-400 hover:to-cyan-300 shrink-0"
+            >
+              Play Now ▶
+            </Button>
+          </motion.div>
 
-        {/* ─── Section 3: Crossword Puzzles ─── */}
-        <SectionHeader icon="✏️" title="Crossword Puzzles" isNew />
-        <motion.div
-          className="grid gap-4 sm:grid-cols-2 mb-4"
-          initial="hidden"
-          animate="show"
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
-        >
-          {CROSSWORD_PUZZLES.map((puzzle) => (
-            <GameCard
-              key={puzzle.id}
-              title={puzzle.title}
-              zone={puzzle.zone}
-              zoneIcon={puzzle.zoneIcon}
-              description={puzzle.description}
-              stars={getStandaloneStars(puzzle.id)}
-              typeBadge="✏️ Crossword"
-              onClick={() => launchStandaloneGame("crossword", puzzle.id, puzzle.title, puzzle)}
-            />
+          {/* ═══ Game Sections ═══ */}
+          {GAME_SECTIONS.map((section, sIdx) => (
+            <motion.div
+              key={section.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + sIdx * 0.04 }}
+            >
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <span className="text-2xl">{section.icon}</span>
+                {section.title}
+              </h2>
+              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/10">
+                {section.games.map((game: any) => (
+                  <div
+                    key={game.id}
+                    className={`group relative min-w-[220px] max-w-[260px] flex-shrink-0 rounded-2xl border bg-gradient-to-b ${section.color} backdrop-blur-sm transition-all duration-300 ${
+                      game.locked
+                        ? "border-white/5 opacity-60"
+                        : `${section.borderColor} hover:scale-[1.03] hover:shadow-[0_0_25px_rgba(0,212,255,0.15)]`
+                    }`}
+                  >
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold text-white/70">
+                          {section.badge}
+                        </span>
+                        {game.locked ? (
+                          <LockIcon className="h-4 w-4 text-white/30" />
+                        ) : (
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3].map((s: number) => (
+                              <Star
+                                key={s}
+                                className={`h-3.5 w-3.5 ${s <= (game.stars || 0) ? "text-yellow-400 fill-yellow-400" : "text-white/15"}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="text-base font-bold text-white mb-1 truncate">{game.title}</h3>
+                      <p className="text-xs text-white/40 mb-4 line-clamp-2">{game.desc}</p>
+                      {game.locked ? (
+                        <div className="group/lock relative">
+                          <Button disabled size="sm" className="w-full bg-white/5 text-white/20 cursor-not-allowed border-0">
+                            <LockIcon className="mr-1.5 h-3 w-3" /> Locked
+                          </Button>
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/lock:block rounded-lg bg-black/90 border border-white/10 px-3 py-2 text-xs text-white/70 whitespace-nowrap z-20">
+                            Complete Adventure zones to unlock
+                          </div>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          className="w-full bg-gradient-to-r from-cyan-500/90 to-cyan-400/90 text-black font-bold border-0 hover:from-cyan-400 hover:to-cyan-300"
+                          onClick={game.action}
+                        >
+                          <Gamepad2 className="mr-1.5 h-3.5 w-3.5" />
+                          Play Now
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
           ))}
-        </motion.div>
 
-        {/* ─── Section 4: Drag & Drop Games ─── */}
-        <SectionHeader icon="🎯" title="Drag & Drop Games" />
+          {/* ═══ Leaderboard ═══ */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="rounded-2xl border border-yellow-500/20 p-5 md:p-6"
+            style={{ background: "linear-gradient(135deg, rgba(255,200,0,0.05) 0%, rgba(255,200,0,0.01) 100%)" }}
+          >
+            <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
+              <Trophy className="h-5 w-5 text-yellow-400" />
+              🏆 Top Guardians This Week
+            </h2>
+            <div className="space-y-2">
+              {leaderboard.map((entry) => (
+                <div
+                  key={entry.rank}
+                  className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3"
+                >
+                  <span className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-black ${
+                    entry.rank === 1 ? "bg-yellow-400 text-black" :
+                    entry.rank === 2 ? "bg-gray-300 text-black" :
+                    entry.rank === 3 ? "bg-amber-600 text-white" :
+                    "bg-white/10 text-white/50"
+                  }`}>
+                    {entry.rank}
+                  </span>
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border border-white/10" />
+                  <span className="flex-1 font-semibold text-white/80 text-sm">{entry.name}</span>
+                  <span className="text-sm font-bold text-yellow-400/80">{entry.xp.toLocaleString()} XP</span>
+                </div>
+              ))}
+              {/* Player row */}
+              <div className="flex items-center gap-3 rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-3 mt-1">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-cyan-500/20 text-sm font-black text-cyan-400">
+                  12
+                </span>
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-cyan-400/40 to-green-400/40 border border-cyan-400/30" />
+                <span className="flex-1 font-bold text-cyan-400 text-sm">You</span>
+                <span className="text-sm font-bold text-cyan-400">{points} XP</span>
+              </div>
+            </div>
+          </motion.div>
+
+        </div>
+      </div>
+
+      {/* ═══ Byte Fixed Character ═══ */}
+      <div className="fixed bottom-4 right-4 z-30 flex flex-col items-end gap-1 md:bottom-8 md:right-8">
         <motion.div
-          className="grid gap-4 sm:grid-cols-2 mb-4"
-          initial="hidden"
-          animate="show"
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1 }}
+          className="rounded-xl border border-cyan-500/20 bg-black/80 backdrop-blur-sm px-3 py-2 text-xs text-cyan-300 max-w-[180px] text-center mb-1"
+          style={{ boxShadow: "0 0 15px rgba(0,212,255,0.1)" }}
         >
-          {DRAG_DROP_GAMES.map((game) => (
-            <GameCard
-              key={game.id}
-              title={game.title}
-              zone={game.zone}
-              zoneIcon={game.zoneIcon}
-              description={game.description}
-              stars={getStandaloneStars(game.id)}
-              typeBadge="🎯 Drag & Drop"
-              onClick={() => launchStandaloneGame("dragdrop", game.id, game.title, game)}
-            />
-          ))}
+          Pick a game and let's train, Guardian! 💪
         </motion.div>
+        <motion.img
+          src={heroCharacter}
+          alt="Byte"
+          className="h-16 w-16 md:h-20 md:w-20 object-contain drop-shadow-lg"
+          animate={{ y: [0, -5, 0] }}
+          transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+        />
       </div>
     </div>
   );
