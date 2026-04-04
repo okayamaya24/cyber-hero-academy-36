@@ -94,6 +94,22 @@ function MiniGameTypeBadge({ type }: { type: MiniGameType }) {
   );
 }
 
+function getTrainingTierLabel(tier: AgeTier): string {
+  switch (tier) {
+    case "junior": return "Junior Hero";
+    case "defender": return "Hero";
+    case "guardian": return "Elite Hero";
+  }
+}
+
+function getTrainingTierEmoji(tier: AgeTier): string {
+  switch (tier) {
+    case "junior": return "🐣";
+    case "defender": return "⚡";
+    case "guardian": return "🔥";
+  }
+}
+
 function MessageCard({ q, isJunior }: { q: Question; isJunior: boolean }) {
   if (!q.sender) return null;
   return (
