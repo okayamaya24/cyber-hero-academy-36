@@ -2066,7 +2066,45 @@ export default function ContinentMapScreen() {
 
   const handleZoneClick = (zone: ZoneDef, index: number) => {
     if (zoneStatuses[index] === "locked") return;
+
+    // HQ is not a playable zone — it's the one-time orientation only
+    if (zone.isHQ) {
+      const hqCompleted = child?.hq_completed === true;
+      if (!hqCompleted) {
+        setShowHQOrientation(true);
+      } else {
+        setShowHQBubble(true);
+        setTimeout(() => setShowHQBubble(false), 4000);
+      }
+      return;
+    }
+
     story.triggerIntro(zone.id, () => setSelectedZone(zone));
+  };
+
+  const handleHQOrientationComplete = async (choiceId: string) => {
+    setShowHQOrientation(false);
+    if (activeChildId) {
+      await supabase
+        .from("child_profiles")
+        .update({ hq_completed: true })
+        .eq("id", activeChildId);
+      // Mark HQ zone as completed and unlock next zone
+      await supabase.from("zone_progress").upsert(
+        { child_id: activeChildId, continent_id: continentId!, zone_id: "hq", status: "completed", games_completed: 1, total_games: 1, stars_earned: 3 },
+        { onConflict: "child_id,zone_id" }
+      );
+      const nextZoneId = continent?.zones[1]?.id;
+      if (nextZoneId) {
+        await supabase.from("zone_progress").upsert(
+          { child_id: activeChildId, continent_id: continentId!, zone_id: nextZoneId, status: "available", games_completed: 0, total_games: 4, stars_earned: 0 },
+          { onConflict: "child_id,zone_id" }
+        );
+      }
+      queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
+      queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId, continentId] });
+      queryClient.invalidateQueries({ queryKey: ["child-profile"] });
+    }
   };
 
   if (!continent) return null;
