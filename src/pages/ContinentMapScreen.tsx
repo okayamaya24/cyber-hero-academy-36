@@ -2030,7 +2030,16 @@ export default function ContinentMapScreen() {
   const zoneStatuses = useMemo(() => {
     if (!continent) return [];
     const cId = continentId ?? "";
-    // Use engine's computeZoneStatus for migrated continents, fallback to inline for others
+
+    // DEBUG — remove after fixing
+    console.log("=== ZONE DEBUG ===");
+    console.log("zoneProgress:", zoneProgress);
+    console.log(
+      "password-peak row:",
+      zoneProgress.find((p) => p.zone_id === "password-peak"),
+    );
+    console.log("isContinentMigrated:", isContinentMigrated(cId));
+
     if (false && isContinentMigrated(cId)) {
       return continent.zones.map((zone) => computeZoneStatus(zone, continent.zones, zoneProgress, cId));
     }
