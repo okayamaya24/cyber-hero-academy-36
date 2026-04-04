@@ -310,7 +310,15 @@ export default function MissionsPage() {
     enabled: !!activeChildId,
   });
 
-  const age = child?.age ?? 7;
+  const { data: trainingSettings = [] } = useTrainingGameSettings();
+
+  const isGameLockedByAdmin = (gameId: string): boolean => {
+    const setting = trainingSettings.find((s) => s.id === gameId);
+    if (!setting) return true; // default locked
+    if (!setting.unlocked) return true;
+    const tierKey = tier === "junior" ? "tier_junior" : tier === "defender" ? "tier_hero" : "tier_elite";
+    return !setting[tierKey];
+  };
   const tier = getAgeTier(age);
   const tierLabel = getTierLabel(tier);
   const tierEmoji = getTierEmoji(tier);
