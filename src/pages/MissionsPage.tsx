@@ -145,12 +145,11 @@ function getStarsFromProgress(mp: any) {
 }
 
 /* ─── Section Header ─── */
-function SectionHeader({ icon, title, isNew }: { icon: string; title: string; isNew?: boolean }) {
+function SectionHeader({ icon, title }: { icon: string; title: string }) {
   return (
-    <div className="flex items-center gap-3 mb-4 mt-8 first:mt-0">
+    <div className="flex items-center gap-3 mb-5 mt-10 first:mt-0">
       <span className="text-2xl">{icon}</span>
-      <h2 className="text-xl font-bold">{title}</h2>
-      {isNew && <Badge className="border-0 bg-secondary/20 text-secondary text-xs">🆕 NEW</Badge>}
+      <h2 className="text-xl font-extrabold tracking-wide text-white drop-shadow-[0_0_8px_rgba(0,212,255,0.5)]">{title}</h2>
     </div>
   );
 }
