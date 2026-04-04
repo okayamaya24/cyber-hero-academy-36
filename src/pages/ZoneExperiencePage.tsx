@@ -13,6 +13,8 @@ import PasswordChefGame from "@/components/minigames/PasswordChefGame";
 import WhoDoYouTrustGame from "@/components/minigames/WhoDoYouTrustGame";
 import KeyMatcherGame from "@/components/minigames/KeyMatcherGame";
 import RealOrFakeGame from "@/components/minigames/RealOrFakeGame";
+import SceneEngine from "@/components/adventure/SceneEngine";
+import ZONE1_SCRIPT from "@/data/zone1Script";
 
 type Screen = "threat-alert" | "battle" | "fireback" | "victory" | "defeat";
 type VillainMood = "idle" | "attacking" | "laughing" | "stumbling" | "defeated";
