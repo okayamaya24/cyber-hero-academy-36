@@ -34,7 +34,7 @@ import {
 } from "@/data/missions";
 import { checkAndAwardBadges } from "@/lib/badges";
 import { GUIDE_REGISTRY, getSupportGuide, getMissionIntro } from "@/data/guides";
-import { getLevelRank } from "@/data/levelTitles";
+import { getLevelRank, getNextRank, getProgressToNextLevel } from "@/data/levelTitles";
 import { getActiveEvents, type EventMission } from "@/data/eventMissions";
 import {
   WORD_SEARCH_PUZZLES,
