@@ -190,11 +190,45 @@ export default function AdminGamesPage() {
     return "All levels";
   };
 
+  // Training center stats
+  const trainingUnlockedAll = (games ?? []).filter((g: any) => {
+    const s = getGameSetting(g.id);
+    return s.unlocked && s.tier_junior && s.tier_hero && s.tier_elite;
+  }).length;
+  const trainingPartial = (games ?? []).filter((g: any) => {
+    const s = getGameSetting(g.id);
+    return s.unlocked && !(s.tier_junior && s.tier_hero && s.tier_elite);
+  }).length;
+  const trainingLocked = (games ?? []).length - trainingUnlockedAll - trainingPartial;
+
+  const handleBulkUnlockAll = () => {
+    const all = (games ?? []).map((g: any) => ({
+      id: g.id, unlocked: true, tier_junior: true, tier_hero: true, tier_elite: true,
+    }));
+    bulkUpsert.mutate(all, { onSuccess: () => toast.success("All games unlocked for all tiers!") });
+  };
+
+  const handleBulkLockAll = () => {
+    const all = (games ?? []).map((g: any) => ({
+      id: g.id, unlocked: false, tier_junior: false, tier_hero: false, tier_elite: false,
+    }));
+    bulkUpsert.mutate(all, { onSuccess: () => toast.success("All games locked.") });
+  };
+
+  const handleBulkUnlockTier = (tierKey: "tier_junior" | "tier_hero" | "tier_elite", tierName: string) => {
+    const all = (games ?? []).map((g: any) => {
+      const existing = getGameSetting(g.id);
+      return { id: g.id, unlocked: true, tier_junior: existing.tier_junior, tier_hero: existing.tier_hero, tier_elite: existing.tier_elite, [tierKey]: true };
+    });
+    bulkUpsert.mutate(all, { onSuccess: () => toast.success(`All games unlocked for ${tierName}!`) });
+  };
+
   return (
     <AdminLayout>
       <h1 className="text-2xl font-bold text-foreground mb-6">Missions / Games</h1>
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      {/* Stats row */}
+      <div className="grid grid-cols-4 gap-4 mb-4">
         {[
           { label: "Total", value: stats.total },
           { label: "Live", value: stats.live },
@@ -206,6 +240,45 @@ export default function AdminGamesPage() {
             <p className="text-2xl font-bold text-foreground">{isLoading ? <Skeleton className="h-7 w-10" /> : s.value}</p>
           </div>
         ))}
+      </div>
+
+      {/* Training Center summary strip */}
+      <div className="rounded-xl border border-border bg-card p-4 mb-4">
+        <p className="text-sm font-semibold text-foreground mb-3">🎮 Training Center Unlock Status</p>
+        <div className="flex flex-wrap gap-4 mb-3">
+          <div className="flex items-center gap-2">
+            <div className="h-3 w-3 rounded-full bg-green-500" />
+            <span className="text-sm text-muted-foreground">Unlocked for All Ages: <strong className="text-foreground">{trainingUnlockedAll}</strong></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-3 w-3 rounded-full bg-yellow-500" />
+            <span className="text-sm text-muted-foreground">Partially Unlocked: <strong className="text-foreground">{trainingPartial}</strong></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-3 w-3 rounded-full bg-red-500" />
+            <span className="text-sm text-muted-foreground">Fully Locked: <strong className="text-foreground">{trainingLocked}</strong></span>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={handleBulkUnlockAll} disabled={bulkUpsert.isPending}>
+            <Unlock className="h-3.5 w-3.5 mr-1.5" /> Unlock All
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleBulkLockAll} disabled={bulkUpsert.isPending}>
+            <Lock className="h-3.5 w-3.5 mr-1.5" /> Lock All
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" disabled={bulkUpsert.isPending}>
+                Unlock by Tier <ChevronDown className="h-3.5 w-3.5 ml-1.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleBulkUnlockTier("tier_junior", "Junior Hero")}>🐣 Junior Hero (6–8)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleBulkUnlockTier("tier_hero", "Hero")}>⚡ Hero (9–11)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleBulkUnlockTier("tier_elite", "Elite Hero")}>🔥 Elite Hero (12+)</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="flex items-center gap-3 mb-4">
@@ -233,39 +306,115 @@ export default function AdminGamesPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map((g: any) => (
-            <div key={g.id} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 group">
-              <span className="text-2xl">{g.icon}</span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-foreground truncate">{g.name}</p>
-                  {g.featured && <Badge variant="secondary" className="text-xs">Featured</Badge>}
-                  {g.locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
+          {filtered.map((g: any) => {
+            const setting = getGameSetting(g.id);
+            const isExpanded = expandedRow === g.id;
+            return (
+              <div key={g.id} className="rounded-xl border border-border bg-card overflow-hidden">
+                <div
+                  className="flex items-center gap-4 p-4 group cursor-pointer"
+                  onClick={() => setExpandedRow(isExpanded ? null : g.id)}
+                >
+                  <span className="text-2xl">{g.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-foreground truncate">{g.name}</p>
+                      {g.featured && <Badge variant="secondary" className="text-xs">Featured</Badge>}
+                      {g.locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {g.categories?.name ?? "No category"} · {gradeLabel(g)}
+                      {g.status === "live" && g.players_count > 0 && ` · ${g.players_count} players`}
+                    </p>
+                  </div>
+                  {/* Training unlock indicator */}
+                  <div className="flex items-center gap-1.5">
+                    {setting.unlocked ? (
+                      <Badge className="bg-green-100 text-green-800 text-[10px]">TC: On</Badge>
+                    ) : (
+                      <Badge className="bg-red-100 text-red-800 text-[10px]">TC: Off</Badge>
+                    )}
+                    {setting.unlocked && (
+                      <div className="flex gap-0.5">
+                        {setting.tier_junior && <span className="text-[10px]">🐣</span>}
+                        {setting.tier_hero && <span className="text-[10px]">⚡</span>}
+                        {setting.tier_elite && <span className="text-[10px]">🔥</span>}
+                      </div>
+                    )}
+                  </div>
+                  <Badge className={statusColors[g.status] ?? statusColors.draft}>{g.status}</Badge>
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                    <Button size="sm" variant="ghost" onClick={() => openEdit(g)}><Pencil className="h-3.5 w-3.5" /></Button>
+                    {(g.status === "draft" || g.status === "scheduled") && (
+                      <Button size="sm" variant="ghost" onClick={() => statusMutation.mutate({ id: g.id, status: "live" })}><Eye className="h-3.5 w-3.5" /></Button>
+                    )}
+                    {g.status === "live" && (
+                      <Button size="sm" variant="ghost" onClick={() => statusMutation.mutate({ id: g.id, status: "draft" })}><EyeOff className="h-3.5 w-3.5" /></Button>
+                    )}
+                    <Button size="sm" variant="ghost" onClick={() => lockMutation.mutate({ id: g.id, locked: !g.locked })}>
+                      {g.locked ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
+                    </Button>
+                    {(g.status === "live" || g.status === "draft") && (
+                      <Button size="sm" variant="ghost" onClick={() => statusMutation.mutate({ id: g.id, status: "archived" })}><Archive className="h-3.5 w-3.5" /></Button>
+                    )}
+                    <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setDeleteId(g.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {g.categories?.name ?? "No category"} · {gradeLabel(g)}
-                  {g.status === "live" && g.players_count > 0 && ` · ${g.players_count} players`}
-                </p>
+
+                {/* Expanded Training Center controls */}
+                {isExpanded && (
+                  <div className="border-t border-border bg-muted/30 px-4 py-4 space-y-4" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Unlocked in Training Center</p>
+                        <p className="text-xs text-muted-foreground">When ON, kids can see and play this game</p>
+                      </div>
+                      <Switch
+                        checked={setting.unlocked}
+                        onCheckedChange={(checked) => {
+                          upsertSetting.mutate(
+                            { id: g.id, unlocked: checked, tier_junior: checked ? setting.tier_junior : false, tier_hero: checked ? setting.tier_hero : false, tier_elite: checked ? setting.tier_elite : false },
+                            { onSuccess: () => toast.success(checked ? "Game unlocked in Training Center" : "Game locked in Training Center") }
+                          );
+                        }}
+                      />
+                    </div>
+                    {setting.unlocked && (
+                      <div>
+                        <p className="text-sm font-semibold text-foreground mb-2">Age Tier Access</p>
+                        <div className="flex gap-2">
+                          {([
+                            { key: "tier_junior" as const, label: "🐣 Junior", desc: "Ages 6–8" },
+                            { key: "tier_hero" as const, label: "⚡ Hero", desc: "Ages 9–11" },
+                            { key: "tier_elite" as const, label: "🔥 Elite", desc: "Ages 12+" },
+                          ]).map((t) => (
+                            <button
+                              key={t.key}
+                              onClick={() => {
+                                upsertSetting.mutate(
+                                  { id: g.id, unlocked: true, tier_junior: setting.tier_junior, tier_hero: setting.tier_hero, tier_elite: setting.tier_elite, [t.key]: !setting[t.key] },
+                                  { onSuccess: () => toast.success(`${t.label} tier ${setting[t.key] ? "removed" : "added"}`) }
+                                );
+                              }}
+                              className={`rounded-lg border px-3 py-2 text-xs font-semibold transition-all ${
+                                setting[t.key]
+                                  ? "border-primary bg-primary/10 text-primary"
+                                  : "border-border bg-card text-muted-foreground hover:bg-muted"
+                              }`}
+                            >
+                              {t.label}
+                              <span className="block text-[10px] font-normal">{t.desc}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <Badge className={statusColors[g.status] ?? statusColors.draft}>{g.status}</Badge>
-              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button size="sm" variant="ghost" onClick={() => openEdit(g)}><Pencil className="h-3.5 w-3.5" /></Button>
-                {(g.status === "draft" || g.status === "scheduled") && (
-                  <Button size="sm" variant="ghost" onClick={() => statusMutation.mutate({ id: g.id, status: "live" })}><Eye className="h-3.5 w-3.5" /></Button>
-                )}
-                {g.status === "live" && (
-                  <Button size="sm" variant="ghost" onClick={() => statusMutation.mutate({ id: g.id, status: "draft" })}><EyeOff className="h-3.5 w-3.5" /></Button>
-                )}
-                <Button size="sm" variant="ghost" onClick={() => lockMutation.mutate({ id: g.id, locked: !g.locked })}>
-                  {g.locked ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
-                </Button>
-                {(g.status === "live" || g.status === "draft") && (
-                  <Button size="sm" variant="ghost" onClick={() => statusMutation.mutate({ id: g.id, status: "archived" })}><Archive className="h-3.5 w-3.5" /></Button>
-                )}
-                <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setDeleteId(g.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
