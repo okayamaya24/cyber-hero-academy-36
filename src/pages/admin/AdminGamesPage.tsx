@@ -425,7 +425,79 @@ export default function AdminGamesPage() {
         </div>
       )}
 
+      {/* ══ Training Center Game Catalog ══ */}
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-foreground mb-4">🎮 Training Center Game Catalog</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          These are the {TRAINING_GAME_CATALOG.length} games shown in the Training Center. Toggle unlock status and age tier access below.
+        </p>
+        {Object.entries(catalogByCategory).map(([category, catGames]) => (
+          <div key={category} className="mb-6">
+            <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+              <span>{catGames[0]?.categoryIcon}</span> {category}
+              <span className="text-xs text-muted-foreground font-normal">({catGames.length} games)</span>
+            </h3>
+            <div className="space-y-1">
+              {catGames.map((cg) => {
+                const setting = getGameSetting(cg.id);
+                return (
+                  <div key={cg.id} className="rounded-xl border border-border bg-card p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{cg.title}</p>
+                        <p className="text-xs text-muted-foreground truncate">{cg.description}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {setting.unlocked && (
+                          <div className="flex gap-1">
+                            {([
+                              { key: "tier_junior" as const, emoji: "🐣" },
+                              { key: "tier_hero" as const, emoji: "⚡" },
+                              { key: "tier_elite" as const, emoji: "🔥" },
+                            ]).map((t) => (
+                              <button
+                                key={t.key}
+                                onClick={() => {
+                                  upsertSetting.mutate(
+                                    { id: cg.id, unlocked: true, tier_junior: setting.tier_junior, tier_hero: setting.tier_hero, tier_elite: setting.tier_elite, [t.key]: !setting[t.key] },
+                                    { onSuccess: () => toast.success("Saved ✓") }
+                                  );
+                                }}
+                                className={`rounded px-1.5 py-0.5 text-xs font-bold transition-all ${
+                                  setting[t.key]
+                                    ? "bg-primary/10 text-primary border border-primary/30"
+                                    : "bg-muted text-muted-foreground border border-border"
+                                }`}
+                              >
+                                {t.emoji}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-muted-foreground">{setting.unlocked ? "Unlocked" : "Locked"}</span>
+                          <Switch
+                            checked={setting.unlocked}
+                            onCheckedChange={(checked) => {
+                              upsertSetting.mutate(
+                                { id: cg.id, unlocked: checked, tier_junior: checked || setting.tier_junior, tier_hero: checked || setting.tier_hero, tier_elite: checked || setting.tier_elite },
+                                { onSuccess: () => toast.success("Saved ✓") }
+                              );
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+
         <SheetContent className="sm:max-w-lg overflow-y-auto">
           <SheetHeader><SheetTitle>{editingId ? "Edit Mission" : "New Mission"}</SheetTitle></SheetHeader>
           <div className="mt-6 space-y-5">
