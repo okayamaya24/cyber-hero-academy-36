@@ -44,6 +44,47 @@ import KidProfilePage from "./pages/portal/KidProfilePage";
 import AccountPage from "./pages/portal/AccountPage";
 import ChangePasswordPage from "./pages/portal/ChangePasswordPage";
 
+// Training Center Games
+import VirusVaporizer from "./pages/games/VirusVaporizer";
+import SpotThePhish from "./pages/games/SpotThePhish";
+import FirewallBlitz from "./pages/games/FirewallBlitz";
+import HackerChase from "./pages/games/HackerChase";
+import TypeToDefend from "./pages/games/TypeToDefend";
+import PasswordCrackerRace from "./pages/games/PasswordCrackerRace";
+import CodeTyper from "./pages/games/CodeTyper";
+import DecryptTheMessage from "./pages/games/DecryptTheMessage";
+import FirewallTyper from "./pages/games/FirewallTyper";
+import CyberEscapeRoom from "./pages/games/CyberEscapeRoom";
+import CodeBreaker from "./pages/games/CodeBreaker";
+import PasswordTower from "./pages/games/PasswordTower";
+import LockTheVault from "./pages/games/LockTheVault";
+import SafeOrDangerSort from "./pages/games/SafeOrDangerSort";
+import RealOrFakeWebsite from "./pages/games/RealOrFakeWebsite";
+import TrustOrTrash from "./pages/games/TrustOrTrash";
+import BytesQuizBlitz from "./pages/games/BytesQuizBlitz";
+import TrueOrFalseLightning from "./pages/games/TrueOrFalseLightning";
+import BeatTheClockTrivia from "./pages/games/BeatTheClockTrivia";
+import CyberMemoryMatch from "./pages/games/CyberMemoryMatch";
+import SequenceShield from "./pages/games/SequenceShield";
+import PasswordHunt from "./pages/games/PasswordHunt";
+import PhishingDetective from "./pages/games/PhishingDetective";
+import PrivacyPatrol from "./pages/games/PrivacyPatrol";
+import CyberBasics from "./pages/games/CyberBasics";
+import StaySafeOnline from "./pages/games/StaySafeOnline";
+import BuildAStrongPassword from "./pages/games/BuildAStrongPassword";
+import SafeOrScamSorter from "./pages/games/SafeOrScamSorter";
+import LockTheVaultDrag from "./pages/games/LockTheVaultDrag";
+import SpotTheScam from "./pages/games/SpotTheScam";
+import PasswordPower from "./pages/games/PasswordPower";
+import SafeSitesExplorer from "./pages/games/SafeSitesExplorer";
+import SecretKeeper from "./pages/games/SecretKeeper";
+import MalwareMonsters from "./pages/games/MalwareMonsters";
+import PhishyMessages from "./pages/games/PhishyMessages";
+import SmartSharing from "./pages/games/SmartSharing";
+import DeviceDefender from "./pages/games/DeviceDefender";
+import CyberClues from "./pages/games/CyberClues";
+import InternetDetective from "./pages/games/InternetDetective";
+
 const queryClient = new QueryClient();
 
 function DashboardRouter() {
@@ -345,6 +386,47 @@ const App = () => (
               <Route path="/dashboard/password" element={<ChangePasswordPage />} />
               <Route path="/portal" element={<Navigate to="/dashboard" replace />} />
               <Route path="/portal/*" element={<Navigate to="/dashboard" replace />} />
+              {/* Training Center Games */}
+              <Route path="/games/virus-vaporizer" element={<VirusVaporizer />} />
+              <Route path="/games/spot-the-phish" element={<SpotThePhish />} />
+              <Route path="/games/firewall-blitz" element={<FirewallBlitz />} />
+              <Route path="/games/hacker-chase" element={<HackerChase />} />
+              <Route path="/games/type-to-defend" element={<TypeToDefend />} />
+              <Route path="/games/password-cracker-race" element={<PasswordCrackerRace />} />
+              <Route path="/games/code-typer" element={<CodeTyper />} />
+              <Route path="/games/decrypt-the-message" element={<DecryptTheMessage />} />
+              <Route path="/games/firewall-typer" element={<FirewallTyper />} />
+              <Route path="/games/cyber-escape-room" element={<CyberEscapeRoom />} />
+              <Route path="/games/code-breaker" element={<CodeBreaker />} />
+              <Route path="/games/password-tower" element={<PasswordTower />} />
+              <Route path="/games/lock-the-vault" element={<LockTheVault />} />
+              <Route path="/games/safe-or-danger-sort" element={<SafeOrDangerSort />} />
+              <Route path="/games/real-or-fake-website" element={<RealOrFakeWebsite />} />
+              <Route path="/games/trust-or-trash" element={<TrustOrTrash />} />
+              <Route path="/games/bytes-quiz-blitz" element={<BytesQuizBlitz />} />
+              <Route path="/games/true-or-false-lightning" element={<TrueOrFalseLightning />} />
+              <Route path="/games/beat-the-clock-trivia" element={<BeatTheClockTrivia />} />
+              <Route path="/games/cyber-memory-match" element={<CyberMemoryMatch />} />
+              <Route path="/games/sequence-shield" element={<SequenceShield />} />
+              <Route path="/games/password-hunt" element={<PasswordHunt />} />
+              <Route path="/games/phishing-detective" element={<PhishingDetective />} />
+              <Route path="/games/privacy-patrol" element={<PrivacyPatrol />} />
+              <Route path="/games/cyber-basics" element={<CyberBasics />} />
+              <Route path="/games/stay-safe-online" element={<StaySafeOnline />} />
+              <Route path="/games/build-a-strong-password" element={<BuildAStrongPassword />} />
+              <Route path="/games/safe-or-scam-sorter" element={<SafeOrScamSorter />} />
+              <Route path="/games/lock-the-vault-drag" element={<LockTheVaultDrag />} />
+              <Route path="/games/spot-the-scam" element={<SpotTheScam />} />
+              <Route path="/games/password-power" element={<PasswordPower />} />
+              <Route path="/games/safe-sites-explorer" element={<SafeSitesExplorer />} />
+              <Route path="/games/secret-keeper" element={<SecretKeeper />} />
+              <Route path="/games/malware-monsters" element={<MalwareMonsters />} />
+              <Route path="/games/phishy-messages" element={<PhishyMessages />} />
+              <Route path="/games/smart-sharing" element={<SmartSharing />} />
+              <Route path="/games/device-defender" element={<DeviceDefender />} />
+              <Route path="/games/cyber-clues" element={<CyberClues />} />
+              <Route path="/games/internet-detective" element={<InternetDetective />} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </MaintenanceGate>
