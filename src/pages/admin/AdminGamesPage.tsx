@@ -191,38 +191,44 @@ export default function AdminGamesPage() {
     return "All levels";
   };
 
-  // Training center stats
-  const trainingUnlockedAll = (games ?? []).filter((g: any) => {
+  // Training center stats — use CATALOG IDs, not games table
+  const trainingUnlockedAll = TRAINING_GAME_CATALOG.filter((g) => {
     const s = getGameSetting(g.id);
     return s.unlocked && s.tier_junior && s.tier_hero && s.tier_elite;
   }).length;
-  const trainingPartial = (games ?? []).filter((g: any) => {
+  const trainingPartial = TRAINING_GAME_CATALOG.filter((g) => {
     const s = getGameSetting(g.id);
     return s.unlocked && !(s.tier_junior && s.tier_hero && s.tier_elite);
   }).length;
-  const trainingLocked = (games ?? []).length - trainingUnlockedAll - trainingPartial;
+  const trainingLocked = TRAINING_GAME_CATALOG.length - trainingUnlockedAll - trainingPartial;
 
   const handleBulkUnlockAll = () => {
-    const all = (games ?? []).map((g: any) => ({
+    const all = TRAINING_GAME_CATALOG.map((g) => ({
       id: g.id, unlocked: true, tier_junior: true, tier_hero: true, tier_elite: true,
     }));
     bulkUpsert.mutate(all, { onSuccess: () => toast.success("All games unlocked for all tiers!") });
   };
 
   const handleBulkLockAll = () => {
-    const all = (games ?? []).map((g: any) => ({
+    const all = TRAINING_GAME_CATALOG.map((g) => ({
       id: g.id, unlocked: false, tier_junior: false, tier_hero: false, tier_elite: false,
     }));
     bulkUpsert.mutate(all, { onSuccess: () => toast.success("All games locked.") });
   };
 
   const handleBulkUnlockTier = (tierKey: "tier_junior" | "tier_hero" | "tier_elite", tierName: string) => {
-    const all = (games ?? []).map((g: any) => {
+    const all = TRAINING_GAME_CATALOG.map((g) => {
       const existing = getGameSetting(g.id);
       return { id: g.id, unlocked: true, tier_junior: existing.tier_junior, tier_hero: existing.tier_hero, tier_elite: existing.tier_elite, [tierKey]: true };
     });
     bulkUpsert.mutate(all, { onSuccess: () => toast.success(`All games unlocked for ${tierName}!`) });
   };
+
+  // Group catalog by category for the TC management section
+  const catalogByCategory = TRAINING_GAME_CATALOG.reduce<Record<string, typeof TRAINING_GAME_CATALOG>>((acc, g) => {
+    (acc[g.category] ??= []).push(g);
+    return acc;
+  }, {});
 
   return (
     <AdminLayout>
