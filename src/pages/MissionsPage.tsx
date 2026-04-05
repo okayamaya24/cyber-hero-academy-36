@@ -316,15 +316,33 @@ export default function MissionsPage() {
 
   const { data: trainingSettings = [] } = useTrainingGameSettings();
 
+  const { data: zoneProgress = [] } = useQuery({
+    queryKey: ["zone_progress", activeChildId],
+    queryFn: async () => {
+      const { data } = await supabase.from("zone_progress").select("*").eq("child_id", activeChildId!);
+      return data ?? [];
+    },
+    enabled: !!activeChildId,
+  });
+
   const age = child?.age ?? 7;
+  const tier = getAgeTier(age);
+
+  // Adventure completion override: if zone completed, game is always unlocked
+  const completedZoneIds = new Set(
+    zoneProgress.filter((zp: any) => zp.status === "completed").map((zp: any) => zp.zone_id)
+  );
+
   const isGameLockedByAdmin = (gameId: string): boolean => {
+    // Adventure completion always wins
+    if (completedZoneIds.has(gameId)) return false;
+
     const setting = trainingSettings.find((s) => s.id === gameId);
-    if (!setting) return true; // default locked
+    if (!setting) return true; // default locked if not in DB
     if (!setting.unlocked) return true;
     const tierKey = tier === "junior" ? "tier_junior" : tier === "defender" ? "tier_hero" : "tier_elite";
     return !setting[tierKey];
   };
-  const tier = getAgeTier(age);
   const tierLabel = getTierLabel(tier);
   const tierEmoji = getTierEmoji(tier);
   const pointsPerCorrect = getPointsPerCorrect(tier);

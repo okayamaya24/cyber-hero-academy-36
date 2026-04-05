@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Plus, Search, Pencil, Trash2, Eye, EyeOff, Archive, Lock, Unlock, ChevronDown } from "lucide-react";
 import { useTrainingGameSettings, useTrainingGameSettingsMutations, type TrainingGameSetting } from "@/hooks/useTrainingGameSettings";
+import { TRAINING_GAME_CATALOG } from "@/data/trainingGameCatalog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -190,38 +191,44 @@ export default function AdminGamesPage() {
     return "All levels";
   };
 
-  // Training center stats
-  const trainingUnlockedAll = (games ?? []).filter((g: any) => {
+  // Training center stats — use CATALOG IDs, not games table
+  const trainingUnlockedAll = TRAINING_GAME_CATALOG.filter((g) => {
     const s = getGameSetting(g.id);
     return s.unlocked && s.tier_junior && s.tier_hero && s.tier_elite;
   }).length;
-  const trainingPartial = (games ?? []).filter((g: any) => {
+  const trainingPartial = TRAINING_GAME_CATALOG.filter((g) => {
     const s = getGameSetting(g.id);
     return s.unlocked && !(s.tier_junior && s.tier_hero && s.tier_elite);
   }).length;
-  const trainingLocked = (games ?? []).length - trainingUnlockedAll - trainingPartial;
+  const trainingLocked = TRAINING_GAME_CATALOG.length - trainingUnlockedAll - trainingPartial;
 
   const handleBulkUnlockAll = () => {
-    const all = (games ?? []).map((g: any) => ({
+    const all = TRAINING_GAME_CATALOG.map((g) => ({
       id: g.id, unlocked: true, tier_junior: true, tier_hero: true, tier_elite: true,
     }));
     bulkUpsert.mutate(all, { onSuccess: () => toast.success("All games unlocked for all tiers!") });
   };
 
   const handleBulkLockAll = () => {
-    const all = (games ?? []).map((g: any) => ({
+    const all = TRAINING_GAME_CATALOG.map((g) => ({
       id: g.id, unlocked: false, tier_junior: false, tier_hero: false, tier_elite: false,
     }));
     bulkUpsert.mutate(all, { onSuccess: () => toast.success("All games locked.") });
   };
 
   const handleBulkUnlockTier = (tierKey: "tier_junior" | "tier_hero" | "tier_elite", tierName: string) => {
-    const all = (games ?? []).map((g: any) => {
+    const all = TRAINING_GAME_CATALOG.map((g) => {
       const existing = getGameSetting(g.id);
       return { id: g.id, unlocked: true, tier_junior: existing.tier_junior, tier_hero: existing.tier_hero, tier_elite: existing.tier_elite, [tierKey]: true };
     });
     bulkUpsert.mutate(all, { onSuccess: () => toast.success(`All games unlocked for ${tierName}!`) });
   };
+
+  // Group catalog by category for the TC management section
+  const catalogByCategory = TRAINING_GAME_CATALOG.reduce<Record<string, typeof TRAINING_GAME_CATALOG>>((acc, g) => {
+    (acc[g.category] ??= []).push(g);
+    return acc;
+  }, {});
 
   return (
     <AdminLayout>
@@ -418,7 +425,79 @@ export default function AdminGamesPage() {
         </div>
       )}
 
+      {/* ══ Training Center Game Catalog ══ */}
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-foreground mb-4">🎮 Training Center Game Catalog</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          These are the {TRAINING_GAME_CATALOG.length} games shown in the Training Center. Toggle unlock status and age tier access below.
+        </p>
+        {Object.entries(catalogByCategory).map(([category, catGames]) => (
+          <div key={category} className="mb-6">
+            <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+              <span>{catGames[0]?.categoryIcon}</span> {category}
+              <span className="text-xs text-muted-foreground font-normal">({catGames.length} games)</span>
+            </h3>
+            <div className="space-y-1">
+              {catGames.map((cg) => {
+                const setting = getGameSetting(cg.id);
+                return (
+                  <div key={cg.id} className="rounded-xl border border-border bg-card p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{cg.title}</p>
+                        <p className="text-xs text-muted-foreground truncate">{cg.description}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {setting.unlocked && (
+                          <div className="flex gap-1">
+                            {([
+                              { key: "tier_junior" as const, emoji: "🐣" },
+                              { key: "tier_hero" as const, emoji: "⚡" },
+                              { key: "tier_elite" as const, emoji: "🔥" },
+                            ]).map((t) => (
+                              <button
+                                key={t.key}
+                                onClick={() => {
+                                  upsertSetting.mutate(
+                                    { id: cg.id, unlocked: true, tier_junior: setting.tier_junior, tier_hero: setting.tier_hero, tier_elite: setting.tier_elite, [t.key]: !setting[t.key] },
+                                    { onSuccess: () => toast.success("Saved ✓") }
+                                  );
+                                }}
+                                className={`rounded px-1.5 py-0.5 text-xs font-bold transition-all ${
+                                  setting[t.key]
+                                    ? "bg-primary/10 text-primary border border-primary/30"
+                                    : "bg-muted text-muted-foreground border border-border"
+                                }`}
+                              >
+                                {t.emoji}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-muted-foreground">{setting.unlocked ? "Unlocked" : "Locked"}</span>
+                          <Switch
+                            checked={setting.unlocked}
+                            onCheckedChange={(checked) => {
+                              upsertSetting.mutate(
+                                { id: cg.id, unlocked: checked, tier_junior: checked || setting.tier_junior, tier_hero: checked || setting.tier_hero, tier_elite: checked || setting.tier_elite },
+                                { onSuccess: () => toast.success("Saved ✓") }
+                              );
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+
         <SheetContent className="sm:max-w-lg overflow-y-auto">
           <SheetHeader><SheetTitle>{editingId ? "Edit Mission" : "New Mission"}</SheetTitle></SheetHeader>
           <div className="mt-6 space-y-5">
