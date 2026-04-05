@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Plus, Search, Pencil, Trash2, Eye, EyeOff, Archive, Lock, Unlock, ChevronDown } from "lucide-react";
 import { useTrainingGameSettings, useTrainingGameSettingsMutations, type TrainingGameSetting } from "@/hooks/useTrainingGameSettings";
+import { TRAINING_GAME_CATALOG } from "@/data/trainingGameCatalog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
