@@ -61,6 +61,18 @@ export const TRAINING_GAME_CATALOG: TrainingGameEntry[] = [
   { id: "dd_password_builder", title: "Build a Strong Password", description: "Drag the right ingredients to build the strongest password!", category: "Drag & Drop", categoryIcon: "🖱️" },
   { id: "dd_scam_sorter", title: "Safe or Scam Sorter", description: "Drag messages into safe or scam buckets!", category: "Drag & Drop", categoryIcon: "🖱️" },
   { id: "lock-the-vault-dd", title: "Lock the Vault", description: "Drag the correct keys into the right locks before time runs out!", category: "Drag & Drop", categoryIcon: "🖱️" },
+
+  // ── Quiz Challenges ──
+  { id: "scam-detection", title: "Spot the Scam", description: "Can you tell real from fake messages?", category: "Quiz", categoryIcon: "🎮" },
+  { id: "password-safety", title: "Password Power", description: "Learn to create super strong passwords!", category: "Quiz", categoryIcon: "🎮" },
+  { id: "safe-websites", title: "Safe Sites Explorer", description: "Learn to spot safe vs dangerous websites!", category: "Quiz", categoryIcon: "🎮" },
+  { id: "personal-info", title: "Secret Keeper", description: "Learn what info to keep private online!", category: "Quiz", categoryIcon: "🎮" },
+  { id: "malware-monsters", title: "Malware Monsters", description: "Learn about viruses and malware!", category: "Quiz", categoryIcon: "🎮" },
+  { id: "phishy-messages", title: "Phishy Messages", description: "Spot the phishing attempts!", category: "Quiz", categoryIcon: "🎮" },
+  { id: "smart-sharing", title: "Smart Sharing", description: "Learn what's safe to share online!", category: "Quiz", categoryIcon: "🎮" },
+  { id: "device-defender", title: "Device Defender", description: "Keep your devices safe and secure!", category: "Quiz", categoryIcon: "🎮" },
+  { id: "cyber-clues", title: "Cyber Clues", description: "Follow the clues to solve cyber mysteries!", category: "Quiz", categoryIcon: "🎮" },
+  { id: "internet-detective", title: "Internet Detective", description: "Investigate and solve internet safety cases!", category: "Quiz", categoryIcon: "🎮" },
 ];
 
 /** All unique categories in order */
