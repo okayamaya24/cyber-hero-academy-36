@@ -12,7 +12,7 @@ export interface CrosswordClue {
 }
 
 export interface CrosswordPuzzle {
-  grid: string[][];  // uppercase letters, '#' for black, ' ' for empty white
+  grid: string[][];
   clues: {
     across: CrosswordClue[];
     down: CrosswordClue[];
@@ -27,57 +27,49 @@ interface CrosswordGameProps {
 
 type Dir = 'across' | 'down';
 
-function getWordCells(puzzle: CrosswordPuzzle, clue: CrosswordClue): {row: number; col: number}[] {
-  const cells: {row: number; col: number}[] = [];
-  for (let i = 0; i < clue.answer.length; i++) {
-    if (clue.direction === 'across') cells.push({ row: clue.row, col: clue.col + i });
-    else cells.push({ row: clue.row + i, col: clue.col });
-  }
-  return cells;
+function getWordCells(puzzle: CrosswordPuzzle, clue: CrosswordClue) {
+  return Array.from({ length: clue.answer.length }, (_, i) => ({
+    row: clue.direction === 'across' ? clue.row : clue.row + i,
+    col: clue.direction === 'across' ? clue.col + i : clue.col,
+  }));
 }
 
 export default function CrosswordGame({ ageTier, puzzle, onComplete }: CrosswordGameProps) {
   const rows = puzzle.grid.length;
   const cols = puzzle.grid[0].length;
+  const allClues = [...puzzle.clues.across, ...puzzle.clues.down];
 
-  // Player input grid
   const [input, setInput] = useState<string[][]>(() =>
     puzzle.grid.map(row => row.map(c => (c === '#' ? '#' : '')))
   );
-  const [selected, setSelected] = useState<{row: number; col: number} | null>(null);
+  const [selected, setSelected] = useState<{ row: number; col: number } | null>(null);
   const [direction, setDirection] = useState<Dir>('across');
   const [activeClue, setActiveClue] = useState<CrosswordClue | null>(null);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const inputRefs = useRef<(HTMLInputElement | null)[][]>([]);
 
-  // All clues flat, sorted by answer length for word bank
-  const allClues = [...puzzle.clues.across, ...puzzle.clues.down];
-  const wordBankWords = [...allClues].sort((a, b) => a.answer.length - b.answer.length);
+  const clueKey = (c: CrosswordClue) => `${c.number}-${c.direction}`;
+  const isClueCompleted = (c: CrosswordClue) => completed.has(clueKey(c));
 
-  // Completion key: "number-direction"
-  const clueKey = (clue: CrosswordClue) => `${clue.number}-${clue.direction}`;
-  const isClueCompleted = (clue: CrosswordClue) => completed.has(clueKey(clue));
+  // word bank sorted by length
+  const wordBank = [...allClues].sort((a, b) => a.answer.length - b.answer.length);
 
-  // Build cell-to-clue map
-  const cellClueMap = useRef<Map<string, {across?: CrosswordClue; down?: CrosswordClue}>>(new Map());
+  // Build maps
+  const cellClueMap = useRef<Map<string, { across?: CrosswordClue; down?: CrosswordClue }>>(new Map());
+  const cellNumbers = useRef<Map<string, number>>(new Map());
+
   useEffect(() => {
-    const map = new Map<string, {across?: CrosswordClue; down?: CrosswordClue}>();
+    const clueMap = new Map<string, { across?: CrosswordClue; down?: CrosswordClue }>();
+    const numMap = new Map<string, number>();
     allClues.forEach(clue => {
+      numMap.set(`${clue.row}-${clue.col}`, clue.number);
       getWordCells(puzzle, clue).forEach(({ row, col }) => {
-        const key = `${row}-${col}`;
-        const existing = map.get(key) || {};
-        map.set(key, { ...existing, [clue.direction]: clue });
+        const k = `${row}-${col}`;
+        clueMap.set(k, { ...clueMap.get(k), [clue.direction]: clue });
       });
     });
-    cellClueMap.current = map;
-  }, [puzzle]);
-
-  // Cell numbers
-  const cellNumbers = useRef<Map<string, number>>(new Map());
-  useEffect(() => {
-    const map = new Map<string, number>();
-    allClues.forEach(c => map.set(`${c.row}-${c.col}`, c.number));
-    cellNumbers.current = map;
+    cellClueMap.current = clueMap;
+    cellNumbers.current = numMap;
   }, [puzzle]);
 
   const selectClue = (clue: CrosswordClue) => {
@@ -86,236 +78,218 @@ export default function CrosswordGame({ ageTier, puzzle, onComplete }: Crossword
     setActiveClue(clue);
   };
 
-  const handleCellClick = (row: number, col: number) => {
-    if (puzzle.grid[row][col] === '#') return;
-    const key = `${row}-${col}`;
-    const clues = cellClueMap.current.get(key);
+  const handleCellClick = (r: number, c: number) => {
+    if (puzzle.grid[r][c] === '#') return;
+    const clues = cellClueMap.current.get(`${r}-${c}`);
     if (!clues) return;
-
-    if (selected?.row === row && selected?.col === col) {
-      const newDir: Dir = direction === 'across' ? 'down' : 'across';
-      const clue = newDir === 'across' ? clues.across : clues.down;
-      if (clue) { setDirection(newDir); setActiveClue(clue); }
+    if (selected?.row === r && selected?.col === c) {
+      const nd: Dir = direction === 'across' ? 'down' : 'across';
+      const cl = nd === 'across' ? clues.across : clues.down;
+      if (cl) { setDirection(nd); setActiveClue(cl); }
     } else {
-      setSelected({ row, col });
-      const preferred = clues[direction] ? direction : (clues.across ? 'across' : 'down');
-      const clue = clues[preferred as Dir];
-      if (clue) { setDirection(preferred as Dir); setActiveClue(clue); }
+      setSelected({ row: r, col: c });
+      const pref = (clues[direction] ? direction : (clues.across ? 'across' : 'down')) as Dir;
+      if (clues[pref]) { setDirection(pref); setActiveClue(clues[pref]!); }
     }
   };
 
-  const handleKeyDown = (row: number, col: number, e: React.KeyboardEvent) => {
+  const handleKeyDown = (r: number, c: number, e: React.KeyboardEvent) => {
     if (e.key === 'Backspace') {
-      const newInput = input.map(r => [...r]);
-      if (input[row][col] === '') {
-        if (direction === 'across' && col > 0 && puzzle.grid[row][col-1] !== '#') {
-          newInput[row][col-1] = '';
-          setInput(newInput);
-          setSelected({ row, col: col - 1 });
-        } else if (direction === 'down' && row > 0 && puzzle.grid[row-1][col] !== '#') {
-          newInput[row-1][col] = '';
-          setInput(newInput);
-          setSelected({ row: row - 1, col });
-        }
-      } else {
-        newInput[row][col] = '';
-        setInput(newInput);
-      }
+      const ni = input.map(row => [...row]);
+      if (input[r][c] === '') {
+        if (direction === 'across' && c > 0 && puzzle.grid[r][c - 1] !== '#') { ni[r][c - 1] = ''; setSelected({ row: r, col: c - 1 }); }
+        else if (direction === 'down' && r > 0 && puzzle.grid[r - 1][c] !== '#') { ni[r - 1][c] = ''; setSelected({ row: r - 1, col: c }); }
+      } else { ni[r][c] = ''; }
+      setInput(ni);
       return;
     }
     if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
-      const letter = e.key.toUpperCase();
-      const newInput = input.map(r => [...r]);
-      newInput[row][col] = letter;
-      setInput(newInput);
-      // Advance to next cell
-      let nextRow = row, nextCol = col;
-      if (direction === 'across') {
-        for (let c = col + 1; c < cols; c++) {
-          if (puzzle.grid[row][c] !== '#') { nextCol = c; break; }
-        }
-      } else {
-        for (let r = row + 1; r < rows; r++) {
-          if (puzzle.grid[r][col] !== '#') { nextRow = r; break; }
-        }
-      }
-      if (nextRow !== row || nextCol !== col) setSelected({ row: nextRow, col: nextCol });
-      checkCompletions(newInput);
+      const ni = input.map(row => [...row]);
+      ni[r][c] = e.key.toUpperCase();
+      setInput(ni);
+      // advance
+      let nr = r, nc = c;
+      if (direction === 'across') { for (let cc = c + 1; cc < cols; cc++) { if (puzzle.grid[r][cc] !== '#') { nc = cc; break; } } }
+      else { for (let rr = r + 1; rr < rows; rr++) { if (puzzle.grid[rr][c] !== '#') { nr = rr; break; } } }
+      if (nr !== r || nc !== c) setSelected({ row: nr, col: nc });
+      checkCompletions(ni);
     }
   };
 
   const checkCompletions = (inp: string[][]) => {
-    const newCompleted = new Set<string>();
+    const done = new Set<string>();
     allClues.forEach(clue => {
-      const cells = getWordCells(puzzle, clue);
-      const word = cells.map(c => inp[c.row][c.col]).join('');
-      if (word === clue.answer) newCompleted.add(clueKey(clue));
+      const word = getWordCells(puzzle, clue).map(({ row, col }) => inp[row][col]).join('');
+      if (word === clue.answer) done.add(clueKey(clue));
     });
-    setCompleted(newCompleted);
-    if (newCompleted.size === allClues.length) {
-      setTimeout(() => onComplete(200, 200), 500);
-    }
+    setCompleted(done);
+    if (done.size === allClues.length) setTimeout(() => onComplete(200, 200), 500);
   };
 
-  // Focus selected cell
   useEffect(() => {
     if (selected) inputRefs.current[selected.row]?.[selected.col]?.focus();
   }, [selected]);
 
-  const isInActiveWord = (row: number, col: number) => {
-    if (!activeClue) return false;
-    return getWordCells(puzzle, activeClue).some(c => c.row === row && c.col === col);
-  };
+  const isInActiveWord = (r: number, c: number) =>
+    !!activeClue && getWordCells(puzzle, activeClue).some(cell => cell.row === r && cell.col === c);
 
-  const isCellCompleted = (row: number, col: number) => {
-    const key = `${row}-${col}`;
-    const clues = cellClueMap.current.get(key);
-    if (!clues) return false;
-    return (clues.across && isClueCompleted(clues.across)) ||
-           (clues.down  && isClueCompleted(clues.down));
+  const isCellCompleted = (r: number, c: number) => {
+    const clues = cellClueMap.current.get(`${r}-${c}`);
+    return !!clues && ((clues.across && isClueCompleted(clues.across)) || (clues.down && isClueCompleted(clues.down)));
   };
-
-  const cellBase = 'w-8 h-8 sm:w-9 sm:h-9 relative border border-black/40 flex items-center justify-center';
 
   const completedCount = completed.size;
   const totalCount = allClues.length;
 
-  return (
-    <div className="flex flex-col h-full bg-[#0a0e1a] overflow-hidden">
+  // Cell pixel size — scale based on grid dimensions
+  const maxDim = Math.max(rows, cols);
+  const cellPx = maxDim <= 6 ? 40 : maxDim <= 8 ? 36 : maxDim <= 10 ? 32 : 28;
 
-      {/* Active clue banner */}
-      <div className="px-4 py-2 bg-[#0d1220] border-b border-cyan-500/20 min-h-[44px] flex items-center gap-2">
+  return (
+    <div className="flex flex-col h-full bg-[#0a0e1a] overflow-y-auto">
+
+      {/* ── Active clue bar ── */}
+      <div className="sticky top-0 z-10 px-4 py-2 bg-[#0d1220] border-b border-cyan-500/20 flex items-center gap-2 min-h-[44px]">
         {activeClue ? (
-          <div className="text-sm flex-1">
-            <span className="text-cyan-400 font-bold mr-1">{activeClue.number} {activeClue.direction.toUpperCase()}:</span>
+          <p className="text-sm flex-1">
+            <span className="font-black text-cyan-400 mr-1">{activeClue.number} {activeClue.direction.toUpperCase()}:</span>
             <span className="text-white">{activeClue.clue}</span>
-          </div>
+          </p>
         ) : (
-          <div className="text-sm text-gray-500 flex-1">Tap a cell or word to start</div>
+          <p className="text-sm text-gray-500 flex-1">Tap a cell or clue to start</p>
         )}
-        <div className="text-xs font-bold text-gray-400 shrink-0">{completedCount}/{totalCount}</div>
+        <span className="text-xs font-bold text-gray-400 shrink-0">{completedCount}/{totalCount}</span>
       </div>
 
       {/* ── Word Bank ── */}
-      <div className="px-3 py-2 bg-[#0b1018] border-b border-white/10">
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <span className="text-[10px] font-black uppercase tracking-wider text-gray-500">Word Bank</span>
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {wordBankWords.map(clue => {
+      <div className="px-4 pt-3 pb-2 bg-[#0b1018] border-b border-white/10">
+        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Word Bank</p>
+        <div className="flex flex-wrap gap-2">
+          {wordBank.map(clue => {
             const done = isClueCompleted(clue);
-            const isActive = activeClue?.number === clue.number && activeClue?.direction === clue.direction;
+            const active = activeClue?.number === clue.number && activeClue?.direction === clue.direction;
             return (
               <motion.button
                 key={clueKey(clue)}
                 onClick={() => !done && selectClue(clue)}
-                whileTap={done ? {} : { scale: 0.93 }}
-                className={`
-                  px-2.5 py-1 rounded-lg text-xs font-black tracking-wide border transition-all
+                whileTap={done ? {} : { scale: 0.92 }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black tracking-wide border transition-all
                   ${done
                     ? 'border-green-500/30 bg-green-500/10 text-green-400/50 line-through cursor-default'
-                    : isActive
-                      ? 'border-cyan-400 bg-cyan-400/20 text-cyan-300 shadow-[0_0_8px_rgba(0,212,255,0.3)]'
-                      : 'border-white/15 bg-white/5 text-white hover:border-cyan-500/50 hover:bg-cyan-500/10 hover:text-cyan-300 cursor-pointer'
-                  }
-                `}
+                    : active
+                      ? 'border-cyan-400 bg-cyan-400/20 text-cyan-300 shadow-[0_0_10px_rgba(0,212,255,0.25)]'
+                      : 'border-white/15 bg-white/5 text-white hover:border-cyan-400/50 hover:bg-cyan-500/10 cursor-pointer'
+                  }`}
               >
-                {done && <span className="mr-1 text-green-400">✓</span>}
-                {clue.answer}
+                {done && '✓ '}{clue.answer}
               </motion.button>
             );
           })}
         </div>
       </div>
 
-      {/* Grid + Clues */}
-      <div className="flex flex-1 overflow-hidden gap-2 p-2">
-
-        {/* Grid */}
-        <div className="flex-shrink-0 overflow-auto">
-          <div className="inline-flex flex-col gap-0 border-2 border-white/20 rounded">
-            {puzzle.grid.map((row, r) => (
-              <div key={r} className="flex">
-                {row.map((cell, c) => {
-                  if (cell === '#') return <div key={c} className={`${cellBase} bg-[#111827]`} />;
-                  const isSelected = selected?.row === r && selected?.col === c;
-                  const inWord = isInActiveWord(r, c);
-                  const done = isCellCompleted(r, c);
-                  const num = cellNumbers.current.get(`${r}-${c}`);
+      {/* ── Grid (centered) ── */}
+      <div className="flex justify-center px-4 pt-5 pb-3">
+        <div className="inline-flex flex-col border-2 border-white/20 rounded-lg overflow-hidden shadow-[0_0_30px_rgba(0,212,255,0.08)]">
+          {puzzle.grid.map((row, r) => (
+            <div key={r} className="flex">
+              {row.map((cell, c) => {
+                if (cell === '#') {
                   return (
                     <div
                       key={c}
-                      className={`${cellBase} cursor-pointer transition-colors
-                        ${isSelected ? 'bg-yellow-300'
-                          : inWord    ? 'bg-cyan-100'
-                          : done      ? 'bg-green-100'
-                          : 'bg-white'}
-                      `}
-                      onClick={() => handleCellClick(r, c)}
-                    >
-                      {num && (
-                        <span className="absolute top-0 left-0 text-[7px] text-gray-500 font-bold leading-none pl-0.5 pt-0.5 pointer-events-none">
-                          {num}
-                        </span>
-                      )}
-                      <input
-                        ref={el => { if (!inputRefs.current[r]) inputRefs.current[r] = []; inputRefs.current[r][c] = el; }}
-                        className="w-full h-full text-center text-black font-black text-sm bg-transparent outline-none cursor-pointer uppercase caret-transparent"
-                        value={input[r][c]}
-                        onChange={() => {}}
-                        onKeyDown={e => handleKeyDown(r, c, e)}
-                        maxLength={1}
-                        readOnly
-                      />
-                    </div>
+                      style={{ width: cellPx, height: cellPx }}
+                      className="bg-[#111827] border border-black/60"
+                    />
                   );
-                })}
-              </div>
-            ))}
-          </div>
+                }
+                const isSelected = selected?.row === r && selected?.col === c;
+                const inWord = isInActiveWord(r, c);
+                const done = isCellCompleted(r, c);
+                const num = cellNumbers.current.get(`${r}-${c}`);
+                return (
+                  <div
+                    key={c}
+                    style={{ width: cellPx, height: cellPx }}
+                    className={`relative border border-gray-300/40 cursor-pointer transition-colors flex items-center justify-center
+                      ${isSelected ? 'bg-yellow-300' : inWord ? 'bg-cyan-100' : done ? 'bg-green-100' : 'bg-white'}
+                    `}
+                    onClick={() => handleCellClick(r, c)}
+                  >
+                    {num && (
+                      <span className="absolute top-0 left-0 text-[7px] font-bold text-gray-500 leading-none pl-[2px] pt-[2px] pointer-events-none">
+                        {num}
+                      </span>
+                    )}
+                    <input
+                      ref={el => { if (!inputRefs.current[r]) inputRefs.current[r] = []; inputRefs.current[r][c] = el; }}
+                      className="absolute inset-0 w-full h-full text-center text-black font-black bg-transparent outline-none cursor-pointer uppercase caret-transparent select-none"
+                      style={{ fontSize: cellPx * 0.42, paddingTop: num ? '4px' : '0' }}
+                      value={input[r][c]}
+                      onChange={() => {}}
+                      onKeyDown={e => handleKeyDown(r, c, e)}
+                      maxLength={1}
+                      readOnly
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Clues — two columns below grid ── */}
+      <div className="px-4 pb-6 grid grid-cols-2 gap-x-6 gap-y-1">
+
+        {/* ACROSS column */}
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-widest text-cyan-400 mb-2 border-b border-cyan-500/30 pb-1">
+            Across
+          </p>
+          {puzzle.clues.across.map(clue => (
+            <button
+              key={clue.number}
+              onClick={() => selectClue(clue)}
+              className={`block w-full text-left text-xs py-1.5 px-2 rounded-lg mb-0.5 transition-colors leading-snug
+                ${activeClue?.number === clue.number && direction === 'across'
+                  ? 'bg-cyan-500/20 text-cyan-200'
+                  : isClueCompleted(clue)
+                    ? 'text-gray-600 line-through'
+                    : 'text-gray-300 hover:bg-white/5'
+                }`}
+            >
+              <span className="font-black mr-1 text-gray-400">{clue.number}.</span>
+              {clue.clue}
+              {isClueCompleted(clue) && <span className="ml-1 text-green-500 no-underline not-italic">✓</span>}
+            </button>
+          ))}
         </div>
 
-        {/* Clues panel */}
-        <div className="flex-1 overflow-y-auto text-xs space-y-3 min-w-0">
-          <div>
-            <div className="font-black text-cyan-400 mb-1 uppercase tracking-wider text-[10px]">Across</div>
-            {puzzle.clues.across.map(clue => (
-              <button
-                key={clue.number}
-                onClick={() => selectClue(clue)}
-                className={`block w-full text-left px-2 py-1 rounded mb-0.5 transition-colors text-left
-                  ${activeClue?.number === clue.number && direction === 'across'
-                    ? 'bg-cyan-500/20 text-cyan-300'
-                    : isClueCompleted(clue)
-                      ? 'text-gray-600 line-through'
-                      : 'text-gray-300 hover:bg-white/5'
-                  }`}
-              >
-                <span className="font-bold">{clue.number}.</span> {clue.clue}
-                {isClueCompleted(clue) && <span className="ml-1 text-green-500 no-underline">✓</span>}
-              </button>
-            ))}
-          </div>
-          <div>
-            <div className="font-black text-purple-400 mb-1 uppercase tracking-wider text-[10px]">Down</div>
-            {puzzle.clues.down.map(clue => (
-              <button
-                key={clue.number}
-                onClick={() => selectClue(clue)}
-                className={`block w-full text-left px-2 py-1 rounded mb-0.5 transition-colors
-                  ${activeClue?.number === clue.number && direction === 'down'
-                    ? 'bg-purple-500/20 text-purple-300'
-                    : isClueCompleted(clue)
-                      ? 'text-gray-600 line-through'
-                      : 'text-gray-300 hover:bg-white/5'
-                  }`}
-              >
-                <span className="font-bold">{clue.number}.</span> {clue.clue}
-                {isClueCompleted(clue) && <span className="ml-1 text-green-500">✓</span>}
-              </button>
-            ))}
-          </div>
+        {/* DOWN column */}
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-widest text-purple-400 mb-2 border-b border-purple-500/30 pb-1">
+            Down
+          </p>
+          {puzzle.clues.down.map(clue => (
+            <button
+              key={clue.number}
+              onClick={() => selectClue(clue)}
+              className={`block w-full text-left text-xs py-1.5 px-2 rounded-lg mb-0.5 transition-colors leading-snug
+                ${activeClue?.number === clue.number && direction === 'down'
+                  ? 'bg-purple-500/20 text-purple-200'
+                  : isClueCompleted(clue)
+                    ? 'text-gray-600 line-through'
+                    : 'text-gray-300 hover:bg-white/5'
+                }`}
+            >
+              <span className="font-black mr-1 text-gray-400">{clue.number}.</span>
+              {clue.clue}
+              {isClueCompleted(clue) && <span className="ml-1 text-green-500">✓</span>}
+            </button>
+          ))}
         </div>
+
       </div>
     </div>
   );
