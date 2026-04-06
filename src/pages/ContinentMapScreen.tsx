@@ -2534,6 +2534,21 @@ export default function ContinentMapScreen() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Episode Player overlay */}
+      <AnimatePresence>
+        {showEpisodePlayer && episodeZoneId === "password-peak" && (
+          <EpisodePlayer
+            scenes={ZONE1_SCENES}
+            playerName={playerName}
+            onComplete={handleEpisodeComplete}
+            onExit={() => {
+              setShowEpisodePlayer(false);
+              setEpisodeZoneId(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
