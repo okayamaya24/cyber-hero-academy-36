@@ -138,7 +138,7 @@ function TypeToDefendGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplet
 
       // Explosion at approximate word position
       const expId = Date.now() + Math.random();
-      setExplosions(prev => [...prev, { id: expId, x: match.x + 5, y: 30 }]);
+      setExplosions(prev => [...prev, { id: expId, x: match.x + 5, y: 30, text: match.text }]);
       setTimeout(() => setExplosions(prev => prev.filter(ex => ex.id !== expId)), 700);
 
       // Spawn new word
