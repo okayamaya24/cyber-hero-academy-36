@@ -2245,14 +2245,26 @@ export default function ContinentMapScreen() {
           <ChevronLeft className="h-4 w-4" /> BACK TO ADVENTURE
         </motion.button>
 
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-          <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">
-            {continent.emoji} {continent.name.toUpperCase()} —{" "}
-            <span className="text-[hsl(195_80%_60%)] text-sm font-bold tracking-widest">STORY ARC</span>
-          </h1>
-          <p className="text-xs text-white/40 mt-0.5">
-            Villain: <span className="text-[hsl(0_80%_65%)] font-bold">{continent.villain.toUpperCase()}</span>
-          </p>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4 flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">
+              {continent.emoji} {continent.name.toUpperCase()} —{" "}
+              <span className="text-[hsl(195_80%_60%)] text-sm font-bold tracking-widest">STORY ARC</span>
+            </h1>
+            <p className="text-xs text-white/40 mt-0.5">
+              Villain: <span className="text-[hsl(0_80%_65%)] font-bold">{continent.villain.toUpperCase()}</span>
+            </p>
+          </div>
+          {/* XP Tracker */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 rounded-xl border border-[hsl(45_90%_50%/0.3)] bg-[hsl(45_90%_50%/0.08)] px-3 py-1.5">
+              <Zap className="h-3.5 w-3.5 text-[hsl(45_90%_55%)]" />
+              <span className="text-xs font-bold text-[hsl(45_90%_60%)] tabular-nums">{totalXP} XP</span>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-xl border border-[hsl(195_80%_50%/0.3)] bg-[hsl(195_80%_50%/0.08)] px-3 py-1.5">
+              <span className="text-xs font-bold text-[hsl(195_80%_60%)]">⭐ Lv.{heroLevel}</span>
+            </div>
+          </div>
         </motion.div>
 
         <div
