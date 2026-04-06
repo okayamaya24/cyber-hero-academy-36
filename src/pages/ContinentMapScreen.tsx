@@ -2012,6 +2012,15 @@ export default function ContinentMapScreen() {
   const [showUnlockBurst, setShowUnlockBurst] = useState(false);
   const [showHQOrientation, setShowHQOrientation] = useState(false);
   const [showHQBubble, setShowHQBubble] = useState(false);
+  const [showEpisodePlayer, setShowEpisodePlayer] = useState(false);
+  const [episodeZoneId, setEpisodeZoneId] = useState<string | null>(null);
+
+  // XP tracker from localStorage
+  const [totalXP, setTotalXP] = useState(() => {
+    const stored = localStorage.getItem("cyberHeroXP");
+    return stored ? parseInt(stored, 10) : 0;
+  });
+  const heroLevel = Math.floor(totalXP / 500) + 1;
 
   const continent = getContinentById(continentId || "");
 
