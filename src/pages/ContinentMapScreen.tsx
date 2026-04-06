@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, X } from "lucide-react";
+import { ChevronLeft, X, Zap } from "lucide-react";
+import EpisodePlayer from "@/components/episode/EpisodePlayer";
+import { ZONE1_SCENES } from "@/data/zone1_password_peak";
 import HQOrientation from "@/components/zone/HQOrientation";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
