@@ -72,10 +72,18 @@ export default function CrosswordGame({ ageTier, puzzle, onComplete }: Crossword
     cellNumbers.current = numMap;
   }, [puzzle]);
 
+  // selectClue: full selection (grid click / clue panel click) — highlights cells
   const selectClue = (clue: CrosswordClue) => {
     setSelected({ row: clue.row, col: clue.col });
     setDirection(clue.direction);
     setActiveClue(clue);
+  };
+
+  // previewClue: word-bank click — shows clue in bar, does NOT reveal grid position
+  const previewClue = (clue: CrosswordClue) => {
+    setActiveClue(clue);
+    setDirection(clue.direction);
+    setSelected(null); // clear selection so no cells are highlighted
   };
 
   const handleCellClick = (r: number, c: number) => {
@@ -171,7 +179,7 @@ export default function CrosswordGame({ ageTier, puzzle, onComplete }: Crossword
             return (
               <motion.button
                 key={clueKey(clue)}
-                onClick={() => !done && selectClue(clue)}
+                onClick={() => !done && previewClue(clue)}
                 whileTap={done ? {} : { scale: 0.92 }}
                 className={`px-3 py-1.5 rounded-xl text-xs font-black tracking-wide border transition-all
                   ${done
