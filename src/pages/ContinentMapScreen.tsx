@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, X } from "lucide-react";
+import { ChevronLeft, X, Zap } from "lucide-react";
+import EpisodePlayer from "@/components/episode/EpisodePlayer";
+import { ZONE1_SCENES } from "@/data/zone1_password_peak";
 import HQOrientation from "@/components/zone/HQOrientation";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -2010,6 +2012,15 @@ export default function ContinentMapScreen() {
   const [showUnlockBurst, setShowUnlockBurst] = useState(false);
   const [showHQOrientation, setShowHQOrientation] = useState(false);
   const [showHQBubble, setShowHQBubble] = useState(false);
+  const [showEpisodePlayer, setShowEpisodePlayer] = useState(false);
+  const [episodeZoneId, setEpisodeZoneId] = useState<string | null>(null);
+
+  // XP tracker from localStorage
+  const [totalXP, setTotalXP] = useState(() => {
+    const stored = localStorage.getItem("cyberHeroXP");
+    return stored ? parseInt(stored, 10) : 0;
+  });
+  const heroLevel = Math.floor(totalXP / 500) + 1;
 
   const continent = getContinentById(continentId || "");
 
@@ -2089,6 +2100,46 @@ export default function ContinentMapScreen() {
     }, 2400);
   }, [continent]);
 
+  // Map of zone IDs that use the EpisodePlayer instead of ZoneGameScreen
+  const EPISODE_ZONES: Record<string, boolean> = { "password-peak": true };
+
+  const handleEpisodeComplete = async (xp: number, badge: string) => {
+    const newXP = totalXP + xp;
+    setTotalXP(newXP);
+    localStorage.setItem("cyberHeroXP", String(newXP));
+
+    // Save zone completion to database
+    if (activeChildId && episodeZoneId) {
+      await supabase.from("zone_progress").upsert(
+        {
+          child_id: activeChildId,
+          continent_id: continentId!,
+          zone_id: episodeZoneId,
+          status: "completed",
+          games_completed: 3,
+          total_games: 3,
+          stars_earned: 3,
+        },
+        { onConflict: "child_id,zone_id" },
+      );
+
+      // Award XP to child profile
+      if (child) {
+        await supabase
+          .from("child_profiles")
+          .update({ points: (child.points || 0) + xp })
+          .eq("id", activeChildId);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
+      queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId, continentId] });
+      queryClient.invalidateQueries({ queryKey: ["child_profile", activeChildId] });
+    }
+
+    setShowEpisodePlayer(false);
+    setEpisodeZoneId(null);
+  };
+
   const handleZoneClick = (zone: ZoneDef, index: number) => {
     if (zoneStatuses[index] === "locked") return;
 
@@ -2101,6 +2152,20 @@ export default function ContinentMapScreen() {
         setShowHQBubble(true);
         setTimeout(() => setShowHQBubble(false), 4000);
       }
+      return;
+    }
+
+    // Completed zone — show bubble
+    if (zoneStatuses[index] === "completed" && EPISODE_ZONES[zone.id]) {
+      setShowHQBubble(true);
+      setTimeout(() => setShowHQBubble(false), 4000);
+      return;
+    }
+
+    // Episode zones launch the EpisodePlayer
+    if (EPISODE_ZONES[zone.id]) {
+      setEpisodeZoneId(zone.id);
+      setShowEpisodePlayer(true);
       return;
     }
 
@@ -2180,14 +2245,26 @@ export default function ContinentMapScreen() {
           <ChevronLeft className="h-4 w-4" /> BACK TO ADVENTURE
         </motion.button>
 
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-          <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">
-            {continent.emoji} {continent.name.toUpperCase()} —{" "}
-            <span className="text-[hsl(195_80%_60%)] text-sm font-bold tracking-widest">STORY ARC</span>
-          </h1>
-          <p className="text-xs text-white/40 mt-0.5">
-            Villain: <span className="text-[hsl(0_80%_65%)] font-bold">{continent.villain.toUpperCase()}</span>
-          </p>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4 flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-white tracking-wide">
+              {continent.emoji} {continent.name.toUpperCase()} —{" "}
+              <span className="text-[hsl(195_80%_60%)] text-sm font-bold tracking-widest">STORY ARC</span>
+            </h1>
+            <p className="text-xs text-white/40 mt-0.5">
+              Villain: <span className="text-[hsl(0_80%_65%)] font-bold">{continent.villain.toUpperCase()}</span>
+            </p>
+          </div>
+          {/* XP Tracker */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 rounded-xl border border-[hsl(45_90%_50%/0.3)] bg-[hsl(45_90%_50%/0.08)] px-3 py-1.5">
+              <Zap className="h-3.5 w-3.5 text-[hsl(45_90%_55%)]" />
+              <span className="text-xs font-bold text-[hsl(45_90%_60%)] tabular-nums">{totalXP} XP</span>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-xl border border-[hsl(195_80%_50%/0.3)] bg-[hsl(195_80%_50%/0.08)] px-3 py-1.5">
+              <span className="text-xs font-bold text-[hsl(195_80%_60%)]">⭐ Lv.{heroLevel}</span>
+            </div>
+          </div>
         </motion.div>
 
         <div
@@ -2455,6 +2532,21 @@ export default function ContinentMapScreen() {
               </p>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Episode Player overlay */}
+      <AnimatePresence>
+        {showEpisodePlayer && episodeZoneId === "password-peak" && (
+          <EpisodePlayer
+            scenes={ZONE1_SCENES}
+            playerName={playerName}
+            onComplete={handleEpisodeComplete}
+            onExit={() => {
+              setShowEpisodePlayer(false);
+              setEpisodeZoneId(null);
+            }}
+          />
         )}
       </AnimatePresence>
     </div>
