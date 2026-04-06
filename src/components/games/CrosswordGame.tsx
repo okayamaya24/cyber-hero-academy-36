@@ -220,7 +220,7 @@ export default function CrosswordGame({ ageTier, puzzle, onComplete }: Crossword
                     key={c}
                     style={{ width: cellPx, height: cellPx }}
                     className={`relative border border-gray-300/40 cursor-pointer transition-colors flex items-center justify-center
-                      ${isSelected ? 'bg-yellow-300' : inWord ? 'bg-cyan-100' : done ? 'bg-green-100' : 'bg-white'}
+                      ${isSelected ? 'bg-yellow-300' : done ? 'bg-green-100' : 'bg-white'}
                     `}
                     onClick={() => handleCellClick(r, c)}
                   >
