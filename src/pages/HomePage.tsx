@@ -72,7 +72,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative overflow-hidden py-20 md:py-28">
+      <section className="relative overflow-hidden py-10 md:py-16">
         <div className="absolute inset-0 gradient-hero opacity-10" />
         <div className="container relative mx-auto flex flex-col items-center gap-8 px-4 text-center md:flex-row md:text-left">
           <motion.div
@@ -289,7 +289,7 @@ export default function HomePage() {
               className="bg-card font-bold text-foreground shadow-lg transition-transform hover:scale-105 hover:bg-card/90"
               asChild
             >
-              <Link to="/dashboard">Begin Your Journey 🚀</Link>
+              <Link to="/signup">Begin Your Journey 🚀</Link>
             </Button>
           </motion.div>
         </div>
