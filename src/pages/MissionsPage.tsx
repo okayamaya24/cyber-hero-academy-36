@@ -47,7 +47,7 @@ import {
   type DragDropGameDef,
 } from "@/data/trainingGames";
 
-import heroCharacter from "@/assets/hero-character.png";
+const heroCharacter = "/byte-character.png";
 
 const CUSTOM_GAME_TYPES: MiniGameType[] = [
   "word-search",
