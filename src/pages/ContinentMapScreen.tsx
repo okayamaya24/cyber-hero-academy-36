@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getContinentById, type ContinentDef, type ZoneDef } from "@/data/continents";
-import { computeZoneStatus, useChildProfile, isContinentMigrated } from "@/engine";
+import { useChildProfile } from "@/engine";
 import { getZoneGames, getBossBattle } from "@/data/zoneGames";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import VillainSprite from "@/components/world/VillainSprite";
@@ -2060,18 +2060,6 @@ export default function ContinentMapScreen() {
     if (!continent) return [];
     const cId = continentId ?? "";
 
-    // DEBUG — remove after fixing
-    console.log("=== ZONE DEBUG ===");
-    console.log("zoneProgress:", zoneProgress);
-    console.log(
-      "password-peak row:",
-      zoneProgress.find((p) => p.zone_id === "password-peak"),
-    );
-    console.log("isContinentMigrated:", isContinentMigrated(cId));
-
-    if (false && isContinentMigrated(cId)) {
-      return continent.zones.map((zone) => computeZoneStatus(zone, continent.zones, zoneProgress, cId));
-    }
     return continent.zones.map((zone) => getZoneStatus(zone, continent.zones, zoneProgress, cId, child?.hq_completed === true));
   }, [continent, zoneProgress, continentId, child?.hq_completed]);
 
