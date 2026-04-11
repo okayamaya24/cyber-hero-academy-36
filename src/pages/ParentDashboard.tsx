@@ -5,8 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Users,
-  Clock,
   TrendingUp,
   CheckCircle2,
   Award,
@@ -14,7 +23,6 @@ import {
   Plus,
   Trash2,
   LogOut,
-  Settings2,
   AlertCircle,
   MessageCircle,
   GraduationCap,
@@ -45,6 +53,7 @@ export default function ParentDashboard() {
   const queryClient = useQueryClient();
   const [resettingMode, setResettingMode] = useState<string | null>(null);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -95,10 +104,11 @@ export default function ParentDashboard() {
     enabled: !!user && children.length > 0,
   });
 
-  const deleteChild = async (id: string, name: string) => {
-    if (!confirm(`Remove ${name}'s profile? This will delete all their progress.`)) return;
-
+  const deleteChild = async (id: string) => {
     const { error } = await supabase.from("child_profiles").delete().eq("id", id);
+
+    const name = deleteTarget?.name ?? "";
+    setDeleteTarget(null);
 
     if (error) {
       console.error("Failed to delete child:", error);
@@ -309,7 +319,7 @@ export default function ParentDashboard() {
         )}
 
         <motion.div
-          className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
+          className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4"
           variants={container}
           initial="hidden"
           animate="show"
@@ -338,13 +348,6 @@ export default function ParentDashboard() {
               value: filteredBadges.length,
               icon: Award,
               color: "text-cyber-teal",
-            },
-            {
-              label: "Time Spent",
-              value: `${Math.min(filteredChildren.reduce((acc, c) => acc + (c.last_activity_date === new Date().toISOString().split("T")[0] ? Math.round((c.points % 200) * 0.5 + 5) : 0), 0), 120)} min`,
-              icon: Clock,
-              color: "text-primary",
-              subtext: `${Math.round(filteredChildren.reduce((acc, c) => acc + Math.round((c.points % 500) * 0.3 + 10), 0) / 60)}h ${filteredChildren.reduce((acc, c) => acc + Math.round((c.points % 500) * 0.3 + 10), 0) % 60}m this week`,
             },
           ].map((s: any) => (
             <motion.div key={s.label} variants={fadeUp} className="rounded-2xl border bg-card p-5 shadow-card">
@@ -382,6 +385,9 @@ export default function ParentDashboard() {
                 <p className="mt-1 text-sm text-muted-foreground">
                   Add your first child to start their cybersecurity learning journey!
                 </p>
+                <Button variant="hero" className="mt-4" asChild>
+                  <Link to="/create-child"><Plus className="mr-1 h-4 w-4" /> Add First Child</Link>
+                </Button>
               </motion.div>
             ) : (
               <motion.div className="grid gap-4 sm:grid-cols-2" variants={container} initial="hidden" animate="show">
@@ -419,7 +425,7 @@ export default function ParentDashboard() {
                           variant="ghost"
                           size="icon"
                           className="text-destructive hover:text-destructive"
-                          onClick={() => deleteChild(child.id, child.name)}
+                          onClick={() => setDeleteTarget({ id: child.id, name: child.name })}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -586,6 +592,27 @@ export default function ParentDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {deleteTarget?.name}'s profile?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {deleteTarget?.name}'s profile and all their progress, badges, and points. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTarget && deleteChild(deleteTarget.id)}
+            >
+              Remove Profile
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
