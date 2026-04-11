@@ -1,5 +1,7 @@
 import { Shield, BookOpen, Users, BarChart3, Lock, Heart, Gamepad2, Eye, Award, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 const fadeUp = {
@@ -47,6 +49,14 @@ export default function ForParentsPage() {
           <motion.p initial="hidden" animate="visible" variants={fadeUp} custom={3} className="mt-4 max-w-xl mx-auto opacity-80">
             A colorful, game-based cybersecurity learning platform designed for children ages 5–12. Kids complete missions, earn badges, and build real-world digital safety skills — all while having fun.
           </motion.p>
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={4} className="mt-8 flex flex-wrap justify-center gap-4">
+            <Button size="lg" className="bg-white text-primary font-bold hover:bg-white/90 shadow-lg" asChild>
+              <Link to="/signup">Create Free Account</Link>
+            </Button>
+            <Button size="lg" variant="outline" className="border-white/60 text-white hover:bg-white/10" asChild>
+              <Link to="/login">Parent Login</Link>
+            </Button>
+          </motion.div>
         </div>
       </section>
 
@@ -129,6 +139,33 @@ export default function ForParentsPage() {
         <p className="text-muted-foreground leading-relaxed">
           Cyber Hero Academy is built with child safety at its core. All content is age-appropriate and reviewed for accuracy. Parents maintain full control — from creating child profiles to setting learning modes and reviewing progress. No ads, no third-party tracking, and no personal data shared. Your family's privacy is our priority.
         </p>
+      </section>
+
+      {/* Section 7 — Final CTA */}
+      <section className="container mx-auto px-4 pb-20 text-center max-w-2xl">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="rounded-3xl p-10 shadow-playful"
+          style={{ background: "var(--gradient-hero)" }}
+        >
+          <ShieldCheck className="mx-auto mb-4 h-12 w-12 text-primary-foreground" />
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-primary-foreground mb-3">
+            Ready to Protect Your Child Online?
+          </h2>
+          <p className="text-primary-foreground/80 mb-7 max-w-md mx-auto">
+            Join Cyber Hero Academy and give your child the digital safety skills they need — through play.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button size="lg" className="bg-white text-primary font-bold hover:bg-white/90 shadow-lg" asChild>
+              <Link to="/signup">Get Started Free</Link>
+            </Button>
+            <Button size="lg" variant="outline" className="border-white/60 text-white hover:bg-white/10" asChild>
+              <Link to="/login">Log In</Link>
+            </Button>
+          </div>
+        </motion.div>
       </section>
     </div>
   );
