@@ -28,6 +28,8 @@ import ZoneDragDropGame, { CONVEYOR_ZONES } from "@/components/minigames/ZoneDra
 import MiniGamePlaceholder from "@/components/minigames/MiniGamePlaceholder";
 import BossBattleScreen from "@/components/minigames/BossBattleScreen";
 import ZoneCutsceneIntro from "@/components/zone/ZoneCutsceneIntro";
+import EpisodePlayer, { type EpisodeResult } from "@/components/zone/EpisodePlayer";
+import { getZoneEpisode } from "@/data/episodes";
 import ZoneStoryPanel from "@/components/zone/ZoneStoryPanel";
 import ZoneCompleteScreen from "@/components/zone/ZoneCompleteScreen";
 import BossUnlockedCutscene from "@/components/zone/BossUnlockedCutscene";
@@ -551,7 +553,68 @@ export default function ZoneGameScreen() {
     return <HQOrientation playerName={playerName} avatarConfig={avatarConfig} onComplete={() => setPhase("playing")} />;
   }
 
-  /* ── Cutscene intro (all other zones) ── */
+  /* ── Pixar Episode Player (zones with episode data) ── */
+  const episodeData = zoneId ? getZoneEpisode(zoneId) : null;
+  if (phase === "cutscene" && !isBoss && episodeData) {
+    const handleEpisodeComplete = async (result: EpisodeResult) => {
+      if (result.endingType === "defeat") {
+        // Defeat: fall through to regular game tabs so player can still earn XP
+        setPhase("playing");
+        return;
+      }
+      // Victory: save completion, award XP, unlock next zone, then go straight to map
+      if (!activeChildId || !continentId || !zoneId) {
+        navigate(`/world-map/${continentId ?? "north-america"}?completed=${zoneId ?? ""}`);
+        return;
+      }
+      const stars = 3;
+      const [saveErr] = await supabase.from("zone_progress").upsert(
+        { child_id: activeChildId, continent_id: continentId, zone_id: zoneId,
+          status: "completed", games_completed: 4, total_games: 4, stars_earned: stars },
+        { onConflict: "child_id,zone_id" },
+      ).then(({ error }) => [error]);
+      if (saveErr) console.error("saveZoneCompletion error:", saveErr);
+
+      await awardXp(activeChildId, child?.points || 0, result.xpEarned);
+
+      const nextZoneId = getNextZone(continentId, zoneId);
+      if (nextZoneId) {
+        const [unlockErr] = await supabase.from("zone_progress").upsert(
+          { child_id: activeChildId, continent_id: continentId, zone_id: nextZoneId,
+            status: "available", games_completed: 0, total_games: 4, stars_earned: 0 },
+          { onConflict: "child_id,zone_id" },
+        ).then(({ error }) => [error]);
+        if (unlockErr) console.error("unlockNextZone error:", unlockErr);
+
+        const bossZone = continent?.zones.find(z => z.isBoss);
+        if (bossZone && nextZoneId === bossZone.id) {
+          setBossZoneForUnlock(bossZone.id);
+          queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
+          queryClient.invalidateQueries({ queryKey: ["child"] });
+          setPhase("boss_unlocked");
+          return;
+        }
+      }
+      queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
+      queryClient.invalidateQueries({ queryKey: ["child"] });
+      // Navigate directly — EpisodePlayer already showed its own victory screen
+      navigate(`/world-map/${continentId}?completed=${zoneId}`);
+    };
+
+    return (
+      <AnimatePresence>
+        <EpisodePlayer
+          episode={episodeData}
+          baseXp={zoneRewards.xp}
+          badge={zoneRewards.badge}
+          onComplete={handleEpisodeComplete}
+          onSkip={() => setPhase("playing")}
+        />
+      </AnimatePresence>
+    );
+  }
+
+  /* ── Cutscene intro (zones without episode data) ── */
   if (phase === "cutscene" && !isBoss) {
     return (
       <AnimatePresence>

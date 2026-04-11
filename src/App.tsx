@@ -29,6 +29,8 @@ import ZoneGameScreen from "./pages/ZoneGameScreen";
 import EditAvatarPage from "./pages/EditAvatarPage";
 import ProtectedParentRoute from "./components/ProtectedParentRoute";
 import NotFound from "./pages/NotFound";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
 import AdminGamesPage from "./pages/admin/AdminGamesPage";
 import AdminEventsPage from "./pages/admin/AdminEventsPage";
 import AdminBadgesPage from "./pages/admin/AdminBadgesPage";
@@ -88,7 +90,7 @@ import InternetDetective from "./pages/games/InternetDetective";
 const queryClient = new QueryClient();
 
 function DashboardRouter() {
-  const { user, setActiveChildId } = useAuth();
+  const { user, loading: authLoading, setActiveChildId } = useAuth();
   const [role, setRole] = useState<string | null>(null);
   const [hasAvatar, setHasAvatar] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
@@ -145,6 +147,15 @@ function DashboardRouter() {
     checkRole();
     return () => clearTimeout(timeout);
   }, [user]);
+
+  if (authLoading)
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+
+  if (!user) return <Navigate to="/login" replace />;
 
   if (checking)
     return (
@@ -427,6 +438,8 @@ const App = () => (
               <Route path="/games/cyber-clues" element={<CyberClues />} />
               <Route path="/games/internet-detective" element={<InternetDetective />} />
 
+              <Route path="/terms" element={<><Navbar /><TermsPage /></>} />
+              <Route path="/privacy" element={<><Navbar /><PrivacyPage /></>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </MaintenanceGate>

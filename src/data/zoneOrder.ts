@@ -1,7 +1,7 @@
 /** Static zone ordering per continent — used for sequential unlocking */
 
 export const ZONE_ORDER: Record<string, string[]> = {
-  "north-america": ["hq", "pixel-port", "signal-summit", "code-canyon", "encrypt-enclave", "password-peak", "arctic-archive", "shadow-station", "firewall-fortress", "boss-keybreaker"],
+  "north-america": ["hq", "password-peak", "pixel-port", "signal-summit", "code-canyon", "encrypt-enclave", "arctic-archive", "shadow-station", "firewall-fortress", "boss-keybreaker"],
   "europe": ["phish-lagoon", "download-dungeon", "code-castle", "wifi-watch", "data-fortress", "cyber-citadel", "boss-phisher"],
   "africa": ["stranger-shore", "dark-web-den", "kindness-citadel", "signal-savanna", "code-cape", "data-delta", "boss-troll"],
   "asia": ["privacy-palace", "browse-bazaar", "firewall-frontier", "cyberguard-academy", "network-nexus", "hack-haven", "tech-temple", "boss-phantom"],

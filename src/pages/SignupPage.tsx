@@ -120,7 +120,7 @@ export default function SignupPage() {
           <div className="flex items-start gap-3 pt-1">
             <Checkbox id="terms" checked={agreeTerms} onCheckedChange={(v) => setAgreeTerms(v === true)} className="mt-0.5" />
             <Label htmlFor="terms" className="text-sm leading-snug text-muted-foreground cursor-pointer">
-              I agree to the <span className="font-semibold text-primary">Terms</span> and <span className="font-semibold text-primary">Privacy Policy</span>
+              I agree to the <Link to="/terms" className="font-semibold text-primary hover:underline">Terms</Link> and <Link to="/privacy" className="font-semibold text-primary hover:underline">Privacy Policy</Link>
             </Label>
           </div>
 

@@ -31,11 +31,11 @@ import trollLordImg from "@/assets/villains/troll-lord.png";
    ═══════════════════════════════════════════════════════════ */
 const NA_UNLOCK_ORDER = [
   "hq",
+  "password-peak",
   "pixel-port",
   "signal-summit",
   "code-canyon",
   "encrypt-enclave",
-  "password-peak",
   "arctic-archive",
   "shadow-station",
   "firewall-fortress",
@@ -47,16 +47,19 @@ function getZoneStatus(
   allZones: ZoneDef[],
   zoneProgress: any[],
   continentId: string,
+  hqCompleted?: boolean,
 ): "completed" | "available" | "locked" {
   const progress = zoneProgress.find((p) => p.zone_id === zone.id);
   if (progress?.status === "completed") return "completed";
-  if (progress?.status === "available") return "available"; // ← ADD THIS
+  if (progress?.status === "available") return "available";
 
   if (continentId === "north-america") {
     const idx = NA_UNLOCK_ORDER.indexOf(zone.id);
     if (idx === 0) return "available";
     if (idx < 0) return "locked";
     const prevId = NA_UNLOCK_ORDER[idx - 1];
+    // Use child.hq_completed as the authoritative source for whether HQ is done
+    if (prevId === "hq" && hqCompleted) return "available";
     const prevDone = zoneProgress.find((p) => p.zone_id === prevId && (p.status === "completed" || p.unlocked_at));
     return prevDone ? "available" : "locked";
   }
@@ -2036,13 +2039,17 @@ export default function ContinentMapScreen() {
     queryKey: ["zone_progress", activeChildId, continentId],
     queryFn: async () => {
       if (!activeChildId || !continentId) return [];
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("zone_progress")
         .select("*")
         .eq("child_id", activeChildId);
+      if (error) console.error("zone_progress fetch error:", error);
       return data ?? [];
     },
     enabled: !!activeChildId && !!continentId,
+    staleTime: 0,                   // always considered stale — refetch on every mount
+    refetchOnMount: "always",        // force fresh data whenever map appears
+    refetchOnWindowFocus: true,
   });
 
   const avatarConfig = child?.avatar_config as Record<string, any> | null;
@@ -2065,8 +2072,8 @@ export default function ContinentMapScreen() {
     if (false && isContinentMigrated(cId)) {
       return continent.zones.map((zone) => computeZoneStatus(zone, continent.zones, zoneProgress, cId));
     }
-    return continent.zones.map((zone) => getZoneStatus(zone, continent.zones, zoneProgress, cId));
-  }, [continent, zoneProgress, continentId]);
+    return continent.zones.map((zone) => getZoneStatus(zone, continent.zones, zoneProgress, cId, child?.hq_completed === true));
+  }, [continent, zoneProgress, continentId, child?.hq_completed]);
 
   const zoneCoords = useMemo(() => ZONE_COORDINATES[continentId || ""] || [], [continentId]);
   const projection = CONTINENT_PROJECTIONS[continentId || ""];
@@ -2143,15 +2150,12 @@ export default function ContinentMapScreen() {
   const handleZoneClick = (zone: ZoneDef, index: number) => {
     if (zoneStatuses[index] === "locked") return;
 
-    // HQ is not a playable zone — it's the one-time orientation only
+    // HQ always shows the orientation — first time or replay
     if (zone.isHQ) {
-      const hqCompleted = child?.hq_completed === true;
-      if (!hqCompleted) {
-        setShowHQOrientation(true);
-      } else {
-        setShowHQBubble(true);
-        setTimeout(() => setShowHQBubble(false), 4000);
-      }
+      // If already completed, write unlock immediately so password-peak stays available
+      // without waiting for the user to finish the replay
+      if (child?.hq_completed) saveHQUnlock();
+      setShowHQOrientation(true);
       return;
     }
 
@@ -2172,44 +2176,55 @@ export default function ContinentMapScreen() {
     story.triggerIntro(zone.id, () => setSelectedZone(zone));
   };
 
+  // Writes HQ completion + unlocks password-peak in DB. Safe to call multiple times (upsert).
+  const saveHQUnlock = async () => {
+    if (!activeChildId) return;
+    await supabase.from("child_profiles").update({ hq_completed: true }).eq("id", activeChildId);
+    await supabase.from("zone_progress").upsert(
+      { child_id: activeChildId, continent_id: continentId!, zone_id: "hq",
+        status: "completed", games_completed: 1, total_games: 1, stars_earned: 3 },
+      { onConflict: "child_id,zone_id" },
+    );
+    // Only set password-peak to available if it isn't already completed
+    const pwPeakRow = zoneProgress.find((p) => p.zone_id === "password-peak");
+    if (!pwPeakRow || pwPeakRow.status === "locked") {
+      await supabase.from("zone_progress").upsert(
+        { child_id: activeChildId, continent_id: continentId!, zone_id: "password-peak",
+          status: "available", games_completed: 0, total_games: 4, stars_earned: 0 },
+        { onConflict: "child_id,zone_id" },
+      );
+    }
+    queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
+    queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId] });
+    queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId, continentId] });
+    queryClient.invalidateQueries({ queryKey: ["child_profile", activeChildId] });
+    queryClient.invalidateQueries({ queryKey: ["child-profile", activeChildId] });
+  };
+
   const handleHQOrientationComplete = async (choiceId: string) => {
     setShowHQOrientation(false);
-    if (activeChildId) {
-      await supabase.from("child_profiles").update({ hq_completed: true }).eq("id", activeChildId);
-
-      await supabase.from("zone_progress").upsert(
-        {
-          child_id: activeChildId,
-          continent_id: continentId!,
-          zone_id: "hq",
-          status: "completed",
-          games_completed: 1,
-          total_games: 1,
-          stars_earned: 3,
-        },
-        { onConflict: "child_id,zone_id" },
-      );
-
-      await supabase.from("zone_progress").upsert(
-        {
-          child_id: activeChildId,
-          continent_id: continentId!,
-          zone_id: "password-peak",
-          status: "available",
-          games_completed: 0,
-          total_games: 4,
-          stars_earned: 0,
-        },
-        { onConflict: "child_id,zone_id" },
-      );
-
-      queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
-      queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId] });
-      queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId, continentId] });
-      queryClient.invalidateQueries({ queryKey: ["child_profile", activeChildId] });
-      queryClient.invalidateQueries({ queryKey: ["child-profile", activeChildId] });
-    }
+    await saveHQUnlock();
   };
+
+  // Auto-repair: if HQ is done but the next zone has no DB row, write it now
+  useEffect(() => {
+    if (!child?.hq_completed || !activeChildId || !continentId) return;
+    const hasPwPeak = zoneProgress.some(
+      (p) => p.zone_id === "password-peak" && (p.status === "available" || p.status === "completed"),
+    );
+    if (!hasPwPeak) {
+      supabase
+        .from("zone_progress")
+        .upsert(
+          { child_id: activeChildId, continent_id: continentId, zone_id: "password-peak",
+            status: "available", games_completed: 0, total_games: 4, stars_earned: 0 },
+          { onConflict: "child_id,zone_id" },
+        )
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
+        });
+    }
+  }, [child?.hq_completed, zoneProgress, activeChildId, continentId, queryClient]);
 
   if (!continent) return null;
 
@@ -2386,7 +2401,7 @@ export default function ContinentMapScreen() {
                       fontSize={zone.isHQ || zone.isBoss ? 18 : 14}
                       style={{ pointerEvents: "none", userSelect: "none" }}
                     >
-                      {isLocked ? "🔒" : isCompleted ? "✅" : zone.icon}
+                      {isLocked ? "🔒" : isCompleted && !zone.isHQ ? "✅" : zone.icon}
                     </text>
                     <text
                       textAnchor="middle"
@@ -2407,7 +2422,7 @@ export default function ContinentMapScreen() {
                     >
                       {zone.city}
                     </text>
-                    {isAvailable && (
+                    {(isAvailable || (isCompleted && zone.isHQ)) && (
                       <text
                         textAnchor="middle"
                         y={r + 42}
@@ -2416,7 +2431,7 @@ export default function ContinentMapScreen() {
                         fill={zone.isBoss ? "#ff6b8a" : zone.isHQ ? "#f5c518" : "#00ffe7"}
                         style={{ pointerEvents: "none", userSelect: "none" }}
                       >
-                        {zone.isBoss ? "⚔️ FIGHT" : zone.isHQ ? "▶ START" : "▶ PLAY"}
+                        {zone.isBoss ? "⚔️ FIGHT" : zone.isHQ && isCompleted ? "↺ REPLAY" : zone.isHQ ? "▶ START" : "▶ PLAY"}
                         <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite" />
                       </text>
                     )}

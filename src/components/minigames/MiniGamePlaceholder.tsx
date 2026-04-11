@@ -3,6 +3,9 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import ScamSorter from "@/components/minigames/ScamSorter";
 import ShieldDodge from "@/components/minigames/ShieldDodge";
+import LockAndLearn from "@/components/minigames/LockAndLearn";
+import StrongOrSmash from "@/components/minigames/StrongOrSmash";
+import WhoDoYouTrust from "@/components/minigames/WhoDoYouTrust";
 
 interface Props {
   type: string;
@@ -40,6 +43,19 @@ export default function MiniGamePlaceholder({ type, title, description, onComple
 
   if (type === "shield-dodge") {
     return <ShieldDodge onComplete={(stars) => onComplete(stars >= 2)} villainName={villainName} />;
+  }
+
+  // Zone 1 — Password Peak
+  if (type === "lock-and-learn") {
+    return <LockAndLearn onComplete={(stars) => onComplete(stars >= 2)} />;
+  }
+
+  if (type === "strong-or-smash") {
+    return <StrongOrSmash onComplete={(stars) => onComplete(stars >= 2)} />;
+  }
+
+  if (type === "who-do-you-trust") {
+    return <WhoDoYouTrust onComplete={(stars) => onComplete(stars >= 2)} />;
   }
 
   /* ── Placeholder for unbuilt games ── */
