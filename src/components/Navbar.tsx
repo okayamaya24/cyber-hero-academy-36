@@ -1,14 +1,20 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, Gamepad2, BarChart3, Home, LogIn, UserPlus, BookOpen } from "lucide-react";
+import { Shield, Gamepad2, BarChart3, Home, LogIn, UserPlus, BookOpen, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 
 const publicItems = [
   { label: "Home", to: "/", icon: Home },
   { label: "For Parents", to: "/for-parents", icon: BookOpen },
 ];
 
-const authItems = [
+const kidItems = [
+  { label: "Dashboard", to: "/dashboard", icon: Gamepad2 },
+  { label: "Missions", to: "/missions", icon: Shield },
+];
+
+const parentItems = [
   { label: "Dashboard", to: "/dashboard", icon: Gamepad2 },
   { label: "Missions", to: "/missions", icon: Shield },
   { label: "Parents", to: "/parent-dashboard", icon: BarChart3 },
@@ -16,9 +22,16 @@ const authItems = [
 
 export function Navbar() {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const { data: profile } = useProfile();
 
-  const navItems = user ? authItems : publicItems;
+  const isKid = profile?.role === "kid";
+  const isParent = profile?.role === "family" || profile?.role === "school";
+
+  let navItems = publicItems;
+  if (user && isKid) navItems = kidItems;
+  else if (user && isParent) navItems = parentItems;
+  else if (user) navItems = parentItems; // fallback for unknown roles
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
@@ -52,7 +65,15 @@ export function Navbar() {
             );
           })}
 
-          {!user && (
+          {user ? (
+            <button
+              onClick={signOut}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+          ) : (
             <>
               <Link
                 to="/login"
