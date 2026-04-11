@@ -448,7 +448,7 @@ export default function ZoneGameScreen() {
       );
 
       if (error) console.error("Failed to unlock next zone:", error);
-      else console.log("Unlocked next zone:", nextZoneId);
+      // next zone unlocked
 
       const bossZone = continent?.zones.find((z) => z.isBoss);
       if (bossZone && nextZoneId === bossZone.id) {
@@ -709,7 +709,7 @@ export default function ZoneGameScreen() {
           villainName={continent.villain}
           bossZoneName={bossZone?.name || "Boss Vault"}
           villainTaunt={continent.villainTaunt}
-          onFaceBoss={() => navigate(`/zone/${continentId}/${bossZoneForUnlock}`)}
+          onFaceBoss={() => navigate(`/world-map/${continentId}/${bossZoneForUnlock}`)}
           onReturnToMap={() => navigate(`/world-map/${continentId}?completed=${zoneId}`)}
         />
       </AnimatePresence>

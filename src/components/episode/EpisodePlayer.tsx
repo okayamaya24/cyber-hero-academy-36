@@ -1,7 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Star, Award, Zap } from "lucide-react";
+import { ChevronLeft, Award, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import LockAndLearn from "@/components/minigames/LockAndLearn";
+import StrongOrSmash from "@/components/minigames/StrongOrSmash";
+import WhoDoYouTrust from "@/components/minigames/WhoDoYouTrust";
+import HeroAvatar from "@/components/avatar/HeroAvatar";
+import keybreakerImg from "@/assets/villains/keybreaker.png";
 import type { EpisodeScene } from "@/data/zone1_password_peak";
 
 /* ── Speaker color map ─────────────────────────── */
@@ -11,63 +16,87 @@ const SPEAKER_COLORS: Record<string, string> = {
   GUARDIAN: "#ffd700",
 };
 
-/* ── Character visual placeholder ──────────────── */
+/* ── Character sprite with real images ─────────── */
 function CharacterSprite({
   name,
   position,
-  expression,
+  avatarConfig,
 }: {
   name: string;
   position: "left" | "center" | "right";
   expression: string;
+  avatarConfig?: Record<string, any> | null;
 }) {
   const posClass =
-    position === "left" ? "left-[8%]" : position === "right" ? "right-[8%]" : "left-1/2 -translate-x-1/2";
+    position === "left"
+      ? "left-[4%] bottom-[8%]"
+      : position === "right"
+      ? "right-[4%] bottom-[8%]"
+      : "left-1/2 bottom-[12%] -translate-x-1/2";
 
-  const expressionEmoji: Record<string, string> = {
-    happy: "😊",
-    neutral: "😐",
-    scared: "😰",
-    angry: "😡",
-    determined: "💪",
-  };
+  const isByte       = name === "BYTE";
+  const isKeybreaker = name.toUpperCase().includes("KEYBREAKER") || name.toUpperCase().includes("VILLAIN");
+  const isPlayer     = !isByte && !isKeybreaker;
 
-  const bgColor =
-    name === "BYTE"
-      ? "from-cyan-500/20 to-cyan-900/30"
-      : name === "THE KEYBREAKER"
-        ? "from-green-500/20 to-green-900/30"
-        : "from-yellow-500/20 to-yellow-900/30";
-
-  const borderColor =
-    name === "BYTE"
-      ? "border-cyan-400/40"
-      : name === "THE KEYBREAKER"
-        ? "border-green-400/40"
-        : "border-yellow-400/40";
+  const glowColor = isByte ? "#00d4ff" : isKeybreaker ? "#ff4466" : "#ffd700";
+  const label     = isByte ? "BYTE" : isKeybreaker ? "KEYBREAKER" : "YOU";
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      initial={{ opacity: 0, y: 30, scale: 0.85 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.9 }}
-      transition={{ type: "spring", damping: 20, stiffness: 200 }}
-      className={`absolute bottom-[35%] ${posClass} z-10`}
+      exit={{ opacity: 0, y: 30, scale: 0.85 }}
+      transition={{ type: "spring", damping: 18, stiffness: 180 }}
+      className={`absolute ${posClass} z-10 flex flex-col items-center`}
     >
-      <div
-        className={`flex flex-col items-center gap-1 rounded-2xl bg-gradient-to-b ${bgColor} border ${borderColor} p-3 backdrop-blur-sm`}
-      >
-        <div className="text-4xl md:text-5xl">
-          {name === "BYTE" ? "🤖" : name === "THE KEYBREAKER" ? "🦹‍♂️" : "🦸"}
-        </div>
-        <span className="text-lg">{expressionEmoji[expression] || "😐"}</span>
-        <span
-          className="text-[9px] font-bold tracking-widest uppercase"
-          style={{ color: SPEAKER_COLORS[name] || "#fff" }}
-        >
-          {name === "GUARDIAN" ? "YOU" : name === "BYTE" ? "BYTE" : "VILLAIN"}
-        </span>
+      {/* Glow ring behind character */}
+      <motion.div
+        animate={{ opacity: [0.3, 0.7, 0.3], scale: [1, 1.06, 1] }}
+        transition={{ repeat: Infinity, duration: 2.5 }}
+        className="absolute inset-0 rounded-full blur-2xl"
+        style={{ background: glowColor, opacity: 0.25 }}
+      />
+
+      {/* Character image or fallback */}
+      <div className={`relative z-10 flex items-end justify-center ${position === "center" ? "w-72 h-96 md:w-96 md:h-[28rem]" : "w-48 h-60 md:w-64 md:h-80"}`}>
+        {isByte ? (
+          <img
+            src="/byte-character.png"
+            alt="Byte"
+            className="h-full w-full object-contain drop-shadow-[0_0_24px_rgba(0,212,255,0.7)]"
+          />
+        ) : isKeybreaker ? (
+          <img
+            src={keybreakerImg}
+            alt="The Keybreaker"
+            className="h-full w-full object-contain object-top drop-shadow-[0_0_24px_rgba(255,68,102,0.7)]"
+          />
+        ) : (
+          /* Player — their created hero avatar */
+          <div className="flex flex-col items-center justify-end h-full">
+            <HeroAvatar
+              avatarConfig={avatarConfig}
+              fallbackEmoji="🦸"
+              size={240}
+              className="drop-shadow-[0_0_16px_rgba(255,215,0,0.6)] max-h-full w-auto"
+            />
+          </div>
+        )}
       </div>
+
+      {/* Name badge */}
+      <motion.span
+        animate={{ opacity: [0.7, 1, 0.7] }}
+        transition={{ repeat: Infinity, duration: 2 }}
+        className="mt-1.5 rounded-lg px-2.5 py-0.5 text-[9px] font-black tracking-widest uppercase backdrop-blur-sm"
+        style={{
+          color: glowColor,
+          background: `${glowColor}18`,
+          border: `1px solid ${glowColor}40`,
+        }}
+      >
+        {label}
+      </motion.span>
     </motion.div>
   );
 }
@@ -103,19 +132,49 @@ function useTypewriter(text: string, speed = 30) {
   return { displayed, done, skip };
 }
 
-/* ── Mini-game placeholder ─────────────────────── */
-function MiniGamePlaceholder({
+/* ── Mini-game router — real games ─────────────── */
+function MiniGameRouter({
   gameName,
   onComplete,
 }: {
   gameName: string;
   onComplete: () => void;
 }) {
-  const prettyName = gameName
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
+  const wrapper = "fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto";
 
+  const bg = { background: "linear-gradient(135deg, #050a14 0%, #0d1a2f 50%, #050a14 100%)" };
+
+  if (gameName === "lock-and-learn") {
+    return (
+      <div className={wrapper} style={bg}>
+        <div className="w-full max-w-md">
+          <LockAndLearn onComplete={() => onComplete()} />
+        </div>
+      </div>
+    );
+  }
+
+  if (gameName === "strong-or-smash") {
+    return (
+      <div className={wrapper} style={bg}>
+        <div className="w-full max-w-md">
+          <StrongOrSmash onComplete={() => onComplete()} />
+        </div>
+      </div>
+    );
+  }
+
+  if (gameName === "who-do-you-trust") {
+    return (
+      <div className={wrapper} style={bg}>
+        <div className="w-full max-w-lg">
+          <WhoDoYouTrust onComplete={() => onComplete()} />
+        </div>
+      </div>
+    );
+  }
+
+  /* Fallback for future games not yet built */
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -124,29 +183,18 @@ function MiniGamePlaceholder({
       style={{ background: "linear-gradient(135deg, #0a0e2a 0%, #1a1040 50%, #0d1a2f 100%)" }}
     >
       <div className="text-center px-6">
-        <motion.div
-          animate={{ rotate: [0, 5, -5, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="text-6xl mb-6"
-        >
+        <motion.div animate={{ rotate: [0, 5, -5, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="text-6xl mb-6">
           🎮
         </motion.div>
-        <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">{prettyName}</h2>
-        <p className="text-white/50 text-sm mb-8">Mini-game loading zone — full game coming soon!</p>
-        <div className="w-64 mx-auto h-2 rounded-full bg-white/10 mb-8 overflow-hidden">
-          <motion.div
-            className="h-full rounded-full"
-            style={{ background: "linear-gradient(90deg, #00d4ff, #00ff88)" }}
-            initial={{ width: "0%" }}
-            animate={{ width: "100%" }}
-            transition={{ duration: 2, ease: "easeInOut" }}
-          />
-        </div>
+        <h2 className="text-2xl font-bold text-white mb-2">
+          {gameName.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
+        </h2>
+        <p className="text-white/50 text-sm mb-8">Challenge coming soon!</p>
         <Button
           onClick={onComplete}
           className="bg-gradient-to-r from-[#00d4ff] to-[#00ff88] text-[#0a0e2a] font-bold text-lg px-8 py-3 rounded-xl hover:scale-105 transition-transform border-0"
         >
-          ✅ Complete!
+          ✅ Continue
         </Button>
       </div>
     </motion.div>
@@ -274,11 +322,12 @@ function CompletionScreen({
 interface EpisodePlayerProps {
   scenes: EpisodeScene[];
   playerName: string;
+  avatarConfig?: Record<string, any> | null;
   onComplete: (xp: number, badge: string) => void;
   onExit: () => void;
 }
 
-export default function EpisodePlayer({ scenes, playerName, onComplete, onExit }: EpisodePlayerProps) {
+export default function EpisodePlayer({ scenes, playerName, avatarConfig, onComplete, onExit }: EpisodePlayerProps) {
   const [sceneIndex, setSceneIndex] = useState(0);
   const [showMiniGame, setShowMiniGame] = useState(false);
   const [extraDialogue, setExtraDialogue] = useState<string | null>(null);
@@ -310,7 +359,7 @@ export default function EpisodePlayer({ scenes, playerName, onComplete, onExit }
   // Mini-game
   if (showMiniGame && scene.miniGame) {
     return (
-      <MiniGamePlaceholder
+      <MiniGameRouter
         gameName={scene.miniGame}
         onComplete={() => {
           setShowMiniGame(false);
@@ -353,6 +402,7 @@ export default function EpisodePlayer({ scenes, playerName, onComplete, onExit }
               name={char.name}
               position={char.position}
               expression={char.expression}
+              avatarConfig={avatarConfig}
             />
           ))}
         </AnimatePresence>
