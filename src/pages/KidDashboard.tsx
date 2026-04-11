@@ -153,9 +153,9 @@ export default function KidDashboard() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="text-muted-foreground mb-4">Loading your dashboard...</div>
-          <button className="text-sm text-primary underline" onClick={() => (window.location.href = "/kid-dashboard")}>
+          <Button variant="outline" size="sm" onClick={() => (window.location.href = "/kid-dashboard")}>
             Click here if this takes too long
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -559,39 +559,35 @@ export default function KidDashboard() {
             </motion.div>
           )}
 
-          {earnedBadges.length === 0 ? (
-            <div className="rounded-2xl border-2 border-dashed bg-card p-8 text-center">
-              <Trophy className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
-              <h3 className="text-lg font-bold">No badges earned yet!</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Complete missions, win games, and build your trophy wall.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {groupedBadges.map((category) => (
-                <div key={category.title}>
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-lg font-bold">{category.title}</h3>
-                    <span className="text-xs text-muted-foreground">
-                      {category.badges.filter((badge) => earnedBadgeIds.has(badge.id)).length}/{category.badges.length}{" "}
-                      earned
-                    </span>
-                  </div>
-                  <motion.div
-                    className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6"
-                    variants={container}
-                    initial="hidden"
-                    animate="show"
-                  >
-                    {category.badges.map((badge) => (
-                      <BadgeCard key={badge.id} badge={badge} earned={earnedBadgeIds.has(badge.id)} />
-                    ))}
-                  </motion.div>
-                </div>
-              ))}
+          {earnedBadges.length === 0 && (
+            <div className="mb-6 rounded-2xl border-2 border-dashed bg-card p-5 text-center">
+              <Trophy className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+              <p className="text-sm font-semibold">No badges earned yet — complete missions to unlock them!</p>
             </div>
           )}
+          <div className="space-y-8">
+            {groupedBadges.map((category) => (
+              <div key={category.title}>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-bold">{category.title}</h3>
+                  <span className="text-xs text-muted-foreground">
+                    {category.badges.filter((badge) => earnedBadgeIds.has(badge.id)).length}/{category.badges.length}{" "}
+                    earned
+                  </span>
+                </div>
+                <motion.div
+                  className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6"
+                  variants={container}
+                  initial="hidden"
+                  animate="show"
+                >
+                  {category.badges.map((badge) => (
+                    <BadgeCard key={badge.id} badge={badge} earned={earnedBadgeIds.has(badge.id)} />
+                  ))}
+                </motion.div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
