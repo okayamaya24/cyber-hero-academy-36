@@ -98,9 +98,8 @@ function HUDBar({
 function NavTabs() {
   const navigate = useNavigate();
   const tabs = [
-    { label: "Dashboard", path: "/kid-dashboard" },
+    { label: "Dashboard", path: "/dashboard" },
     { label: "Missions", path: "/missions" },
-    { label: "Parents", path: "/for-parents" },
   ];
   return (
     <div className="flex items-center gap-4 mt-1.5 mb-1">
@@ -170,7 +169,7 @@ function ContinentCard({
         <motion.span
           className="text-3xl leading-none"
           animate={!isLocked ? { y: [0, -3, 0] } : {}}
-          transition={{ repeat: Infinity, duration: 3, ease: "easeInOut", delay: Math.random() * 2 }}
+          transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
         >
           {continent.emoji}
         </motion.span>
