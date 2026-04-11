@@ -280,9 +280,6 @@ export default function MissionsPage() {
   );
   const [standaloneStartTime, setStandaloneStartTime] = useState(0);
 
-  // Filters
-  const [worldFilter, setWorldFilter] = useState<string>("all");
-  const [starFilter, setStarFilter] = useState<number>(0);
 
   useEffect(() => {
     if (!user) {
@@ -1191,6 +1188,15 @@ export default function MissionsPage() {
   // Featured game (Byte's Pick)
   const featuredGame = WORD_SEARCH_PUZZLES[0];
 
+  // Countdown to midnight reset
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  const msLeft = midnight.getTime() - now.getTime();
+  const hoursLeft = Math.floor(msLeft / 3600000);
+  const minutesLeft = Math.floor((msLeft % 3600000) / 60000);
+  const countdownLabel = `${hoursLeft}h ${minutesLeft}m`;
+
   // Daily missions (tier-aware text)
   const dailyMissions = tier === "junior"
     ? [
@@ -1209,16 +1215,7 @@ export default function MissionsPage() {
           { name: "Complete a Keyboard challenge", xp: 60, done: false },
           { name: "Beat your best Sort score", xp: 40, done: false },
         ];
-  const allDailyDone = dailyMissions.every((d) => d.done);
 
-  // Leaderboard
-  const leaderboard = [
-    { rank: 1, name: "CyberNova", xp: 1240 },
-    { rank: 2, name: "StarGuard", xp: 980 },
-    { rank: 3, name: "ByteRunner", xp: 875 },
-    { rank: 4, name: "DataDefender", xp: 720 },
-    { rank: 5, name: "FirewallFox", xp: 650 },
-  ];
 
   const handleGameClick = (game: any) => {
     if (game.locked) return;
@@ -1319,7 +1316,7 @@ export default function MissionsPage() {
             <h2 className="text-lg font-extrabold text-white">
               🎯 Daily Missions
             </h2>
-            <span className="text-xs text-gray-400 font-mono">Resets in 14h 22m</span>
+            <span className="text-xs text-gray-400 font-mono">Resets in {countdownLabel}</span>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             {dailyMissions.map((dm, i) => (
@@ -1345,17 +1342,8 @@ export default function MissionsPage() {
               </div>
             ))}
           </div>
-          <div className="mt-4 flex justify-center">
-            <button
-              disabled={!allDailyDone}
-              className={`rounded-full px-6 py-2.5 text-sm font-bold transition-all ${
-                allDailyDone
-                  ? "bg-gradient-to-r from-yellow-400 to-amber-500 text-[#0a0e1a] shadow-[0_0_20px_rgba(255,200,0,0.4)] hover:shadow-[0_0_30px_rgba(255,200,0,0.6)]"
-                  : "bg-gray-700 text-gray-500 cursor-not-allowed"
-              }`}
-            >
-              {allDailyDone ? "🎁 Claim Bonus XP!" : "🔒 Complete all to claim bonus"}
-            </button>
+          <div className="mt-4 text-center">
+            <p className="text-xs text-gray-500">Complete each challenge to earn bonus XP — check back daily for new missions!</p>
           </div>
         </motion.div>
 
@@ -1374,7 +1362,7 @@ export default function MissionsPage() {
           <div className="flex-1 min-w-0">
             <p className="text-xs text-[#00d4ff] font-bold uppercase tracking-wider mb-1">Byte's Pick</p>
             <p className="text-gray-400 text-sm mb-1">Byte says: Try this one today, Guardian! 👾</p>
-            <p className="text-lg font-bold text-white">Virus Vaporizer</p>
+            <p className="text-lg font-bold text-white">{featuredGame.title}</p>
           </div>
           <button
             onClick={() =>
@@ -1429,7 +1417,7 @@ export default function MissionsPage() {
           </div>
         ))}
 
-        {/* ── Leaderboard ── */}
+        {/* ── Your Stats ── */}
         <motion.div
           className="mt-10 rounded-2xl border border-yellow-500/20 bg-[#0f1729] p-6"
           initial={{ opacity: 0, y: 20 }}
@@ -1437,33 +1425,24 @@ export default function MissionsPage() {
           transition={{ delay: 0.5 }}
         >
           <h2 className="text-lg font-extrabold text-yellow-400 mb-1 drop-shadow-[0_0_8px_rgba(255,200,0,0.3)]">
-            🏆 Top Guardians This Week
+            🏆 Your Progress
           </h2>
-          <p className="text-xs text-gray-500 mb-4">Leaderboard resets every Monday</p>
-          <div className="space-y-2">
-            {leaderboard.map((entry) => (
-              <div
-                key={entry.rank}
-                className="flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.02] px-4 py-3"
-              >
-                <span className={`text-lg font-extrabold ${
-                  entry.rank === 1 ? "text-yellow-400" : entry.rank === 2 ? "text-gray-300" : entry.rank === 3 ? "text-orange-400" : "text-gray-500"
-                }`}>
-                  #{entry.rank}
-                </span>
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#00d4ff]/30 to-[#00ff88]/30 border border-white/10" />
-                <span className="flex-1 text-sm font-bold text-white">{entry.name}</span>
-                <span className="text-sm font-bold text-yellow-400">{entry.xp.toLocaleString()} XP</span>
-              </div>
-            ))}
-            {/* Your position */}
-            <div className="flex items-center gap-4 rounded-xl border border-[#00d4ff]/30 bg-[#00d4ff]/5 px-4 py-3">
-              <span className="text-lg font-extrabold text-[#00d4ff]">#12</span>
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#00d4ff]/50 to-[#00ff88]/50 border border-[#00d4ff]/30" />
-              <span className="flex-1 text-sm font-bold text-[#00d4ff]">You</span>
-              <span className="text-sm font-bold text-[#00d4ff]">{points} XP</span>
+          <p className="text-xs text-gray-500 mb-4">Keep training to climb the ranks, Guardian!</p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] px-4 py-4 text-center">
+              <p className="text-2xl font-extrabold text-yellow-400">{points.toLocaleString()}</p>
+              <p className="text-xs text-gray-500 mt-1">Total XP</p>
+            </div>
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] px-4 py-4 text-center">
+              <p className="text-2xl font-extrabold text-[#00ff88]">{completedMissionIds.size}</p>
+              <p className="text-xs text-gray-500 mt-1">Missions Done</p>
+            </div>
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] px-4 py-4 text-center">
+              <p className="text-2xl font-extrabold text-orange-400">{streak}</p>
+              <p className="text-xs text-gray-500 mt-1">Day Streak</p>
             </div>
           </div>
+          <p className="text-center text-xs text-gray-600 mt-4">Global leaderboards coming soon!</p>
         </motion.div>
       </div>
 
