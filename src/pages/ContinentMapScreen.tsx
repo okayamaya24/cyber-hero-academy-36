@@ -8,6 +8,7 @@ import HQOrientation from "@/components/zone/HQOrientation";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { awardBadge } from "@/lib/badges";
 import { getContinentById, type ContinentDef, type ZoneDef } from "@/data/continents";
 import { useChildProfile } from "@/engine";
 import { getZoneGames, getBossBattle } from "@/data/zoneGames";
@@ -2099,40 +2100,93 @@ export default function ContinentMapScreen() {
   const EPISODE_ZONES: Record<string, boolean> = { "password-peak": true };
 
   const handleEpisodeComplete = async (xp: number, badge: string) => {
+    // ── Capture all closure values upfront ──────────────────────────
+    const zoneId  = episodeZoneId ?? "password-peak";
+    const cId     = continentId  ?? "north-america";
+    const childId = activeChildId;
+
+    console.log("🎉 Episode complete — zone:", zoneId, "child:", childId, "xp:", xp, "badge:", badge);
+
+    // ── 1. Local XP ──────────────────────────────────────────────────
     const newXP = totalXP + xp;
     setTotalXP(newXP);
     localStorage.setItem("cyberHeroXP", String(newXP));
 
-    // Save zone completion to database
-    if (activeChildId && episodeZoneId) {
-      await supabase.from("zone_progress").upsert(
-        {
-          child_id: activeChildId,
-          continent_id: continentId!,
-          zone_id: episodeZoneId,
-          status: "completed",
-          games_completed: 3,
-          total_games: 3,
-          stars_earned: 3,
+    // ── 2. Work out which zone to unlock next ────────────────────────
+    const currentIdx = NA_UNLOCK_ORDER.indexOf(zoneId);
+    const nextZoneId = currentIdx >= 0 ? NA_UNLOCK_ORDER[currentIdx + 1] : null;
+    console.log("🔓 Next zone to unlock:", nextZoneId);
+
+    // ── 3. Optimistic cache update — instant map feedback ────────────
+    if (childId) {
+      queryClient.setQueryData(
+        ["zone_progress", childId, cId],
+        (old: any[] = []) => {
+          const filtered = old.filter(
+            (p) => p.zone_id !== zoneId && p.zone_id !== nextZoneId,
+          );
+          return [
+            ...filtered,
+            { child_id: childId, continent_id: cId, zone_id: zoneId,
+              status: "completed", games_completed: 3, total_games: 3, stars_earned: 3 },
+            ...(nextZoneId
+              ? [{ child_id: childId, continent_id: cId, zone_id: nextZoneId,
+                   status: "available", games_completed: 0, total_games: 4, stars_earned: 0 }]
+              : []),
+          ];
         },
-        { onConflict: "child_id,zone_id" },
       );
-
-      // Award XP to child profile
-      if (child) {
-        await supabase
-          .from("child_profiles")
-          .update({ points: (child.points || 0) + xp })
-          .eq("id", activeChildId);
-      }
-
-      queryClient.invalidateQueries({ queryKey: ["zone_progress"] });
-      queryClient.invalidateQueries({ queryKey: ["zone_progress", activeChildId, continentId] });
-      queryClient.invalidateQueries({ queryKey: ["child_profile", activeChildId] });
     }
 
+    // ── 4. Close episode player (map already shows correct state) ────
     setShowEpisodePlayer(false);
     setEpisodeZoneId(null);
+
+    if (!childId) {
+      console.warn("⚠️ No activeChildId — skipping DB save");
+      return;
+    }
+
+    // ── 5. Persist to DB (player is already closed, this is background) ──
+    const { error: e1 } = await supabase.from("zone_progress").upsert(
+      { child_id: childId, continent_id: cId, zone_id: zoneId,
+        status: "completed", games_completed: 3, total_games: 3, stars_earned: 3 },
+      { onConflict: "child_id,zone_id" },
+    );
+    if (e1) console.error("❌ Zone completion save failed:", e1);
+    else    console.log("✅ Zone completion saved!");
+
+    if (nextZoneId) {
+      const { error: e2 } = await supabase.from("zone_progress").upsert(
+        { child_id: childId, continent_id: cId, zone_id: nextZoneId,
+          status: "available", games_completed: 0, total_games: 4, stars_earned: 0,
+          unlocked_at: new Date().toISOString() },
+        { onConflict: "child_id,zone_id" },
+      );
+      if (e2) console.error("❌ Next zone unlock failed:", e2);
+      else    console.log("✅ Next zone unlocked:", nextZoneId);
+    }
+
+    if (badge) {
+      const badgeId = badge.toLowerCase().replace(/\s+/g, "-");
+      console.log("🏅 Awarding badge:", badgeId);
+      await awardBadge(childId, badgeId);
+    }
+
+    if (child) {
+      const { error: e3 } = await supabase
+        .from("child_profiles")
+        .update({ points: (child.points || 0) + xp })
+        .eq("id", childId);
+      if (e3) console.error("❌ XP award failed:", e3);
+      else    console.log("✅ XP awarded:", xp);
+    }
+
+    // ── 6. NOW invalidate — DB is written, refetch will be accurate ──
+    console.log("🔄 Refreshing cache from DB…");
+    queryClient.invalidateQueries({ queryKey: ["zone_progress", childId, cId] });
+    queryClient.invalidateQueries({ queryKey: ["child_profile", childId] });
+    queryClient.invalidateQueries({ queryKey: ["earned_badges", childId] });
   };
 
   const handleZoneClick = (zone: ZoneDef, index: number) => {
@@ -2544,6 +2598,7 @@ export default function ContinentMapScreen() {
           <EpisodePlayer
             scenes={ZONE1_SCENES}
             playerName={playerName}
+            avatarConfig={avatarConfig}
             onComplete={handleEpisodeComplete}
             onExit={() => {
               setShowEpisodePlayer(false);
