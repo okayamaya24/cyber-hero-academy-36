@@ -31,6 +31,7 @@ import ProtectedParentRoute from "./components/ProtectedParentRoute";
 import NotFound from "./pages/NotFound";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import AdminGamesPage from "./pages/admin/AdminGamesPage";
 import AdminEventsPage from "./pages/admin/AdminEventsPage";
 import AdminBadgesPage from "./pages/admin/AdminBadgesPage";
@@ -438,6 +439,7 @@ const App = () => (
               <Route path="/games/cyber-clues" element={<CyberClues />} />
               <Route path="/games/internet-detective" element={<InternetDetective />} />
 
+              <Route path="/forgot-password" element={<><Navbar /><ForgotPasswordPage /></>} />
               <Route path="/terms" element={<><Navbar /><TermsPage /></>} />
               <Route path="/privacy" element={<><Navbar /><PrivacyPage /></>} />
               <Route path="*" element={<NotFound />} />
