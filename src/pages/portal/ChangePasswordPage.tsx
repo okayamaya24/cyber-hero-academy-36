@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 export default function ChangePasswordPage() {
-  const [form, setForm] = useState({ current: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ password: "", confirm: "" });
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,21 +19,20 @@ export default function ChangePasswordPage() {
     setSaving(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Password updated!");
-    setForm({ current: "", password: "", confirm: "" });
+    setForm({ password: "", confirm: "" });
   };
 
   return (
     <DashboardLayout>
       <h1 className="text-2xl font-bold text-foreground mb-6">Change Password</h1>
       <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-6 max-w-md space-y-5">
-        <div><Label>Current Password</Label><Input type="password" value={form.current} onChange={(e) => setForm({ ...form, current: e.target.value })} /></div>
         <div><Label>New Password</Label><Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="At least 6 characters" /></div>
         <div>
           <Label>Confirm New Password</Label>
           <Input type="password" value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} />
           {form.confirm && form.password !== form.confirm && <p className="text-xs text-destructive mt-1">Passwords do not match</p>}
         </div>
-        <Button type="submit" disabled={saving || !form.password || !form.confirm}>{saving ? "Updating..." : "Update Password"}</Button>
+        <Button type="submit" disabled={saving || !form.password || !form.confirm || form.password !== form.confirm}>{saving ? "Updating..." : "Update Password"}</Button>
       </form>
     </DashboardLayout>
   );

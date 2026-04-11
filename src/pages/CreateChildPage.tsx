@@ -246,7 +246,7 @@ export default function CreateChildPage() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Login at</span>
-                <span className="font-bold text-sm text-primary">cyberhero.app/login</span>
+                <span className="font-bold text-sm text-primary">{window.location.origin}/login</span>
               </div>
             </div>
 

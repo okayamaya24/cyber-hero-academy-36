@@ -49,7 +49,8 @@ export default function AccountPage() {
           </div>
           <div>
             <Label>Email</Label>
-            <Input value={email} onChange={(e) => { setEmail(e.target.value); setDirty(true); }} />
+            <Input value={email} readOnly className="bg-muted" />
+            <p className="mt-1 text-xs text-muted-foreground">To change your email, contact support.</p>
           </div>
           <div>
             <Label>Account Type</Label>
