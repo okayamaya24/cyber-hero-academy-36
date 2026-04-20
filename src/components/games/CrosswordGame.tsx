@@ -102,6 +102,25 @@ export default function CrosswordGame({ ageTier, puzzle, onComplete }: Crossword
   };
 
   const handleKeyDown = (r: number, c: number, e: React.KeyboardEvent) => {
+    // ── Arrow key navigation ──────────────────────────────────────────────────
+    if (['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) {
+      e.preventDefault();
+      let nr = r, nc = c;
+      if (e.key === 'ArrowRight') { for (let cc = c + 1; cc < cols; cc++) { if (puzzle.grid[r][cc] !== '#') { nc = cc; break; } } setDirection('across'); }
+      else if (e.key === 'ArrowLeft') { for (let cc = c - 1; cc >= 0; cc--) { if (puzzle.grid[r][cc] !== '#') { nc = cc; break; } } setDirection('across'); }
+      else if (e.key === 'ArrowDown') { for (let rr = r + 1; rr < rows; rr++) { if (puzzle.grid[rr][c] !== '#') { nr = rr; break; } } setDirection('down'); }
+      else if (e.key === 'ArrowUp')   { for (let rr = r - 1; rr >= 0; rr--) { if (puzzle.grid[rr][c] !== '#') { nr = rr; break; } } setDirection('down'); }
+      if (nr !== r || nc !== c) {
+        setSelected({ row: nr, col: nc });
+        const clues = cellClueMap.current.get(`${nr}-${nc}`);
+        const newDir = (e.key === 'ArrowRight' || e.key === 'ArrowLeft') ? 'across' : 'down';
+        const cl = clues?.[newDir] ?? clues?.across ?? clues?.down ?? null;
+        if (cl) setActiveClue(cl);
+      }
+      return;
+    }
+
+    // ── Backspace ─────────────────────────────────────────────────────────────
     if (e.key === 'Backspace') {
       const ni = input.map(row => [...row]);
       if (input[r][c] === '') {
@@ -111,6 +130,8 @@ export default function CrosswordGame({ ageTier, puzzle, onComplete }: Crossword
       setInput(ni);
       return;
     }
+
+    // ── Letter input ──────────────────────────────────────────────────────────
     if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
       const ni = input.map(row => [...row]);
       ni[r][c] = e.key.toUpperCase();

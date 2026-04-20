@@ -42,7 +42,7 @@ export default function GameShell({ title, category, xpReward, ageTier, onClose,
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] text-white flex flex-col">
+    <div className="h-screen bg-[#0a0e1a] text-white flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-cyan-500/20 bg-[#0d1220]">
         <div>

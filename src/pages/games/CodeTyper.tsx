@@ -52,6 +52,7 @@ interface FallingLine {
   text: string;
   duration: number;
   lane: number;
+  spawnTime: number;
 }
 
 let lineIdCounter = 0;
@@ -69,8 +70,12 @@ function CodeTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplete: 
   const [lives, setLives] = useState(config.lives);
   const [zappedIds, setZappedIds] = useState<number[]>([]);
   const [wpm, setWpm] = useState(0);
+  const [, setTick] = useState(0);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const playAreaRef = useRef<HTMLDivElement>(null);
+  const lineTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const handleLineEndRef = useRef<(id: number) => void>(null!);
   const scoreRef = useRef(0);
   const livesRef = useRef(config.lives);
   const gameOverRef = useRef(false);
@@ -80,6 +85,10 @@ function CodeTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplete: 
   const usedLines = useRef(new Set<string>());
 
   useEffect(() => { fallingRef.current = fallingLines; }, [fallingLines]);
+
+  useEffect(() => {
+    return () => { lineTimers.current.forEach(t => clearTimeout(t)); };
+  }, []);
 
   const getNextLine = () => {
     const available = lines.filter(l => !usedLines.current.has(l));
@@ -104,7 +113,9 @@ function CodeTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplete: 
     const duration = config.fallDuration * (0.8 + Math.random() * 0.4);
     const id = ++lineIdCounter;
     const lane = getFreeLane();
-    setFallingLines(prev => [...prev, { id, text, duration, lane }]);
+    setFallingLines(prev => [...prev, { id, text, duration, lane, spawnTime: Date.now() }]);
+    const timer = setTimeout(() => handleLineEndRef.current(id), Math.round(duration * 1000));
+    lineTimers.current.set(id, timer);
   }, [config, getFreeLane]);
 
   // Countdown
@@ -139,7 +150,15 @@ function CodeTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplete: 
     if (phase === 'done') onComplete(scoreRef.current, 500);
   }, [phase, onComplete]);
 
+  // Position tick
+  useEffect(() => {
+    if (phase !== 'playing') return;
+    const id = setInterval(() => setTick(t => t + 1), 50);
+    return () => clearInterval(id);
+  }, [phase]);
+
   const handleLineEnd = useCallback((id: number) => {
+    lineTimers.current.delete(id);
     if (gameOverRef.current) return;
     setFallingLines(prev => prev.filter(l => l.id !== id));
     livesRef.current -= 1;
@@ -147,6 +166,7 @@ function CodeTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplete: 
     if (livesRef.current <= 0) { gameOverRef.current = true; setPhase('done'); }
     setTimeout(spawnLine, 600);
   }, [spawnLine]);
+  handleLineEndRef.current = handleLineEnd;
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -154,6 +174,8 @@ function CodeTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplete: 
 
     const match = fallingRef.current.find(l => l.text.toLowerCase() === val.toLowerCase().trim());
     if (match) {
+      clearTimeout(lineTimers.current.get(match.id));
+      lineTimers.current.delete(match.id);
       charsTypedRef.current += match.text.length;
       const elapsed = (Date.now() - gameStartRef.current) / 60000;
       setWpm(Math.round((charsTypedRef.current / 5) / Math.max(elapsed, 0.01)));
@@ -176,6 +198,13 @@ function CodeTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplete: 
   };
 
   const timerPct = (timeLeft / config.gameDuration) * 100;
+
+  const areaH = playAreaRef.current?.offsetHeight ?? 400;
+  const getLineTop = (line: FallingLine) => {
+    const elapsed = Date.now() - line.spawnTime;
+    const progress = Math.min(elapsed / (line.duration * 1000), 1);
+    return -40 + progress * (areaH + 40);
+  };
 
   return (
     <div className="flex flex-col h-full bg-[#080c10] select-none font-mono">
@@ -205,28 +234,29 @@ function CodeTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplete: 
       </div>
 
       {/* Base line */}
-      <div className="relative flex-1 overflow-hidden">
+      <div ref={playAreaRef} className="relative flex-1 overflow-hidden">
         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-500/30 z-10" />
         <div className="absolute bottom-1 left-0 right-0 text-center text-xs text-green-500/40">FIREWALL BASE</div>
 
         {fallingLines.map(line => {
           const matchLen = getMatchLength(line.text);
           return (
-            <motion.div key={line.id}
+            <div
+              key={line.id}
               className="absolute left-0 right-0 px-6 z-20"
-              initial={{ top: '-40px' }}
-              animate={{ top: 'calc(100% - 50px)' }}
-              transition={{ duration: line.duration, ease: 'linear' }}
-              onAnimationComplete={() => handleLineEnd(line.id)}
+              style={{
+                top: `${getLineTop(line)}px`,
+              }}
             >
-              <div className={`inline-flex items-center bg-black/70 border rounded-lg px-3 py-1.5 text-sm
-                ${matchLen > 0 ? 'border-cyan-500/60 shadow-[0_0_8px_rgba(0,212,255,0.3)]' : 'border-green-500/30'}`}
+              <div
+                className={`inline-flex items-center bg-black/70 border rounded-lg px-3 py-1.5 text-sm
+                  ${matchLen > 0 ? 'border-cyan-500/60 shadow-[0_0_8px_rgba(0,212,255,0.3)]' : 'border-green-500/30'}`}
                 style={{ marginLeft: `${(line.lane / config.maxLines) * 60}%` }}
               >
                 <span className="text-cyan-300">{line.text.slice(0, matchLen)}</span>
                 <span className="text-green-400/80">{line.text.slice(matchLen)}</span>
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>

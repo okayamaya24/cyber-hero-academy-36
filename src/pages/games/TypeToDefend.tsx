@@ -19,6 +19,7 @@ interface FallingWord {
   text: string;
   x: number; // percent 5-75
   duration: number; // seconds
+  spawnTime: number;
   destroyed?: boolean;
 }
 
@@ -40,8 +41,12 @@ function TypeToDefendGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplet
   const [explosions, setExplosions] = useState<Explosion[]>([]);
   const [shakeIds, setShakeIds] = useState<number[]>([]);
   const [wordsZapped, setWordsZapped] = useState(0);
+  const [, setTick] = useState(0);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const playAreaRef = useRef<HTMLDivElement>(null);
+  const wordTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const handleWordReachBottomRef = useRef<(id: number) => void>(null!);
   const scoreRef = useRef(0);
   const livesRef = useRef(config.lives);
   const gameOverRef = useRef(false);
@@ -49,6 +54,10 @@ function TypeToDefendGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplet
   const usedWords = useRef<Set<string>>(new Set());
 
   useEffect(() => { fallingRef.current = fallingWords; }, [fallingWords]);
+
+  useEffect(() => {
+    return () => { wordTimers.current.forEach(t => clearTimeout(t)); };
+  }, []);
 
   const getNextWord = useCallback(() => {
     const available = words.filter(w => !usedWords.current.has(w));
@@ -65,7 +74,9 @@ function TypeToDefendGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplet
     const x = 5 + Math.random() * 70;
     const speedVar = config.fallDuration * (0.85 + Math.random() * 0.3);
     const id = ++wordIdCounter;
-    setFallingWords(prev => [...prev, { id, text, x, duration: speedVar }]);
+    setFallingWords(prev => [...prev, { id, text, x, duration: speedVar, spawnTime: Date.now() }]);
+    const timer = setTimeout(() => handleWordReachBottomRef.current(id), Math.round(speedVar * 1000));
+    wordTimers.current.set(id, timer);
   }, [config, getNextWord]);
 
   // Countdown
@@ -106,7 +117,15 @@ function TypeToDefendGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplet
     if (phase === 'done') onComplete(scoreRef.current, 400);
   }, [phase, onComplete]);
 
+  // Position tick
+  useEffect(() => {
+    if (phase !== 'playing') return;
+    const id = setInterval(() => setTick(t => t + 1), 50);
+    return () => clearInterval(id);
+  }, [phase]);
+
   const handleWordReachBottom = useCallback((id: number) => {
+    wordTimers.current.delete(id);
     if (gameOverRef.current) return;
     setFallingWords(prev => prev.filter(w => w.id !== id));
     livesRef.current -= 1;
@@ -120,6 +139,7 @@ function TypeToDefendGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplet
     // Spawn replacement
     setTimeout(spawnWord, 500);
   }, [spawnWord]);
+  handleWordReachBottomRef.current = handleWordReachBottom;
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
@@ -129,6 +149,8 @@ function TypeToDefendGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplet
     const match = fallingRef.current.find(w => !w.destroyed && w.text === val);
     if (match) {
       // Zap it!
+      clearTimeout(wordTimers.current.get(match.id));
+      wordTimers.current.delete(match.id);
       setFallingWords(prev => prev.filter(w => w.id !== match.id));
       const pts = 10 + Math.min(wordsZapped * 2, 20);
       scoreRef.current += pts;
@@ -148,6 +170,13 @@ function TypeToDefendGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplet
 
   const timerPct = (timeLeft / config.gameDuration) * 100;
   const timerColor = timerPct > 50 ? 'text-cyan-400' : timerPct > 25 ? 'text-yellow-400' : 'text-red-400';
+
+  const areaH = playAreaRef.current?.offsetHeight ?? 400;
+  const getWordTop = (word: FallingWord) => {
+    const elapsed = Date.now() - word.spawnTime;
+    const progress = Math.min(elapsed / (word.duration * 1000), 1);
+    return -40 + progress * (areaH + 40);
+  };
 
   return (
     <div className="flex flex-col h-full bg-[#060b14] select-none relative overflow-hidden font-mono">
@@ -191,7 +220,7 @@ function TypeToDefendGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplet
       </div>
 
       {/* Play area */}
-      <div className="flex-1 relative overflow-hidden">
+      <div ref={playAreaRef} className="flex-1 relative overflow-hidden">
         {/* Base line */}
         <div className="absolute bottom-16 left-0 right-0 h-0.5 bg-cyan-500/40 z-10" />
         <div className="absolute bottom-14 left-0 right-0 text-center text-xs text-cyan-500/60">— BASE —</div>
@@ -200,30 +229,24 @@ function TypeToDefendGame({ ageTier, onComplete }: { ageTier: AgeTier; onComplet
         {fallingWords.map(word => {
           const matchLen = typed.length > 0 && word.text.startsWith(typed) ? typed.length : 0;
           return (
-            <motion.div
+            <div
               key={word.id}
               className="absolute text-base font-black z-20 pointer-events-none"
-              style={{ left: `${word.x}%` }}
-              initial={{ top: '-40px' }}
-              animate={{ top: 'calc(100% - 80px)' }}
-              transition={{ duration: word.duration, ease: 'linear' }}
-              onAnimationComplete={() => handleWordReachBottom(word.id)}
+              style={{ left: `${word.x}%`, top: `${getWordTop(word)}px` }}
             >
-              <span className="text-gray-400">
-                {matchLen > 0 ? (
-                  <>
-                    <span className="text-cyan-300 drop-shadow-[0_0_8px_rgba(0,212,255,0.9)]">
-                      {word.text.slice(0, matchLen)}
-                    </span>
-                    <span className="text-gray-400">{word.text.slice(matchLen)}</span>
-                  </>
-                ) : (
-                  <span className="text-green-400/80 drop-shadow-[0_0_6px_rgba(0,255,100,0.4)]">
-                    {word.text}
+              {matchLen > 0 ? (
+                <>
+                  <span className="text-cyan-300 drop-shadow-[0_0_8px_rgba(0,212,255,0.9)]">
+                    {word.text.slice(0, matchLen)}
                   </span>
-                )}
-              </span>
-            </motion.div>
+                  <span className="text-gray-400">{word.text.slice(matchLen)}</span>
+                </>
+              ) : (
+                <span className="text-green-400/80 drop-shadow-[0_0_6px_rgba(0,255,100,0.4)]">
+                  {word.text}
+                </span>
+              )}
+            </div>
           );
         })}
 

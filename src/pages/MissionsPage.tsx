@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Star, CheckCircle2, ArrowRight, Mail, ExternalLink, Flame, Lock as LockIcon, Gamepad2 } from "lucide-react";
+import { Star, CheckCircle2, ArrowRight, Mail, ExternalLink, Flame, Lock as LockIcon, Gamepad2, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -162,80 +162,186 @@ function getStarsFromProgress(mp: any) {
   return ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : 1;
 }
 
+/* ─── Category color/icon/glow themes ─── */
+const CATEGORY_THEMES: Record<string, { color: string; glow: string; icon: string }> = {
+  "Arcade":      { color: "#00d4ff", glow: "rgba(0,212,255,0.22)",   icon: "🕹️" },
+  "Keyboard":    { color: "#ff6b6b", glow: "rgba(255,107,107,0.22)", icon: "⌨️" },
+  "Puzzle":      { color: "#a855f7", glow: "rgba(168,85,247,0.22)",  icon: "🧩" },
+  "Sort":        { color: "#00ff88", glow: "rgba(0,255,136,0.22)",   icon: "🎯" },
+  "Speed":       { color: "#ffd700", glow: "rgba(255,215,0,0.22)",   icon: "⚡" },
+  "Memory":      { color: "#ec4899", glow: "rgba(236,72,153,0.22)",  icon: "🃏" },
+  "Word Search": { color: "#38bdf8", glow: "rgba(56,189,248,0.22)",  icon: "🔍" },
+  "Crossword":   { color: "#f97316", glow: "rgba(249,115,22,0.22)",  icon: "✏️" },
+  "Drag & Drop": { color: "#4ade80", glow: "rgba(74,222,128,0.22)",  icon: "🖱️" },
+  "Quiz":        { color: "#fbbf24", glow: "rgba(251,191,36,0.22)",  icon: "🎮" },
+};
+
+/* ─── Difficulty per category ─── */
+const CATEGORY_DIFFICULTY: Record<string, { label: string; level: number; color: string }> = {
+  "Arcade":      { label: "Medium", level: 2, color: "#ffd700" },
+  "Keyboard":    { label: "Hard",   level: 3, color: "#ff6b6b" },
+  "Puzzle":      { label: "Medium", level: 2, color: "#a855f7" },
+  "Sort":        { label: "Easy",   level: 1, color: "#00ff88" },
+  "Speed":       { label: "Hard",   level: 3, color: "#ff6b6b" },
+  "Memory":      { label: "Easy",   level: 1, color: "#ec4899" },
+  "Word Search": { label: "Easy",   level: 1, color: "#38bdf8" },
+  "Crossword":   { label: "Medium", level: 2, color: "#f97316" },
+  "Drag & Drop": { label: "Easy",   level: 1, color: "#4ade80" },
+  "Quiz":        { label: "Medium", level: 2, color: "#fbbf24" },
+};
+
 /* ─── Section Header ─── */
-function SectionHeader({ icon, title }: { icon: string; title: string }) {
+function SectionHeader({
+  icon, title, count, color,
+}: {
+  icon: string; title: string; count?: number; color?: string;
+}) {
+  const c = color ?? "#00d4ff";
   return (
-    <div className="flex items-center gap-3 mb-5 mt-10 first:mt-0">
-      <span className="text-2xl">{icon}</span>
-      <h2 className="text-xl font-extrabold tracking-wide text-white drop-shadow-[0_0_8px_rgba(0,212,255,0.5)]">{title}</h2>
+    <div className="flex items-center gap-3 mb-5 mt-12 first:mt-0">
+      <div
+        className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-xl"
+        style={{ background: `${c}12`, border: `1px solid ${c}28` }}
+      >
+        {icon}
+      </div>
+      <div className="flex-1">
+        <h2 className="text-lg font-extrabold text-white leading-tight">{title}</h2>
+        {count !== undefined && (
+          <p className="text-[11px] text-gray-600">{count} game{count !== 1 ? "s" : ""}</p>
+        )}
+      </div>
+      <div className="h-px flex-1 max-w-[160px]" style={{ background: `linear-gradient(90deg, ${c}35, transparent)` }} />
     </div>
   );
 }
 
 /* ─── Neon Game Card ─── */
 function NeonGameCard({
-  title,
-  description,
-  stars,
-  typeBadge,
-  locked,
-  onClick,
+  title, description, stars, typeBadge, locked, onClick, isNew, isHot,
 }: {
-  title: string;
-  description: string;
-  stars: number;
-  typeBadge: string;
-  locked?: boolean;
-  onClick: () => void;
+  title: string; description: string; stars: number; typeBadge: string;
+  locked?: boolean; onClick: () => void; isNew?: boolean; isHot?: boolean;
 }) {
-  return (
-    <div className="group relative" title={locked ? "Coming soon, Guardian! Keep training." : undefined}>
-      <motion.div
-        variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-        className={`relative overflow-hidden rounded-2xl border bg-[#0f1729] p-5 transition-all ${
-          locked
-            ? "border-white/10 opacity-60 cursor-not-allowed"
-            : "border-[#00d4ff]/30 hover:border-[#00d4ff]/70 hover:shadow-[0_0_24px_rgba(0,212,255,0.15)] cursor-pointer hover:-translate-y-1"
-        }`}
-        onClick={locked ? undefined : onClick}
-        whileHover={locked ? undefined : { scale: 1.02 }}
-      >
-        {locked && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 rounded-2xl">
-            <LockIcon className="h-8 w-8 text-white/40" />
-          </div>
-        )}
+  const theme    = CATEGORY_THEMES[typeBadge]     ?? CATEGORY_THEMES["Quiz"];
+  const diff     = CATEGORY_DIFFICULTY[typeBadge] ?? CATEGORY_DIFFICULTY["Quiz"];
+  const mastered = stars === 3;
 
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-white truncate">{title}</h3>
-          <span className="shrink-0 rounded-full bg-[#00d4ff]/10 border border-[#00d4ff]/20 px-2 py-0.5 text-[10px] font-bold text-[#00d4ff]">
+  return (
+    <motion.div
+      className={`group relative overflow-hidden rounded-2xl border bg-[#0d1323] flex flex-col ${
+        locked
+          ? "border-white/6 opacity-50 cursor-not-allowed"
+          : "border-white/8 cursor-pointer"
+      }`}
+      onClick={locked ? undefined : onClick}
+      whileHover={locked ? undefined : { y: -3, scale: 1.015 }}
+      whileTap={locked  ? undefined : { scale: 0.975 }}
+      transition={{ duration: 0.16 }}
+    >
+      {/* Top accent bar */}
+      <div
+        className="h-[3px] w-full flex-shrink-0"
+        style={{ background: locked ? "rgba(255,255,255,0.05)" : theme.color }}
+      />
+
+      {/* Lock overlay */}
+      {locked && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/45 rounded-2xl gap-2">
+          <LockIcon className="h-7 w-7 text-white/25" />
+          <span className="text-[10px] text-white/20 font-bold uppercase tracking-widest">Coming Soon</span>
+        </div>
+      )}
+
+      {/* Status badge — top-right corner */}
+      {!locked && (
+        <div className="absolute top-[14px] right-3 z-10">
+          {mastered ? (
+            <span className="rounded-full border px-2 py-0.5 text-[9px] font-black tracking-wide"
+              style={{ color: "#ffd700", borderColor: "rgba(255,215,0,0.35)", background: "rgba(255,215,0,0.1)" }}>
+              ★ MASTERED
+            </span>
+          ) : isNew ? (
+            <span className="rounded-full bg-[#00ff88] px-2 py-0.5 text-[9px] font-black text-[#0a0e1a] tracking-widest shadow-sm">
+              NEW
+            </span>
+          ) : isHot ? (
+            <span className="rounded-full px-2 py-0.5 text-[9px] font-black text-white tracking-widest shadow-sm"
+              style={{ background: "linear-gradient(90deg,#f97316,#ef4444)" }}>
+              🔥 HOT
+            </span>
+          ) : null}
+        </div>
+      )}
+
+      <div className="p-4 flex flex-col flex-1">
+        {/* Icon + category badge */}
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-[22px] leading-none">{theme.icon}</span>
+          <span
+            className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+            style={{ color: theme.color, background: `${theme.color}10`, border: `1px solid ${theme.color}25` }}
+          >
             {typeBadge}
           </span>
         </div>
 
-        <p className="text-xs text-gray-400 mb-4 line-clamp-2">{description}</p>
+        {/* Title */}
+        <h3 className="text-[13px] font-extrabold text-white mb-1.5 line-clamp-1 pr-2">{title}</h3>
 
+        {/* Description */}
+        <p className="text-[11px] text-gray-400/90 mb-4 line-clamp-2 leading-relaxed flex-1">
+          {description}
+        </p>
+
+        {/* Difficulty bar */}
+        <div className="flex items-center gap-1.5 mb-4">
+          <div className="flex gap-[3px]">
+            {[1, 2, 3].map((d) => (
+              <div
+                key={d}
+                className="h-1.5 w-5 rounded-full"
+                style={{ background: d <= diff.level ? diff.color : "rgba(255,255,255,0.07)" }}
+              />
+            ))}
+          </div>
+          <span className="text-[10px] font-bold" style={{ color: diff.color }}>{diff.label}</span>
+        </div>
+
+        {/* Stars + play button */}
         <div className="flex items-center justify-between">
           <div className="flex gap-0.5">
             {[1, 2, 3].map((s) => (
               <Star
                 key={s}
-                className={`h-4 w-4 ${s <= stars ? "text-yellow-400 fill-yellow-400" : "text-gray-600"}`}
+                className={`h-3.5 w-3.5 ${s <= stars ? "text-yellow-400 fill-yellow-400" : "text-white/10"}`}
               />
             ))}
           </div>
+
           {locked ? (
-            <span className="rounded-full bg-gray-700 px-4 py-1.5 text-xs font-bold text-gray-500">
-              Locked
-            </span>
+            <span className="rounded-full bg-white/5 px-3 py-1.5 text-[10px] font-bold text-white/20">Locked</span>
           ) : (
-            <button className="rounded-full bg-[#00d4ff] px-4 py-1.5 text-xs font-bold text-[#0a0e1a] transition-all hover:bg-[#00d4ff]/80 hover:shadow-[0_0_12px_rgba(0,212,255,0.4)]">
-              {stars > 0 ? "Play Again" : "Play Now"}
+            <button
+              className="relative rounded-full px-4 py-1.5 text-[11px] font-extrabold text-[#080c18] overflow-hidden
+                         transition-all hover:shadow-lg active:scale-95 hover:brightness-110"
+              style={{ background: theme.color }}
+              onClick={(e) => { e.stopPropagation(); onClick(); }}
+            >
+              {stars > 0 ? "▶ Replay" : "▶ Play"}
             </button>
           )}
         </div>
-      </motion.div>
-    </div>
+      </div>
+
+      {/* Hover inset glow */}
+      {!locked && (
+        <div
+          className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          style={{ boxShadow: `inset 0 0 28px ${theme.glow}` }}
+        />
+      )}
+    </motion.div>
   );
 }
 
@@ -1056,18 +1162,19 @@ export default function MissionsPage() {
   }
 
   /* ═══════════════════════════════════════════
-     VIEW: Training Center Hub (Redesigned)
+     VIEW: Training Center Hub
      ═══════════════════════════════════════════ */
 
-  const points = child?.points ?? 0;
-  const streak = child?.streak ?? 0;
-  const level = child?.level ?? 1;
-  const rank = getLevelRank(level);
+  const points  = child?.points  ?? 0;
+  const streak  = child?.streak  ?? 0;
+  const level   = child?.level   ?? 1;
+  const rank       = getLevelRank(level);
   const xpProgress = getProgressToNextLevel(points);
-  const nextRank = getNextRank(level);
-  const isJuniorTier = tier === "junior";
+  const nextRank   = getNextRank(level);
+  const isJuniorTier      = tier === "junior";
   const trainingTierLabel = getTrainingTierLabel(tier);
   const trainingTierEmoji = getTrainingTierEmoji(tier);
+  const playerName = (child as any)?.name ?? "Guardian";
 
   const completedMissionIds = new Set(
     MISSIONS.filter((m) => {
@@ -1084,31 +1191,31 @@ export default function MissionsPage() {
 
   /* ── Full Game Catalog ── */
   const arcadeGames = [
-    { id: "virus-vaporizer",  title: "Virus Vaporizer",  desc: "Zap viruses before they infect your files!",           badge: "Arcade", route: "/games/virus-vaporizer",  locked: isGameLockedByAdmin("virus-vaporizer") },
+    { id: "virus-vaporizer",  title: "Virus Vaporizer",  desc: "Zap viruses before they infect your files!",           badge: "Arcade", route: "/games/virus-vaporizer",  locked: isGameLockedByAdmin("virus-vaporizer"), isHot: true },
     { id: "spot-the-phish",   title: "Spot the Phish",   desc: "Swipe safe or phishing on emails and texts!",          badge: "Arcade", route: "/games/spot-the-phish",   locked: isGameLockedByAdmin("spot-the-phish") },
     { id: "firewall-blitz",   title: "Firewall Blitz",   desc: "Block threats flying across the screen in lanes!",     badge: "Arcade", route: "/games/firewall-blitz",   locked: isGameLockedByAdmin("firewall-blitz") },
-    { id: "hacker-chase",     title: "Hacker Chase",     desc: "Chase the hacker through the digital world!",          badge: "Arcade", route: "/games/hacker-chase",     locked: isGameLockedByAdmin("hacker-chase") },
+    { id: "hacker-chase",     title: "Hacker Chase",     desc: "Chase the hacker through the digital world!",          badge: "Arcade", route: "/games/hacker-chase",     locked: isGameLockedByAdmin("hacker-chase"),   isNew: true },
   ];
 
   const keyboardGames = [
-    { id: "type-to-defend",        title: "Type to Defend",        desc: "Type the word fast to destroy threats before they reach your base!", badge: "Keyboard", route: "/games/type-to-defend",        locked: isGameLockedByAdmin("type-to-defend") },
+    { id: "type-to-defend",        title: "Type to Defend",        desc: "Type the word fast to destroy threats before they reach your base!", badge: "Keyboard", route: "/games/type-to-defend",        locked: isGameLockedByAdmin("type-to-defend"),        isHot: true },
     { id: "password-cracker-race", title: "Password Cracker Race", desc: "Race a hacker bot — type strong passwords before it guesses them!", badge: "Keyboard", route: "/games/password-cracker-race", locked: isGameLockedByAdmin("password-cracker-race") },
     { id: "code-typer",            title: "Code Typer",            desc: "Type safe commands to neutralize malicious code before it executes!", badge: "Keyboard", route: "/games/code-typer",           locked: isGameLockedByAdmin("code-typer") },
     { id: "decrypt-message",       title: "Decrypt the Message",   desc: "Decode a scrambled secret message letter by letter!",               badge: "Keyboard", route: "/games/decrypt-the-message",   locked: isGameLockedByAdmin("decrypt-message") },
-    { id: "firewall-typer",        title: "Firewall Typer",        desc: "Words fly in from both sides — type them to block them!",           badge: "Keyboard", route: "/games/firewall-typer",        locked: isGameLockedByAdmin("firewall-typer") },
+    { id: "firewall-typer",        title: "Firewall Typer",        desc: "Words fly in from both sides — type them to block them!",           badge: "Keyboard", route: "/games/firewall-typer",        locked: isGameLockedByAdmin("firewall-typer"),        isNew: true },
   ];
 
   const puzzleGames = [
-    { id: "cyber-escape",        title: "Cyber Escape Room", desc: "Solve 4 puzzles to escape the hacker's lair!",                    badge: "Puzzle", route: "/games/cyber-escape-room", locked: isGameLockedByAdmin("cyber-escape") },
-    { id: "code-breaker",        title: "Code Breaker",      desc: "Crack the cipher and decode the secret message!",                 badge: "Puzzle", route: "/games/code-breaker",      locked: isGameLockedByAdmin("code-breaker") },
-    { id: "password-tower",      title: "Password Tower",    desc: "Stack password ingredients to build the strongest password!",     badge: "Puzzle", route: "/games/password-tower",    locked: isGameLockedByAdmin("password-tower") },
-    { id: "lock-the-vault-puzzle", title: "Lock the Vault",  desc: "Solve the sequence to seal the vault before the hacker gets in!", badge: "Puzzle", route: "/games/lock-the-vault",    locked: isGameLockedByAdmin("lock-the-vault-puzzle") },
+    { id: "cyber-escape",          title: "Cyber Escape Room", desc: "Solve 4 puzzles to escape the hacker's lair!",                    badge: "Puzzle", route: "/games/cyber-escape-room", locked: isGameLockedByAdmin("cyber-escape"),          isHot: true },
+    { id: "code-breaker",          title: "Code Breaker",      desc: "Crack the cipher and decode the secret message!",                 badge: "Puzzle", route: "/games/code-breaker",      locked: isGameLockedByAdmin("code-breaker") },
+    { id: "password-tower",        title: "Password Tower",    desc: "Stack password ingredients to build the strongest password!",     badge: "Puzzle", route: "/games/password-tower",    locked: isGameLockedByAdmin("password-tower") },
+    { id: "lock-the-vault-puzzle", title: "Lock the Vault",    desc: "Solve the sequence to seal the vault before the hacker gets in!", badge: "Puzzle", route: "/games/lock-the-vault",    locked: isGameLockedByAdmin("lock-the-vault-puzzle"), isNew: true },
   ];
 
   const sortGames = [
-    { id: "safe-danger-sort", title: "Safe or Danger? Rapid Sort", desc: "Items flash fast — hit Safe or Danger as quick as you can!", badge: "Sort", route: "/games/safe-or-danger-sort",   locked: isGameLockedByAdmin("safe-danger-sort") },
-    { id: "real-or-fake",     title: "Real or Fake Website",       desc: "Spot the fake website before you click!",                  badge: "Sort", route: "/games/real-or-fake-website",  locked: isGameLockedByAdmin("real-or-fake") },
-    { id: "trust-or-trash",   title: "Trust or Trash",             desc: "Decide if messages and links are trustworthy or trash!",   badge: "Sort", route: "/games/trust-or-trash",        locked: isGameLockedByAdmin("trust-or-trash") },
+    { id: "safe-danger-sort", title: "Safe or Danger? Rapid Sort", desc: "Items flash fast — hit Safe or Danger as quick as you can!", badge: "Sort", route: "/games/safe-or-danger-sort",  locked: isGameLockedByAdmin("safe-danger-sort") },
+    { id: "real-or-fake",     title: "Real or Fake Website",       desc: "Spot the fake website before you click!",                  badge: "Sort", route: "/games/real-or-fake-website", locked: isGameLockedByAdmin("real-or-fake") },
+    { id: "trust-or-trash",   title: "Trust or Trash",             desc: "Decide if messages and links are trustworthy or trash!",   badge: "Sort", route: "/games/trust-or-trash",       locked: isGameLockedByAdmin("trust-or-trash"),   isHot: true },
     ...MISSIONS.filter((m) => m.id === "scam-detection").map((m) => ({
       id: m.id, title: "Spot the Phish (Quiz)", desc: "Sort real from fake messages!", badge: "Sort",
       locked: isGameLockedByAdmin(m.id), stars: getStandaloneStars(m.id), mission: m,
@@ -1120,14 +1227,14 @@ export default function MissionsPage() {
   ];
 
   const speedGames = [
-    { id: "quiz-blitz",           title: "Byte's Quiz Blitz",       desc: "Byte fires questions for 60 seconds — answer as many as you can!", badge: "Speed", route: "/games/bytes-quiz-blitz",         locked: isGameLockedByAdmin("quiz-blitz") },
-    { id: "true-false-lightning", title: "True or False Lightning",  desc: "Cyber facts flash fast — TRUE or FALSE? Streak multiplier!",      badge: "Speed", route: "/games/true-or-false-lightning",  locked: isGameLockedByAdmin("true-false-lightning") },
-    { id: "beat-the-clock",       title: "Beat the Clock Trivia",    desc: "Answer before the timer hits zero — every second counts!",        badge: "Speed", route: "/games/beat-the-clock-trivia",    locked: isGameLockedByAdmin("beat-the-clock") },
+    { id: "quiz-blitz",           title: "Byte's Quiz Blitz",      desc: "Byte fires questions for 60 seconds — answer as many as you can!", badge: "Speed", route: "/games/bytes-quiz-blitz",        locked: isGameLockedByAdmin("quiz-blitz"),           isHot: true },
+    { id: "true-false-lightning", title: "True or False Lightning", desc: "Cyber facts flash fast — TRUE or FALSE? Streak multiplier!",      badge: "Speed", route: "/games/true-or-false-lightning", locked: isGameLockedByAdmin("true-false-lightning") },
+    { id: "beat-the-clock",       title: "Beat the Clock Trivia",   desc: "Answer before the timer hits zero — every second counts!",        badge: "Speed", route: "/games/beat-the-clock-trivia",   locked: isGameLockedByAdmin("beat-the-clock") },
   ];
 
   const memoryGames = [
-    { id: "cyber-memory",    title: "Cyber Memory Match", desc: "Flip cards to match cyber threat pairs!",                   badge: "Memory", route: "/games/cyber-memory-match", locked: isGameLockedByAdmin("cyber-memory") },
-    { id: "sequence-shield", title: "Sequence Shield",    desc: "Remember and repeat the sequence to activate your shield!", badge: "Memory", route: "/games/sequence-shield",    locked: isGameLockedByAdmin("sequence-shield") },
+    { id: "cyber-memory",    title: "Cyber Memory Match", desc: "Flip cards to match cyber threat pairs!",                   badge: "Memory", route: "/games/cyber-memory-match", locked: isGameLockedByAdmin("cyber-memory"),    isHot: true },
+    { id: "sequence-shield", title: "Sequence Shield",    desc: "Remember and repeat the sequence to activate your shield!", badge: "Memory", route: "/games/sequence-shield",    locked: isGameLockedByAdmin("sequence-shield"), isNew: true },
   ];
 
   const WORD_SEARCH_ROUTES: Record<string, string> = {
@@ -1161,7 +1268,6 @@ export default function MissionsPage() {
     { id: "lock-the-vault-dd", title: "Lock the Vault", desc: "Drag the correct keys into the right locks before time runs out!", badge: "Drag & Drop", route: "/games/lock-the-vault-drag", locked: isGameLockedByAdmin("lock-the-vault-dd") },
   ];
 
-  // Quiz missions
   const quizMissions = MISSIONS.map((m) => ({
     id: m.id, title: m.title, desc: m.description, badge: "Quiz",
     locked: isGameLockedByAdmin(m.id),
@@ -1174,15 +1280,15 @@ export default function MissionsPage() {
   }));
 
   const sections = [
-    { icon: "🕹️", title: "Arcade Games", games: arcadeGames, color: "border-[#00d4ff]" },
-    ...(tier !== "junior" ? [{ icon: "⌨️", title: "Keyboard Games", games: keyboardGames, color: "border-[#ff6b6b]" }] : []),
-    { icon: "🧩", title: "Puzzle Games", games: puzzleGames, color: "border-[#a855f7]" },
-    { icon: "🎯", title: "Sort & Decide", games: sortGames, color: "border-[#00ff88]" },
-    { icon: "⚡", title: "Speed Rounds", games: speedGames, color: "border-yellow-400" },
-    { icon: "🃏", title: "Memory & Match", games: memoryGames, color: "border-pink-400" },
-    { icon: "🔍", title: "Word Search Games", games: wordSearchGames, color: "border-[#00d4ff]" },
-    { icon: "✏️", title: "Crossword Puzzles", games: crosswordGames, color: "border-orange-400" },
-    { icon: "🖱️", title: "Drag & Drop Games", games: dragDropGames, color: "border-[#00ff88]" },
+    { icon: "🕹️", title: "Arcade Games",     games: arcadeGames,    badge: "Arcade"      },
+    ...(tier !== "junior" ? [{ icon: "⌨️", title: "Keyboard Games", games: keyboardGames, badge: "Keyboard" }] : []),
+    { icon: "🧩", title: "Puzzle Games",      games: puzzleGames,    badge: "Puzzle"      },
+    { icon: "🎯", title: "Sort & Decide",     games: sortGames,      badge: "Sort"        },
+    { icon: "⚡", title: "Speed Rounds",      games: speedGames,     badge: "Speed"       },
+    { icon: "🃏", title: "Memory & Match",    games: memoryGames,    badge: "Memory"      },
+    { icon: "🔍", title: "Word Search Games", games: wordSearchGames,badge: "Word Search" },
+    { icon: "✏️", title: "Crossword Puzzles", games: crosswordGames, badge: "Crossword"   },
+    { icon: "🖱️", title: "Drag & Drop Games", games: dragDropGames,  badge: "Drag & Drop" },
   ];
 
   // Featured game (Byte's Pick)
@@ -1192,30 +1298,37 @@ export default function MissionsPage() {
   const now = new Date();
   const midnight = new Date(now);
   midnight.setHours(24, 0, 0, 0);
-  const msLeft = midnight.getTime() - now.getTime();
-  const hoursLeft = Math.floor(msLeft / 3600000);
+  const msLeft      = midnight.getTime() - now.getTime();
+  const hoursLeft   = Math.floor(msLeft / 3600000);
   const minutesLeft = Math.floor((msLeft % 3600000) / 60000);
   const countdownLabel = `${hoursLeft}h ${minutesLeft}m`;
 
-  // Daily missions (tier-aware text)
+  // Daily missions (tier-aware)
   const dailyMissions = tier === "junior"
     ? [
-        { name: "Play any Word Search game", xp: 20, done: false },
-        { name: "Try a Drag & Drop game", xp: 25, done: false },
-        { name: "Complete a Crossword puzzle", xp: 30, done: false },
+        { name: "Play any Word Search game",   xp: 20, done: false },
+        { name: "Try a Drag & Drop game",       xp: 25, done: false },
+        { name: "Complete a Crossword puzzle",  xp: 30, done: false },
       ]
     : tier === "defender"
       ? [
-          { name: "Play any Arcade game", xp: 30, done: false },
-          { name: "Get 3 stars on a Speed Round", xp: 50, done: false },
-          { name: "Complete a Puzzle game", xp: 40, done: false },
+          { name: "Play any Arcade game",          xp: 30, done: false },
+          { name: "Get 3 stars on a Speed Round",  xp: 50, done: false },
+          { name: "Complete a Puzzle game",         xp: 40, done: false },
         ]
       : [
-          { name: "Get 3 stars on any game", xp: 50, done: false },
-          { name: "Complete a Keyboard challenge", xp: 60, done: false },
-          { name: "Beat your best Sort score", xp: 40, done: false },
+          { name: "Get 3 stars on any game",          xp: 50, done: false },
+          { name: "Complete a Keyboard challenge",    xp: 60, done: false },
+          { name: "Beat your best Sort score",        xp: 40, done: false },
         ];
 
+  // In-progress missions — for "Continue Playing"
+  const inProgressMissions = quizMissions
+    .filter((g) => {
+      const mp = missionProgress.find((p: any) => p.mission_id === g.id);
+      return (mp as any)?.status === "in_progress";
+    })
+    .slice(0, 3);
 
   const handleGameClick = (game: any) => {
     if (game.locked) return;
@@ -1227,158 +1340,266 @@ export default function MissionsPage() {
       return;
     }
     if (game.crossword) { launchStandaloneGame("crossword", game.crossword.id, game.crossword.title, game.crossword); return; }
-    if (game.dragdrop) { launchStandaloneGame("dragdrop", game.dragdrop.id, game.dragdrop.title, game.dragdrop); return; }
+    if (game.dragdrop)  { launchStandaloneGame("dragdrop",  game.dragdrop.id,  game.dragdrop.title,  game.dragdrop);  return; }
   };
 
+  /* ── ─── ─── ─── ─── ─── ─── ─── ─── ─── ─── ──
+     RENDER
+  ── ─── ─── ─── ─── ─── ─── ─── ─── ─── ─── ── */
   return (
-    <div className="min-h-screen bg-[#0a0e1a] pb-24 relative">
-      {/* ── Hero Section ── */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#00d4ff]/5 via-transparent to-transparent" />
-        <div className="container mx-auto px-4 max-w-5xl pt-10 pb-6 relative z-10">
-          <motion.div className="text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="flex items-center justify-center gap-3 flex-wrap">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-[0_0_20px_rgba(0,212,255,0.4)]">
-                ⚡ Training Center
-              </h1>
-              <div className="group relative">
-                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold border ${
-                  tier === "junior"
-                    ? "border-yellow-400/40 bg-yellow-400/10 text-yellow-300"
-                    : tier === "defender"
-                      ? "border-[#00d4ff]/40 bg-[#00d4ff]/10 text-[#00d4ff]"
-                      : "border-red-400/40 bg-red-400/10 text-red-300"
-                }`}>
-                  {trainingTierEmoji} {trainingTierLabel}
+    <div className="min-h-screen bg-[#080c18] pb-28 relative">
+
+      {/* ════════════════════════════════════
+          HERO BANNER
+      ════════════════════════════════════ */}
+      <div className="relative overflow-hidden border-b border-white/[0.04]">
+        {/* Background layers */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0d1528] to-[#080c18]" />
+          <div className="absolute -top-10 left-1/4  w-[480px] h-[280px] rounded-full bg-[#00d4ff]/5  blur-3xl" />
+          <div className="absolute -top-10 right-1/4 w-[360px] h-[240px] rounded-full bg-[#00ff88]/4  blur-3xl" />
+          <div className="absolute inset-0 opacity-[0.022]" style={{
+            backgroundImage:
+              "linear-gradient(rgba(0,212,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.4) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }} />
+        </div>
+
+        <div className="container mx-auto px-4 max-w-5xl pt-8 pb-8 relative z-10">
+
+          {/* ── Name + level ring ── */}
+          <motion.div
+            className="flex items-start justify-between gap-4 flex-wrap"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+          >
+            {/* Left: greeting */}
+            <div>
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <span className="text-[10px] font-extrabold tracking-[0.2em] text-[#00d4ff] uppercase">
+                  ⚡ Training Center
                 </span>
-                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#1a2035] border border-white/10 px-3 py-2 text-xs text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-lg pointer-events-none">
-                  Based on your age at signup
+                <div className="group relative">
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
+                    tier === "junior"
+                      ? "border-yellow-400/30 bg-yellow-400/8 text-yellow-300"
+                      : tier === "defender"
+                        ? "border-[#00d4ff]/30 bg-[#00d4ff]/8 text-[#00d4ff]"
+                        : "border-red-400/30 bg-red-400/8 text-red-300"
+                  }`}>
+                    {trainingTierEmoji} {trainingTierLabel}
+                  </span>
+                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#1a2035] border border-white/10 px-3 py-1.5 text-xs text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-lg pointer-events-none">
+                    Based on your age at signup
+                  </div>
+                </div>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-black text-white leading-tight">
+                Welcome back,{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00d4ff] to-[#00ff88]">
+                  {playerName}
+                </span>!
+              </h1>
+              <p className="text-gray-500 text-sm mt-1.5">
+                {isJuniorTier
+                  ? "Let's have fun and learn something awesome today! 🌟"
+                  : "The digital world needs its heroes — keep training!"}
+              </p>
+            </div>
+
+            {/* Right: level badge + streak/XP chips */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {/* Level ring */}
+              <div
+                className="w-[76px] h-[76px] rounded-2xl border-2 flex flex-col items-center justify-center flex-shrink-0"
+                style={{ borderColor: "rgba(0,212,255,0.35)", background: "rgba(0,212,255,0.05)" }}
+              >
+                <p className="text-[9px] font-black uppercase tracking-widest text-[#00d4ff]/60">Lv.</p>
+                <p className="text-[32px] font-black text-white leading-none">{level}</p>
+              </div>
+
+              {/* Streak + XP vertical stack */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-1.5 rounded-xl border border-orange-500/25 bg-orange-500/8 px-3 py-1.5">
+                  <Flame className="h-3.5 w-3.5 text-orange-400" />
+                  <span className="text-sm font-extrabold text-orange-400">{streak}</span>
+                  <span className="text-[10px] text-orange-400/60">day streak</span>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-xl border border-yellow-500/25 bg-yellow-500/8 px-3 py-1.5">
+                  <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
+                  <span className="text-sm font-extrabold text-yellow-400">{points.toLocaleString()}</span>
+                  <span className="text-[10px] text-yellow-400/60">XP</span>
                 </div>
               </div>
             </div>
-            <p className="mt-2 text-gray-400 text-lg">Level up your cyber skills, Guardian!</p>
           </motion.div>
 
-          {/* Stat chips */}
+          {/* ── XP Progress bar ── */}
           <motion.div
-            className="mt-5 flex flex-wrap items-center justify-center gap-3"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <div className="flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-2 text-sm font-bold text-orange-400">
-              <Flame className="h-4 w-4" /> {streak}-Day Streak
-            </div>
-            <div className="flex items-center gap-2 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-sm font-bold text-yellow-400">
-              ⭐ {points} XP
-            </div>
-            <div className="flex items-center gap-2 rounded-full border border-[#00d4ff]/30 bg-[#00d4ff]/10 px-4 py-2 text-sm font-bold text-[#00d4ff]">
-              🏆 Rank: {rank.title}
-            </div>
-          </motion.div>
-
-          {/* XP Progress bar */}
-          <motion.div
-            className="mt-5 mx-auto max-w-md"
+            className="mt-6 max-w-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.18 }}
           >
-            <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-              <span>Level {level}</span>
-              <span>{nextRank ? `Next: ${nextRank.title}` : "Max Rank!"}</span>
+            <div className="flex items-center justify-between text-[11px] mb-2">
+              <span className="font-bold text-[#00d4ff]">Level {level}</span>
+              <span className="text-gray-500">{xpProgress.current.toLocaleString()} / {xpProgress.needed.toLocaleString()} XP</span>
+              {nextRank && (
+                <span className="font-bold" style={{ color: "#00ff88" }}>→ {nextRank.title}</span>
+              )}
             </div>
-            <div className="h-3 w-full rounded-full bg-[#1a2035] border border-[#00d4ff]/20 overflow-hidden">
+            <div className="h-3 w-full rounded-full bg-[#1a2035] border border-white/5 overflow-hidden">
               <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-[#00d4ff] to-[#00ff88]"
+                className="h-full rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${xpProgress.percent}%` }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                style={{ boxShadow: "0 0 12px rgba(0,212,255,0.5)" }}
+                transition={{ duration: 1.3, ease: "easeOut", delay: 0.3 }}
+                style={{
+                  background: "linear-gradient(90deg, #00d4ff, #00ff88)",
+                  boxShadow: "0 0 10px rgba(0,212,255,0.45)",
+                }}
               />
             </div>
-            <p className="text-xs text-gray-500 mt-1 text-center">
-              {xpProgress.current} / {xpProgress.needed} XP to next level
-            </p>
           </motion.div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 max-w-5xl">
-        {/* ── Daily Missions ── */}
+      {/* ════════════════════════════════════
+          CONTENT AREA
+      ════════════════════════════════════ */}
+      <div className="container mx-auto px-4 max-w-5xl mt-8">
+
+        {/* ── CONTINUE PLAYING ── (only shown when there are in-progress missions) */}
+        {inProgressMissions.length > 0 && (
+          <motion.div
+            className="mb-10"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 rounded-full bg-[#00ff88] animate-pulse" />
+              <h2 className="text-base font-extrabold text-white">Continue Playing</h2>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {inProgressMissions.map((g) => {
+                const theme = CATEGORY_THEMES[g.badge] ?? CATEGORY_THEMES["Quiz"];
+                return (
+                  <motion.button
+                    key={g.id}
+                    className="flex items-center gap-3 rounded-2xl border border-[#00ff88]/18 bg-[#0c1a12] p-4 text-left
+                               hover:border-[#00ff88]/35 transition-colors"
+                    onClick={() => handleGameClick(g)}
+                    whileHover={{ x: 3 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <span className="text-2xl leading-none">{theme.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-extrabold text-[#00ff88] uppercase tracking-wider">In Progress</p>
+                      <p className="text-sm font-bold text-white truncate">{g.title}</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-[#00ff88]/50 flex-shrink-0" />
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── DAILY MISSIONS ── */}
         <motion.div
-          className="mt-6 rounded-2xl border border-[#00ff88]/30 bg-gradient-to-r from-[#00ff88]/5 to-[#00d4ff]/5 p-5"
-          initial={{ opacity: 0, y: 20 }}
+          className="mb-10 rounded-2xl overflow-hidden border border-[#00ff88]/14"
+          style={{ background: "linear-gradient(135deg, #091510 0%, #0c1814 100%)" }}
+          initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.14 }}
         >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-extrabold text-white">
-              🎯 Daily Missions
-            </h2>
-            <span className="text-xs text-gray-400 font-mono">Resets in {countdownLabel}</span>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[#00ff88]/8">
+            <div>
+              <h2 className="text-base font-extrabold text-white">🎯 Daily Missions</h2>
+              <p className="text-[11px] text-gray-600 mt-0.5">
+                {dailyMissions.filter((d) => d.done).length} / {dailyMissions.length} complete
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] uppercase tracking-wider text-gray-600">Resets in</p>
+              <p className="text-sm font-extrabold text-[#00ff88]">{countdownLabel}</p>
+            </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
+
+          <div className="grid sm:grid-cols-3 gap-2 p-4">
             {dailyMissions.map((dm, i) => (
               <div
                 key={i}
-                className={`rounded-xl border p-4 ${
+                className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition-colors ${
                   dm.done
-                    ? "border-[#00ff88]/40 bg-[#00ff88]/10"
-                    : "border-white/10 bg-[#0f1729]"
+                    ? "border-[#00ff88]/35 bg-[#00ff88]/7"
+                    : "border-white/5 bg-white/[0.018]"
                 }`}
               >
-                <div className="flex items-start gap-3">
-                  <div className={`mt-0.5 h-5 w-5 shrink-0 rounded border-2 flex items-center justify-center ${
-                    dm.done ? "border-[#00ff88] bg-[#00ff88]" : "border-gray-600"
-                  }`}>
-                    {dm.done && <CheckCircle2 className="h-3.5 w-3.5 text-[#0a0e1a]" />}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">{dm.name}</p>
-                    <p className="text-xs text-[#00ff88] font-bold mt-1">+{dm.xp} XP</p>
-                  </div>
+                <div className={`flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-black ${
+                  dm.done ? "border-[#00ff88] bg-[#00ff88]/18 text-[#00ff88]" : "border-gray-700 text-gray-600"
+                }`}>
+                  {dm.done ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-white leading-snug">{dm.name}</p>
+                  <p className="text-[11px] font-extrabold text-[#00ff88]">+{dm.xp} XP</p>
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-4 text-center">
-            <p className="text-xs text-gray-500">Complete each challenge to earn bonus XP — check back daily for new missions!</p>
-          </div>
         </motion.div>
 
-        {/* ── Byte's Pick ── */}
+        {/* ── BYTE'S PICK / SPOTLIGHT ── */}
         <motion.div
-          className="mt-8 rounded-2xl border border-[#00d4ff]/30 bg-gradient-to-r from-[#0f1729] to-[#131b2e] p-5 flex items-center gap-5"
-          initial={{ opacity: 0, y: 20 }}
+          className="mb-10 relative overflow-hidden rounded-2xl border border-[#00d4ff]/22"
+          style={{ background: "linear-gradient(135deg, #0d1929 0%, #0f2040 65%, #0a1628 100%)" }}
+          initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.2 }}
         >
-          <img
-            src={heroCharacter}
-            alt="Byte"
-            className={`object-contain drop-shadow-[0_0_10px_rgba(0,212,255,0.3)] ${isJuniorTier ? "h-24 w-24" : "h-20 w-20"}`}
-          />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-[#00d4ff] font-bold uppercase tracking-wider mb-1">Byte's Pick</p>
-            <p className="text-gray-400 text-sm mb-1">Byte says: Try this one today, Guardian! 👾</p>
-            <p className="text-lg font-bold text-white">{featuredGame.title}</p>
+          {/* Glow orb */}
+          <div className="pointer-events-none absolute right-0 top-0 w-56 h-56 rounded-full bg-[#00d4ff]/7 blur-3xl -translate-y-1/3 translate-x-1/3" />
+          <div className="pointer-events-none absolute left-1/3 bottom-0 w-40 h-40 rounded-full bg-[#00ff88]/5 blur-2xl translate-y-1/2" />
+
+          <div className="relative z-10 flex items-center gap-5 p-6">
+            <motion.img
+              src={heroCharacter}
+              alt="Byte"
+              className={`object-contain flex-shrink-0 drop-shadow-[0_0_18px_rgba(0,212,255,0.5)] ${isJuniorTier ? "h-28 w-28" : "h-24 w-24"}`}
+              animate={{ y: [0, -5, 0] }}
+              transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="inline-flex items-center gap-1 rounded-full border border-[#00d4ff]/38 bg-[#00d4ff]/12 px-2.5 py-0.5 text-[10px] font-extrabold text-[#00d4ff] uppercase tracking-wider">
+                  ⭐ Byte's Pick
+                </span>
+                <span className="text-[10px] text-gray-500">Today's recommendation</span>
+              </div>
+              <p className="text-xl font-extrabold text-white leading-tight mb-1">{featuredGame.title}</p>
+              <p className="text-xs text-gray-400 mb-4 line-clamp-1">{featuredGame.description}</p>
+              <button
+                onClick={() =>
+                  launchStandaloneGame("wordsearch", featuredGame.id, featuredGame.title, {
+                    words: featuredGame.wordsByTier[tier],
+                    gridSize: featuredGame.gridSizeByTier[tier],
+                  })
+                }
+                className="rounded-full px-6 py-2.5 text-sm font-extrabold text-[#080c18] transition-all
+                           hover:shadow-[0_0_22px_rgba(0,212,255,0.4)] hover:scale-105 active:scale-95"
+                style={{ background: "linear-gradient(90deg,#00d4ff,#00ff88)" }}
+              >
+                🎮 Play Now
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() =>
-              launchStandaloneGame("wordsearch", featuredGame.id, featuredGame.title, {
-                words: featuredGame.wordsByTier[tier],
-                gridSize: featuredGame.gridSizeByTier[tier],
-              })
-            }
-            className="shrink-0 rounded-full bg-[#00d4ff] px-6 py-2.5 text-sm font-bold text-[#0a0e1a] transition-all hover:bg-[#00d4ff]/80 hover:shadow-[0_0_16px_rgba(0,212,255,0.4)]"
-          >
-            Play Now
-          </button>
         </motion.div>
 
-        {/* ── Quiz Challenges section ── */}
-        <SectionHeader icon="🎮" title="Quiz Challenges" />
+        {/* ── QUIZ CHALLENGES ── */}
+        <SectionHeader icon="🎮" title="Quiz Challenges" count={quizMissions.length} color="#fbbf24" />
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {quizMissions.map((g) => (
             <NeonGameCard
@@ -1393,68 +1614,87 @@ export default function MissionsPage() {
           ))}
         </div>
 
-        {/* ── All other game sections ── */}
-        {sections.map((section) => (
-          <div key={section.title}>
-            <div className="flex items-center gap-3 mb-5 mt-10">
-              <div className={`w-1 h-8 rounded-full ${section.color}`} />
-              <span className="text-2xl">{section.icon}</span>
-              <h2 className="text-xl font-extrabold tracking-wide text-white drop-shadow-[0_0_8px_rgba(0,212,255,0.5)]">{section.title}</h2>
+        {/* ── ALL GAME SECTIONS ── */}
+        {sections.map((section) => {
+          const sectionTheme = CATEGORY_THEMES[section.badge] ?? CATEGORY_THEMES["Quiz"];
+          return (
+            <div key={section.title}>
+              <SectionHeader
+                icon={section.icon}
+                title={section.title}
+                count={section.games.length}
+                color={sectionTheme.color}
+              />
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                {section.games.map((g: any) => (
+                  <NeonGameCard
+                    key={g.id}
+                    title={g.title}
+                    description={g.desc}
+                    stars={g.stars ?? 0}
+                    typeBadge={g.badge}
+                    locked={g.locked ?? false}
+                    isNew={g.isNew}
+                    isHot={g.isHot}
+                    onClick={() => handleGameClick(g)}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {section.games.map((g: any) => (
-                <NeonGameCard
-                  key={g.id}
-                  title={g.title}
-                  description={g.desc}
-                  stars={g.stars ?? 0}
-                  typeBadge={g.badge}
-                  locked={g.locked ?? false}
-                  onClick={() => handleGameClick(g)}
-                />
+          );
+        })}
+
+        {/* ── PROGRESS FOOTER ── */}
+        <motion.div
+          className="mt-12 mb-6 rounded-2xl overflow-hidden border border-white/5"
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+        >
+          <div className="p-6" style={{ background: "linear-gradient(135deg,#0f1729 0%,#111827 100%)" }}>
+            <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+              <div>
+                <h2 className="text-base font-extrabold text-white">🏆 Your Progress</h2>
+                <p className="text-[11px] text-gray-500 mt-0.5">Keep training to climb the ranks!</p>
+              </div>
+              <span className="rounded-xl border border-[#00d4ff]/18 bg-[#00d4ff]/5 px-3 py-1.5 text-xs font-bold text-[#00d4ff]">
+                Rank: {rank.title}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { value: points.toLocaleString(), label: "Total XP",      color: "#ffd700" },
+                { value: completedMissionIds.size, label: "Missions Done", color: "#00ff88" },
+                { value: streak,                   label: "Day Streak",    color: "#f97316" },
+              ].map(({ value, label, color }) => (
+                <div
+                  key={label}
+                  className="rounded-xl border border-white/5 bg-white/[0.022] py-4 px-3 text-center"
+                >
+                  <p className="text-2xl font-extrabold" style={{ color }}>{value}</p>
+                  <p className="text-[10px] text-gray-500 mt-1 font-medium">{label}</p>
+                </div>
               ))}
             </div>
-          </div>
-        ))}
 
-        {/* ── Your Stats ── */}
-        <motion.div
-          className="mt-10 rounded-2xl border border-yellow-500/20 bg-[#0f1729] p-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <h2 className="text-lg font-extrabold text-yellow-400 mb-1 drop-shadow-[0_0_8px_rgba(255,200,0,0.3)]">
-            🏆 Your Progress
-          </h2>
-          <p className="text-xs text-gray-500 mb-4">Keep training to climb the ranks, Guardian!</p>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-xl border border-white/5 bg-white/[0.02] px-4 py-4 text-center">
-              <p className="text-2xl font-extrabold text-yellow-400">{points.toLocaleString()}</p>
-              <p className="text-xs text-gray-500 mt-1">Total XP</p>
-            </div>
-            <div className="rounded-xl border border-white/5 bg-white/[0.02] px-4 py-4 text-center">
-              <p className="text-2xl font-extrabold text-[#00ff88]">{completedMissionIds.size}</p>
-              <p className="text-xs text-gray-500 mt-1">Missions Done</p>
-            </div>
-            <div className="rounded-xl border border-white/5 bg-white/[0.02] px-4 py-4 text-center">
-              <p className="text-2xl font-extrabold text-orange-400">{streak}</p>
-              <p className="text-xs text-gray-500 mt-1">Day Streak</p>
-            </div>
+            <p className="text-center text-[11px] text-gray-600 mt-5">
+              🌍 Global leaderboards coming soon!
+            </p>
           </div>
-          <p className="text-center text-xs text-gray-600 mt-4">Global leaderboards coming soon!</p>
         </motion.div>
-      </div>
 
-      {/* ── Byte floating character ── */}
-      <div className="fixed bottom-4 right-4 z-30 flex flex-col items-end gap-2">
+      </div>{/* /container */}
+
+      {/* ── BYTE FLOATING BUDDY ── */}
+      <div className="fixed bottom-4 right-4 z-30 flex flex-col items-end gap-2 pointer-events-none">
         <motion.div
-          className="rounded-2xl rounded-br-sm border border-[#00d4ff]/30 bg-[#0f1729]/95 backdrop-blur px-4 py-2.5 max-w-[220px] shadow-lg"
-          initial={{ opacity: 0, x: 20 }}
+          className="pointer-events-auto rounded-2xl rounded-br-sm border border-[#00d4ff]/22 bg-[#0d1323]/96 backdrop-blur px-4 py-2.5 max-w-[220px] shadow-xl"
+          initial={{ opacity: 0, x: 22 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 1 }}
+          transition={{ delay: 1.1 }}
         >
-          <p className="text-xs text-gray-300">
+          <p className="text-xs text-gray-300 leading-relaxed">
             {isJuniorTier
               ? "Let's play a game together! You're doing AMAZING! 🌟💪"
               : "Pick a game and let's train, Guardian! 💪"}
@@ -1463,11 +1703,12 @@ export default function MissionsPage() {
         <motion.img
           src={heroCharacter}
           alt="Byte"
-          className={`object-contain drop-shadow-[0_0_12px_rgba(0,212,255,0.4)] ${isJuniorTier ? "h-20 w-20" : "h-16 w-16"}`}
+          className={`object-contain drop-shadow-[0_0_14px_rgba(0,212,255,0.42)] ${isJuniorTier ? "h-20 w-20" : "h-16 w-16"}`}
           animate={{ y: [0, -6, 0] }}
           transition={{ repeat: Infinity, duration: isJuniorTier ? 2 : 2.5, ease: "easeInOut" }}
         />
       </div>
+
     </div>
   );
 }

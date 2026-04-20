@@ -37,8 +37,12 @@ function FirewallTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
   const [countdown, setCountdown] = useState(3);
   const [explosions, setExplosions] = useState<{id: number; y: number}[]>([]);
   const [combo, setCombo] = useState(0);
+  const [, setTick] = useState(0);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const playAreaRef = useRef<HTMLDivElement>(null);
+  const threatTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const handleThreatReachWallRef = useRef<(id: number) => void>(null!);
   const scoreRef = useRef(0);
   const cracksRef = useRef(0);
   const gameOverRef = useRef(false);
@@ -47,6 +51,10 @@ function FirewallTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
   const usedLabels = useRef(new Set<string>());
 
   useEffect(() => { threatsRef.current = threats; }, [threats]);
+
+  useEffect(() => {
+    return () => { threatTimers.current.forEach(t => clearTimeout(t)); };
+  }, []);
 
   const getLabel = () => {
     const available = labels.filter(l => !usedLabels.current.has(l));
@@ -65,6 +73,8 @@ function FirewallTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
     const y = 5 + Math.random() * 80;
     const threat: Threat = { id, label, speed, startTime: Date.now(), y };
     setThreats(prev => [...prev, threat]);
+    const timer = setTimeout(() => handleThreatReachWallRef.current(id), Math.round(speed * 1000));
+    threatTimers.current.set(id, timer);
   }, [config, labels]);
 
   // Countdown
@@ -95,7 +105,15 @@ function FirewallTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
 
   useEffect(() => { if (phase === 'playing') inputRef.current?.focus(); }, [phase]);
 
+  // Position tick
+  useEffect(() => {
+    if (phase !== 'playing') return;
+    const id = setInterval(() => setTick(t => t + 1), 50);
+    return () => clearInterval(id);
+  }, [phase]);
+
   const handleThreatReachWall = useCallback((id: number) => {
+    threatTimers.current.delete(id);
     if (gameOverRef.current) return;
     setThreats(prev => prev.filter(t => t.id !== id));
     cracksRef.current += 1;
@@ -105,12 +123,15 @@ function FirewallTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
     if (cracksRef.current >= 5) { gameOverRef.current = true; setPhase('done'); }
     else setTimeout(spawnThreat, 800);
   }, [spawnThreat]);
+  handleThreatReachWallRef.current = handleThreatReachWall;
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
     setTyped(val);
     const match = threatsRef.current.find(t => t.label === val);
     if (match) {
+      clearTimeout(threatTimers.current.get(match.id));
+      threatTimers.current.delete(match.id);
       comboRef.current += 1;
       setCombo(comboRef.current);
       const mult = comboRef.current >= 5 ? 3 : comboRef.current >= 3 ? 2 : 1;
@@ -130,6 +151,13 @@ function FirewallTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
   }, [phase, onComplete]);
 
   const maxCracks = 5;
+
+  const areaW = playAreaRef.current?.offsetWidth ?? 600;
+  const getThreatRight = (threat: Threat) => {
+    const elapsed = Date.now() - threat.startTime;
+    const progress = Math.min(elapsed / (threat.speed * 1000), 1);
+    return (-0.20 + progress * 1.15) * areaW;
+  };
 
   return (
     <div className="flex flex-col h-full bg-[#0a0e1a] select-none">
@@ -162,7 +190,7 @@ function FirewallTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
       </div>
 
       {/* Play area */}
-      <div className="flex-1 relative overflow-hidden">
+      <div ref={playAreaRef} className="flex-1 relative overflow-hidden">
         {/* Firewall wall */}
         <div className="absolute left-0 top-0 bottom-0 w-10 z-20 flex flex-col items-center justify-center">
           <div className={`w-full h-full border-r-2 flex items-center justify-center text-2xl
@@ -177,13 +205,10 @@ function FirewallTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
         {threats.map(threat => {
           const matchLen = typed.length > 0 && threat.label.startsWith(typed) ? typed.length : 0;
           return (
-            <motion.div key={threat.id}
+            <div
+              key={threat.id}
               className="absolute z-10"
-              style={{ top: `${threat.y}%` }}
-              initial={{ right: 0 }}
-              animate={{ right: '95%' }}
-              transition={{ duration: threat.speed, ease: 'linear' }}
-              onAnimationComplete={() => handleThreatReachWall(threat.id)}
+              style={{ top: `${threat.y}%`, right: `${getThreatRight(threat)}px` }}
             >
               <div className={`flex items-center gap-1 bg-black/80 border rounded-lg px-2 py-1 text-sm font-black
                 ${matchLen > 0 ? 'border-cyan-500 shadow-[0_0_10px_rgba(0,212,255,0.5)]' : 'border-red-500/60'}`}>
@@ -193,7 +218,7 @@ function FirewallTyperGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
                   <span className="text-red-300">{threat.label.slice(matchLen)}</span>
                 </span>
               </div>
-            </motion.div>
+            </div>
           );
         })}
 

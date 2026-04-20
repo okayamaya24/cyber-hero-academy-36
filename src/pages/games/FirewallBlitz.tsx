@@ -45,8 +45,21 @@ function FirewallBlitzGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
   const comboRef = useRef(0);
   const gameOverRef = useRef(false);
   const threatsRef = useRef<Threat[]>([]);
+  const threatTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const handleReachBaseRef = useRef<(id: number, lane: number) => void>(null!);
 
   useEffect(() => { threatsRef.current = threats; }, [threats]);
+
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.id = 'fblitz-keyframes';
+    style.textContent = '@keyframes fblitz-fly { from { right: 70px; } to { right: 95%; } }';
+    document.head.appendChild(style);
+    return () => {
+      document.getElementById('fblitz-keyframes')?.remove();
+      threatTimers.current.forEach(t => clearTimeout(t));
+    };
+  }, []);
 
   // Countdown
   useEffect(() => {
@@ -79,6 +92,8 @@ function FirewallBlitzGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
       const id = ++idCounter;
       const threat: Threat = { id, lane, emoji, duration: speedVar, startTime: Date.now() };
       setThreats(prev => [...prev, threat]);
+      const timer = setTimeout(() => handleReachBaseRef.current(threat.id, lane), speedVar);
+      threatTimers.current.set(id, timer);
     };
     spawn();
     const t = setInterval(spawn, config.spawnMs);
@@ -87,6 +102,7 @@ function FirewallBlitzGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
 
   // Threat reaches base
   const handleReachBase = useCallback((id: number, lane: number) => {
+    threatTimers.current.delete(id);
     if (gameOverRef.current) return;
     setThreats(prev => prev.filter(t => t.id !== id));
     livesRef.current -= 1;
@@ -100,6 +116,7 @@ function FirewallBlitzGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
       setPhase('done');
     }
   }, []);
+  handleReachBaseRef.current = handleReachBase;
 
   // Block threat
   const handleBlock = useCallback((lane: number, e: React.MouseEvent<HTMLButtonElement>) => {
@@ -114,6 +131,9 @@ function FirewallBlitzGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
       })[0];
 
     if (!laneThreat) return;
+
+    clearTimeout(threatTimers.current.get(laneThreat.id));
+    threatTimers.current.delete(laneThreat.id);
 
     comboRef.current += 1;
     setCombo(comboRef.current);
@@ -225,17 +245,19 @@ function FirewallBlitzGame({ ageTier, onComplete }: { ageTier: AgeTier; onComple
 
             {/* Threats */}
             {threats.filter(t => t.lane === lane).map(threat => (
-              <motion.div
+              <div
                 key={threat.id}
-                className="absolute text-3xl z-15 pointer-events-none"
-                style={{ top: '50%', transform: 'translateY(-50%)' }}
-                initial={{ right: '70px' }}
-                animate={{ right: '95%' }}
-                transition={{ duration: threat.duration / 1000, ease: 'linear' }}
-                onAnimationComplete={() => handleReachBase(threat.id, lane)}
+                className="absolute text-3xl pointer-events-none"
+                style={{
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  right: '70px',
+                  animation: `fblitz-fly ${threat.duration / 1000}s linear forwards`,
+                  zIndex: 15,
+                }}
               >
                 {threat.emoji}
-              </motion.div>
+              </div>
             ))}
 
             {/* Shield button */}
