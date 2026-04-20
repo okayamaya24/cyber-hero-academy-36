@@ -1,19 +1,12 @@
 /**
  * Episode registry — maps zone IDs to their episode data.
+ * Currently empty; ContinentMapScreen uses its own visual-novel EpisodePlayer
+ * with ZONE1_SCENES directly. Zones without entries here fall back to the
+ * cutscene intro flow in ZoneGameScreen.
  */
-import { ZONE1_SCENES, ZONE1_EPISODE_TITLE } from "@/data/zone1_password_peak";
+import type { EpisodeData } from "@/components/zone/EpisodePlayer";
 
-export interface EpisodeData {
-  title: string;
-  scenes: unknown;
-}
-
-const EPISODES: Record<string, EpisodeData> = {
-  "password-peak": {
-    title: ZONE1_EPISODE_TITLE,
-    scenes: ZONE1_SCENES,
-  },
-};
+const EPISODES: Record<string, EpisodeData> = {};
 
 export function getZoneEpisode(zoneId: string): EpisodeData | null {
   return EPISODES[zoneId] ?? null;
