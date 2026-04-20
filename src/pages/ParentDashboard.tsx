@@ -450,11 +450,7 @@ export default function ParentDashboard() {
                       variants={fadeUp}
                       className="overflow-hidden rounded-2xl border bg-card shadow-card transition-shadow hover:shadow-lg"
                     >
-                      <button
-                        type="button"
-                        onClick={() => setExpandedChildId(isExpanded ? null : child.id)}
-                        className="w-full p-5 text-left"
-                      >
+                      <div className="p-5">
                         <div className="flex items-center gap-4">
                           <HeroAvatar
                             avatarConfig={(child as any).avatar_config as Record<string, any> | null}
@@ -475,24 +471,17 @@ export default function ParentDashboard() {
                               <span>🔥 {child.streak} streak</span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:text-destructive"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteTarget({ id: child.id, name: child.name });
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                            {isExpanded ? (
-                              <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                            ) : (
-                              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                            )}
-                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteTarget({ id: child.id, name: child.name });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
 
                         {/* Empty state for new kids */}
@@ -507,7 +496,7 @@ export default function ParentDashboard() {
                             </p>
                           </div>
                         ) : (
-                          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          <div className="mt-3 grid grid-cols-2 gap-2">
                             <div className="rounded-lg bg-primary/5 p-2 text-center">
                               <div className="text-lg font-bold text-primary">{summary.completedCount}</div>
                               <div className="text-[10px] text-muted-foreground">Missions</div>
@@ -516,14 +505,14 @@ export default function ParentDashboard() {
                               <div className="text-lg font-bold text-accent">{summary.totalStars} ⭐</div>
                               <div className="text-[10px] text-muted-foreground">Stars</div>
                             </div>
-                            <div className="rounded-lg bg-secondary/10 p-2 text-center">
-                              <div className="break-words text-[11px] font-semibold leading-tight text-secondary">
+                            <div className="min-w-fit rounded-lg bg-secondary/10 p-2 text-center">
+                              <div className="whitespace-normal break-words text-xs font-semibold leading-tight text-secondary">
                                 {summary.strongestTopic}
                               </div>
                               <div className="mt-1 text-[10px] text-muted-foreground">Strongest</div>
                             </div>
-                            <div className="rounded-lg bg-destructive/10 p-2 text-center">
-                              <div className="break-words text-[11px] font-semibold leading-tight text-destructive">
+                            <div className="min-w-fit rounded-lg bg-destructive/10 p-2 text-center">
+                              <div className="whitespace-normal break-words text-xs font-semibold leading-tight text-destructive">
                                 {summary.needsReviewTopic}
                               </div>
                               <div className="mt-1 text-[10px] text-muted-foreground">Needs Review</div>
@@ -533,7 +522,25 @@ export default function ParentDashboard() {
                             </div>
                           </div>
                         )}
-                      </button>
+
+                        {/* Expand toggle chevron */}
+                        <button
+                          type="button"
+                          onClick={() => setExpandedChildId(isExpanded ? null : child.id)}
+                          className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-muted/40 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          aria-expanded={isExpanded}
+                        >
+                          {isExpanded ? (
+                            <>
+                              Hide details <ChevronUp className="h-4 w-4" />
+                            </>
+                          ) : (
+                            <>
+                              Show details <ChevronDown className="h-4 w-4" />
+                            </>
+                          )}
+                        </button>
+                      </div>
 
                       <AnimatePresence initial={false}>
                         {isExpanded && (
