@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -27,13 +27,16 @@ import {
   MessageCircle,
   GraduationCap,
   Star,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  Rocket,
+  Map as MapIcon,
 } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MISSIONS, ALL_BADGES, getTotalGames, LEARNING_MODE_CONFIG, type LearningMode } from "@/data/missions";
+import { MISSIONS, ALL_BADGES, LEARNING_MODE_CONFIG, type LearningMode } from "@/data/missions";
 import { toast } from "sonner";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 
@@ -47,12 +50,47 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
+/** Conversation prompts keyed loosely by topic keywords. */
+function getTalkPrompts(name: string, strongest: string, needsReview: string): string[] {
+  const prompts: string[] = [];
+  const matchTopic = (topic: string, kind: "strongest" | "review"): string | null => {
+    const t = topic.toLowerCase();
+    if (kind === "strongest") {
+      if (t.includes("password")) return `Ask ${name}: What makes a password strong? Can you give me an example?`;
+      if (t.includes("phish") || t.includes("scam")) return `Ask ${name}: How can you spot a fake email or message?`;
+      if (t.includes("safe") || t.includes("site")) return `Ask ${name}: What clues tell you a website is safe to use?`;
+      if (t.includes("secret") || t.includes("privacy")) return `Ask ${name}: What kinds of info should we keep private online?`;
+      if (t.includes("malware") || t.includes("virus")) return `Ask ${name}: What's malware, and how do you avoid it?`;
+      return `Ask ${name}: What was the coolest thing you learned about ${topic}?`;
+    }
+    if (t.includes("password")) return `Ask ${name}: Let's create a super-strong password together — want to try?`;
+    if (t.includes("phish") || t.includes("scam")) return `Ask ${name}: If a message looks too good to be true, what should we do?`;
+    if (t.includes("safe") || t.includes("site")) return `Ask ${name}: Want to look at a few sites together and check if they're safe?`;
+    if (t.includes("secret") || t.includes("privacy")) return `Ask ${name}: What info would you NEVER share with someone you don't know?`;
+    if (t.includes("malware") || t.includes("virus")) return `Ask ${name}: What should you do if a website asks you to download something unexpected?`;
+    return `Ask ${name}: Want to replay the ${topic} mission together?`;
+  };
+
+  if (strongest && strongest !== "—") {
+    const p = matchTopic(strongest, "strongest");
+    if (p) prompts.push(p);
+  }
+  if (needsReview && needsReview !== "—") {
+    const p = matchTopic(needsReview, "review");
+    if (p) prompts.push(p);
+  }
+  if (prompts.length < 2) {
+    prompts.push(`Ask ${name}: What's one new thing you'd teach me about staying safe online?`);
+  }
+  return prompts.slice(0, 3);
+}
+
 export default function ParentDashboard() {
-  const { user, signOut, parentUnlocked } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [resettingMode, setResettingMode] = useState<string | null>(null);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+  const [expandedChildId, setExpandedChildId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
@@ -104,6 +142,18 @@ export default function ParentDashboard() {
     enabled: !!user && children.length > 0,
   });
 
+  const { data: allZoneProgress = [] } = useQuery({
+    queryKey: ["all_zone_progress", user?.id, children.map((c) => c.id).join(",")],
+    queryFn: async () => {
+      const childIds = children.map((c) => c.id);
+      if (childIds.length === 0) return [];
+      const { data, error } = await supabase.from("zone_progress").select("*").in("child_id", childIds);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && children.length > 0,
+  });
+
   const deleteChild = async (id: string) => {
     const { error } = await supabase.from("child_profiles").delete().eq("id", id);
 
@@ -123,72 +173,14 @@ export default function ParentDashboard() {
     toast.success(`${name}'s profile removed`);
   };
 
-  const updateLearningMode = async (childId: string, mode: LearningMode) => {
-    const currentChild = children.find((c) => c.id === childId);
-    const rawMode = ((currentChild as any)?.learning_mode as string) || "standard";
-    const currentMode: LearningMode = (rawMode in LEARNING_MODE_CONFIG ? rawMode : "standard") as LearningMode;
-
-    if (currentMode === mode) return;
-
-    setResettingMode(childId);
-
-    try {
-      const { error: updateError } = await supabase
-        .from("child_profiles")
-        .update({ learning_mode: mode } as any)
-        .eq("id", childId);
-
-      if (updateError) {
-        console.error("Failed to update learning mode:", updateError);
-        toast.error("Failed to update learning mode");
-        return;
-      }
-
-      const { error: deleteProgressError } = await supabase.from("mission_progress").delete().eq("child_id", childId);
-
-      if (deleteProgressError) {
-        console.error("Failed to reset mission progress:", deleteProgressError);
-        toast.error("Failed to reset mission progress");
-        return;
-      }
-
-      queryClient.removeQueries({ queryKey: ["mission_progress", childId] });
-      queryClient.removeQueries({ queryKey: ["child", childId] });
-
-      await queryClient.invalidateQueries({ queryKey: ["children", user?.id] });
-      await queryClient.invalidateQueries({
-        queryKey: ["all_mission_progress", user?.id],
-      });
-      await queryClient.invalidateQueries({ queryKey: ["mission_progress", childId] });
-      await queryClient.invalidateQueries({ queryKey: ["child", childId] });
-
-      await queryClient.refetchQueries({
-        queryKey: ["all_mission_progress", user?.id],
-      });
-      await queryClient.refetchQueries({ queryKey: ["children", user?.id] });
-
-      toast.success(
-        `Learning mode changed to ${LEARNING_MODE_CONFIG[mode].label}. Missions have been restarted for this mode.`,
-      );
-    } catch (err) {
-      console.error("Unexpected learning mode reset error:", err);
-      toast.error("Something went wrong while changing learning mode");
-    } finally {
-      setResettingMode(null);
-    }
-  };
-
   const getChildMissions = (childId: string) => allProgress.filter((p) => p.child_id === childId);
-
   const getChildBadges = (childId: string) => allBadges.filter((b) => b.child_id === childId);
+  const getChildZones = (childId: string) => allZoneProgress.filter((z) => z.child_id === childId);
 
   // Filtered data based on selected child
   const filteredChildren = selectedChildId ? children.filter((c) => c.id === selectedChildId) : children;
   const filteredProgress = selectedChildId ? allProgress.filter((p) => p.child_id === selectedChildId) : allProgress;
   const filteredBadges = selectedChildId ? allBadges.filter((b) => b.child_id === selectedChildId) : allBadges;
-
-  const totalMissionsDone = allProgress.filter((p) => p.status === "completed").length;
-  const totalBadges = allBadges.length;
 
   // --- Areas needing review (filtered) ---
   const areasNeedingReview = useMemo(() => {
@@ -217,34 +209,25 @@ export default function ParentDashboard() {
     return weakAreas.slice(0, 4);
   }, [filteredChildren, filteredProgress]);
 
-  // --- New: Conversation starters based on weak areas ---
-  const conversationStarter = useMemo(() => {
-    if (areasNeedingReview.length === 0) return null;
-    const topic = areasNeedingReview[0];
-    const starters: Record<string, string> = {
-      "Spot the Scam!": "Ask your child: 'If you got a message saying you won a prize, what would you do?'",
-      "Password Power": "Try this: 'Can you make up a silly sentence to use as a password? Like PurpleDinosaur-Eats-Pizza42!'",
-      "Safe Sites Explorer": "Ask: 'How can you tell if a website is safe before clicking?'",
-      "Secret Keeper": "Discuss: 'What information should we never share online with strangers?'",
-      "Malware Monsters": "Ask: 'What would you do if a pop-up said your tablet has a virus?'",
-      "Phishy Messages": "Try: 'Let's look at an email together — can you spot anything suspicious?'",
-    };
-    return starters[topic.missionTitle] || `Talk with your child about "${topic.missionTitle}" — they could use some extra practice!`;
-  }, [areasNeedingReview]);
-
   // --- Certificate progress (filtered) ---
   const certProgress = useMemo(() => {
     const totalBadgesNeeded = ALL_BADGES.length;
     const uniqueEarned = new Set(filteredBadges.map((b) => b.badge_id)).size;
-    return { earned: uniqueEarned, total: totalBadgesNeeded, percent: totalBadgesNeeded > 0 ? Math.round((uniqueEarned / totalBadgesNeeded) * 100) : 0 };
+    return {
+      earned: uniqueEarned,
+      total: totalBadgesNeeded,
+      percent: totalBadgesNeeded > 0 ? Math.round((uniqueEarned / totalBadgesNeeded) * 100) : 0,
+    };
   }, [filteredBadges]);
 
   // --- Recent badges (filtered, last 5) ---
   const recentBadges = useMemo(() => {
-    return [...filteredBadges].sort((a, b) => new Date(b.earned_at).getTime() - new Date(a.earned_at).getTime()).slice(0, 5);
+    return [...filteredBadges]
+      .sort((a, b) => new Date(b.earned_at).getTime() - new Date(a.earned_at).getTime())
+      .slice(0, 5);
   }, [filteredBadges]);
 
-  // --- New: Per-child learning summary ---
+  // --- Per-child summary ---
   const getChildSummary = (childId: string) => {
     const childMissions = getChildMissions(childId);
     const completedMissions = childMissions.filter((m) => m.status === "completed");
@@ -262,12 +245,22 @@ export default function ParentDashboard() {
       const mission = MISSIONS.find((mi) => mi.id === m.mission_id);
       if (!mission) continue;
       const ratio = m.max_score > 0 ? m.score / m.max_score : 0;
-      if (ratio > bestScore) { bestScore = ratio; strongestTopic = mission.title; }
-      if (ratio < worstScore) { worstScore = ratio; needsReviewTopic = mission.title; }
+      if (ratio > bestScore) {
+        bestScore = ratio;
+        strongestTopic = mission.title;
+      }
+      if (ratio < worstScore) {
+        worstScore = ratio;
+        needsReviewTopic = mission.title;
+      }
     }
 
     return { completedCount: completedMissions.length, totalStars, strongestTopic, needsReviewTopic };
   };
+
+  // --- Family totals ---
+  const familyXP = useMemo(() => children.reduce((sum, c) => sum + (c.points || 0), 0), [children]);
+  const familyMissions = allProgress.filter((p) => p.status === "completed").length;
 
   if (!user) return null;
 
@@ -288,7 +281,35 @@ export default function ParentDashboard() {
           </Button>
         </motion.div>
 
-        {/* Child Switcher — directly under header */}
+        {/* Family Hero Report */}
+        {children.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-6 shadow-card"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                  <Sparkles className="h-4 w-4" /> Family Hero Report
+                </div>
+                <h2 className="mt-1 text-2xl font-bold md:text-3xl">
+                  Your family has completed {familyMissions} mission{familyMissions === 1 ? "" : "s"}! 🚀
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {children.length} hero{children.length === 1 ? "" : "es"} • {allBadges.length} badge
+                  {allBadges.length === 1 ? "" : "s"} earned
+                </p>
+              </div>
+              <div className="rounded-2xl bg-gradient-to-br from-cyan-400/20 to-blue-500/20 px-6 py-4 text-center">
+                <div className="text-3xl font-bold text-primary">{familyXP.toLocaleString()}</div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total Family XP</div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Child Switcher */}
         {children.length > 1 && (
           <div className="mb-6 flex flex-wrap items-center gap-2">
             <span className="mr-1 text-sm font-medium text-muted-foreground">Viewing:</span>
@@ -318,6 +339,7 @@ export default function ParentDashboard() {
           </div>
         )}
 
+        {/* Stat boxes with light gradient */}
         <motion.div
           className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4"
           variants={container}
@@ -333,7 +355,9 @@ export default function ParentDashboard() {
             },
             {
               label: "Active Today",
-              value: filteredChildren.filter((c) => c.last_activity_date === new Date().toISOString().split("T")[0]).length,
+              value: filteredChildren.filter(
+                (c) => c.last_activity_date === new Date().toISOString().split("T")[0],
+              ).length,
               icon: TrendingUp,
               color: "text-secondary",
             },
@@ -350,17 +374,19 @@ export default function ParentDashboard() {
               color: "text-cyber-teal",
             },
           ].map((s: any) => (
-            <motion.div key={s.label} variants={fadeUp} className="rounded-2xl border bg-card p-5 shadow-card">
+            <motion.div
+              key={s.label}
+              variants={fadeUp}
+              className="rounded-2xl border bg-gradient-to-br from-cyan-50 to-blue-50 p-5 shadow-card dark:from-cyan-950/20 dark:to-blue-950/20"
+            >
               <s.icon className={`mb-2 h-6 w-6 ${s.color}`} />
               <div className="text-2xl font-bold">{s.value}</div>
               <div className="text-sm text-muted-foreground">{s.label}</div>
-              {s.subtext && <div className="mt-1 text-[10px] text-muted-foreground">{s.subtext}</div>}
             </motion.div>
           ))}
         </motion.div>
 
         <div className="space-y-8">
-
           {/* Children Section */}
           <div>
             <div className="mb-4 flex items-center justify-between">
@@ -386,69 +412,260 @@ export default function ParentDashboard() {
                   Add your first child to start their cybersecurity learning journey!
                 </p>
                 <Button variant="hero" className="mt-4" asChild>
-                  <Link to="/create-child"><Plus className="mr-1 h-4 w-4" /> Add First Child</Link>
+                  <Link to="/create-child">
+                    <Plus className="mr-1 h-4 w-4" /> Add First Child
+                  </Link>
                 </Button>
               </motion.div>
             ) : (
               <motion.div className="grid gap-4 sm:grid-cols-2" variants={container} initial="hidden" animate="show">
                 {children.map((child) => {
                   const childBadges = getChildBadges(child.id);
+                  const childMissions = getChildMissions(child.id);
+                  const childZones = getChildZones(child.id);
                   const summary = getChildSummary(child.id);
+                  const isExpanded = expandedChildId === child.id;
+                  const isNewKid = summary.completedCount === 0;
+                  const prompts = getTalkPrompts(child.name, summary.strongestTopic, summary.needsReviewTopic);
+
+                  // Determine current world/zone
+                  const sortedZones = [...childZones].sort(
+                    (a, b) => new Date(b.unlocked_at || 0).getTime() - new Date(a.unlocked_at || 0).getTime(),
+                  );
+                  const currentZone = sortedZones[0];
+                  const zonesCompleted = childZones.filter((z) => z.status === "completed").length;
+                  const totalZones = Math.max(childZones.length, 8);
+
+                  // Recent missions
+                  const recentMissions = [...childMissions]
+                    .filter((m) => m.completed_at)
+                    .sort(
+                      (a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime(),
+                    )
+                    .slice(0, 3);
 
                   return (
                     <motion.div
                       key={child.id}
                       variants={fadeUp}
-                      className="rounded-2xl border bg-card p-5 shadow-card"
+                      className="overflow-hidden rounded-2xl border bg-card shadow-card transition-shadow hover:shadow-lg"
                     >
-                      <div className="flex items-center gap-4">
-                        <HeroAvatar
-                          avatarConfig={(child as any).avatar_config as Record<string, any> | null}
-                          size={48}
-                          fallbackEmoji={child.avatar}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="font-bold">{child.name}</h3>
-                            <Badge variant="secondary" className="border-0">
-                              Level {child.level}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">Age {child.age}</span>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedChildId(isExpanded ? null : child.id)}
+                        className="w-full p-5 text-left"
+                      >
+                        <div className="flex items-center gap-4">
+                          <HeroAvatar
+                            avatarConfig={(child as any).avatar_config as Record<string, any> | null}
+                            size={48}
+                            fallbackEmoji={child.avatar}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="font-bold">{child.name}</h3>
+                              <Badge variant="secondary" className="border-0">
+                                Level {child.level}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">Age {child.age}</span>
+                            </div>
+                            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                              <span>⭐ {child.points} pts</span>
+                              <span>🏅 {childBadges.length} badges</span>
+                              <span>🔥 {child.streak} streak</span>
+                            </div>
                           </div>
-                          <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                            <span>⭐ {child.points} pts</span>
-                            <span>🏅 {childBadges.length} badges</span>
-                            <span>🔥 {child.streak} streak</span>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteTarget({ id: child.id, name: child.name });
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                            {isExpanded ? (
+                              <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                            ) : (
+                              <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                            )}
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => setDeleteTarget({ id: child.id, name: child.name })}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
 
-                      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                        <div className="rounded-lg bg-primary/5 p-2 text-center">
-                          <div className="text-lg font-bold text-primary">{summary.completedCount}</div>
-                          <div className="text-[10px] text-muted-foreground">Missions</div>
-                        </div>
-                        <div className="rounded-lg bg-accent/5 p-2 text-center">
-                          <div className="text-lg font-bold text-accent">{summary.totalStars} ⭐</div>
-                          <div className="text-[10px] text-muted-foreground">Stars</div>
-                        </div>
-                        <div className="rounded-lg bg-secondary/10 p-2 text-center">
-                          <div className="truncate text-xs font-semibold text-secondary">{summary.strongestTopic}</div>
-                          <div className="text-[10px] text-muted-foreground">Strongest</div>
-                        </div>
-                        <div className="rounded-lg bg-destructive/5 p-2 text-center">
-                          <div className="truncate text-xs font-semibold text-destructive">{summary.needsReviewTopic}</div>
-                          <div className="text-[10px] text-muted-foreground">Needs Review</div>
-                        </div>
-                      </div>
+                        {/* Empty state for new kids */}
+                        {isNewKid ? (
+                          <div className="mt-4 rounded-xl bg-gradient-to-br from-primary/5 to-accent/5 p-4 text-center">
+                            <Rocket className="mx-auto mb-2 h-8 w-8 text-primary" />
+                            <p className="text-sm font-semibold">
+                              {child.name} is just getting started! 🌟
+                            </p>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              Their first adventure awaits.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                            <div className="rounded-lg bg-primary/5 p-2 text-center">
+                              <div className="text-lg font-bold text-primary">{summary.completedCount}</div>
+                              <div className="text-[10px] text-muted-foreground">Missions</div>
+                            </div>
+                            <div className="rounded-lg bg-accent/5 p-2 text-center">
+                              <div className="text-lg font-bold text-accent">{summary.totalStars} ⭐</div>
+                              <div className="text-[10px] text-muted-foreground">Stars</div>
+                            </div>
+                            <div className="rounded-lg bg-secondary/10 p-2 text-center">
+                              <div className="break-words text-[11px] font-semibold leading-tight text-secondary">
+                                {summary.strongestTopic}
+                              </div>
+                              <div className="mt-1 text-[10px] text-muted-foreground">Strongest</div>
+                            </div>
+                            <div className="rounded-lg bg-destructive/10 p-2 text-center">
+                              <div className="break-words text-[11px] font-semibold leading-tight text-destructive">
+                                {summary.needsReviewTopic}
+                              </div>
+                              <div className="mt-1 text-[10px] text-muted-foreground">Needs Review</div>
+                              <div className="mt-0.5 text-[9px] italic text-muted-foreground">
+                                {child.name} struggled here — replay together
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </button>
+
+                      <AnimatePresence initial={false}>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25 }}
+                            className="overflow-hidden border-t bg-muted/20"
+                          >
+                            <div className="space-y-4 p-5">
+                              {/* World Progress */}
+                              <div>
+                                <h4 className="mb-2 flex items-center gap-1.5 text-sm font-bold">
+                                  <MapIcon className="h-4 w-4 text-primary" /> World Progress
+                                </h4>
+                                {currentZone ? (
+                                  <>
+                                    <p className="text-sm text-muted-foreground">
+                                      🌍 {currentZone.continent_id.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} —{" "}
+                                      Zone: {currentZone.zone_id.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                                    </p>
+                                    <div className="mt-2 flex items-center gap-2">
+                                      <Progress
+                                        value={totalZones > 0 ? (zonesCompleted / totalZones) * 100 : 0}
+                                        className="h-2 flex-1"
+                                      />
+                                      <span className="whitespace-nowrap text-xs text-muted-foreground">
+                                        {zonesCompleted}/{totalZones} zones
+                                      </span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <p className="text-sm text-muted-foreground">No worlds started yet.</p>
+                                )}
+                              </div>
+
+                              {/* Recent Activity */}
+                              <div>
+                                <h4 className="mb-2 text-sm font-bold">📝 Recent Activity</h4>
+                                {recentMissions.length === 0 ? (
+                                  <p className="text-xs text-muted-foreground">
+                                    No missions completed yet — encourage them to start!
+                                  </p>
+                                ) : (
+                                  <ul className="space-y-1.5">
+                                    {recentMissions.map((m) => {
+                                      const mission = MISSIONS.find((mi) => mi.id === m.mission_id);
+                                      const date = m.completed_at
+                                        ? new Date(m.completed_at).toLocaleDateString(undefined, {
+                                            month: "short",
+                                            day: "numeric",
+                                          })
+                                        : "—";
+                                      return (
+                                        <li
+                                          key={m.id}
+                                          className="flex items-center justify-between rounded-lg bg-card px-3 py-2 text-xs"
+                                        >
+                                          <span className="font-medium">{mission?.title ?? m.mission_id}</span>
+                                          <span className="text-muted-foreground">
+                                            {date} • +{m.score} XP
+                                          </span>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                )}
+                              </div>
+
+                              {/* Badges Earned */}
+                              <div>
+                                <h4 className="mb-2 text-sm font-bold">🏅 Badges Earned</h4>
+                                {childBadges.length === 0 ? (
+                                  <p className="text-xs text-muted-foreground">No badges yet — keep going! 🌟</p>
+                                ) : (
+                                  <div className="flex flex-wrap gap-2">
+                                    {childBadges.map((b) => (
+                                      <div
+                                        key={b.id}
+                                        className="flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-xs"
+                                        title={b.badge_name}
+                                      >
+                                        <span>{b.badge_icon}</span>
+                                        <span className="font-semibold">{b.badge_name}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Streak */}
+                              <div className="rounded-lg bg-orange-500/10 p-3 text-sm">
+                                🔥 {child.streak}-day streak!{" "}
+                                <span className="text-muted-foreground">
+                                  Last played:{" "}
+                                  {child.last_activity_date
+                                    ? new Date(child.last_activity_date).toLocaleDateString(undefined, {
+                                        month: "short",
+                                        day: "numeric",
+                                      })
+                                    : "Not yet"}
+                                </span>
+                              </div>
+
+                              {/* Talk About It */}
+                              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+                                <h4 className="mb-2 flex items-center gap-1.5 text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                                  💬 Talk About It
+                                </h4>
+                                <ul className="space-y-1.5 text-xs text-foreground/80">
+                                  {prompts.map((p, i) => (
+                                    <li key={i} className="leading-relaxed">
+                                      • {p}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+
+                              <div className="flex justify-end">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setExpandedChildId(null)}
+                                >
+                                  <ChevronUp className="mr-1 h-4 w-4" /> Close
+                                </Button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </motion.div>
                   );
                 })}
@@ -456,15 +673,22 @@ export default function ParentDashboard() {
             )}
           </div>
 
-          {/* Mission Completion — full width */}
+          {/* Mission Completion */}
           {children.length > 0 && (
             <div>
               <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
                 <BarChart3 className="h-5 w-5 text-secondary" /> Mission Completion
               </h2>
-              <motion.div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" variants={container} initial="hidden" animate="show">
+              <motion.div
+                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                variants={container}
+                initial="hidden"
+                animate="show"
+              >
                 {MISSIONS.map((m) => {
-                  const completed = filteredProgress.filter((p) => p.mission_id === m.id && p.status === "completed").length;
+                  const completed = filteredProgress.filter(
+                    (p) => p.mission_id === m.id && p.status === "completed",
+                  ).length;
                   const Icon = m.icon;
 
                   return (
@@ -497,34 +721,24 @@ export default function ParentDashboard() {
               </h2>
               <div className="grid gap-3 sm:grid-cols-2">
                 {areasNeedingReview.map((area) => (
-                  <div key={area.missionTitle} className="rounded-2xl border bg-card p-4 shadow-card">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold">{area.missionTitle}</span>
-                      <Badge variant="outline" className="text-[10px]">
+                  <div
+                    key={area.missionTitle}
+                    className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 shadow-card"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="break-words text-sm font-semibold">{area.missionTitle}</span>
+                      <Badge variant="outline" className="shrink-0 text-[10px]">
                         {area.status}
                       </Badge>
                     </div>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {area.childNames.join(", ")}
+                    <p className="mt-1 text-xs text-muted-foreground">{area.childNames.join(", ")}</p>
+                    <p className="mt-1 text-[11px] italic text-muted-foreground">
+                      {area.childNames.length === 1 ? area.childNames[0] : "These heroes"} struggled here — consider
+                      replaying this zone together.
                     </p>
                   </div>
                 ))}
               </div>
-            </motion.div>
-          )}
-
-          {/* Conversation Starter */}
-          {conversationStarter && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="rounded-2xl border bg-primary/5 p-5"
-            >
-              <h3 className="mb-2 flex items-center gap-2 font-bold text-primary">
-                <MessageCircle className="h-4 w-4" /> Conversation Starter
-              </h3>
-              <p className="text-sm leading-relaxed text-muted-foreground">{conversationStarter}</p>
             </motion.div>
           )}
 
@@ -543,7 +757,8 @@ export default function ParentDashboard() {
               <span className="text-sm font-semibold text-primary">{certProgress.percent}%</span>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              {certProgress.earned}/{certProgress.total} badges earned{selectedChildId ? "" : " across all children"}.
+              {certProgress.earned}/{certProgress.total} badges earned
+              {selectedChildId ? "" : " across all children"}.
               {certProgress.percent < 100
                 ? ` ${certProgress.total - certProgress.earned} more to unlock the CyberGuardian Certificate!`
                 : " 🎉 Certificate unlocked!"}
@@ -552,11 +767,7 @@ export default function ParentDashboard() {
 
           {/* Recent Badges */}
           {recentBadges.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
               <h3 className="mb-3 flex items-center gap-2 text-xl font-bold">
                 <Star className="h-5 w-5 text-accent" /> Recent Badges
               </h3>
@@ -582,11 +793,13 @@ export default function ParentDashboard() {
 
           {/* Tips for Parents */}
           <div className="rounded-2xl border bg-primary/5 p-5">
-            <h3 className="mb-2 font-bold text-primary">💡 Tips for Parents</h3>
+            <h3 className="mb-2 flex items-center gap-2 font-bold text-primary">
+              <MessageCircle className="h-4 w-4" /> Tips for Parents
+            </h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>• Review progress weekly</li>
               <li>• Celebrate badge achievements</li>
-              <li>• Use conversation starters above</li>
+              <li>• Use the conversation starters in each child card</li>
               <li>• Adjust learning mode from child settings</li>
             </ul>
           </div>
@@ -599,7 +812,8 @@ export default function ParentDashboard() {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove {deleteTarget?.name}'s profile?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete {deleteTarget?.name}'s profile and all their progress, badges, and points. This cannot be undone.
+              This will permanently delete {deleteTarget?.name}'s profile and all their progress, badges, and points.
+              This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
