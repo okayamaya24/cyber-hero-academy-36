@@ -487,11 +487,6 @@ export default function ParentDashboard() {
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
-                            {isExpanded ? (
-                              <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                            ) : (
-                              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                            )}
                           </div>
                         </div>
 
