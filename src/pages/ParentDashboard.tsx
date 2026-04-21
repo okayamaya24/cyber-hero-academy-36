@@ -128,7 +128,7 @@ export default function ParentDashboard() {
     enabled: !!user && children.length > 0,
   });
 
-  const { data: allBadges = [] } = useQuery({
+  const { data: allBadgesRaw = [] } = useQuery({
     queryKey: ["all_badges", user?.id, children.map((c) => c.id).join(",")],
     queryFn: async () => {
       const childIds = children.map((c) => c.id);
@@ -141,6 +141,12 @@ export default function ParentDashboard() {
     },
     enabled: !!user && children.length > 0,
   });
+
+  // Ensure summary totals always match per-card counts (filter out any orphaned badges)
+  const allBadges = useMemo(() => {
+    const validIds = new Set(children.map((c) => c.id));
+    return allBadgesRaw.filter((b) => validIds.has(b.child_id));
+  }, [allBadgesRaw, children]);
 
   const { data: allZoneProgress = [] } = useQuery({
     queryKey: ["all_zone_progress", user?.id, children.map((c) => c.id).join(",")],
