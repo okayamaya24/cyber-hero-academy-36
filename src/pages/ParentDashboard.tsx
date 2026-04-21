@@ -511,14 +511,16 @@ export default function ParentDashboard() {
                               <div className="text-lg font-bold text-accent">{summary.totalStars} ⭐</div>
                               <div className="text-[10px] text-muted-foreground">Stars</div>
                             </div>
-                            <div className="w-auto rounded-lg bg-secondary/10 p-2 text-center">
-                              <div className="w-auto whitespace-normal break-words text-xs font-semibold leading-tight text-secondary">
+                          </div>
+                          <div className="mt-2 grid grid-cols-2 gap-2">
+                            <div className="min-w-0 rounded-lg bg-secondary/10 p-2 text-center">
+                              <div className="min-w-0 text-xs font-semibold leading-tight text-secondary" style={{overflowWrap:'anywhere',wordBreak:'break-word',whiteSpace:'normal'}}>
                                 {summary.strongestTopic}
                               </div>
                               <div className="mt-1 text-[10px] text-muted-foreground">Strongest</div>
                             </div>
-                            <div className="w-auto rounded-lg bg-destructive/10 p-2 text-center">
-                              <div className="w-auto whitespace-normal break-words text-xs font-semibold leading-tight text-destructive">
+                            <div className="min-w-0 rounded-lg bg-destructive/10 p-2 text-center">
+                              <div className="min-w-0 text-xs font-semibold leading-tight text-destructive" style={{overflowWrap:'anywhere',wordBreak:'break-word',whiteSpace:'normal'}}>
                                 {summary.needsReviewTopic}
                               </div>
                               <div className="mt-1 text-[10px] text-muted-foreground">Needs Review</div>
