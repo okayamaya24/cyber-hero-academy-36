@@ -686,6 +686,37 @@ export default function ParentDashboard() {
             )}
           </div>
 
+          {/* This Week's Conversation Starters (standalone) */}
+          {children.length > 0 && (() => {
+            const familyPrompts: { name: string; prompt: string }[] = [];
+            for (const child of children) {
+              const s = getChildSummary(child.id);
+              if (s.completedCount === 0) continue;
+              const ps = getTalkPrompts(child.name, s.strongestTopic, s.needsReviewTopic);
+              if (ps[0]) familyPrompts.push({ name: child.name, prompt: ps[0] });
+              if (familyPrompts.length >= 3) break;
+            }
+            if (familyPrompts.length === 0) return null;
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-5 shadow-card dark:bg-teal-950/20"
+              >
+                <h3 className="mb-3 flex items-center gap-2 text-lg font-bold text-teal-700 dark:text-teal-300">
+                  💬 This Week's Conversation Starters
+                </h3>
+                <ul className="space-y-2 text-sm text-foreground/80">
+                  {familyPrompts.map((fp, i) => (
+                    <li key={i} className="leading-relaxed">
+                      • {fp.prompt}
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            );
+          })()}
+
           {/* Mission Completion */}
           {children.length > 0 && (
             <div>
