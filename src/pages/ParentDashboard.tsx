@@ -128,7 +128,7 @@ export default function ParentDashboard() {
     enabled: !!user && children.length > 0,
   });
 
-  const { data: allBadges = [] } = useQuery({
+  const { data: allBadgesRaw = [] } = useQuery({
     queryKey: ["all_badges", user?.id, children.map((c) => c.id).join(",")],
     queryFn: async () => {
       const childIds = children.map((c) => c.id);
@@ -141,6 +141,12 @@ export default function ParentDashboard() {
     },
     enabled: !!user && children.length > 0,
   });
+
+  // Ensure summary totals always match per-card counts (filter out any orphaned badges)
+  const allBadges = useMemo(() => {
+    const validIds = new Set(children.map((c) => c.id));
+    return allBadgesRaw.filter((b) => validIds.has(b.child_id));
+  }, [allBadgesRaw, children]);
 
   const { data: allZoneProgress = [] } = useQuery({
     queryKey: ["all_zone_progress", user?.id, children.map((c) => c.id).join(",")],
@@ -505,14 +511,14 @@ export default function ParentDashboard() {
                               <div className="text-lg font-bold text-accent">{summary.totalStars} ⭐</div>
                               <div className="text-[10px] text-muted-foreground">Stars</div>
                             </div>
-                            <div className="min-w-fit rounded-lg bg-secondary/10 p-2 text-center">
-                              <div className="whitespace-normal break-words text-xs font-semibold leading-tight text-secondary">
+                            <div className="w-auto rounded-lg bg-secondary/10 p-2 text-center">
+                              <div className="w-auto whitespace-normal break-words text-xs font-semibold leading-tight text-secondary">
                                 {summary.strongestTopic}
                               </div>
                               <div className="mt-1 text-[10px] text-muted-foreground">Strongest</div>
                             </div>
-                            <div className="min-w-fit rounded-lg bg-destructive/10 p-2 text-center">
-                              <div className="whitespace-normal break-words text-xs font-semibold leading-tight text-destructive">
+                            <div className="w-auto rounded-lg bg-destructive/10 p-2 text-center">
+                              <div className="w-auto whitespace-normal break-words text-xs font-semibold leading-tight text-destructive">
                                 {summary.needsReviewTopic}
                               </div>
                               <div className="mt-1 text-[10px] text-muted-foreground">Needs Review</div>
@@ -679,6 +685,37 @@ export default function ParentDashboard() {
               </motion.div>
             )}
           </div>
+
+          {/* This Week's Conversation Starters (standalone) */}
+          {children.length > 0 && (() => {
+            const familyPrompts: { name: string; prompt: string }[] = [];
+            for (const child of children) {
+              const s = getChildSummary(child.id);
+              if (s.completedCount === 0) continue;
+              const ps = getTalkPrompts(child.name, s.strongestTopic, s.needsReviewTopic);
+              if (ps[0]) familyPrompts.push({ name: child.name, prompt: ps[0] });
+              if (familyPrompts.length >= 3) break;
+            }
+            if (familyPrompts.length === 0) return null;
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-5 shadow-card dark:bg-teal-950/20"
+              >
+                <h3 className="mb-3 flex items-center gap-2 text-lg font-bold text-teal-700 dark:text-teal-300">
+                  💬 This Week's Conversation Starters
+                </h3>
+                <ul className="space-y-2 text-sm text-foreground/80">
+                  {familyPrompts.map((fp, i) => (
+                    <li key={i} className="leading-relaxed">
+                      • {fp.prompt}
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            );
+          })()}
 
           {/* Mission Completion */}
           {children.length > 0 && (
