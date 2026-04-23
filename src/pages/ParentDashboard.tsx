@@ -501,7 +501,8 @@ export default function ParentDashboard() {
                               Their first adventure awaits.
                             </p>
                           </div>
-                        ) : (
+                          ) : (
+                          <>
                           <div className="mt-3 grid grid-cols-2 gap-2">
                             <div className="rounded-lg bg-primary/5 p-2 text-center">
                               <div className="text-lg font-bold text-primary">{summary.completedCount}</div>
