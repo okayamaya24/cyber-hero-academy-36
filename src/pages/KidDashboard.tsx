@@ -24,6 +24,7 @@ import { GUIDE_REGISTRY } from "@/data/guides";
 import robotGuide from "@/assets/robot-guide.png";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import DailyChallenge from "@/components/DailyChallenge";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
 const container = {
   hidden: {},
@@ -103,6 +104,8 @@ export default function KidDashboard() {
   const { user, activeChildId, setActiveChildId } = useAuth();
   const navigate = useNavigate();
   const [liveEvents, setLiveEvents] = useState<EventMission[]>([]);
+  const { data: platformSettings } = usePlatformSettings();
+  const worldMapEnabled = platformSettings?.world_map_enabled ?? false;
 
   useEffect(() => {
     if (!user) {
@@ -400,9 +403,11 @@ export default function KidDashboard() {
                 {modeConfig.emoji} {modeConfig.label}
               </Badge>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/world-map">🗺️ World Map</Link>
-                </Button>
+                {worldMapEnabled && (
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/world-map">🗺️ World Map</Link>
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" asChild>
                   <Link to="/missions">View All</Link>
                 </Button>

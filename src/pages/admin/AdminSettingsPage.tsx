@@ -15,6 +15,7 @@ const flags = [
   { key: "onboarding_enabled", label: "New user onboarding flow", description: "Show onboarding for new signups" },
   { key: "school_accounts_enabled", label: "School accounts allowed", description: "Allow teachers to sign up" },
   { key: "maintenance_mode", label: "Maintenance Mode", description: "All non-admin users see a maintenance page" },
+  { key: "world_map_enabled", label: "World Map", description: "Show the World Map tab in Continue Learning on the kid dashboard" },
 ];
 
 export default function AdminSettingsPage() {
