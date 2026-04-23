@@ -530,6 +530,7 @@ export default function ParentDashboard() {
                               </div>
                             </div>
                           </div>
+                          </>
                         )}
 
                         {/* Expand toggle chevron */}
