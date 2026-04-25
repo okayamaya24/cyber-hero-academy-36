@@ -1,12 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, Gamepad2, BarChart3, Home, LogIn, UserPlus, BookOpen, LogOut } from "lucide-react";
+import { Shield, Gamepad2, BarChart3, Home, LogIn, UserPlus, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 
 const publicItems = [
   { label: "Home", to: "/", icon: Home },
-  { label: "For Parents", to: "/for-parents", icon: BookOpen },
 ];
 
 const kidItems = [
