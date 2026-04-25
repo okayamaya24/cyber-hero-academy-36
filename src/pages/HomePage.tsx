@@ -71,7 +71,7 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-[#00d4ff]/30 bg-[#00d4ff]/10 px-4 py-2 text-sm font-bold text-[#00d4ff]">
-              ⭐ For Kids Ages 5–12 · Free to Play!
+              ⭐ For Kids Ages 5–12
             </div>
 
             <h1 className="text-5xl font-black leading-none text-white md:text-7xl">
