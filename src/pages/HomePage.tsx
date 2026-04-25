@@ -2,16 +2,7 @@ import { motion } from "framer-motion";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { Shield, Star, Gamepad2, Users, Award, BookOpen } from "lucide-react";
+import { Shield, Star, Gamepad2, Users, Award } from "lucide-react";
 import heroKidsGroup from "@/assets/hero-kids-group.png";
 import heroCharacter from "@/assets/hero-character.png";
 import robotGuide from "@/assets/robot-guide.png";
@@ -101,88 +92,6 @@ export default function HomePage() {
               <Button variant="hero" size="xl" asChild>
                 <Link to="/signup">Start Adventure</Link>
               </Button>
-
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="xl">
-                    <BookOpen className="mr-2 h-5 w-5" />
-                    For Parents
-                  </Button>
-                </DialogTrigger>
-
-                <DialogContent className="w-[92vw] max-w-4xl h-[85vh] max-h-[85vh] rounded-3xl overflow-hidden p-0 flex flex-col">
-                  <div className="flex h-full min-h-0 flex-col">
-                    <DialogHeader className="shrink-0 border-b px-6 py-5 text-left">
-                      <DialogTitle className="text-2xl font-bold">For Parents</DialogTitle>
-                      <DialogDescription className="text-base text-muted-foreground">
-                        Cyber Hero Academy is an interactive cybersecurity learning platform designed for kids ages
-                        5–12.
-                      </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="mb-2 text-lg font-bold">What kids learn</h3>
-                          <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li>🛡 How to spot phishing scams and suspicious messages</li>
-                            <li>🔐 How to create strong passwords</li>
-                            <li>🌐 How to identify safe websites</li>
-                            <li>🔒 How to protect personal information online</li>
-                            <li>💻 How to avoid unsafe downloads and malware</li>
-                          </ul>
-                        </div>
-
-                        <div>
-                          <h3 className="mb-2 text-lg font-bold">How it works</h3>
-                          <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li>1. Parents create a secure account</li>
-                            <li>2. Add one or more child profiles</li>
-                            <li>3. Kids complete missions and mini-games</li>
-                            <li>4. Parents track progress, points, and badges</li>
-                          </ul>
-                        </div>
-
-                        <div>
-                          <h3 className="mb-2 text-lg font-bold">Parent dashboard features</h3>
-                          <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li>📊 Track child progress and completed missions</li>
-                            <li>🎯 Adjust learning modes and challenge levels</li>
-                            <li>🏅 View badges, rewards, and achievements</li>
-                            <li>👨‍👩‍👧 Manage child profiles in one place</li>
-                          </ul>
-                        </div>
-
-                        <div>
-                          <h3 className="mb-2 text-lg font-bold">Safe and child-friendly</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Cyber Hero Academy is designed to be parent-controlled, age-appropriate, and educational. It
-                            helps children build strong digital safety habits through guided play.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="shrink-0 border-t px-6 py-4">
-                      <div className="flex flex-wrap gap-3">
-                        <DialogClose asChild>
-                          <Button variant="outline" asChild>
-                            <Link to="/for-parents">Learn More</Link>
-                          </Button>
-                        </DialogClose>
-
-                        <Button variant="hero" asChild>
-                          <Link to="/signup">Create Parent Account</Link>
-                        </Button>
-
-                        <Button variant="outline" asChild>
-                          <Link to="/login">Parent Login</Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
             </div>
           </motion.div>
 
