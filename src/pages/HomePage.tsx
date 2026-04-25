@@ -107,17 +107,8 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-6 md:justify-start">
-              {[
-                { emoji: "🎮", text: "30+ Mini-Games" },
-                { emoji: "🏅", text: "Earn Real Badges" },
-                { emoji: "🆓", text: "100% Free" },
-              ].map((s) => (
-                <span key={s.text} className="flex items-center gap-2 text-sm text-gray-500">
-                  <span>{s.emoji}</span> {s.text}
-                </span>
-              ))}
-            </div>
+
+
           </motion.div>
 
           {/* Right: hero image */}
