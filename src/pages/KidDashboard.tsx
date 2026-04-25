@@ -206,64 +206,126 @@ export default function KidDashboard() {
         ? [recommendedMission]
         : completedMissionCards.slice(0, 2);
 
+  const xpProgress = getProgressToNextLevel(child.points);
+  const nextRankForHeader = getNextRank(child.level);
+
   return (
-    <div className="min-h-screen bg-background pb-12">
-      <div className="gradient-hero py-8">
-        <div className="container mx-auto flex flex-col items-center gap-6 px-4 sm:flex-row">
-          <motion.div
-            className="relative"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", duration: 0.6 }}
-          >
-            <HeroAvatar
-              avatarConfig={(child as any).avatar_config as Record<string, any> | null}
-              size={96}
-              fallbackEmoji={child.avatar}
-              className="rounded-full shadow-lg"
-            />
-            <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground shadow">
-              {child.level}
-            </div>
-          </motion.div>
+    <div className="min-h-screen bg-[#080c18] pb-12">
+      {/* ── GAME-STYLE HEADER ── */}
+      <div className="relative overflow-hidden border-b border-white/[0.05]" style={{ background: "linear-gradient(180deg, #0d1528 0%, #080c18 100%)" }}>
+        {/* BG effects */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-10 left-1/4 w-80 h-64 rounded-full bg-[#00d4ff]/6 blur-3xl" />
+          <div className="absolute top-0 right-1/4 w-60 h-52 rounded-full bg-[#00ff88]/4 blur-3xl" />
+          <div className="absolute inset-0 opacity-[0.022]" style={{
+            backgroundImage: "linear-gradient(rgba(0,212,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.4) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }} />
+        </div>
 
-          <motion.div
-            className="text-center text-primary-foreground sm:text-left"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <h1 className="text-2xl font-bold">Welcome, {child.name}!</h1>
-            <p className="opacity-90">
-              Level {child.level} · {getLevelRank(child.level).emoji} {getLevelRank(child.level).title}
-            </p>
-            <div className="mt-2 flex items-center gap-4">
-              <span className="flex items-center gap-1">
-                <Star className="h-4 w-4" /> {child.points} Points
-              </span>
-              <span className="flex items-center gap-1">
-                <Flame className="h-4 w-4" /> {child.streak} Day Streak
-              </span>
-            </div>
-          </motion.div>
-
-          <div className="ml-auto hidden items-center gap-3 sm:flex">
-            <motion.img
-              src={robotGuide}
-              alt="Robo Buddy"
-              className="h-28"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-primary-foreground/30 bg-card/20 text-primary-foreground hover:bg-card/30"
-              asChild
+        <div className="container relative z-10 mx-auto px-4 pt-7 pb-6">
+          <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
+            {/* Avatar with gradient ring */}
+            <motion.div
+              className="relative flex-shrink-0"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", duration: 0.6 }}
             >
-              <Link to="/edit-avatar">✏️ Customize Hero</Link>
-            </Button>
+              <div className="rounded-full p-[3px]" style={{ background: "linear-gradient(135deg, #00d4ff, #00ff88)" }}>
+                <div className="rounded-full bg-[#0d1323] p-[3px]">
+                  <HeroAvatar
+                    avatarConfig={(child as any).avatar_config as Record<string, any> | null}
+                    size={88}
+                    fallbackEmoji={child.avatar}
+                    className="rounded-full"
+                  />
+                </div>
+              </div>
+              <div
+                className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full text-sm font-black text-[#080c18] shadow-lg"
+                style={{ background: "linear-gradient(135deg, #00d4ff, #00ff88)" }}
+              >
+                {child.level}
+              </div>
+            </motion.div>
+
+            {/* Name + rank + chips */}
+            <motion.div
+              className="text-center sm:text-left"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <p className="mb-1 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#00d4ff]">⚡ Cyber Hero Academy</p>
+              <h1 className="text-2xl font-black text-white">
+                Welcome back,{" "}
+                <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(90deg, #00d4ff, #00ff88)" }}>
+                  {child.name}
+                </span>!
+              </h1>
+              <p className="mt-0.5 text-sm text-gray-400">
+                {getLevelRank(child.level).emoji} {getLevelRank(child.level).title} · Level {child.level}
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2 justify-center sm:justify-start">
+                <div className="flex items-center gap-1.5 rounded-xl border border-yellow-500/25 bg-yellow-500/8 px-3 py-1.5">
+                  <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                  <span className="text-sm font-extrabold text-yellow-400">{child.points.toLocaleString()}</span>
+                  <span className="text-[10px] text-yellow-400/60">XP</span>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-xl border border-orange-500/25 bg-orange-500/8 px-3 py-1.5">
+                  <Flame className="h-3.5 w-3.5 text-orange-400" />
+                  <span className="text-sm font-extrabold text-orange-400">{child.streak}</span>
+                  <span className="text-[10px] text-orange-400/60">{child.streak === 0 ? "start streak!" : "day streak"}</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Mascot + customize button */}
+            <div className="ml-auto hidden flex-col items-end gap-2 sm:flex">
+              <div className="flex items-end gap-3">
+                <div className="mb-1 rounded-2xl rounded-br-sm border border-[#00d4ff]/20 bg-[#0d1323]/95 px-3 py-2 text-[11px] text-gray-300 max-w-[150px]">
+                  Ready to train, {child.name}? Let's go! 💪
+                </div>
+                <motion.img
+                  src={robotGuide}
+                  alt="Robo Buddy"
+                  className="h-24 object-contain drop-shadow-[0_0_12px_rgba(0,212,255,0.3)]"
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                />
+              </div>
+              <Button
+                size="sm"
+                className="border border-[#00d4ff]/30 bg-[#00d4ff]/8 text-[#00d4ff] hover:bg-[#00d4ff]/18 transition-colors"
+                asChild
+              >
+                <Link to="/edit-avatar">✏️ Customize Hero</Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* XP Bar */}
+          <div className="mt-6 max-w-lg">
+            <div className="mb-2 flex items-center justify-between text-[11px]">
+              <span className="font-bold text-[#00d4ff]">Level {child.level}</span>
+              <span className="text-gray-600">{xpProgress.current.toLocaleString()} / {xpProgress.needed.toLocaleString()} XP to next level</span>
+              {nextRankForHeader && (
+                <span className="font-bold text-[#00ff88]">→ {nextRankForHeader.title}</span>
+              )}
+            </div>
+            <div className="h-3 w-full overflow-hidden rounded-full border border-white/5 bg-[#1a2035]">
+              <motion.div
+                className="h-full rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${xpProgress.percent}%` }}
+                transition={{ duration: 1.2, ease: "easeOut", delay: 0.4 }}
+                style={{
+                  background: "linear-gradient(90deg, #00d4ff, #00ff88)",
+                  boxShadow: "0 0 12px rgba(0,212,255,0.5)",
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -277,34 +339,18 @@ export default function KidDashboard() {
           animate="show"
         >
           {[
-            { label: "Points", value: child.points, icon: Star, color: "text-accent" },
-            {
-              label: "Games Done",
-              value: `${totalGamesCompleted}/${totalGamesOverall}`,
-              icon: Gamepad2,
-              color: "text-primary",
-            },
-            {
-              label: "Badges",
-              value: `${earnedBadges.length}/${ALL_BADGES.length}`,
-              icon: Trophy,
-              color: "text-secondary",
-            },
-            {
-              label: "Streak",
-              value: `${child.streak}🔥`,
-              icon: Zap,
-              color: "text-cyber-orange",
-            },
+            { label: "Total XP", value: child.points.toLocaleString(), icon: Star, color: "#ffd700", border: "border-yellow-500/20", bg: "bg-yellow-500/[0.07]" },
+            { label: "Games Done", value: `${totalGamesCompleted}/${totalGamesOverall}`, icon: Gamepad2, color: "#00d4ff", border: "border-[#00d4ff]/20", bg: "bg-[#00d4ff]/[0.07]" },
+            { label: "Badges", value: `${earnedBadges.length}/${ALL_BADGES.length}`, icon: Trophy, color: "#a78bfa", border: "border-purple-500/20", bg: "bg-purple-500/[0.07]" },
+            { label: "Day Streak 🔥", value: child.streak, icon: Zap, color: "#f97316", border: "border-orange-500/20", bg: "bg-orange-500/[0.07]" },
           ].map((s) => (
             <motion.div
               key={s.label}
               variants={fadeUp}
-              className="rounded-2xl border bg-card p-4 text-center shadow-card"
+              className={`rounded-2xl border ${s.border} ${s.bg} p-4 text-center`}
             >
-              <s.icon className={`mx-auto mb-2 h-6 w-6 ${s.color}`} />
-              <div className="text-2xl font-bold">{s.value}</div>
-              <div className="text-xs text-muted-foreground">{s.label}</div>
+              <p className="text-2xl font-black" style={{ color: s.color }}>{s.value}</p>
+              <p className="mt-1 text-xs text-gray-500">{s.label}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -313,42 +359,30 @@ export default function KidDashboard() {
         {(() => {
           const rank = getLevelRank(child.level);
           const nextRankData = getNextRank(child.level);
-          const progress = getProgressToNextLevel(child.points);
           return (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl border bg-card p-5 shadow-card"
+              className="rounded-2xl border border-[#00d4ff]/15 bg-[#0d1323] p-5"
             >
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">{rank.emoji}</span>
                   <div>
-                    <h3 className="font-bold text-lg">{rank.title}</h3>
-                    <p className="text-xs text-muted-foreground">{rank.description}</p>
+                    <h3 className="font-bold text-lg text-white">{rank.title}</h3>
+                    <p className="text-xs text-gray-500">{rank.description}</p>
                   </div>
                 </div>
                 {nextRankData && (
                   <div className="text-right">
-                    <p className="text-xs text-muted-foreground">Next rank</p>
-                    <p className="text-sm font-bold">
+                    <p className="text-[10px] uppercase tracking-wider text-gray-600">Next rank</p>
+                    <p className="text-sm font-bold text-[#00ff88]">
                       {nextRankData.emoji} {nextRankData.title}
                     </p>
                   </div>
                 )}
               </div>
-              {nextRankData && (
-                <div>
-                  <div className="mb-1 flex justify-between text-xs text-muted-foreground">
-                    <span>XP Progress</span>
-                    <span>
-                      {progress.current}/{progress.needed} XP
-                    </span>
-                  </div>
-                  <Progress value={progress.percent} className="h-2.5" />
-                </div>
-              )}
-              {!nextRankData && <p className="text-sm font-bold text-accent text-center">🏆 Maximum rank achieved!</p>}
+              {!nextRankData && <p className="mt-3 text-center text-sm font-bold text-[#ffd700]">🏆 Maximum rank achieved!</p>}
             </motion.div>
           );
         })()}
@@ -397,7 +431,7 @@ export default function KidDashboard() {
         {/* Continue Learning */}
         <div>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Continue Learning</h2>
+            <h2 className="text-2xl font-black text-white">Continue Learning</h2>
             <div className="flex items-center gap-2">
               <Badge className="border-0 bg-primary/10 text-xs text-primary">
                 {modeConfig.emoji} {modeConfig.label}
@@ -419,14 +453,16 @@ export default function KidDashboard() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="rounded-2xl border-2 border-dashed bg-card p-8 text-center"
+              className="rounded-2xl border border-[#00d4ff]/15 bg-[#0d1323] p-8 text-center"
             >
-              <Gamepad2 className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
-              <h3 className="text-lg font-bold">No missions started yet!</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Start your first mission to begin your cyber adventure.
-              </p>
-              <Button variant="hero" className="mt-4" asChild>
+              <Gamepad2 className="mx-auto mb-3 h-12 w-12 text-gray-600" />
+              <h3 className="text-lg font-bold text-white">No missions started yet!</h3>
+              <p className="mt-1 text-sm text-gray-500">Start your first mission to begin your cyber adventure.</p>
+              <Button
+                className="mt-4 rounded-full font-black text-[#080c18]"
+                style={{ background: "linear-gradient(90deg, #00d4ff, #00ff88)" }}
+                asChild
+              >
                 <Link to="/missions">Start First Mission 🚀</Link>
               </Button>
             </motion.div>
@@ -444,76 +480,69 @@ export default function KidDashboard() {
                   <motion.div
                     key={m.id}
                     variants={fadeUp}
-                    className={`group relative overflow-hidden rounded-2xl border-2 bg-card p-5 shadow-card transition-all hover:-translate-y-1 hover:shadow-playful ${
-                      status === "not_started" ? "opacity-90" : ""
-                    }`}
+                    className="group relative overflow-hidden rounded-2xl border border-[#00d4ff]/12 bg-[#0d1323] p-5 transition-all hover:-translate-y-1"
+                    whileHover={{ borderColor: "rgba(0,212,255,0.28)", boxShadow: "0 0 20px rgba(0,212,255,0.1)" }}
                   >
                     <div className="flex items-start gap-4">
-                      <div
-                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${m.bgColor} ${m.color}`}
-                      >
+                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${m.bgColor} ${m.color}`}>
                         <m.icon className="h-6 w-6" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-bold">{m.title}</h3>
+                          <h3 className="font-bold text-white">{m.title}</h3>
                           {status === "completed" && (
-                            <Badge className="border-0 bg-secondary text-secondary-foreground">✓ Done</Badge>
+                            <span className="rounded-full bg-[#00ff88]/15 px-2 py-0.5 text-[10px] font-bold text-[#00ff88]">✓ Done</span>
                           )}
                           {status === "in_progress" && (
-                            <Badge className="border-0 bg-accent text-accent-foreground">In Progress</Badge>
+                            <span className="rounded-full bg-[#00d4ff]/15 px-2 py-0.5 text-[10px] font-bold text-[#00d4ff]">In Progress</span>
                           )}
-                          {isRecommended && <Badge className="border-0 bg-primary/10 text-primary">Recommended</Badge>}
+                          {isRecommended && (
+                            <span className="rounded-full bg-[#ffd700]/15 px-2 py-0.5 text-[10px] font-bold text-[#ffd700]">⭐ Recommended</span>
+                          )}
                         </div>
-                        <p className="text-sm text-muted-foreground">{m.description}</p>
+                        <p className="text-sm text-gray-500">{m.description}</p>
                         <div className="mt-2 flex gap-1.5">
                           {levels.map((level) => {
                             const levelStart = (level.level - 1) * modeConfig.gamesPerLevel;
-                            const levelCompleted = Math.min(
-                              Math.max(completedGames - levelStart, 0),
-                              modeConfig.gamesPerLevel,
-                            );
+                            const levelCompleted = Math.min(Math.max(completedGames - levelStart, 0), modeConfig.gamesPerLevel);
                             const levelDone = levelCompleted >= modeConfig.gamesPerLevel;
                             return (
                               <div
                                 key={level.level}
                                 className={`flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${
-                                  levelDone
-                                    ? "bg-secondary/20 text-secondary"
-                                    : level.locked
-                                      ? "bg-muted text-muted-foreground"
-                                      : "bg-primary/10 text-primary"
+                                  levelDone ? "bg-[#00ff88]/15 text-[#00ff88]" : level.locked ? "bg-white/5 text-gray-600" : "bg-[#00d4ff]/15 text-[#00d4ff]"
                                 }`}
                               >
-                                {levelDone ? (
-                                  <CheckCircle2 className="h-2.5 w-2.5" />
-                                ) : level.locked ? (
-                                  <LockIcon className="h-2.5 w-2.5" />
-                                ) : (
-                                  <span>{level.emoji}</span>
-                                )}
+                                {levelDone ? <CheckCircle2 className="h-2.5 w-2.5" /> : level.locked ? <LockIcon className="h-2.5 w-2.5" /> : <span>{level.emoji}</span>}
                                 {level.name}
                               </div>
                             );
                           })}
                         </div>
                         <div className="mt-3">
-                          <div className="mb-1 flex justify-between text-xs">
+                          <div className="mb-1 flex justify-between text-xs text-gray-600">
                             <span>Progress</span>
-                            <span className="font-bold">
-                              {completedGames}/{totalGamesPerMission} games
-                            </span>
+                            <span className="font-bold text-gray-400">{completedGames}/{totalGamesPerMission} games</span>
                           </div>
-                          <Progress value={progress} className="h-2" />
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-[#1a2035]">
+                            <div
+                              className="h-full rounded-full transition-all duration-700"
+                              style={{ width: `${progress}%`, background: "linear-gradient(90deg, #00d4ff, #00ff88)" }}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
                     {status !== "completed" && (
-                      <Button variant="hero" size="sm" className="mt-4 w-full" asChild>
-                        <Link to={`/missions?mission=${m.id}`}>
+                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="mt-4">
+                        <Link
+                          to={`/missions?mission=${m.id}`}
+                          className="flex w-full items-center justify-center rounded-full py-2.5 text-sm font-black text-[#080c18] transition-shadow hover:shadow-[0_0_20px_rgba(0,212,255,0.4)]"
+                          style={{ background: "linear-gradient(90deg, #00d4ff, #00ff88)" }}
+                        >
                           {status === "in_progress" ? "Continue Mission →" : "Start Mission 🚀"}
                         </Link>
-                      </Button>
+                      </motion.div>
                     )}
                   </motion.div>
                 );
@@ -526,8 +555,8 @@ export default function KidDashboard() {
         <div>
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Your Badges</h2>
-              <p className="text-sm text-muted-foreground">
+              <h2 className="text-2xl font-black text-white">Your Badges 🏅</h2>
+              <p className="text-sm text-gray-500">
                 {earnedBadges.length} of {ALL_BADGES.length} badges earned
               </p>
             </div>
