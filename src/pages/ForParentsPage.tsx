@@ -53,7 +53,7 @@ export default function ForParentsPage() {
             <Button size="lg" className="bg-white text-primary font-bold hover:bg-white/90 shadow-lg" asChild>
               <Link to="/signup">Create Free Account</Link>
             </Button>
-            <Button size="lg" variant="outline" className="border-white/60 text-white hover:bg-white/10" asChild>
+            <Button size="lg" className="border-2 border-white/70 bg-transparent text-white hover:bg-white/15" asChild>
               <Link to="/login">Parent Login</Link>
             </Button>
           </motion.div>
@@ -161,7 +161,7 @@ export default function ForParentsPage() {
             <Button size="lg" className="bg-white text-primary font-bold hover:bg-white/90 shadow-lg" asChild>
               <Link to="/signup">Get Started Free</Link>
             </Button>
-            <Button size="lg" variant="outline" className="border-white/60 text-white hover:bg-white/10" asChild>
+            <Button size="lg" className="border-2 border-white/70 bg-transparent text-white hover:bg-white/15" asChild>
               <Link to="/login">Log In</Link>
             </Button>
           </div>
