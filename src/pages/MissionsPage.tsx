@@ -1280,47 +1280,27 @@ export default function MissionsPage() {
   }));
 
   const sections = [
-    { icon: "🕹️", title: "Arcade Games",     games: arcadeGames,    badge: "Arcade"      },
-    ...(tier !== "junior" ? [{ icon: "⌨️", title: "Keyboard Games", games: keyboardGames, badge: "Keyboard" }] : []),
-    { icon: "🧩", title: "Puzzle Games",      games: puzzleGames,    badge: "Puzzle"      },
-    { icon: "🎯", title: "Sort & Decide",     games: sortGames,      badge: "Sort"        },
-    { icon: "⚡", title: "Speed Rounds",      games: speedGames,     badge: "Speed"       },
-    { icon: "🃏", title: "Memory & Match",    games: memoryGames,    badge: "Memory"      },
-    { icon: "🔍", title: "Word Search Games", games: wordSearchGames,badge: "Word Search" },
-    { icon: "✏️", title: "Crossword Puzzles", games: crosswordGames, badge: "Crossword"   },
-    { icon: "🖱️", title: "Drag & Drop Games", games: dragDropGames,  badge: "Drag & Drop" },
+    {
+      icon: "🎮", title: "Action Games", badge: "Arcade", color: "#00d4ff",
+      games: [...arcadeGames, ...(tier !== "junior" ? keyboardGames : []), ...speedGames],
+    },
+    {
+      icon: "🧩", title: "Brain Games", badge: "Puzzle", color: "#a855f7",
+      games: [...puzzleGames, ...sortGames, ...memoryGames],
+    },
+    {
+      icon: "🔍", title: "Word & Language", badge: "Word Search", color: "#38bdf8",
+      games: [...wordSearchGames, ...crosswordGames, ...dragDropGames],
+    },
   ];
 
-  // Featured game (Byte's Pick)
-  const featuredGame = WORD_SEARCH_PUZZLES[0];
+  // Featured game (Byte's Pick — rotates daily)
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+  const featuredGame = WORD_SEARCH_PUZZLES[dayOfYear % WORD_SEARCH_PUZZLES.length];
 
-  // Countdown to midnight reset
-  const now = new Date();
-  const midnight = new Date(now);
-  midnight.setHours(24, 0, 0, 0);
-  const msLeft      = midnight.getTime() - now.getTime();
-  const hoursLeft   = Math.floor(msLeft / 3600000);
-  const minutesLeft = Math.floor((msLeft % 3600000) / 60000);
-  const countdownLabel = `${hoursLeft}h ${minutesLeft}m`;
-
-  // Daily missions (tier-aware)
-  const dailyMissions = tier === "junior"
-    ? [
-        { name: "Play any Word Search game",   xp: 20, done: false },
-        { name: "Try a Drag & Drop game",       xp: 25, done: false },
-        { name: "Complete a Crossword puzzle",  xp: 30, done: false },
-      ]
-    : tier === "defender"
-      ? [
-          { name: "Play any Arcade game",          xp: 30, done: false },
-          { name: "Get 3 stars on a Speed Round",  xp: 50, done: false },
-          { name: "Complete a Puzzle game",         xp: 40, done: false },
-        ]
-      : [
-          { name: "Get 3 stars on any game",          xp: 50, done: false },
-          { name: "Complete a Keyboard challenge",    xp: 60, done: false },
-          { name: "Beat your best Sort score",        xp: 40, done: false },
-        ];
+  // Recommended game — first unplayed, unlocked game
+  const allGames = [...arcadeGames, ...puzzleGames, ...quizMissions];
+  const recommendedGame = allGames.find(g => !g.locked && (g.stars ?? 0) === 0);
 
   // In-progress missions — for "Continue Playing"
   const inProgressMissions = quizMissions
@@ -1349,117 +1329,39 @@ export default function MissionsPage() {
   return (
     <div className="min-h-screen bg-[#080c18] pb-28 relative">
 
-      {/* ════════════════════════════════════
-          HERO BANNER
-      ════════════════════════════════════ */}
-      <div className="relative overflow-hidden border-b border-white/[0.04]">
-        {/* Background layers */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0d1528] to-[#080c18]" />
-          <div className="absolute -top-10 left-1/4  w-[480px] h-[280px] rounded-full bg-[#00d4ff]/5  blur-3xl" />
-          <div className="absolute -top-10 right-1/4 w-[360px] h-[240px] rounded-full bg-[#00ff88]/4  blur-3xl" />
-          <div className="absolute inset-0 opacity-[0.022]" style={{
-            backgroundImage:
-              "linear-gradient(rgba(0,212,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.4) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }} />
-        </div>
-
-        <div className="container mx-auto px-4 max-w-5xl pt-8 pb-8 relative z-10">
-
-          {/* ── Name + level ring ── */}
+      {/* ── SIMPLE HEADER ── */}
+      <div className="border-b border-white/[0.05] bg-[#0d1528]">
+        <div className="container mx-auto max-w-5xl px-4 py-5">
           <motion.div
-            className="flex items-start justify-between gap-4 flex-wrap"
-            initial={{ opacity: 0, y: 18 }}
+            className="flex items-center justify-between gap-3 flex-wrap"
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
+            transition={{ duration: 0.3 }}
           >
-            {/* Left: greeting */}
             <div>
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <span className="text-[10px] font-extrabold tracking-[0.2em] text-[#00d4ff] uppercase">
-                  ⚡ Training Center
-                </span>
-                <div className="group relative">
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
-                    tier === "junior"
-                      ? "border-yellow-400/30 bg-yellow-400/8 text-yellow-300"
-                      : tier === "defender"
-                        ? "border-[#00d4ff]/30 bg-[#00d4ff]/8 text-[#00d4ff]"
-                        : "border-red-400/30 bg-red-400/8 text-red-300"
-                  }`}>
-                    {trainingTierEmoji} {trainingTierLabel}
-                  </span>
-                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#1a2035] border border-white/10 px-3 py-1.5 text-xs text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-lg pointer-events-none">
-                    Based on your age at signup
-                  </div>
-                </div>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-black text-white leading-tight">
-                Welcome back,{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00d4ff] to-[#00ff88]">
-                  {playerName}
-                </span>!
+              <p className="text-[10px] font-extrabold tracking-[0.2em] text-[#00d4ff] uppercase mb-0.5">🎮 Training Center</p>
+              <h1 className="text-2xl font-black text-white">
+                Pick a game{playerName !== "Guardian" ? `, ${playerName}` : ""}!
               </h1>
-              <p className="text-gray-500 text-sm mt-1.5">
-                {isJuniorTier
-                  ? "Let's have fun and learn something awesome today! 🌟"
-                  : "The digital world needs its heroes — keep training!"}
+              <p className="text-gray-500 text-sm mt-0.5">
+                {isJuniorTier ? "Every game makes you a smarter hero 🌟" : "Train hard, level up, protect the world ⚡"}
               </p>
             </div>
-
-            {/* Right: level badge + streak/XP chips */}
-            <div className="flex items-center gap-3 flex-shrink-0">
-              {/* Level ring */}
-              <div
-                className="w-[76px] h-[76px] rounded-2xl border-2 flex flex-col items-center justify-center flex-shrink-0"
-                style={{ borderColor: "rgba(0,212,255,0.35)", background: "rgba(0,212,255,0.05)" }}
-              >
-                <p className="text-[9px] font-black uppercase tracking-widest text-[#00d4ff]/60">Lv.</p>
-                <p className="text-[32px] font-black text-white leading-none">{level}</p>
-              </div>
-
-              {/* Streak + XP vertical stack */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-1.5 rounded-xl border border-orange-500/25 bg-orange-500/8 px-3 py-1.5">
+            <div className="flex items-center gap-2">
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold border ${
+                tier === "junior" ? "border-yellow-400/30 bg-yellow-400/8 text-yellow-300"
+                  : tier === "defender" ? "border-[#00d4ff]/30 bg-[#00d4ff]/8 text-[#00d4ff]"
+                  : "border-red-400/30 bg-red-400/8 text-red-300"
+              }`}>
+                {trainingTierEmoji} {trainingTierLabel}
+              </span>
+              {streak > 0 && (
+                <div className="flex items-center gap-1 rounded-full border border-orange-500/25 bg-orange-500/8 px-2.5 py-1">
                   <Flame className="h-3.5 w-3.5 text-orange-400" />
                   <span className="text-sm font-extrabold text-orange-400">{streak}</span>
-                  <span className="text-[10px] text-orange-400/60">day streak</span>
+                  <span className="text-[10px] text-orange-400/60">streak</span>
                 </div>
-                <div className="flex items-center gap-1.5 rounded-xl border border-yellow-500/25 bg-yellow-500/8 px-3 py-1.5">
-                  <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
-                  <span className="text-sm font-extrabold text-yellow-400">{points.toLocaleString()}</span>
-                  <span className="text-[10px] text-yellow-400/60">XP</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* ── XP Progress bar ── */}
-          <motion.div
-            className="mt-6 max-w-lg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.18 }}
-          >
-            <div className="flex items-center justify-between text-[11px] mb-2">
-              <span className="font-bold text-[#00d4ff]">Level {level}</span>
-              <span className="text-gray-500">{xpProgress.current.toLocaleString()} / {xpProgress.needed.toLocaleString()} XP</span>
-              {nextRank && (
-                <span className="font-bold" style={{ color: "#00ff88" }}>→ {nextRank.title}</span>
               )}
-            </div>
-            <div className="h-3 w-full rounded-full bg-[#1a2035] border border-white/5 overflow-hidden">
-              <motion.div
-                className="h-full rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${xpProgress.percent}%` }}
-                transition={{ duration: 1.3, ease: "easeOut", delay: 0.3 }}
-                style={{
-                  background: "linear-gradient(90deg, #00d4ff, #00ff88)",
-                  boxShadow: "0 0 10px rgba(0,212,255,0.45)",
-                }}
-              />
             </div>
           </motion.div>
         </div>
@@ -1507,50 +1409,34 @@ export default function MissionsPage() {
           </motion.div>
         )}
 
-        {/* ── DAILY MISSIONS ── */}
-        <motion.div
-          className="mb-10 rounded-2xl overflow-hidden border border-[#00ff88]/14"
-          style={{ background: "linear-gradient(135deg, #091510 0%, #0c1814 100%)" }}
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.14 }}
-        >
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[#00ff88]/8">
-            <div>
-              <h2 className="text-base font-extrabold text-white">🎯 Daily Missions</h2>
-              <p className="text-[11px] text-gray-600 mt-0.5">
-                {dailyMissions.filter((d) => d.done).length} / {dailyMissions.length} complete
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] uppercase tracking-wider text-gray-600">Resets in</p>
-              <p className="text-sm font-extrabold text-[#00ff88]">{countdownLabel}</p>
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-2 p-4">
-            {dailyMissions.map((dm, i) => (
-              <div
-                key={i}
-                className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition-colors ${
-                  dm.done
-                    ? "border-[#00ff88]/35 bg-[#00ff88]/7"
-                    : "border-white/5 bg-white/[0.018]"
-                }`}
-              >
-                <div className={`flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-black ${
-                  dm.done ? "border-[#00ff88] bg-[#00ff88]/18 text-[#00ff88]" : "border-gray-700 text-gray-600"
-                }`}>
-                  {dm.done ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white leading-snug">{dm.name}</p>
-                  <p className="text-[11px] font-extrabold text-[#00ff88]">+{dm.xp} XP</p>
-                </div>
+        {/* ── RECOMMENDED FOR YOU ── */}
+        {recommendedGame && (
+          <motion.div
+            className="mb-10 rounded-2xl border border-[#00ff88]/20 overflow-hidden"
+            style={{ background: "linear-gradient(135deg, #091510 0%, #0c1a14 100%)" }}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="flex items-center gap-4 p-5">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#00ff88]/15 flex items-center justify-center text-2xl">
+                🎯
               </div>
-            ))}
-          </div>
-        </motion.div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#00ff88] mb-0.5">⭐ Recommended for You</p>
+                <p className="text-base font-bold text-white truncate">{recommendedGame.title}</p>
+                <p className="text-xs text-gray-500 truncate">{recommendedGame.desc}</p>
+              </div>
+              <button
+                onClick={() => handleGameClick(recommendedGame)}
+                className="flex-shrink-0 rounded-full px-5 py-2 text-sm font-extrabold text-[#080c18] transition-all hover:scale-105 active:scale-95"
+                style={{ background: "linear-gradient(90deg, #00ff88, #00d4ff)" }}
+              >
+                Play Now
+              </button>
+            </div>
+          </motion.div>
+        )}
 
         {/* ── BYTE'S PICK / SPOTLIGHT ── */}
         <motion.div
@@ -1644,45 +1530,6 @@ export default function MissionsPage() {
           );
         })}
 
-        {/* ── PROGRESS FOOTER ── */}
-        <motion.div
-          className="mt-12 mb-6 rounded-2xl overflow-hidden border border-white/5"
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-        >
-          <div className="p-6" style={{ background: "linear-gradient(135deg,#0f1729 0%,#111827 100%)" }}>
-            <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-              <div>
-                <h2 className="text-base font-extrabold text-white">🏆 Your Progress</h2>
-                <p className="text-[11px] text-gray-500 mt-0.5">Keep training to climb the ranks!</p>
-              </div>
-              <span className="rounded-xl border border-[#00d4ff]/18 bg-[#00d4ff]/5 px-3 py-1.5 text-xs font-bold text-[#00d4ff]">
-                Rank: {rank.title}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { value: points.toLocaleString(), label: "Total XP",      color: "#ffd700" },
-                { value: completedMissionIds.size, label: "Missions Done", color: "#00ff88" },
-                { value: streak,                   label: "Day Streak",    color: "#f97316" },
-              ].map(({ value, label, color }) => (
-                <div
-                  key={label}
-                  className="rounded-xl border border-white/5 bg-white/[0.022] py-4 px-3 text-center"
-                >
-                  <p className="text-2xl font-extrabold" style={{ color }}>{value}</p>
-                  <p className="text-[10px] text-gray-500 mt-1 font-medium">{label}</p>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-center text-[11px] text-gray-600 mt-5">
-              🌍 Global leaderboards coming soon!
-            </p>
-          </div>
-        </motion.div>
 
       </div>{/* /container */}
 
