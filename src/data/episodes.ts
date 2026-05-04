@@ -5,10 +5,27 @@
  */
 import type { EpisodeData } from "@/components/zone/EpisodePlayer";
 import { zone1Episode } from "./episodes/zone1_passwordPeak";
+import {
+  pixelPortEpisode,
+  signalSummitEpisode,
+  codeCanyonEpisode,
+  encryptEnclaveEpisode,
+  arcticArchiveEpisode,
+  shadowStationEpisode,
+  firewallFortressEpisode,
+} from "./episodes/northAmericaZones";
 
 const EPISODES: Record<string, EpisodeData> = {
-  "password-peak": zone1Episode,
-  // Add zone 2–10 episodes here as they are scripted
+  // North America
+  "pixel-port":        pixelPortEpisode,
+  "signal-summit":     signalSummitEpisode,
+  "code-canyon":       codeCanyonEpisode,
+  "encrypt-enclave":   encryptEnclaveEpisode,
+  "password-peak":     zone1Episode,
+  "arctic-archive":    arcticArchiveEpisode,
+  "shadow-station":    shadowStationEpisode,
+  "firewall-fortress": firewallFortressEpisode,
+  // Europe, Africa, Asia... episodes added here as scripted
 };
 
 export function getZoneEpisode(zoneId: string): EpisodeData | null {

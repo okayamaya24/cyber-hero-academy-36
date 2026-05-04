@@ -2198,19 +2198,10 @@ export default function ContinentMapScreen() {
       return;
     }
 
-    if (zoneStatuses[index] === "completed" && EPISODE_ZONES[zone.id]) {
-      setShowHQBubble(true);
-      setTimeout(() => setShowHQBubble(false), 4000);
-      return;
-    }
-
-    if (EPISODE_ZONES[zone.id]) {
-      setEpisodeZoneId(zone.id);
-      setShowEpisodePlayer(true);
-      return;
-    }
-
-    story.triggerIntro(zone.id, () => setSelectedZone(zone));
+    // All non-HQ zones navigate straight into ZoneGameScreen —
+    // no modal, no deploy button. ZoneGameScreen handles the episode
+    // player for zones with content, boss battle for the boss zone.
+    navigate(`/world-map/${continentId}/${zone.id}`);
   };
 
   // Writes HQ completion + unlocks password-peak in DB. Safe to call multiple times (upsert).
