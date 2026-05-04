@@ -43,13 +43,24 @@ const ROUNDS: Message[][] = [
 
 const ROUND_TIMERS = [8, 7, 6];
 
+const VILLAIN_WRONG = [
+  "YES! You fell for it — CLASSIC! 😈",
+  "Ha! Panic makes you click! Every time! 😂",
+  "GOTCHA! Another one for the Keybreaker! 🎉",
+];
+const VILLAIN_RIGHT = [
+  "WHAT?! How did you spot that?! 😤",
+  "IMPOSSIBLE! Stop being so smart! 😡",
+  "No no no! That was my BEST fake! 🤬",
+];
+
 export default function ScamSorter({ onComplete }: ScamSorterProps) {
   const [round, setRound] = useState(0);
   const [msgIndex, setMsgIndex] = useState(0);
   const [hearts, setHearts] = useState(3);
   const [mistakes, setMistakes] = useState(0);
   const [roundStars, setRoundStars] = useState<number[]>([]);
-  const [feedback, setFeedback] = useState<{ correct: boolean; isScam: boolean } | null>(null);
+  const [feedback, setFeedback] = useState<{ correct: boolean; isScam: boolean; quip: string } | null>(null);
   const [timeLeft, setTimeLeft] = useState(ROUND_TIMERS[0]);
   const [showRoundEnd, setShowRoundEnd] = useState(false);
   const [gameOver, setGameOver] = useState(false);
@@ -86,11 +97,14 @@ export default function ScamSorter({ onComplete }: ScamSorterProps) {
         setMistakes(newMistakes);
         setHearts((h) => Math.max(0, h - 1));
       }
-      setFeedback({ correct, isScam: currentMsg.isScam });
+      const quip = correct
+        ? VILLAIN_RIGHT[Math.floor(Math.random() * VILLAIN_RIGHT.length)]
+        : VILLAIN_WRONG[Math.floor(Math.random() * VILLAIN_WRONG.length)];
+      setFeedback({ correct, isScam: currentMsg.isScam, quip });
       feedbackTimeout.current = setTimeout(() => {
         setFeedback(null);
         advanceMessage();
-      }, 1400);
+      }, 1600);
     },
     [feedback, showRoundEnd, gameOver, clearTimer, currentMsg, mistakes, advanceMessage]
   );
@@ -107,7 +121,7 @@ export default function ScamSorter({ onComplete }: ScamSorterProps) {
           // timeout = wrong
           setMistakes((m) => m + 1);
           setHearts((h) => Math.max(0, h - 1));
-          setFeedback({ correct: false, isScam: currentMsg.isScam });
+          setFeedback({ correct: false, isScam: currentMsg.isScam, quip: "⏰ TIME'S UP! Too slow — I win that one! 😈" });
           feedbackTimeout.current = setTimeout(() => {
             setFeedback(null);
             advanceMessage();
@@ -246,6 +260,9 @@ export default function ScamSorter({ onComplete }: ScamSorterProps) {
             </p>
             <p className="text-white/60 text-sm mt-1">
               That was {feedback.isScam ? "a SCAM 🚨" : "LEGIT ✅"}
+            </p>
+            <p className={`text-xs font-bold italic mt-2 ${feedback.correct ? "text-orange-300" : "text-red-300"}`}>
+              {feedback.quip}
             </p>
           </motion.div>
         )}

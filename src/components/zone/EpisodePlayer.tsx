@@ -465,7 +465,7 @@ export default function EpisodePlayer({
                     {String.fromCharCode(65 + i)}
                   </span>
                   <span className="flex-1">{choice.label}</span>
-                  {choice.xpBonus && (
+                  {choice.xpBonus && chosenOption === choice.label && (
                     <span className="text-[10px] font-bold text-[hsl(45_90%_60%)]">+{choice.xpBonus} XP</span>
                   )}
                 </span>
