@@ -2189,33 +2189,9 @@ export default function ContinentMapScreen() {
     queryClient.invalidateQueries({ queryKey: ["earned_badges", childId] });
   };
 
-  const handleZoneClick = (zone: ZoneDef, index: number) => {
-    if (zoneStatuses[index] === "locked") return;
-
-    // HQ always shows the orientation — first time or replay
-    if (zone.isHQ) {
-      // If already completed, write unlock immediately so password-peak stays available
-      // without waiting for the user to finish the replay
-      if (child?.hq_completed) saveHQUnlock();
-      setShowHQOrientation(true);
-      return;
-    }
-
-    // Completed zone — show bubble
-    if (zoneStatuses[index] === "completed" && EPISODE_ZONES[zone.id]) {
-      setShowHQBubble(true);
-      setTimeout(() => setShowHQBubble(false), 4000);
-      return;
-    }
-
-    // Episode zones launch the EpisodePlayer
-    if (EPISODE_ZONES[zone.id]) {
-      setEpisodeZoneId(zone.id);
-      setShowEpisodePlayer(true);
-      return;
-    }
-
-    story.triggerIntro(zone.id, () => setSelectedZone(zone));
+  const handleZoneClick = (_zone: ZoneDef, _index: number) => {
+    // Story modes not yet active — zones are visual only
+    return;
   };
 
   // Writes HQ completion + unlocks password-peak in DB. Safe to call multiple times (upsert).
