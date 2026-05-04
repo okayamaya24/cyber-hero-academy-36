@@ -2189,9 +2189,28 @@ export default function ContinentMapScreen() {
     queryClient.invalidateQueries({ queryKey: ["earned_badges", childId] });
   };
 
-  const handleZoneClick = (_zone: ZoneDef, _index: number) => {
-    // Story modes not yet active — zones are visual only
-    return;
+  const handleZoneClick = (zone: ZoneDef, index: number) => {
+    if (zoneStatuses[index] === "locked") return;
+
+    if (zone.isHQ) {
+      if (child?.hq_completed) saveHQUnlock();
+      setShowHQOrientation(true);
+      return;
+    }
+
+    if (zoneStatuses[index] === "completed" && EPISODE_ZONES[zone.id]) {
+      setShowHQBubble(true);
+      setTimeout(() => setShowHQBubble(false), 4000);
+      return;
+    }
+
+    if (EPISODE_ZONES[zone.id]) {
+      setEpisodeZoneId(zone.id);
+      setShowEpisodePlayer(true);
+      return;
+    }
+
+    story.triggerIntro(zone.id, () => setSelectedZone(zone));
   };
 
   // Writes HQ completion + unlocks password-peak in DB. Safe to call multiple times (upsert).

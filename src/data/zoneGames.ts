@@ -3068,6 +3068,7 @@ export const ZONE_GAMES: Record<string, ZoneGameContent> = {
   "arctic-archive": arcticArchiveGames,
   "pixel-port": pixelPortGames,
   "shadow-station": shadowStationGames,
+  "firewall-fortress": firewallFrontierGames,
   // Europe
   "phish-lagoon": phishLagoonGames,
   "download-dungeon": downloadDungeonGames,
