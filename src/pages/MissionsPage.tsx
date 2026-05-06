@@ -366,6 +366,9 @@ export default function MissionsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
+  // Tab state — must be before any early returns (React hooks rules)
+  const [activeTab, setActiveTab] = useState<"learn" | "games">("learn");
+
   // Quiz gameplay state
   const [activeMission, setActiveMission] = useState<MissionDef | null>(null);
   const [showIntro, setShowIntro] = useState(false);
@@ -1177,7 +1180,6 @@ export default function MissionsPage() {
   const trainingTierLabel = getTrainingTierLabel(tier);
   const trainingTierEmoji = getTrainingTierEmoji(tier);
   const playerName = (child as any)?.name ?? "Guardian";
-  const [activeTab, setActiveTab] = useState<"learn" | "games">("learn");
 
   const completedMissionIds = new Set(
     MISSIONS.filter((m) => {
