@@ -15,6 +15,7 @@ import {
 import { getLevelRank, getNextRank, getProgressToNextLevel } from "@/data/levelTitles";
 import { GUIDE_REGISTRY } from "@/data/guides";
 import robotGuide from "@/assets/robot-guide.png";
+const byteCharacter = "/byte-character.png";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import DailyChallenge from "@/components/DailyChallenge";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
@@ -361,7 +362,7 @@ export default function KidDashboard() {
         >
           <div className="relative h-14 w-14 overflow-hidden rounded-full border-2 border-cyan-300 bg-cyan-50 shadow-lg"
             style={{ boxShadow: "0 4px 16px rgba(6,182,212,0.25)" }}>
-            <img src={robotGuide} alt="Byte" className="h-full w-full object-contain p-1" />
+            <img src={byteCharacter} alt="Byte" className="h-full w-full object-contain p-1" />
           </div>
           <div className="absolute right-0 top-0 h-3 w-3 rounded-full border-2 border-white bg-cyan-400"
             style={{ animation: "pulse 2s ease-in-out infinite" }} />
