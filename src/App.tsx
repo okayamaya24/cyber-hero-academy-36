@@ -10,6 +10,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import MaintenanceGate from "@/components/MaintenanceGate";
 import { Navbar } from "@/components/Navbar";
 import ProtectedAdminRoute from "@/components/ProtectedAdminRoute";
+import LessonPreviewPage from "./pages/LessonPreviewPage";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -445,6 +446,7 @@ const App = () => (
               <Route path="/games/cyber-crossword" element={<CyberCrossword />} />
               <Route path="/games/cyber-word-search" element={<CyberWordSearch />} />
 
+              <Route path="/lesson-preview" element={<LessonPreviewPage />} />
               <Route path="/forgot-password" element={<><Navbar /><ForgotPasswordPage /></>} />
               <Route path="/terms" element={<><Navbar /><TermsPage /></>} />
               <Route path="/privacy" element={<><Navbar /><PrivacyPage /></>} />

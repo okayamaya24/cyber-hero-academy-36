@@ -19,6 +19,8 @@ import {
 } from "@/data/learningMode";
 import { GUIDE_REGISTRY } from "@/data/guides";
 import { MISSIONS } from "@/data/missions";
+import LessonPlayer from "@/components/learning/LessonPlayer";
+import { getLessonContent } from "@/data/lessonContent";
 
 interface Props {
   completedMissionIds: Set<string>;
@@ -49,7 +51,7 @@ function CharacterCard({
 }: {
   character: LearningCharacter;
   completedMissionIds: Set<string>;
-  onStartLesson: (missionId: string) => void;
+  onStartLesson: (lessonId: string, missionId: string) => void;
   isExpanded: boolean;
   onToggle: () => void;
 }) {
@@ -200,7 +202,7 @@ function CharacterCard({
                         size="sm"
                         className="flex-shrink-0 rounded-xl px-4 font-black text-sm"
                         style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)", boxShadow: "0 3px 10px rgba(124,58,237,0.3)" }}
-                        onClick={() => onStartLesson(lesson.missionId!)}
+                        onClick={() => onStartLesson(lesson.id, lesson.missionId!)}
                       >
                         Start →
                       </Button>
@@ -210,7 +212,7 @@ function CharacterCard({
                         size="sm"
                         variant="outline"
                         className="flex-shrink-0 rounded-xl px-3 text-xs font-bold border-green-200 text-green-600 hover:bg-green-50"
-                        onClick={() => onStartLesson(lesson.missionId!)}
+                        onClick={() => onStartLesson(lesson.id, lesson.missionId!)}
                       >
                         Replay
                       </Button>
@@ -227,6 +229,20 @@ function CharacterCard({
 }
 
 export default function LearningModeTab({ completedMissionIds, missionProgress, onStartLesson, childName }: Props) {
+  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+
+  // When Start is clicked — show lesson player if content exists, else go straight to quiz
+  const handleStartLesson = (lessonId: string, missionId: string) => {
+    const content = getLessonContent(lessonId);
+    if (content) {
+      setActiveLessonId(lessonId);
+    } else {
+      onStartLesson(missionId);
+    }
+  };
+
+  const activeLessonContent = activeLessonId ? getLessonContent(activeLessonId) : null;
+
   const [expandedId, setExpandedId] = useState<string | null>(() => {
     // Auto-expand the first character that has an active lesson
     for (const char of LEARNING_CHARACTERS) {
@@ -280,7 +296,7 @@ export default function LearningModeTab({ completedMissionIds, missionProgress, 
             key={character.id}
             character={character}
             completedMissionIds={completedMissionIds}
-            onStartLesson={onStartLesson}
+            onStartLesson={handleStartLesson}
             isExpanded={expandedId === character.id}
             onToggle={() => setExpandedId(expandedId === character.id ? null : character.id)}
           />
@@ -302,6 +318,21 @@ export default function LearningModeTab({ completedMissionIds, missionProgress, 
           </p>
         </div>
       </motion.div>
+
+      {/* Lesson Player overlay */}
+      <AnimatePresence>
+        {activeLessonContent && (
+          <LessonPlayer
+            lesson={activeLessonContent}
+            onStartQuiz={() => {
+              const missionId = activeLessonContent.missionId;
+              setActiveLessonId(null);
+              onStartLesson(missionId);
+            }}
+            onClose={() => setActiveLessonId(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
