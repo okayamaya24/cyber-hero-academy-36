@@ -37,9 +37,10 @@ function getDailyGameType(childId: string): MiniGameType {
 interface DailyChallengeProps {
   childId: string;
   childAge: number;
+  compact?: boolean;
 }
 
-export default function DailyChallenge({ childId, childAge }: DailyChallengeProps) {
+export default function DailyChallenge({ childId, childAge, compact = false }: DailyChallengeProps) {
   const [playing, setPlaying] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
   const queryClient = useQueryClient();
@@ -128,6 +129,47 @@ export default function DailyChallenge({ childId, childAge }: DailyChallengeProp
   };
 
   if (isLoading) return null;
+
+  if (compact) {
+    return (
+      <AnimatePresence mode="wait">
+        {playing ? (
+          <motion.div key="game-compact" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-sm font-bold">{gameMeta.label}</h3>
+              <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => setPlaying(false)}>Close</Button>
+            </div>
+            {renderGame()}
+          </motion.div>
+        ) : (
+          <motion.div key="card-compact" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex h-full flex-col">
+            <div className="mb-1 text-2xl">{isCompleted ? "✅" : gameMeta.emoji}</div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-yellow-600">Daily Quest</p>
+            <p className="mt-0.5 text-base font-black text-slate-900">{gameMeta.label}</p>
+            <p className="mt-1 flex-1 text-xs font-semibold text-slate-500">
+              {isCompleted ? "Come back tomorrow! 🎉" : "Can you beat it today?"}
+            </p>
+            <div className="mt-1 mb-3 text-xs font-bold text-yellow-600">🏆 +20 Points {isCompleted ? "— Done!" : "waiting!"}</div>
+            {!isCompleted && (
+              <Button
+                className="w-full rounded-xl text-sm font-black"
+                style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)", boxShadow: "0 3px 10px rgba(217,119,6,0.25)" }}
+                onClick={() => {
+                  if (!challenge) {
+                    supabase.from("daily_challenges" as any).insert({ child_id: childId, challenge_date: today, game_type: gameType, completed: false, points_awarded: 0 } as any)
+                      .then(() => queryClient.invalidateQueries({ queryKey: ["daily_challenge", childId] }));
+                  }
+                  setPlaying(true);
+                }}
+              >
+                Play Now →
+              </Button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
 
   return (
     <AnimatePresence mode="wait">

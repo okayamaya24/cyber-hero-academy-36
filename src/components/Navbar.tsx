@@ -33,7 +33,7 @@ export function Navbar() {
   else if (user) navItems = parentItems; // fallback for unknown roles
 
   return (
-    <nav className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2">
           <Shield className="h-8 w-8 text-primary" />
