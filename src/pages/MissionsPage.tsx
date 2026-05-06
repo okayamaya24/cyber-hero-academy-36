@@ -4,7 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Star, CheckCircle2, ArrowRight, Mail, ExternalLink, Flame, Lock as LockIcon, Gamepad2, ChevronRight } from "lucide-react";
+import { Star, CheckCircle2, ArrowRight, Mail, ExternalLink, Flame, Lock as LockIcon, Gamepad2, ChevronRight, BookOpen } from "lucide-react";
+import LearningModeTab from "@/components/learning/LearningModeTab";
+import { isGameUnlockedByLessons, getGameTeacher } from "@/data/learningMode";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -1175,6 +1177,7 @@ export default function MissionsPage() {
   const trainingTierLabel = getTrainingTierLabel(tier);
   const trainingTierEmoji = getTrainingTierEmoji(tier);
   const playerName = (child as any)?.name ?? "Guardian";
+  const [activeTab, setActiveTab] = useState<"learn" | "games">("learn");
 
   const completedMissionIds = new Set(
     MISSIONS.filter((m) => {
@@ -1189,52 +1192,56 @@ export default function MissionsPage() {
     return mp ? getStarsFromProgress(mp) : 0;
   };
 
+  /** A game is locked if admin locked it OR the lesson hasn't been completed yet */
+  const isGameLocked = (gameId: string) =>
+    isGameLockedByAdmin(gameId) || !isGameUnlockedByLessons(gameId, completedMissionIds);
+
   /* ── Full Game Catalog ── */
   const arcadeGames = [
-    { id: "virus-vaporizer",  title: "Virus Vaporizer",  desc: "Zap viruses before they infect your files!",           badge: "Arcade", route: "/games/virus-vaporizer",  locked: isGameLockedByAdmin("virus-vaporizer"), isHot: true },
-    { id: "spot-the-phish",   title: "Spot the Phish",   desc: "Swipe safe or phishing on emails and texts!",          badge: "Arcade", route: "/games/spot-the-phish",   locked: isGameLockedByAdmin("spot-the-phish") },
-    { id: "firewall-blitz",   title: "Firewall Blitz",   desc: "Block threats flying across the screen in lanes!",     badge: "Arcade", route: "/games/firewall-blitz",   locked: isGameLockedByAdmin("firewall-blitz") },
-    { id: "hacker-chase",     title: "Hacker Chase",     desc: "Chase the hacker through the digital world!",          badge: "Arcade", route: "/games/hacker-chase",     locked: isGameLockedByAdmin("hacker-chase"),   isNew: true },
+    { id: "virus-vaporizer",  title: "Virus Vaporizer",  desc: "Zap viruses before they infect your files!",           badge: "Arcade", route: "/games/virus-vaporizer",  locked: isGameLocked("virus-vaporizer"), isHot: true },
+    { id: "spot-the-phish",   title: "Spot the Phish",   desc: "Swipe safe or phishing on emails and texts!",          badge: "Arcade", route: "/games/spot-the-phish",   locked: isGameLocked("spot-the-phish") },
+    { id: "firewall-blitz",   title: "Firewall Blitz",   desc: "Block threats flying across the screen in lanes!",     badge: "Arcade", route: "/games/firewall-blitz",   locked: isGameLocked("firewall-blitz") },
+    { id: "hacker-chase",     title: "Hacker Chase",     desc: "Chase the hacker through the digital world!",          badge: "Arcade", route: "/games/hacker-chase",     locked: isGameLocked("hacker-chase"),   isNew: true },
   ];
 
   const keyboardGames = [
-    { id: "type-to-defend",        title: "Type to Defend",        desc: "Type the word fast to destroy threats before they reach your base!", badge: "Keyboard", route: "/games/type-to-defend",        locked: isGameLockedByAdmin("type-to-defend"),        isHot: true },
-    { id: "password-cracker-race", title: "Password Cracker Race", desc: "Race a hacker bot — type strong passwords before it guesses them!", badge: "Keyboard", route: "/games/password-cracker-race", locked: isGameLockedByAdmin("password-cracker-race") },
-    { id: "code-typer",            title: "Code Typer",            desc: "Type safe commands to neutralize malicious code before it executes!", badge: "Keyboard", route: "/games/code-typer",           locked: isGameLockedByAdmin("code-typer") },
-    { id: "decrypt-message",       title: "Decrypt the Message",   desc: "Decode a scrambled secret message letter by letter!",               badge: "Keyboard", route: "/games/decrypt-the-message",   locked: isGameLockedByAdmin("decrypt-message") },
-    { id: "firewall-typer",        title: "Firewall Typer",        desc: "Words fly in from both sides — type them to block them!",           badge: "Keyboard", route: "/games/firewall-typer",        locked: isGameLockedByAdmin("firewall-typer"),        isNew: true },
+    { id: "type-to-defend",        title: "Type to Defend",        desc: "Type the word fast to destroy threats before they reach your base!", badge: "Keyboard", route: "/games/type-to-defend",        locked: isGameLocked("type-to-defend"),        isHot: true },
+    { id: "password-cracker-race", title: "Password Cracker Race", desc: "Race a hacker bot — type strong passwords before it guesses them!", badge: "Keyboard", route: "/games/password-cracker-race", locked: isGameLocked("password-cracker-race") },
+    { id: "code-typer",            title: "Code Typer",            desc: "Type safe commands to neutralize malicious code before it executes!", badge: "Keyboard", route: "/games/code-typer",           locked: isGameLocked("code-typer") },
+    { id: "decrypt-message",       title: "Decrypt the Message",   desc: "Decode a scrambled secret message letter by letter!",               badge: "Keyboard", route: "/games/decrypt-the-message",   locked: isGameLocked("decrypt-message") },
+    { id: "firewall-typer",        title: "Firewall Typer",        desc: "Words fly in from both sides — type them to block them!",           badge: "Keyboard", route: "/games/firewall-typer",        locked: isGameLocked("firewall-typer"),        isNew: true },
   ];
 
   const puzzleGames = [
-    { id: "cyber-escape",          title: "Cyber Escape Room", desc: "Solve 4 puzzles to escape the hacker's lair!",                    badge: "Puzzle", route: "/games/cyber-escape-room", locked: isGameLockedByAdmin("cyber-escape"),          isHot: true },
-    { id: "code-breaker",          title: "Code Breaker",      desc: "Crack the cipher and decode the secret message!",                 badge: "Puzzle", route: "/games/code-breaker",      locked: isGameLockedByAdmin("code-breaker") },
-    { id: "password-tower",        title: "Password Tower",    desc: "Stack password ingredients to build the strongest password!",     badge: "Puzzle", route: "/games/password-tower",    locked: isGameLockedByAdmin("password-tower") },
-    { id: "lock-the-vault-puzzle", title: "Lock the Vault",    desc: "Solve the sequence to seal the vault before the hacker gets in!", badge: "Puzzle", route: "/games/lock-the-vault",    locked: isGameLockedByAdmin("lock-the-vault-puzzle"), isNew: true },
+    { id: "cyber-escape",          title: "Cyber Escape Room", desc: "Solve 4 puzzles to escape the hacker's lair!",                    badge: "Puzzle", route: "/games/cyber-escape-room", locked: isGameLocked("cyber-escape"),          isHot: true },
+    { id: "code-breaker",          title: "Code Breaker",      desc: "Crack the cipher and decode the secret message!",                 badge: "Puzzle", route: "/games/code-breaker",      locked: isGameLocked("code-breaker") },
+    { id: "password-tower",        title: "Password Tower",    desc: "Stack password ingredients to build the strongest password!",     badge: "Puzzle", route: "/games/password-tower",    locked: isGameLocked("password-tower") },
+    { id: "lock-the-vault-puzzle", title: "Lock the Vault",    desc: "Solve the sequence to seal the vault before the hacker gets in!", badge: "Puzzle", route: "/games/lock-the-vault",    locked: isGameLocked("lock-the-vault-puzzle"), isNew: true },
   ];
 
   const sortGames = [
-    { id: "safe-danger-sort", title: "Safe or Danger? Rapid Sort", desc: "Items flash fast — hit Safe or Danger as quick as you can!", badge: "Sort", route: "/games/safe-or-danger-sort",  locked: isGameLockedByAdmin("safe-danger-sort") },
-    { id: "real-or-fake",     title: "Real or Fake Website",       desc: "Spot the fake website before you click!",                  badge: "Sort", route: "/games/real-or-fake-website", locked: isGameLockedByAdmin("real-or-fake") },
-    { id: "trust-or-trash",   title: "Trust or Trash",             desc: "Decide if messages and links are trustworthy or trash!",   badge: "Sort", route: "/games/trust-or-trash",       locked: isGameLockedByAdmin("trust-or-trash"),   isHot: true },
+    { id: "safe-danger-sort", title: "Safe or Danger? Rapid Sort", desc: "Items flash fast — hit Safe or Danger as quick as you can!", badge: "Sort", route: "/games/safe-or-danger-sort",  locked: isGameLocked("safe-danger-sort") },
+    { id: "real-or-fake",     title: "Real or Fake Website",       desc: "Spot the fake website before you click!",                  badge: "Sort", route: "/games/real-or-fake-website", locked: isGameLocked("real-or-fake") },
+    { id: "trust-or-trash",   title: "Trust or Trash",             desc: "Decide if messages and links are trustworthy or trash!",   badge: "Sort", route: "/games/trust-or-trash",       locked: isGameLocked("trust-or-trash"),   isHot: true },
     ...MISSIONS.filter((m) => m.id === "scam-detection").map((m) => ({
       id: m.id, title: "Spot the Phish (Quiz)", desc: "Sort real from fake messages!", badge: "Sort",
-      locked: isGameLockedByAdmin(m.id), stars: getStandaloneStars(m.id), mission: m,
+      locked: isGameLocked(m.id), stars: getStandaloneStars(m.id), mission: m,
     })),
     ...DRAG_DROP_GAMES.filter((g) => g.subType === "sort").map((g) => ({
       id: g.id, title: g.title, desc: g.description, badge: "Sort",
-      locked: isGameLockedByAdmin(g.id), stars: getStandaloneStars(g.id), dragdrop: g,
+      locked: isGameLocked(g.id), stars: getStandaloneStars(g.id), dragdrop: g,
     })),
   ];
 
   const speedGames = [
-    { id: "quiz-blitz",           title: "Byte's Quiz Blitz",      desc: "Byte fires questions for 60 seconds — answer as many as you can!", badge: "Speed", route: "/games/bytes-quiz-blitz",        locked: isGameLockedByAdmin("quiz-blitz"),           isHot: true },
-    { id: "true-false-lightning", title: "True or False Lightning", desc: "Cyber facts flash fast — TRUE or FALSE? Streak multiplier!",      badge: "Speed", route: "/games/true-or-false-lightning", locked: isGameLockedByAdmin("true-false-lightning") },
-    { id: "beat-the-clock",       title: "Beat the Clock Trivia",   desc: "Answer before the timer hits zero — every second counts!",        badge: "Speed", route: "/games/beat-the-clock-trivia",   locked: isGameLockedByAdmin("beat-the-clock") },
+    { id: "quiz-blitz",           title: "Byte's Quiz Blitz",      desc: "Byte fires questions for 60 seconds — answer as many as you can!", badge: "Speed", route: "/games/bytes-quiz-blitz",        locked: isGameLocked("quiz-blitz"),           isHot: true },
+    { id: "true-false-lightning", title: "True or False Lightning", desc: "Cyber facts flash fast — TRUE or FALSE? Streak multiplier!",      badge: "Speed", route: "/games/true-or-false-lightning", locked: isGameLocked("true-false-lightning") },
+    { id: "beat-the-clock",       title: "Beat the Clock Trivia",   desc: "Answer before the timer hits zero — every second counts!",        badge: "Speed", route: "/games/beat-the-clock-trivia",   locked: isGameLocked("beat-the-clock") },
   ];
 
   const memoryGames = [
-    { id: "cyber-memory",    title: "Cyber Memory Match", desc: "Flip cards to match cyber threat pairs!",                   badge: "Memory", route: "/games/cyber-memory-match", locked: isGameLockedByAdmin("cyber-memory"),    isHot: true },
-    { id: "sequence-shield", title: "Sequence Shield",    desc: "Remember and repeat the sequence to activate your shield!", badge: "Memory", route: "/games/sequence-shield",    locked: isGameLockedByAdmin("sequence-shield"), isNew: true },
+    { id: "cyber-memory",    title: "Cyber Memory Match", desc: "Flip cards to match cyber threat pairs!",                   badge: "Memory", route: "/games/cyber-memory-match", locked: isGameLocked("cyber-memory"),    isHot: true },
+    { id: "sequence-shield", title: "Sequence Shield",    desc: "Remember and repeat the sequence to activate your shield!", badge: "Memory", route: "/games/sequence-shield",    locked: isGameLocked("sequence-shield"), isNew: true },
   ];
 
   const WORD_SEARCH_ROUTES: Record<string, string> = {
@@ -1250,27 +1257,27 @@ export default function MissionsPage() {
 
   const wordSearchGames = WORD_SEARCH_PUZZLES.map((p) => ({
     id: p.id, title: p.title, desc: p.description, badge: "Word Search",
-    locked: isGameLockedByAdmin(p.id), stars: getStandaloneStars(p.id),
+    locked: isGameLocked(p.id), stars: getStandaloneStars(p.id),
     route: WORD_SEARCH_ROUTES[p.id], wordsearch: WORD_SEARCH_ROUTES[p.id] ? undefined : p,
   }));
 
   const crosswordGames = CROSSWORD_PUZZLES.map((p) => ({
     id: p.id, title: p.title, desc: p.description, badge: "Crossword",
-    locked: isGameLockedByAdmin(p.id), stars: getStandaloneStars(p.id),
+    locked: isGameLocked(p.id), stars: getStandaloneStars(p.id),
     route: CROSSWORD_ROUTES[p.id], crossword: CROSSWORD_ROUTES[p.id] ? undefined : p,
   }));
 
   const dragDropGames = [
     ...DRAG_DROP_GAMES.map((g) => ({
       id: g.id, title: g.title, desc: g.description, badge: "Drag & Drop",
-      locked: isGameLockedByAdmin(g.id), stars: getStandaloneStars(g.id), dragdrop: g,
+      locked: isGameLocked(g.id), stars: getStandaloneStars(g.id), dragdrop: g,
     })),
-    { id: "lock-the-vault-dd", title: "Lock the Vault", desc: "Drag the correct keys into the right locks before time runs out!", badge: "Drag & Drop", route: "/games/lock-the-vault-drag", locked: isGameLockedByAdmin("lock-the-vault-dd") },
+    { id: "lock-the-vault-dd", title: "Lock the Vault", desc: "Drag the correct keys into the right locks before time runs out!", badge: "Drag & Drop", route: "/games/lock-the-vault-drag", locked: isGameLocked("lock-the-vault-dd") },
   ];
 
   const quizMissions = MISSIONS.map((m) => ({
     id: m.id, title: m.title, desc: m.description, badge: "Quiz",
-    locked: isGameLockedByAdmin(m.id),
+    locked: isGameLocked(m.id),
     stars: (() => {
       const totalGames = getTotalGames(learningMode);
       const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
@@ -1309,6 +1316,11 @@ export default function MissionsPage() {
       return (mp as any)?.status === "in_progress";
     })
     .slice(0, 3);
+
+  const handleStartLesson = (missionId: string) => {
+    const mission = MISSIONS.find((m) => m.id === missionId);
+    if (mission) startMission(mission);
+  };
 
   const handleGameClick = (game: any) => {
     if (game.locked) return;
@@ -1367,10 +1379,68 @@ export default function MissionsPage() {
         </div>
       </div>
 
+      {/* ── TAB SWITCHER ── */}
+      <div className="border-b border-white/[0.05] bg-[#0d1528]">
+        <div className="container mx-auto max-w-5xl px-4">
+          <div className="flex gap-1">
+            <button
+              onClick={() => setActiveTab("learn")}
+              className={`flex items-center gap-2 px-5 py-3.5 text-sm font-extrabold border-b-2 transition-all ${
+                activeTab === "learn"
+                  ? "border-purple-400 text-purple-300"
+                  : "border-transparent text-gray-500 hover:text-gray-300"
+              }`}
+            >
+              <BookOpen className="h-4 w-4" />
+              Learn
+            </button>
+            <button
+              onClick={() => setActiveTab("games")}
+              className={`flex items-center gap-2 px-5 py-3.5 text-sm font-extrabold border-b-2 transition-all ${
+                activeTab === "games"
+                  ? "border-[#00d4ff] text-[#00d4ff]"
+                  : "border-transparent text-gray-500 hover:text-gray-300"
+              }`}
+            >
+              <Gamepad2 className="h-4 w-4" />
+              Games
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* ════════════════════════════════════
           CONTENT AREA
       ════════════════════════════════════ */}
       <div className="container mx-auto px-4 max-w-5xl mt-8">
+
+        {/* ── LEARN TAB ── */}
+        {activeTab === "learn" && (
+          <LearningModeTab
+            completedMissionIds={completedMissionIds}
+            missionProgress={missionProgress}
+            onStartLesson={handleStartLesson}
+            childName={playerName}
+          />
+        )}
+
+        {/* ── GAMES TAB ── */}
+        {activeTab === "games" && (<>
+
+        {/* ── LEARN FIRST BANNER ── */}
+        {completedMissionIds.size === 0 && (
+          <motion.div
+            className="mb-8 flex items-start gap-3 rounded-2xl border border-purple-500/25 bg-purple-500/8 p-4"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <span className="text-2xl flex-shrink-0">🔒</span>
+            <div className="flex-1">
+              <p className="text-sm font-extrabold text-purple-300">Complete a lesson to unlock games!</p>
+              <p className="text-xs text-gray-400 mt-0.5">Head to the <button onClick={() => setActiveTab("learn")} className="text-purple-400 underline font-bold">Learn tab</button> first — finishing lessons unlocks games here.</p>
+            </div>
+          </motion.div>
+        )}
 
         {/* ── CONTINUE PLAYING ── (only shown when there are in-progress missions) */}
         {inProgressMissions.length > 0 && (
@@ -1530,6 +1600,7 @@ export default function MissionsPage() {
           );
         })}
 
+        </>)}
 
       </div>{/* /container */}
 
