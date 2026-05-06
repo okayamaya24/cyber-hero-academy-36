@@ -1380,30 +1380,30 @@ export default function MissionsPage() {
       </div>
 
       {/* ── TAB SWITCHER ── */}
-      <div className="border-b border-white/[0.05] bg-[#0d1528]">
-        <div className="container mx-auto max-w-5xl px-4">
-          <div className="flex gap-1">
+      <div className="bg-[#0d1528] px-4 pt-4 pb-0">
+        <div className="container mx-auto max-w-5xl">
+          <div className="flex gap-2">
             <button
               onClick={() => setActiveTab("learn")}
-              className={`flex items-center gap-2 px-5 py-3.5 text-sm font-extrabold border-b-2 transition-all ${
+              className={`flex items-center gap-2 rounded-t-xl px-6 py-3 text-sm font-extrabold transition-all ${
                 activeTab === "learn"
-                  ? "border-purple-400 text-purple-300"
-                  : "border-transparent text-gray-500 hover:text-gray-300"
+                  ? "bg-white text-purple-700 shadow-lg"
+                  : "bg-white/10 text-gray-400 hover:bg-white/15 hover:text-white"
               }`}
             >
               <BookOpen className="h-4 w-4" />
-              Learn
+              📚 Learn
             </button>
             <button
               onClick={() => setActiveTab("games")}
-              className={`flex items-center gap-2 px-5 py-3.5 text-sm font-extrabold border-b-2 transition-all ${
+              className={`flex items-center gap-2 rounded-t-xl px-6 py-3 text-sm font-extrabold transition-all ${
                 activeTab === "games"
-                  ? "border-[#00d4ff] text-[#00d4ff]"
-                  : "border-transparent text-gray-500 hover:text-gray-300"
+                  ? "bg-white text-cyan-700 shadow-lg"
+                  : "bg-white/10 text-gray-400 hover:bg-white/15 hover:text-white"
               }`}
             >
               <Gamepad2 className="h-4 w-4" />
-              Games
+              🎮 Games
             </button>
           </div>
         </div>
