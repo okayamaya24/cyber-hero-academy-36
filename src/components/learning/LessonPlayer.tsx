@@ -9,6 +9,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronRight, ChevronLeft, Star } from "lucide-react";
 import type { LessonContent, LessonSlide } from "@/data/lessonContent";
 import PasswordAttentionGame from "@/components/learning/games/PasswordAttentionGame";
+import PhishingSwipeGame from "@/components/learning/games/PhishingSwipeGame";
+import UrlDetectiveGame from "@/components/learning/games/UrlDetectiveGame";
+import InfoShieldSortGame from "@/components/learning/games/InfoShieldSortGame";
+import MalwareMonsterGame from "@/components/learning/games/MalwareMonsterGame";
 
 interface Props {
   lesson: LessonContent;
@@ -557,6 +561,18 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose }: Props) {
               )}
               {isGame && slide.gameType === "password-attention" && (
                 <PasswordAttentionGame onComplete={() => goNext()} />
+              )}
+              {isGame && slide.gameType === "phishing-swipe" && (
+                <PhishingSwipeGame onComplete={() => goNext()} />
+              )}
+              {isGame && slide.gameType === "url-detective" && (
+                <UrlDetectiveGame onComplete={() => goNext()} />
+              )}
+              {isGame && slide.gameType === "info-shield-sort" && (
+                <InfoShieldSortGame onComplete={() => goNext()} />
+              )}
+              {isGame && slide.gameType === "malware-monster-match" && (
+                <MalwareMonsterGame onComplete={() => goNext()} />
               )}
             </motion.div>
           </AnimatePresence>

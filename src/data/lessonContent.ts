@@ -11,7 +11,12 @@ export type SlideType =
   | "game"     // full interactive mini-game
   | "summary"; // key takeaways + quiz CTA
 
-export type LessonGameType = "password-attention";
+export type LessonGameType =
+  | "password-attention"
+  | "phishing-swipe"
+  | "url-detective"
+  | "info-shield-sort"
+  | "malware-monster-match";
 
 export interface CheckChoice {
   text: string;
@@ -257,6 +262,10 @@ export const LESSON_CONTENT: LessonContent[] = [
         tipText: "Real companies NEVER ask for your password over email or text. If you're worried, go directly to the website by typing it yourself — never click the link in the message! 🔐",
       },
       {
+        type: "game",
+        gameType: "phishing-swipe",
+      },
+      {
         type: "summary",
         takeaways: [
           "Phishing pretends to be someone you trust 🎭",
@@ -310,6 +319,10 @@ export const LESSON_CONTENT: LessonContent[] = [
       {
         type: "tip",
         tipText: "Hover over a link BEFORE clicking it — the real destination shows up at the bottom of your browser. If it looks weird or different from what you expected, don't click! 🖱️",
+      },
+      {
+        type: "game",
+        gameType: "url-detective",
       },
       {
         type: "summary",
@@ -419,6 +432,10 @@ export const LESSON_CONTENT: LessonContent[] = [
       {
         type: "tip",
         tipText: "Use a fun username instead of your real name online. Something like 'StarBlaster42' or 'NinjaOwl' tells people nothing about the real you! 🎭",
+      },
+      {
+        type: "game",
+        gameType: "info-shield-sort",
       },
       {
         type: "summary",
@@ -590,6 +607,10 @@ export const LESSON_CONTENT: LessonContent[] = [
       {
         type: "tip",
         tipText: "If your device suddenly gets slow, shows weird ads, or apps appear that you didn't install — tell a trusted adult right away! These are signs of malware. 🤖",
+      },
+      {
+        type: "game",
+        gameType: "malware-monster-match",
       },
       {
         type: "summary",
