@@ -487,6 +487,17 @@ export default function MissionsPage() {
 
   const beginPlay = () => setShowIntro(false);
 
+  // Back from gameplay → return to the mission intro screen instead of full reset
+  const backToIntro = () => {
+    setCurrentQ(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setMissionComplete(false);
+    setGameKey((k) => k + 1);
+    setShowIntro(true);
+  };
+
   const resetAll = () => {
     setActiveMission(null);
     setMissionComplete(false);
@@ -770,7 +781,6 @@ export default function MissionsPage() {
     const hasMessageCard = !!q.sender;
     const runningPoints = score * pointsPerCorrect;
     const levelInfo = getCurrentLevel();
-    const gameMeta = MINI_GAME_META[q.miniGameType];
     const supportGuide = getSupportGuide(activeMission.id, currentQ);
     const isCorrect = isCustom ? selectedAnswer === 0 : selectedAnswer === q.correct;
 
@@ -798,7 +808,7 @@ export default function MissionsPage() {
           <div className="container mx-auto max-w-3xl px-4 py-3">
             <div className="flex items-center justify-between">
               <button
-                onClick={resetAll}
+                onClick={backToIntro}
                 className="text-sm font-semibold text-gray-400 transition-colors hover:text-white"
               >
                 ← Back
@@ -823,9 +833,7 @@ export default function MissionsPage() {
             </div>
             <div className="mt-2">
               <div className="mb-1 flex justify-between text-xs text-gray-500">
-                <span className="flex items-center gap-1">
-                  Game {currentQ + 1}/{games.length} <MiniGameTypeBadge type={q.miniGameType} />
-                </span>
+                <span>Game {currentQ + 1}/{games.length}</span>
                 <span>{score} correct</span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
@@ -848,10 +856,6 @@ export default function MissionsPage() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.25 }}
             >
-              <div className="mb-3 flex items-center gap-2">
-                <span className="text-2xl">{gameMeta.emoji}</span>
-                <span className={`text-sm font-bold ${gameMeta.color}`}>{gameMeta.label}</span>
-              </div>
 
               {isCustom && !showResult && (
                 <>
