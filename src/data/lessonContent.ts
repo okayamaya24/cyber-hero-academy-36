@@ -8,7 +8,10 @@ export type SlideType =
   | "learn"    // info card with icon + text
   | "tip"      // speech-bubble style tip from guide
   | "check"    // tap-the-right-answer interactive
+  | "game"     // full interactive mini-game
   | "summary"; // key takeaways + quiz CTA
+
+export type LessonGameType = "password-attention";
 
 export interface CheckChoice {
   text: string;
@@ -18,6 +21,7 @@ export interface CheckChoice {
 
 export interface LessonSlide {
   type: SlideType;
+  gameType?: LessonGameType; // used when type === "game"
   // intro
   headline?: string;
   subtext?: string;
@@ -79,18 +83,8 @@ export const LESSON_CONTENT: LessonContent[] = [
         body: "Mix uppercase letters, lowercase letters, numbers, AND symbols.\n\nLong is better — aim for 12+ characters.\n\nNever use your real name or birthday!",
       },
       {
-        type: "check",
-        question: "Which password is the strongest?",
-        choices: [
-          { text: "fluffy123", correct: false, feedback: "Too short and uses a pet name — easy to guess! 🐱" },
-          { text: "P@ssw0rd!", correct: false, feedback: "Looks fancy but it's on every hacker's list! 🚫" },
-          { text: "Tr0pical$Mango!77", correct: true, feedback: "Yes! Long, mixed, and totally random — uncrackable! 🏆" },
-          { text: "123456789", correct: false, feedback: "That's the most common password in the world! 😬" },
-        ],
-      },
-      {
-        type: "tip",
-        tipText: "Try a PASSPHRASE — pick 3 random words and add numbers & symbols between them. Like: Fire$Rocket42Moon! Easy to remember, super hard to crack! 🚀",
+        type: "game",
+        gameType: "password-attention",
       },
       {
         type: "summary",

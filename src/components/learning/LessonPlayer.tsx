@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronRight, ChevronLeft, Star } from "lucide-react";
 import type { LessonContent, LessonSlide } from "@/data/lessonContent";
+import PasswordAttentionGame from "@/components/learning/games/PasswordAttentionGame";
 
 interface Props {
   lesson: LessonContent;
@@ -471,6 +472,7 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose }: Props) {
   const isFirst = slideIdx === 0;
   const isIntro = slide.type === "intro";
   const isCheck = slide.type === "check";
+  const isGame = slide.type === "game";
   const isSummary = slide.type === "summary";
 
   const goNext = () => {
@@ -553,12 +555,15 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose }: Props) {
               {isSummary && (
                 <SummarySlide slide={slide} lesson={lesson} theme={theme} onStartQuiz={onStartQuiz} />
               )}
+              {isGame && slide.gameType === "password-attention" && (
+                <PasswordAttentionGame onComplete={() => goNext()} />
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Bottom nav — hidden on intro (has its own CTA) and summary (has quiz button) */}
-        {!isIntro && !isSummary && !isCheck && (
+        {/* Bottom nav — hidden on intro, summary, check, and game slides (all have their own CTAs) */}
+        {!isIntro && !isSummary && !isCheck && !isGame && (
           <div className="flex items-center justify-between px-4 py-4 flex-shrink-0 relative z-10"
             style={{ borderTop: `1px solid ${theme.accent}18` }}>
             <button
@@ -580,8 +585,8 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose }: Props) {
           </div>
         )}
 
-        {/* Check slide nav hint */}
-        {isCheck && (
+        {/* Check / game slide nav hint */}
+        {(isCheck || isGame) && (
           <div className="px-4 py-3 flex-shrink-0 relative z-10 text-center"
             style={{ borderTop: `1px solid ${theme.accent}18` }}>
             <p className="text-xs text-white/30 font-medium italic">Tap your answer above ☝️</p>
