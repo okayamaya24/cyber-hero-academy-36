@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronRight, ChevronLeft, Star } from "lucide-react";
 import type { LessonContent, LessonSlide } from "@/data/lessonContent";
 import PasswordAttentionGame from "@/components/learning/games/PasswordAttentionGame";
+import PasswordStrengthTesterGame from "@/components/minigames/PasswordStrengthTesterGame";
+import PasswordFixerGame from "@/components/minigames/PasswordFixerGame";
 import PhishingSwipeGame from "@/components/learning/games/PhishingSwipeGame";
 import UrlDetectiveGame from "@/components/learning/games/UrlDetectiveGame";
 import InfoShieldSortGame from "@/components/learning/games/InfoShieldSortGame";
@@ -561,6 +563,22 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose }: Props) {
               )}
               {isGame && slide.gameType === "password-attention" && (
                 <PasswordAttentionGame onComplete={() => goNext()} />
+              )}
+              {isGame && slide.gameType === "password-strength-tester" && (
+                <PasswordStrengthTesterGame
+                  ageTier="defender"
+                  guideImage={lesson.characterEmoji}
+                  guideName={lesson.character}
+                  onComplete={() => goNext()}
+                />
+              )}
+              {isGame && slide.gameType === "password-fixer" && (
+                <PasswordFixerGame
+                  ageTier="defender"
+                  guideImage={lesson.characterEmoji}
+                  guideName={lesson.character}
+                  onComplete={() => goNext()}
+                />
               )}
               {isGame && slide.gameType === "phishing-swipe" && (
                 <PhishingSwipeGame onComplete={() => goNext()} />
