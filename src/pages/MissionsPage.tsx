@@ -13,6 +13,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTrainingGameSettings, type TrainingGameSetting } from "@/hooks/useTrainingGameSettings";
 import WordSearchGame from "@/components/minigames/WordSearchGame";
 import PasswordBuilderGame from "@/components/minigames/PasswordBuilderGame";
+import PasswordStrengthTesterGame from "@/components/minigames/PasswordStrengthTesterGame";
+import PasswordFixerGame from "@/components/minigames/PasswordFixerGame";
 import SortGame from "@/components/minigames/SortGame";
 import SecretKeeperGame from "@/components/minigames/SecretKeeperGame";
 import MemoryGame from "@/components/minigames/MemoryGame";
@@ -54,6 +56,8 @@ const heroCharacter = "/byte-character.png";
 const CUSTOM_GAME_TYPES: MiniGameType[] = [
   "word-search",
   "password-builder",
+  "password-fixer",
+  "strength-tester",
   "sort-game",
   "secret-keeper",
   "memory",
@@ -871,6 +875,24 @@ export default function MissionsPage() {
                   )}
                   {q.miniGameType === "password-builder" && (
                     <PasswordBuilderGame
+                      key={gameKey}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
+                  {q.miniGameType === "strength-tester" && (
+                    <PasswordStrengthTesterGame
+                      key={gameKey}
+                      ageTier={tier}
+                      guideImage={activeMission.guide.image}
+                      guideName={activeMission.guide.name}
+                      onComplete={handleCustomGameComplete}
+                    />
+                  )}
+                  {q.miniGameType === "password-fixer" && (
+                    <PasswordFixerGame
                       key={gameKey}
                       ageTier={tier}
                       guideImage={activeMission.guide.image}
