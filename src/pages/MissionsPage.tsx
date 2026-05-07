@@ -669,7 +669,7 @@ export default function MissionsPage() {
   if (activeMission && showIntro) {
     const levels = getMissionLevels(activeMission, age, learningMode, 0);
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4 relative">
+      <div className="flex min-h-screen items-center justify-center bg-[#080c18] p-4 relative">
         <motion.div
           className="fixed bottom-4 left-4 z-20 flex flex-col items-center gap-1 pointer-events-none md:bottom-8 md:left-8"
           initial={{ x: -80, opacity: 0 }}
@@ -683,9 +683,9 @@ export default function MissionsPage() {
             animate={{ y: [0, -8, 0] }}
             transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
           />
-          <div className="rounded-2xl bg-card/90 backdrop-blur px-3 py-1.5 shadow-lg border border-border text-center">
-            <p className="text-xs font-bold">{activeMission.guide.name}</p>
-            <p className="text-[10px] text-muted-foreground">Your Guide</p>
+          <div className="rounded-2xl bg-[#0d1323]/90 backdrop-blur px-3 py-1.5 shadow-lg border border-white/10 text-center">
+            <p className="text-xs font-bold text-white">{activeMission.guide.name}</p>
+            <p className="text-[10px] text-gray-400">Your Guide</p>
           </div>
         </motion.div>
 
@@ -695,7 +695,7 @@ export default function MissionsPage() {
           transition={{ type: "spring", duration: 0.6 }}
           className="w-full max-w-lg"
         >
-          <div className="rounded-3xl border-2 bg-card p-8 md:p-10 text-center shadow-playful">
+          <div className="rounded-3xl border border-white/10 bg-[#0d1323] p-8 md:p-10 text-center shadow-2xl">
             <motion.img
               src={CAPTAIN_CYBER.image}
               alt={CAPTAIN_CYBER.name}
@@ -704,11 +704,11 @@ export default function MissionsPage() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
             />
-            <Badge className="mb-3 border-0 bg-accent/20 text-accent">
+            <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#00d4ff]/30 bg-[#00d4ff]/10 px-3 py-1 text-[11px] font-extrabold text-[#00d4ff]">
               ⚡ {CAPTAIN_CYBER.name} · {CAPTAIN_CYBER.role}
-            </Badge>
-            <div className="mb-5 rounded-2xl bg-muted/50 p-5">
-              <p className="text-base font-medium text-foreground">{getMissionIntro(activeMission.id)}</p>
+            </span>
+            <div className="mb-5 rounded-2xl bg-white/5 border border-white/10 p-5">
+              <p className="text-base font-medium text-gray-200">{getMissionIntro(activeMission.id)}</p>
             </div>
             <div className="mb-4 flex items-center gap-3">
               <img
@@ -717,16 +717,16 @@ export default function MissionsPage() {
                 className="h-14 w-14 object-contain"
               />
               <div className="text-left">
-                <h2 className="text-2xl font-bold">{activeMission.title}</h2>
-                <p className="text-sm text-muted-foreground">Main Guide: {activeMission.guide.name}</p>
+                <h2 className="text-2xl font-bold text-white">{activeMission.title}</h2>
+                <p className="text-sm text-gray-400">Main Guide: {activeMission.guide.name}</p>
               </div>
             </div>
             <div className="mb-6 space-y-2">
               {levels.map((level) => (
-                <div key={level.level} className="rounded-xl border bg-muted/30 p-3 text-left">
+                <div key={level.level} className="rounded-xl border border-white/10 bg-white/5 p-3 text-left">
                   <div className="mb-1.5 flex items-center gap-2">
                     <span className="text-lg">{level.emoji}</span>
-                    <span className="text-sm font-bold">
+                    <span className="text-sm font-bold text-white">
                       Level {level.level}: {level.name}
                     </span>
                   </div>
@@ -739,12 +739,19 @@ export default function MissionsPage() {
               ))}
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" className="flex-1" onClick={resetAll}>
+              <button
+                onClick={resetAll}
+                className="flex-1 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-bold text-white hover:bg-white/10 transition-colors"
+              >
                 ← Back
-              </Button>
-              <Button variant="hero" className="flex-1 text-base" onClick={beginPlay}>
+              </button>
+              <button
+                onClick={beginPlay}
+                className="flex-1 rounded-xl py-3 text-base font-extrabold text-white transition-all hover:brightness-110 active:scale-95"
+                style={{ background: "linear-gradient(135deg,#00d4ff,#00ff88)", color: "#080c18" }}
+              >
                 Let's Go! 🚀
-              </Button>
+              </button>
             </div>
           </div>
         </motion.div>
@@ -768,7 +775,7 @@ export default function MissionsPage() {
     const isCorrect = isCustom ? selectedAnswer === 0 : selectedAnswer === q.correct;
 
     return (
-      <div className="min-h-screen bg-background relative">
+      <div className="min-h-screen bg-[#080c18] relative">
         <motion.div
           className="fixed bottom-4 right-4 z-20 flex flex-col items-center gap-1 pointer-events-none md:bottom-8 md:right-8"
           initial={{ x: 80, opacity: 0 }}
@@ -782,46 +789,52 @@ export default function MissionsPage() {
             animate={{ y: [0, -6, 0] }}
             transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
           />
-          <div className="rounded-xl bg-card/90 backdrop-blur px-2.5 py-1 shadow-md border border-border text-center">
-            <p className="text-[10px] font-bold">{activeMission.guide.name}</p>
+          <div className="rounded-xl bg-[#0d1323]/90 backdrop-blur px-2.5 py-1 shadow-md border border-white/10 text-center">
+            <p className="text-[10px] font-bold text-white">{activeMission.guide.name}</p>
           </div>
         </motion.div>
 
-        <div className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur">
+        <div className="sticky top-0 z-10 border-b border-white/[0.06] bg-[#0d1528]/95 backdrop-blur">
           <div className="container mx-auto max-w-3xl px-4 py-3">
             <div className="flex items-center justify-between">
               <button
                 onClick={resetAll}
-                className="text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                className="text-sm font-semibold text-gray-400 transition-colors hover:text-white"
               >
                 ← Back
               </button>
               <div className="text-center">
-                <h2 className="text-sm font-bold">{activeMission.title}</h2>
+                <h2 className="text-sm font-bold text-white">{activeMission.title}</h2>
                 <div className="mt-0.5 flex items-center justify-center gap-2">
-                  <Badge variant="outline" className="px-2 py-0 text-[10px]">
+                  <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] font-bold text-gray-300">
                     {tierEmoji} {tierLabel}
-                  </Badge>
+                  </span>
                   {levelInfo && (
-                    <Badge className="border-0 bg-primary/10 px-2 py-0 text-[10px] text-primary">
+                    <span className="rounded-full border border-[#00d4ff]/25 bg-[#00d4ff]/10 px-2 py-0.5 text-[10px] font-bold text-[#00d4ff]">
                       {levelInfo.levelName}
-                    </Badge>
+                    </span>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-sm font-bold text-accent">
-                <Star className="h-4 w-4" />
+              <div className="flex items-center gap-1 text-sm font-bold text-yellow-400">
+                <Star className="h-4 w-4 fill-yellow-400" />
                 {runningPoints}
               </div>
             </div>
             <div className="mt-2">
-              <div className="mb-1 flex justify-between text-xs text-muted-foreground">
+              <div className="mb-1 flex justify-between text-xs text-gray-500">
                 <span className="flex items-center gap-1">
                   Game {currentQ + 1}/{games.length} <MiniGameTypeBadge type={q.miniGameType} />
                 </span>
                 <span>{score} correct</span>
               </div>
-              <Progress value={((currentQ + 1) / games.length) * 100} className="h-2" />
+              <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-[#00d4ff] to-[#00ff88]"
+                  animate={{ width: `${((currentQ + 1) / games.length) * 100}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -65,31 +65,32 @@ export default function PasswordBuilderGame({ ageTier, guideImage, guideName, on
 
   return (
     <div className="text-center">
+      {/* Guide speech bubble */}
       <div className="flex items-center gap-3 mb-4">
-        <img src={guideImage} alt={guideName} className="h-12 w-12 object-contain" />
-        <div className="rounded-2xl rounded-bl-sm bg-muted px-4 py-2 text-left">
-          <p className="font-semibold text-sm">
+        <img src={guideImage} alt={guideName} className="h-12 w-12 object-contain flex-shrink-0" />
+        <div className="rounded-2xl rounded-bl-sm bg-white/5 border border-white/10 px-4 py-2 text-left">
+          <p className="font-semibold text-sm text-white">
             🔧 Build a super strong password! Mix words, numbers, and symbols together.
           </p>
         </div>
       </div>
 
       {/* Password display */}
-      <div className="rounded-2xl border-2 border-border bg-card p-4 mb-4">
-        <p className="text-xs text-muted-foreground mb-2">Your Password:</p>
-        <div className="min-h-[48px] flex items-center justify-center rounded-xl bg-muted/50 px-4 py-3">
-          <p className="font-mono text-xl font-bold tracking-wider break-all">
-            {password || <span className="text-muted-foreground text-base">Tap pieces below to build...</span>}
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4 mb-4">
+        <p className="text-xs text-gray-400 mb-2">Your Password:</p>
+        <div className="min-h-[48px] flex items-center justify-center rounded-xl bg-black/30 px-4 py-3">
+          <p className="font-mono text-xl font-bold tracking-wider break-all text-white">
+            {password || <span className="text-gray-500 text-base font-normal">Tap pieces below to build...</span>}
           </p>
         </div>
 
         {password && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-semibold">{strength.label}</span>
-              <span className="text-xs text-muted-foreground ml-auto">{strength.score}%</span>
+              <span className="text-xs font-semibold text-white">{strength.label}</span>
+              <span className="text-xs text-gray-400 ml-auto">{strength.score}%</span>
             </div>
-            <div className="h-3 w-full rounded-full bg-muted overflow-hidden">
+            <div className="h-3 w-full rounded-full bg-white/10 overflow-hidden">
               <motion.div
                 className={`h-full rounded-full ${strength.color}`}
                 initial={{ width: 0 }}
@@ -103,48 +104,35 @@ export default function PasswordBuilderGame({ ageTier, guideImage, guideName, on
 
       {!submitted ? (
         <>
-          {/* Word pieces */}
           <div className="space-y-3 mb-4">
             <div>
-              <p className="text-xs font-bold text-muted-foreground mb-1.5">📝 Words</p>
+              <p className="text-xs font-bold text-gray-400 mb-1.5">📝 Words</p>
               <div className="flex flex-wrap gap-2 justify-center">
                 {parts.words.map((w) => (
-                  <motion.button
-                    key={w}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => addPart(w)}
-                    className="rounded-xl border-2 border-primary/30 bg-primary/10 px-3 py-2 font-bold text-sm hover:bg-primary/20 transition-colors"
-                  >
+                  <motion.button key={w} whileTap={{ scale: 0.9 }} onClick={() => addPart(w)}
+                    className="rounded-xl border border-purple-400/30 bg-purple-500/15 px-3 py-2 font-bold text-sm text-purple-300 hover:bg-purple-500/25 transition-colors">
                     {w}
                   </motion.button>
                 ))}
               </div>
             </div>
             <div>
-              <p className="text-xs font-bold text-muted-foreground mb-1.5">🔢 Numbers</p>
+              <p className="text-xs font-bold text-gray-400 mb-1.5">🔢 Numbers</p>
               <div className="flex flex-wrap gap-2 justify-center">
                 {parts.numbers.map((n) => (
-                  <motion.button
-                    key={n}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => addPart(n)}
-                    className="rounded-xl border-2 border-accent/30 bg-accent/10 px-3 py-2 font-bold text-sm hover:bg-accent/20 transition-colors"
-                  >
+                  <motion.button key={n} whileTap={{ scale: 0.9 }} onClick={() => addPart(n)}
+                    className="rounded-xl border border-amber-400/30 bg-amber-500/15 px-3 py-2 font-bold text-sm text-amber-300 hover:bg-amber-500/25 transition-colors">
                     {n}
                   </motion.button>
                 ))}
               </div>
             </div>
             <div>
-              <p className="text-xs font-bold text-muted-foreground mb-1.5">✨ Symbols</p>
+              <p className="text-xs font-bold text-gray-400 mb-1.5">✨ Symbols</p>
               <div className="flex flex-wrap gap-2 justify-center">
                 {parts.symbols.map((s) => (
-                  <motion.button
-                    key={s}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => addPart(s)}
-                    className="rounded-xl border-2 border-secondary/30 bg-secondary/10 px-3 py-2 font-bold text-sm hover:bg-secondary/20 transition-colors"
-                  >
+                  <motion.button key={s} whileTap={{ scale: 0.9 }} onClick={() => addPart(s)}
+                    className="rounded-xl border border-cyan-400/30 bg-cyan-500/15 px-3 py-2 font-bold text-sm text-cyan-300 hover:bg-cyan-500/25 transition-colors">
                     {s}
                   </motion.button>
                 ))}
@@ -153,38 +141,39 @@ export default function PasswordBuilderGame({ ageTier, guideImage, guideName, on
           </div>
 
           <div className="flex gap-2 justify-center mb-4">
-            <Button variant="outline" size="sm" onClick={removeLast} disabled={!password}>
+            <button onClick={removeLast} disabled={!password}
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-gray-300 hover:bg-white/10 disabled:opacity-30 transition-colors">
               ← Delete
-            </Button>
-            <Button variant="outline" size="sm" onClick={clear} disabled={!password}>
+            </button>
+            <button onClick={clear} disabled={!password}
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-gray-300 hover:bg-white/10 disabled:opacity-30 transition-colors">
               Clear All
-            </Button>
+            </button>
           </div>
 
-          <Button
-            variant="hero"
-            className="w-full py-5 text-base"
-            onClick={handleSubmit}
-            disabled={password.length < 3}
-          >
+          <button onClick={handleSubmit} disabled={password.length < 3}
+            className="w-full rounded-2xl py-4 text-base font-extrabold text-[#080c18] disabled:opacity-30 transition-all hover:brightness-110 active:scale-95"
+            style={{ background: "linear-gradient(135deg,#00d4ff,#00ff88)" }}>
             Test My Password! 💪
-          </Button>
+          </button>
         </>
       ) : (
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="space-y-3">
-          <div className={`rounded-2xl p-5 ${isStrong ? "bg-secondary/10 border-2 border-secondary/30" : "bg-accent/10 border-2 border-accent/30"}`}>
-            <p className="font-bold text-lg mb-1">
+          <div className={`rounded-2xl p-5 border ${isStrong ? "bg-green-500/10 border-green-400/30" : "bg-amber-500/10 border-amber-400/30"}`}>
+            <p className="font-bold text-lg mb-1 text-white">
               {isStrong ? "🎉 Amazing password!" : "💡 Good try! Here are some tips:"}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-300">
               {isStrong
                 ? "Your password uses a great mix of words, numbers, and symbols. That makes it really hard for hackers to guess!"
                 : "Try adding more symbols (!@#), mixing uppercase and lowercase letters, and making it longer. The longer and more mixed, the stronger!"}
             </p>
           </div>
-          <Button variant="hero" className="w-full py-5 text-base" onClick={() => onComplete(isStrong)}>
+          <button onClick={() => onComplete(isStrong)}
+            className="w-full rounded-2xl py-4 text-base font-extrabold text-[#080c18] transition-all hover:brightness-110 active:scale-95"
+            style={{ background: "linear-gradient(135deg,#00d4ff,#00ff88)" }}>
             Continue ✨
-          </Button>
+          </button>
         </motion.div>
       )}
     </div>
