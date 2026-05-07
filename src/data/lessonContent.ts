@@ -15,9 +15,14 @@ export type LessonGameType =
   | "password-attention"
   | "password-strength-tester"
   | "password-fixer"
+  | "login-detective"
+  | "popup-or-scam"
   | "phishing-swipe"
   | "url-detective"
+  | "suspicious-text"
   | "info-shield-sort"
+  | "post-or-pass"
+  | "fact-check"
   | "malware-monster-match";
 
 export interface CheckChoice {
@@ -153,6 +158,10 @@ export const LESSON_CONTENT: LessonContent[] = [
         tipText: "Always log out of accounts on shared computers — like at school or the library. If you leave yourself logged in, anyone can access your stuff! 🚪",
       },
       {
+        type: "game",
+        gameType: "login-detective",
+      },
+      {
         type: "summary",
         takeaways: [
           "You have a digital footprint everywhere you go online 👣",
@@ -211,6 +220,10 @@ export const LESSON_CONTENT: LessonContent[] = [
       {
         type: "tip",
         tipText: "Never plug in a USB drive you found on the ground — hackers leave infected drives in public places on purpose hoping someone will pick them up! 💻",
+      },
+      {
+        type: "game",
+        gameType: "popup-or-scam",
       },
       {
         type: "summary",
@@ -385,6 +398,10 @@ export const LESSON_CONTENT: LessonContent[] = [
         tipText: "If you're not sure whether a message is real, DON'T reply or click anything. Instead, contact the company directly using their official website or phone number that you find yourself. 📞",
       },
       {
+        type: "game",
+        gameType: "suspicious-text",
+      },
+      {
         type: "summary",
         takeaways: [
           "Scam messages create fake urgency and fear ⚠️",
@@ -499,6 +516,10 @@ export const LESSON_CONTENT: LessonContent[] = [
         tipText: "Before posting anything, ask yourself: Would I be OK if my teacher, parents, AND a stranger all saw this? If you hesitate, don't post it! 🤔",
       },
       {
+        type: "game",
+        gameType: "post-or-pass",
+      },
+      {
         type: "summary",
         takeaways: [
           "Deleted doesn't always mean gone — think before you post 🤔",
@@ -552,6 +573,10 @@ export const LESSON_CONTENT: LessonContent[] = [
       {
         type: "tip",
         tipText: "Great trusted websites for kids: National Geographic Kids, BBC Newsround, NASA Kids Club, and your school library's online resources. Bookmark them! 📚",
+      },
+      {
+        type: "game",
+        gameType: "fact-check",
       },
       {
         type: "summary",

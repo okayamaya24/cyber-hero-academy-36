@@ -11,9 +11,14 @@ import type { LessonContent, LessonSlide } from "@/data/lessonContent";
 import PasswordAttentionGame from "@/components/learning/games/PasswordAttentionGame";
 import PasswordStrengthTesterGame from "@/components/minigames/PasswordStrengthTesterGame";
 import PasswordFixerGame from "@/components/minigames/PasswordFixerGame";
+import LoginDetectiveGame from "@/components/learning/games/LoginDetectiveGame";
+import PopupOrScamGame from "@/components/learning/games/PopupOrScamGame";
 import PhishingSwipeGame from "@/components/learning/games/PhishingSwipeGame";
 import UrlDetectiveGame from "@/components/learning/games/UrlDetectiveGame";
+import SuspiciousTextGame from "@/components/learning/games/SuspiciousTextGame";
 import InfoShieldSortGame from "@/components/learning/games/InfoShieldSortGame";
+import PostOrPassGame from "@/components/learning/games/PostOrPassGame";
+import FactCheckGame from "@/components/learning/games/FactCheckGame";
 import MalwareMonsterGame from "@/components/learning/games/MalwareMonsterGame";
 
 interface Props {
@@ -580,14 +585,29 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose }: Props) {
                   onComplete={() => goNext()}
                 />
               )}
+              {isGame && slide.gameType === "login-detective" && (
+                <LoginDetectiveGame onComplete={() => goNext()} />
+              )}
+              {isGame && slide.gameType === "popup-or-scam" && (
+                <PopupOrScamGame onComplete={() => goNext()} />
+              )}
               {isGame && slide.gameType === "phishing-swipe" && (
                 <PhishingSwipeGame onComplete={() => goNext()} />
               )}
               {isGame && slide.gameType === "url-detective" && (
                 <UrlDetectiveGame onComplete={() => goNext()} />
               )}
+              {isGame && slide.gameType === "suspicious-text" && (
+                <SuspiciousTextGame onComplete={() => goNext()} />
+              )}
               {isGame && slide.gameType === "info-shield-sort" && (
                 <InfoShieldSortGame onComplete={() => goNext()} />
+              )}
+              {isGame && slide.gameType === "post-or-pass" && (
+                <PostOrPassGame onComplete={() => goNext()} />
+              )}
+              {isGame && slide.gameType === "fact-check" && (
+                <FactCheckGame onComplete={() => goNext()} />
               )}
               {isGame && slide.gameType === "malware-monster-match" && (
                 <MalwareMonsterGame onComplete={() => goNext()} />
