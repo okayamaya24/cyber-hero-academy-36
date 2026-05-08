@@ -206,7 +206,7 @@ export default function KidDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="flex items-center gap-4 rounded-2xl border border-purple-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md cursor-pointer"
-            onClick={() => navigate(activeMission ? `/missions?mission=${activeMission.id}` : "/missions")}
+            onClick={() => navigate("/missions")}
           >
             <div className="flex-shrink-0 text-5xl">
               {activeMission ? activeMission.badgeIcon : "🎯"}
