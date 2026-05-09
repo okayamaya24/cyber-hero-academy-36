@@ -333,9 +333,9 @@ export default function KidDashboard() {
 
       </div>
 
-      {/* ── BYTE FLOATING CORNER ── */}
+      {/* ── BYTE FLOATING BUDDY ── */}
       <div
-        className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 cursor-pointer"
+        className="fixed bottom-4 right-4 z-30 flex flex-col items-end gap-2 pointer-events-none"
         onClick={cycleTip}
         title="Click for a new tip!"
       >
@@ -347,26 +347,21 @@ export default function KidDashboard() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -4, scale: 0.95 }}
               transition={{ duration: 0.25 }}
-              className="max-w-[210px] rounded-2xl rounded-br-sm border border-cyan-200 bg-white p-3 shadow-lg"
+              className="pointer-events-auto max-w-[220px] rounded-2xl rounded-br-sm border-2 border-[#00d4ff]/60 bg-[#0d1323] px-4 py-2.5 shadow-[0_8px_24px_rgba(0,0,0,0.45),0_0_0_1px_rgba(255,255,255,0.06)] ring-1 ring-black/20"
             >
-              <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-cyan-600">⚡ Byte says:</p>
-              <p className="text-xs font-bold leading-relaxed text-slate-700">{BYTE_TIPS[tipIndex]}</p>
-              <p className="mt-1.5 text-[9px] text-slate-300 font-semibold">tap for another tip</p>
+              <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-[#00d4ff]">⚡ Byte says:</p>
+              <p className="text-xs font-medium text-white leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{BYTE_TIPS[tipIndex]}</p>
+              <p className="mt-1.5 text-[9px] text-gray-500 font-semibold">tap for another tip</p>
             </motion.div>
           )}
         </AnimatePresence>
-        <motion.div
+        <motion.img
+          src={byteCharacter}
+          alt="Byte"
+          className="pointer-events-auto object-contain drop-shadow-[0_0_14px_rgba(0,212,255,0.42)] h-40 w-40"
           animate={{ y: [0, -6, 0] }}
-          transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-          className="relative"
-        >
-          <div className="relative h-14 w-14 overflow-hidden rounded-full border-2 border-cyan-300 bg-cyan-50 shadow-lg"
-            style={{ boxShadow: "0 4px 16px rgba(6,182,212,0.25)" }}>
-            <img src={byteCharacter} alt="Byte" className="h-full w-full object-contain p-1" />
-          </div>
-          <div className="absolute right-0 top-0 h-3 w-3 rounded-full border-2 border-white bg-cyan-400"
-            style={{ animation: "pulse 2s ease-in-out infinite" }} />
-        </motion.div>
+          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+        />
       </div>
 
       <style>{`
