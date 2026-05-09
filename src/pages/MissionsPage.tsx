@@ -1348,7 +1348,7 @@ export default function MissionsPage() {
 
   // Recommended game — first unplayed, unlocked game
   const allGames = [...arcadeGames, ...puzzleGames, ...quizMissions];
-  const recommendedGame = allGames.find(g => !g.locked && (g.stars ?? 0) === 0);
+  const recommendedGame = allGames.find(g => !g.locked && ((g as any).stars ?? 0) === 0);
 
   // In-progress missions — for "Continue Playing"
   const inProgressMissions = quizMissions
