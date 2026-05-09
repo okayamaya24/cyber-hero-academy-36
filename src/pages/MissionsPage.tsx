@@ -1659,13 +1659,21 @@ export default function MissionsPage() {
               : "Pick a game and let's train, Guardian! 💪"}
           </p>
         </motion.div>
-        <motion.img
-          src={heroCharacter}
-          alt="Byte"
-          className={`object-contain drop-shadow-[0_0_14px_rgba(0,212,255,0.42)] ${isJuniorTier ? "h-44 w-44" : "h-40 w-40"}`}
-          animate={{ y: [0, -6, 0] }}
-          transition={{ repeat: Infinity, duration: isJuniorTier ? 2 : 2.5, ease: "easeInOut" }}
-        />
+        <motion.div
+          className={isJuniorTier ? "h-44 w-44" : "h-40 w-40"}
+          animate={{ y: [0, -6, 0, -3, 0], rotate: [0, -4, 0, 3, 0, -2, 0] }}
+          transition={{ repeat: Infinity, duration: isJuniorTier ? 3.2 : 3.8, ease: "easeInOut" }}
+          style={{ transformOrigin: "50% 85%" }}
+        >
+          <motion.img
+            src={heroCharacter}
+            alt="Byte"
+            className="h-full w-full object-contain drop-shadow-[0_0_14px_rgba(0,212,255,0.42)]"
+            animate={{ scaleY: [1, 1, 1, 0.92, 1, 1, 1, 1, 0.9, 1] }}
+            transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut", times: [0, 0.35, 0.42, 0.46, 0.5, 0.7, 0.85, 0.9, 0.94, 1] }}
+            style={{ transformOrigin: "50% 30%" }}
+          />
+        </motion.div>
       </div>
 
     </div>
