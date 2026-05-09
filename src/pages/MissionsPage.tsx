@@ -1662,7 +1662,7 @@ export default function MissionsPage() {
         <motion.img
           src={heroCharacter}
           alt="Byte"
-          className={`object-contain drop-shadow-[0_0_14px_rgba(0,212,255,0.42)] ${isJuniorTier ? "h-20 w-20" : "h-16 w-16"}`}
+          className={`object-contain drop-shadow-[0_0_14px_rgba(0,212,255,0.42)] ${isJuniorTier ? "h-28 w-28" : "h-24 w-24"}`}
           animate={{ y: [0, -6, 0] }}
           transition={{ repeat: Infinity, duration: isJuniorTier ? 2 : 2.5, ease: "easeInOut" }}
         />
