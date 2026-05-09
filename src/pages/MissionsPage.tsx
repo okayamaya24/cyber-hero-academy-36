@@ -1648,12 +1648,12 @@ export default function MissionsPage() {
       {/* ── BYTE FLOATING BUDDY ── */}
       <div className="fixed bottom-4 right-4 z-30 flex flex-col items-end gap-2 pointer-events-none">
         <motion.div
-          className="pointer-events-auto rounded-2xl rounded-br-sm border border-[#00d4ff]/22 bg-[#0d1323]/96 backdrop-blur px-4 py-2.5 max-w-[220px] shadow-xl"
+          className="pointer-events-auto rounded-2xl rounded-br-sm border-2 border-[#00d4ff]/60 bg-[#0d1323] px-4 py-2.5 max-w-[220px] shadow-[0_8px_24px_rgba(0,0,0,0.45),0_0_0_1px_rgba(255,255,255,0.06)] ring-1 ring-black/20"
           initial={{ opacity: 0, x: 22 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 1.1 }}
         >
-          <p className="text-xs text-gray-300 leading-relaxed">
+          <p className="text-xs font-medium text-white leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
             {isJuniorTier
               ? "Let's play a game together! You're doing AMAZING! 🌟💪"
               : "Pick a game and let's train, Guardian! 💪"}
