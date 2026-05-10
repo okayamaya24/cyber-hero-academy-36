@@ -191,7 +191,7 @@ const CATEGORY_DIFFICULTY: Record<string, { label: string; level: number; color:
   "Speed":       { label: "Hard",   level: 3, color: "#ff6b6b" },
   "Memory":      { label: "Easy",   level: 1, color: "#ec4899" },
   "Word Search": { label: "Easy",   level: 1, color: "#38bdf8" },
-  "Crossword":   { label: "Medium", level: 2, color: "#f97316" },
+  "Crossword":   { label: "Adaptive", level: 2, color: "#f97316" },
   "Drag & Drop": { label: "Easy",   level: 1, color: "#4ade80" },
   "Quiz":        { label: "Medium", level: 2, color: "#fbbf24" },
 };
