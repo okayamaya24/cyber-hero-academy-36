@@ -393,7 +393,7 @@ export default function CrosswordGrid({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: `repeat(${grid.length}, 28px)`,
+          gridTemplateColumns: `repeat(${grid.length}, var(--cw-cell, 32px))`,
           gap: "2px"
         }}
       >
@@ -407,8 +407,8 @@ export default function CrosswordGrid({
             <div
               key={index}
               style={{
-                width: "28px",
-                height: "28px",
+                width: "var(--cw-cell, 32px)",
+                height: "var(--cw-cell, 32px)",
                 backgroundColor: getCellBackground(cell, row, col),
                 border: cell ? "1px solid #555" : "1px solid #000",
                 position: "relative"
@@ -418,9 +418,9 @@ export default function CrosswordGrid({
                 <span
                   style={{
                     position: "absolute",
-                    top: "1px",
+                    top: "2px",
                     left: "3px",
-                    fontSize: "8px",
+                    fontSize: "calc(var(--cw-cell, 32px) * 0.32)",
                     color: "#000",
                     fontWeight: "bold",
                     zIndex: 2
@@ -445,7 +445,7 @@ export default function CrosswordGrid({
                     width: "100%",
                     height: "100%",
                     textAlign: "center",
-                    fontSize: "14px",
+                    fontSize: "calc(var(--cw-cell, 32px) * 0.55)",
                     border: "none",
                     outline: "none",
                     textTransform: "uppercase",
