@@ -1291,22 +1291,23 @@ export default function MissionsPage() {
     ws_privacy_patrol:     "/games/privacy-patrol",
   };
 
-  const CROSSWORD_ROUTES: Record<string, string> = {
-    cw_cyber_basics: "/games/cyber-basics",
-    cw_stay_safe:    "/games/stay-safe-online",
-  };
-
   const wordSearchGames = WORD_SEARCH_PUZZLES.map((p) => ({
     id: p.id, title: p.title, desc: p.description, badge: "Word Search",
     locked: isGameLocked(p.id), stars: getStandaloneStars(p.id),
     route: WORD_SEARCH_ROUTES[p.id], wordsearch: WORD_SEARCH_ROUTES[p.id] ? undefined : p,
   }));
 
-  const crosswordGames = CROSSWORD_PUZZLES.map((p) => ({
-    id: p.id, title: p.title, desc: p.description, badge: "Crossword",
-    locked: isGameLocked(p.id), stars: getStandaloneStars(p.id),
-    route: CROSSWORD_ROUTES[p.id], crossword: CROSSWORD_ROUTES[p.id] ? undefined : p,
-  }));
+  const crosswordGames = [
+    {
+      id: "cyber_crossword_ai",
+      title: "Cyber Crossword",
+      desc: "Test your cybersecurity vocabulary with AI-generated crossword missions.",
+      badge: "Crossword",
+      locked: isGameLocked("cyber_crossword_ai"),
+      stars: getStandaloneStars("cyber_crossword_ai"),
+      route: "/games/cyber-crossword-ai",
+    },
+  ];
 
   const dragDropGames = [
     ...DRAG_DROP_GAMES.map((g) => ({
