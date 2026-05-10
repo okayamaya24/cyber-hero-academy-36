@@ -237,6 +237,45 @@ export type Database = {
           },
         ]
       }
+      crossword_results: {
+        Row: {
+          completion_time: number
+          created_at: string
+          hints_used: number
+          id: string
+          puzzle_title: string
+          stars: string | null
+          tier: string
+          topic: string
+          words_placed: number
+          xp_earned: number
+        }
+        Insert: {
+          completion_time?: number
+          created_at?: string
+          hints_used?: number
+          id?: string
+          puzzle_title: string
+          stars?: string | null
+          tier: string
+          topic: string
+          words_placed?: number
+          xp_earned?: number
+        }
+        Update: {
+          completion_time?: number
+          created_at?: string
+          hints_used?: number
+          id?: string
+          puzzle_title?: string
+          stars?: string | null
+          tier?: string
+          topic?: string
+          words_placed?: number
+          xp_earned?: number
+        }
+        Relationships: []
+      }
       daily_challenges: {
         Row: {
           challenge_date: string
