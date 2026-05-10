@@ -403,6 +403,7 @@ const App = () => (
               <Route path="/dashboard/password" element={<ChangePasswordPage />} />
               <Route path="/portal" element={<Navigate to="/dashboard" replace />} />
               <Route path="/portal/*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/test-crossword" element={<TestCrosswordPage />} />
               {/* Training Center Games */}
               <Route path="/games/virus-vaporizer" element={<VirusVaporizer />} />
               <Route path="/games/spot-the-phish" element={<SpotThePhish />} />
