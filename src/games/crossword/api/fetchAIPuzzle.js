@@ -1,23 +1,12 @@
-import { supabase } from "../supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 
-export async function fetchAIPuzzle(
-  topic,
-  tier
-) {
-  const { data, error } =
-    await supabase.functions.invoke(
-      "generate-crossword",
-      {
-        body: {
-          topic,
-          tier
-        }
-      }
-    );
+export async function fetchAIPuzzle(topic, tier) {
+  const { data, error } = await supabase.functions.invoke("generate-crossword", {
+    body: { topic, tier },
+  });
 
   if (error) {
     console.error(error);
-
     throw error;
   }
 
