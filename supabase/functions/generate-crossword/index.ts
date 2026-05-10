@@ -163,7 +163,7 @@ Hard rules:
       );
     }
 
-    // Sanitize: uppercase, strip non A-Z, dedupe, length 3-12
+    // Sanitize: uppercase, strip non A-Z, dedupe, enforce per-tier length
     const seen = new Set<string>();
     const words = (parsed.words ?? [])
       .map((w) => ({
@@ -171,15 +171,16 @@ Hard rules:
         clue: String(w.clue ?? "").trim(),
       }))
       .filter((w) => {
-        if (w.answer.length < 3 || w.answer.length > 12) return false;
+        if (w.answer.length < minLen || w.answer.length > maxLen) return false;
+        if (w.answer.length > 12) return false;
         if (!w.clue) return false;
         if (seen.has(w.answer)) return false;
         seen.add(w.answer);
         return true;
       })
-      .slice(0, 15);
+      .slice(0, 18);
 
-    if (words.length < 10) {
+    if (words.length < 12) {
       return new Response(
         JSON.stringify({ error: "AI returned too few valid words, please retry." }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
