@@ -1,4 +1,4 @@
-import { supabase } from "../supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 
 export async function saveCrosswordResult(input) {
   const { data, error } = await supabase
@@ -11,7 +11,7 @@ export async function saveCrosswordResult(input) {
       stars: input.stars,
       hints_used: input.hintsUsed,
       completion_time: input.completionTime,
-      words_placed: input.wordsPlaced
+      words_placed: input.wordsPlaced,
     })
     .select()
     .single();

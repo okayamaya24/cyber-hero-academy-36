@@ -4,7 +4,6 @@ import CrosswordGrid from "./components/CrosswordGrid";
 import ClueList from "./components/ClueList";
 import WordBank from "./components/WordBank";
 
-import { samplePuzzles } from "./data/samplePuzzles";
 import { fetchAIPuzzle } from "./api/fetchAIPuzzle";
 import { createPuzzle } from "./utils/createPuzzle";
 
@@ -28,11 +27,8 @@ function placeWords(grid, words) {
   return grid;
 }
 
-function getRandomPuzzle(tier) {
-  const puzzles = samplePuzzles[tier];
-  const randomIndex = Math.floor(Math.random() * puzzles.length);
-
-  return puzzles[randomIndex];
+function getRandomPuzzle(_tier) {
+  return { title: "Cyber Hero Crossword", size: 15, words: [] };
 }
 
 const cyberTopics = {
@@ -72,9 +68,7 @@ export default function App() {
   const [hintSignal, setHintSignal] = useState(0);
   const [resetSignal, setResetSignal] = useState(0);
 
-  const [currentPuzzle, setCurrentPuzzle] = useState(
-    getRandomPuzzle("junior")
-  );
+  const [currentPuzzle, setCurrentPuzzle] = useState(null);
 
   function getRandomTopic(tier = currentTier) {
     const topics = cyberTopics[tier];
