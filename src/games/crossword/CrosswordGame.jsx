@@ -152,22 +152,25 @@ export default function App() {
     <div
       style={{
         backgroundColor: "#040218",
-        height: "100vh",
+        minHeight: "100vh",
+        width: "100%",
         color: "white",
-        padding: "18px",
+        padding: "clamp(12px, 2vw, 28px)",
+        paddingTop: "clamp(56px, 7vw, 72px)",
         fontFamily: "Arial",
-        overflow: "hidden",
-        boxSizing: "border-box"
+        boxSizing: "border-box",
+        // dynamic crossword cell size — scales with viewport
+        ["--cw-cell"]: "clamp(22px, min(4.4vw, 4.4vh), 46px)"
       }}
     >
       <div
         style={{
           width: "100%",
-          maxWidth: "1200px",
-          height: "100%",
+          maxWidth: "1600px",
           margin: "0 auto",
           display: "flex",
-          flexDirection: "column"
+          flexDirection: "column",
+          gap: "16px"
         }}
       >
         {/* HEADER */}
@@ -176,23 +179,20 @@ export default function App() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "14px",
             flexWrap: "wrap",
-            gap: "14px",
-            flexShrink: 0
+            gap: "14px"
           }}
         >
           <div>
             <h1
               style={{
-                fontSize: "clamp(24px, 4vw, 42px)",
+                fontSize: "clamp(26px, 3.4vw, 46px)",
                 margin: 0,
                 lineHeight: 1.05
               }}
             >
               {currentPuzzle.title}
             </h1>
-
             <p
               style={{
                 color: "#08b6aa",
@@ -203,16 +203,6 @@ export default function App() {
             >
               Current Tier: {currentTier.toUpperCase()}
             </p>
-
-            <p
-              style={{
-                color: "#cbd5e1",
-                fontSize: "13px",
-                marginTop: "4px",
-                marginBottom: 0
-              }}
-            >
-            </p>
           </div>
 
           <button
@@ -222,11 +212,11 @@ export default function App() {
               backgroundColor: isGenerating ? "#64748b" : "#08b6aa",
               color: "#000",
               border: "none",
-              padding: "10px 16px",
+              padding: "12px 20px",
               borderRadius: "12px",
               fontWeight: "bold",
               cursor: isGenerating ? "not-allowed" : "pointer",
-              fontSize: "14px"
+              fontSize: "15px"
             }}
           >
             {isGenerating ? "Generating..." : "🎲 New Mission"}
@@ -238,9 +228,7 @@ export default function App() {
           style={{
             display: "flex",
             gap: "10px",
-            marginBottom: "12px",
-            flexWrap: "wrap",
-            flexShrink: 0
+            flexWrap: "wrap"
           }}
         >
           <button
@@ -249,14 +237,12 @@ export default function App() {
           >
             🌟 Junior Heroes
           </button>
-
           <button
             onClick={() => handleTierChange("hero")}
             style={tierButtonStyle(currentTier === "hero")}
           >
             🛡️ Hero Tier
           </button>
-
           <button
             onClick={() => handleTierChange("elite")}
             style={tierButtonStyle(currentTier === "elite")}
@@ -272,45 +258,30 @@ export default function App() {
               border: "1px solid #fecaca",
               color: "#fff",
               padding: "10px 12px",
-              borderRadius: "12px",
-              marginBottom: "12px",
-              flexShrink: 0
+              borderRadius: "12px"
             }}
           >
             {generationError}
           </div>
         )}
 
-        <div
-          style={{
-            width: "100%",
-            marginBottom: "16px",
-            flexShrink: 0
-          }}
-        >
-          <WordBank words={currentPuzzle.words} tier={currentTier} />
-        </div>
+        <WordBank words={currentPuzzle.words} tier={currentTier} />
 
         {/* GAME ROW: GRID LEFT, CLUES + BUTTONS RIGHT */}
         <div
           style={{
             display: "flex",
-            gap: "24px",
+            gap: "32px",
             alignItems: "flex-start",
             flexWrap: "wrap",
-            justifyContent: "center",
-            minHeight: 0,
-            flex: 1
+            justifyContent: "center"
           }}
         >
           <div
             style={{
-              flex: "1 1 620px",
-              maxWidth: "760px",
-              minWidth: "320px",
+              flex: "1 1 640px",
               display: "flex",
-              justifyContent: "center",
-              minHeight: 0
+              justifyContent: "center"
             }}
           >
             <CrosswordGrid
@@ -330,19 +301,17 @@ export default function App() {
 
           <div
             style={{
-              flex: "0 1 320px",
-              width: "100%",
-              maxWidth: "340px",
+              flex: "1 1 380px",
+              maxWidth: "480px",
+              minWidth: "300px",
               display: "flex",
               flexDirection: "column",
-              gap: "8px",
-              height: "fit-content",
-              minHeight: 0
+              gap: "14px"
             }}
           >
             <div
               style={{
-                height: "300px",
+                maxHeight: "60vh",
                 overflowY: "auto",
                 overflowX: "hidden",
                 borderRadius: "16px"
@@ -360,12 +329,10 @@ export default function App() {
                 backgroundColor: "#0b1120",
                 border: "1px solid #08b6aa",
                 borderRadius: "16px",
-                padding: "14px",
+                padding: "16px",
                 display: "flex",
                 flexDirection: "column",
-                gap: "9px",
-                flexShrink: 0,
-                marginTop: "20px"
+                gap: "10px"
               }}
             >
               <button
@@ -374,14 +341,12 @@ export default function App() {
               >
                 Check Answers
               </button>
-
               <button
                 onClick={() => setHintSignal((prev) => prev + 1)}
                 style={sideButtonStyle("#facc15", "#000")}
               >
                 Use Hint
               </button>
-
               <button
                 onClick={() => setResetSignal((prev) => prev + 1)}
                 style={sideButtonStyle("#1f2937", "#fff")}
@@ -401,11 +366,11 @@ function tierButtonStyle(active) {
     backgroundColor: active ? "#08b6aa" : "#111827",
     color: active ? "#000" : "#fff",
     border: "1px solid #08b6aa",
-    padding: "10px 14px",
+    padding: "10px 16px",
     borderRadius: "12px",
     fontWeight: "bold",
     cursor: "pointer",
-    fontSize: "13px"
+    fontSize: "14px"
   };
 }
 
@@ -414,11 +379,11 @@ function sideButtonStyle(background, color) {
     backgroundColor: background,
     color,
     border: "none",
-    padding: "10px 14px",
+    padding: "12px 16px",
     borderRadius: "12px",
     fontWeight: "bold",
     cursor: "pointer",
     width: "100%",
-    fontSize: "13px"
+    fontSize: "14px"
   };
 }
