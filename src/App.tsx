@@ -91,6 +91,7 @@ import InternetDetective from "./pages/games/InternetDetective";
 import SafeOrNot from "./pages/games/SafeOrNot";
 import CyberCrossword from "./pages/games/CyberCrossword";
 import CyberWordSearch from "./pages/games/CyberWordSearch";
+import TestCrosswordPage from "./pages/TestCrosswordPage";
 
 const queryClient = new QueryClient();
 
