@@ -1303,7 +1303,7 @@ export default function MissionsPage() {
       title: "Cyber Crossword",
       desc: "Test your cybersecurity vocabulary with AI-generated crossword missions.",
       badge: "Crossword",
-      locked: isGameLocked("cyber_crossword_ai"),
+      locked: false,
       stars: getStandaloneStars("cyber_crossword_ai"),
       route: "/games/cyber-crossword-ai",
     },
