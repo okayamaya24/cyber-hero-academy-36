@@ -8,7 +8,7 @@ export default function CyberCrosswordAI() {
   return (
     <div className="relative min-h-screen bg-[#040218]">
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/missions")}
         className="fixed top-4 left-4 z-50 flex items-center gap-2 rounded-xl bg-black/60 px-3 py-2 text-sm font-semibold text-white backdrop-blur hover:bg-black/80"
       >
         <ArrowLeft className="h-4 w-4" />
