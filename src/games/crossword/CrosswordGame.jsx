@@ -387,17 +387,3 @@ function sideButtonStyle(background, color) {
     fontSize: "14px"
   };
 }
-
-function sideButtonStyle(background, color) {
-  return {
-    backgroundColor: background,
-    color,
-    border: "none",
-    padding: "10px 14px",
-    borderRadius: "12px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    width: "100%",
-    fontSize: "13px"
-  };
-}
