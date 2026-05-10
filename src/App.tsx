@@ -90,6 +90,7 @@ import CyberClues from "./pages/games/CyberClues";
 import InternetDetective from "./pages/games/InternetDetective";
 import SafeOrNot from "./pages/games/SafeOrNot";
 import CyberCrossword from "./pages/games/CyberCrossword";
+import CyberCrosswordAI from "./pages/games/CyberCrosswordAI";
 import CyberWordSearch from "./pages/games/CyberWordSearch";
 import TestCrosswordPage from "./pages/TestCrosswordPage";
 
@@ -446,6 +447,7 @@ const App = () => (
               <Route path="/games/internet-detective" element={<InternetDetective />} />
               <Route path="/games/safe-or-not" element={<SafeOrNot />} />
               <Route path="/games/cyber-crossword" element={<CyberCrossword />} />
+              <Route path="/games/cyber-crossword-ai" element={<CyberCrosswordAI />} />
               <Route path="/games/cyber-word-search" element={<CyberWordSearch />} />
 
               <Route path="/lesson-preview" element={<LessonPreviewPage />} />
