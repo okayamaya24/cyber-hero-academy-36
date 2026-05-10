@@ -773,6 +773,36 @@ export type Database = {
         }
         Relationships: []
       }
+      word_search_results: {
+        Row: {
+          best_streak: number
+          completion_time: number
+          created_at: string
+          id: string
+          stars: string | null
+          tier: string
+          xp_earned: number
+        }
+        Insert: {
+          best_streak?: number
+          completion_time?: number
+          created_at?: string
+          id?: string
+          stars?: string | null
+          tier: string
+          xp_earned?: number
+        }
+        Update: {
+          best_streak?: number
+          completion_time?: number
+          created_at?: string
+          id?: string
+          stars?: string | null
+          tier?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
       world_locks: {
         Row: {
           admin_override: boolean | null
