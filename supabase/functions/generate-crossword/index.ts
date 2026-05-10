@@ -11,13 +11,19 @@ const corsHeaders = {
 
 type Tier = "junior" | "hero" | "elite";
 
+const TIER_LENGTHS: Record<Tier, { min: number; max: number }> = {
+  junior: { min: 3, max: 8 },
+  hero: { min: 4, max: 10 },
+  elite: { min: 4, max: 12 },
+};
+
 const TIER_GUIDE: Record<Tier, string> = {
   junior:
-    "Ages 5–7. Use very simple internet safety words (3–6 letters when possible) like PASSWORD, SAFE, HELP, ADULT, SECRET, LOGIN, KIND, BLOCK, TRUST, PRIVATE. Clues must be short, friendly, and use easy words a young child understands. Avoid jargon.",
+    "Ages 5–7. Answers MUST be 3–8 letters. Use very simple internet safety words like SAFE, HELP, ADULT, SECRET, LOGIN, KIND, BLOCK, TRUST, RULES, ASK, STOP, SHARE, PRIVATE, PARENT. Clues must be short, friendly, and use easy words a young child understands. Avoid jargon.",
   hero:
-    "Ages 8–12. Use medium cybersecurity vocabulary like PHISHING, MALWARE, FIREWALL, HACKER, VIRUS, SCAM, ENCRYPT, UPDATE, BACKUP, COOKIES. Clues should be clear, age-appropriate, and lightly explanatory.",
+    "Ages 8–12. Answers MUST be 4–10 letters. Prefer medium cybersecurity vocabulary like PASSWORD, PHISHING, MALWARE, HACKER, PRIVACY, COOKIE, LOGIN, VERIFY, FIREWALL, SCAM, ALERT, TRUST, LINK, SPAM, VIRUS, UPDATE, BACKUP. Clues should be clear, age-appropriate, and lightly explanatory.",
   elite:
-    "Ages 12+. Use advanced cybersecurity terms like RANSOMWARE, PHISHING, BOTNET, ENCRYPTION, AUTHENTICATION, EXPLOIT, PAYLOAD, KEYLOGGER, VPN, CIPHER, ZERODAY, SPOOFING. Clues can be more technical but still clear.",
+    "Ages 12+. Answers MUST be 4–12 letters. Prefer advanced cybersecurity terms like FIREWALL, BOTNET, TROJAN, SPYWARE, BREACH, PATCH, VPN, PHISHING, MALWARE, HASH, TOKEN, THREAT, EXPLOIT, ZERODAY (write 'zero day' as ZERODAY), RANSOM, ENCRYPT, SPOOF, CIPHER, PAYLOAD. Clues can be more technical but still clear.",
 };
 
 Deno.serve(async (req) => {
@@ -51,14 +57,18 @@ Deno.serve(async (req) => {
       );
     }
 
+    const { min: minLen, max: maxLen } = TIER_LENGTHS[tier];
+
     const systemPrompt = `You generate cybersecurity-themed crossword puzzle word lists for kids.
 Tier rules: ${TIER_GUIDE[tier]}
 Hard rules:
-- Generate 10 to 15 words.
-- ANSWERS must be UPPERCASE A-Z only. No spaces, digits, hyphens, apostrophes, or punctuation.
-- Each answer must be 3–12 letters.
+- Generate 12 to 18 words so a layout engine has plenty of options.
+- ANSWERS must be UPPERCASE A-Z only. No spaces, digits, hyphens, apostrophes, punctuation, or multi-word answers.
+- Each answer must be ${minLen}–${maxLen} letters. Never longer than 12 letters.
+- Prefer words rich in common letters (E, A, R, S, T, I, N, O, L) so they intersect well in a crossword.
+- Vary word lengths within the allowed range.
 - All answers must be unique.
-- Clues must be kid-friendly, clear, and a single sentence (no answer leakage).
+- Clues must be kid-friendly for the tier, clear, and a single sentence (no answer leakage).
 - Title should be short and themed.`;
 
     const userPrompt = `Topic: ${topic}\nTier: ${tier}\nReturn the crossword word list.`;
@@ -87,8 +97,8 @@ Hard rules:
                   title: { type: "string" },
                   words: {
                     type: "array",
-                    minItems: 10,
-                    maxItems: 15,
+                    minItems: 12,
+                    maxItems: 18,
                     items: {
                       type: "object",
                       properties: {
@@ -153,7 +163,7 @@ Hard rules:
       );
     }
 
-    // Sanitize: uppercase, strip non A-Z, dedupe, length 3-12
+    // Sanitize: uppercase, strip non A-Z, dedupe, enforce per-tier length
     const seen = new Set<string>();
     const words = (parsed.words ?? [])
       .map((w) => ({
@@ -161,15 +171,16 @@ Hard rules:
         clue: String(w.clue ?? "").trim(),
       }))
       .filter((w) => {
-        if (w.answer.length < 3 || w.answer.length > 12) return false;
+        if (w.answer.length < minLen || w.answer.length > maxLen) return false;
+        if (w.answer.length > 12) return false;
         if (!w.clue) return false;
         if (seen.has(w.answer)) return false;
         seen.add(w.answer);
         return true;
       })
-      .slice(0, 15);
+      .slice(0, 18);
 
-    if (words.length < 10) {
+    if (words.length < 12) {
       return new Response(
         JSON.stringify({ error: "AI returned too few valid words, please retry." }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
