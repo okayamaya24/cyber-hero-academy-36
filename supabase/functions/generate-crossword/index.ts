@@ -57,14 +57,18 @@ Deno.serve(async (req) => {
       );
     }
 
+    const { min: minLen, max: maxLen } = TIER_LENGTHS[tier];
+
     const systemPrompt = `You generate cybersecurity-themed crossword puzzle word lists for kids.
 Tier rules: ${TIER_GUIDE[tier]}
 Hard rules:
-- Generate 10 to 15 words.
-- ANSWERS must be UPPERCASE A-Z only. No spaces, digits, hyphens, apostrophes, or punctuation.
-- Each answer must be 3–12 letters.
+- Generate 12 to 18 words so a layout engine has plenty of options.
+- ANSWERS must be UPPERCASE A-Z only. No spaces, digits, hyphens, apostrophes, punctuation, or multi-word answers.
+- Each answer must be ${minLen}–${maxLen} letters. Never longer than 12 letters.
+- Prefer words rich in common letters (E, A, R, S, T, I, N, O, L) so they intersect well in a crossword.
+- Vary word lengths within the allowed range.
 - All answers must be unique.
-- Clues must be kid-friendly, clear, and a single sentence (no answer leakage).
+- Clues must be kid-friendly for the tier, clear, and a single sentence (no answer leakage).
 - Title should be short and themed.`;
 
     const userPrompt = `Topic: ${topic}\nTier: ${tier}\nReturn the crossword word list.`;
