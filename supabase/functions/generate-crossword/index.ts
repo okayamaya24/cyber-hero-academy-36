@@ -97,8 +97,8 @@ Hard rules:
                   title: { type: "string" },
                   words: {
                     type: "array",
-                    minItems: 10,
-                    maxItems: 15,
+                    minItems: 12,
+                    maxItems: 18,
                     items: {
                       type: "object",
                       properties: {
