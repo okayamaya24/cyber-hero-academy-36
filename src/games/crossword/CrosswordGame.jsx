@@ -7,6 +7,126 @@ import WordBank from "./components/WordBank";
 import { fetchAIPuzzle } from "./api/fetchAIPuzzle";
 import { createPuzzle } from "./utils/createPuzzle";
 
+function LoadingScreen() {
+  const messages = [
+    "Byte is building your cyber mission…",
+    "Generating clues…",
+    "Preparing your crossword grid…",
+    "Waking up the villains…",
+    "Loading cybersecurity vocabulary…",
+  ];
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % messages.length);
+    }, 1800);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div
+      style={{
+        backgroundColor: "#040218",
+        color: "white",
+        minHeight: "100vh",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: "28px",
+        fontFamily: "var(--font-display, Arial)",
+        overflow: "hidden",
+        padding: "24px",
+        boxSizing: "border-box",
+      }}
+    >
+      {/* Animated pulse ring */}
+      <div style={{ position: "relative", width: 80, height: 80 }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            borderRadius: "50%",
+            border: "3px solid #08b6aa",
+            opacity: 0.35,
+            animation: "cw-pulse-ring 2s ease-out infinite",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 12,
+            borderRadius: "50%",
+            border: "3px solid #08b6aa",
+            opacity: 0.6,
+            animation: "cw-pulse-ring 2s ease-out 0.6s infinite",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 24,
+            borderRadius: "50%",
+            backgroundColor: "#08b6aa",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 22,
+            fontWeight: "bold",
+            color: "#040218",
+            animation: "cw-pulse-dot 2s ease-in-out infinite",
+          }}
+        >
+          B
+        </div>
+      </div>
+
+      {/* Rotating message */}
+      <div
+        style={{
+          textAlign: "center",
+          fontSize: "clamp(18px, 2.4vw, 28px)",
+          fontWeight: 700,
+          color: "#e2e8f0",
+          minHeight: "1.4em",
+          letterSpacing: "0.02em",
+        }}
+      >
+        {messages[index]}
+      </div>
+
+      {/* Progress dots */}
+      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        {messages.map((_, i) => (
+          <div
+            key={i}
+            style={{
+              width: i === index ? 24 : 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: i === index ? "#08b6aa" : "#1f2937",
+              transition: "all 0.4s ease",
+            }}
+          />
+        ))}
+      </div>
+
+      <style>{`
+        @keyframes cw-pulse-ring {
+          0% { transform: scale(1); opacity: 0.5; }
+          100% { transform: scale(1.6); opacity: 0; }
+        }
+        @keyframes cw-pulse-dot {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.12); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function createGrid(size) {
   return Array.from({ length: size }, () => Array(size).fill(null));
 }
@@ -125,23 +245,7 @@ export default function App() {
   }
 
   if (!currentPuzzle || !currentPuzzle.words) {
-    return (
-      <div
-        style={{
-          backgroundColor: "#040218",
-          color: "white",
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          fontSize: "24px",
-          fontFamily: "Arial",
-          overflow: "hidden"
-        }}
-      >
-        Loading Cyber Hero Academy...
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   const grid = createGrid(currentPuzzle.size);
