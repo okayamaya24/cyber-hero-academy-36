@@ -245,23 +245,7 @@ export default function App() {
   }
 
   if (!currentPuzzle || !currentPuzzle.words) {
-    return (
-      <div
-        style={{
-          backgroundColor: "#040218",
-          color: "white",
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          fontSize: "24px",
-          fontFamily: "Arial",
-          overflow: "hidden"
-        }}
-      >
-        Loading Cyber Hero Academy...
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   const grid = createGrid(currentPuzzle.size);
