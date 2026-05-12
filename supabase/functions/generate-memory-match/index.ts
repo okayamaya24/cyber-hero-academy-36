@@ -89,11 +89,25 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const systemPrompt = `You generate memory match pairs for a children's cybersecurity game.
-Tier: ${tierKey}. ${cfg.guidance}
-Return exactly ${count} pairs. Terms must be UPPERCASE single words (letters only, no spaces or punctuation). Definitions must be one short, clear, age-appropriate sentence. No duplicate terms.`;
+    const systemPrompt = `You generate memory match pairs for a children's CYBERSECURITY game.
 
-    const userPrompt = `Topic: ${topicText}. Generate ${count} memory match pairs.`;
+STRICT RULE: Every single pair MUST be cybersecurity-related. Do NOT generate random general words, colors, animals, objects, school words, food, sports, or any unrelated vocabulary.
+
+Allowed topic areas ONLY:
+passwords, phishing, malware, privacy, safe browsing, scams, social engineering, encryption, firewalls, hackers, data breaches, viruses, secure Wi-Fi, two-factor authentication, online safety, cyberbullying, trusted adults, suspicious links, fake websites.
+
+Tier: ${tierKey}. ${cfg.guidance}
+
+Requirements for every pair:
+- Must be clearly cybersecurity / online safety related (from the allowed topics above)
+- Age-appropriate for the tier
+- Term in UPPERCASE letters only (A-Z, no spaces, no digits, no punctuation)
+- Definition: one short, clear sentence
+- No duplicate terms
+
+Return exactly ${count} pairs.`;
+
+    const userPrompt = `Topic focus: ${topicText} (must stay strictly within cybersecurity / online safety). Generate ${count} cybersecurity memory match pairs.`;
 
     const aiResp = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
