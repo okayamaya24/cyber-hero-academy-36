@@ -615,6 +615,36 @@ export type Database = {
           },
         ]
       }
+      memory_match_results: {
+        Row: {
+          attempts: number
+          completion_time: number
+          created_at: string | null
+          id: string
+          stars: string | null
+          tier: string
+          xp_earned: number
+        }
+        Insert: {
+          attempts?: number
+          completion_time?: number
+          created_at?: string | null
+          id?: string
+          stars?: string | null
+          tier?: string
+          xp_earned?: number
+        }
+        Update: {
+          attempts?: number
+          completion_time?: number
+          created_at?: string | null
+          id?: string
+          stars?: string | null
+          tier?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
       mission_progress: {
         Row: {
           child_id: string
