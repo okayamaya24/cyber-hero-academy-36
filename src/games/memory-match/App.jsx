@@ -390,6 +390,22 @@ export default function App() {
           margin: "0 auto"
         }}
       >
+        <button
+          onClick={() => { window.location.href = "/missions"; }}
+          style={{
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.18)",
+            color: "white",
+            padding: "8px 14px",
+            borderRadius: "10px",
+            cursor: "pointer",
+            fontSize: "14px",
+            marginBottom: "16px"
+          }}
+        >
+          ← Back to Games
+        </button>
+
         <header
           style={{
             display: "flex",
