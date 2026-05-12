@@ -1285,17 +1285,17 @@ export default function MissionsPage() {
     { id: "sequence-shield", title: "Sequence Shield",    desc: "Remember and repeat the sequence to activate your shield!", badge: "Memory", route: "/games/sequence-shield",    locked: isGameLocked("sequence-shield"), isNew: true },
   ];
 
-  const WORD_SEARCH_ROUTES: Record<string, string> = {
-    ws_password_hunt:      "/games/password-hunt",
-    ws_phishing_detective: "/games/phishing-detective",
-    ws_privacy_patrol:     "/games/privacy-patrol",
-  };
-
-  const wordSearchGames = WORD_SEARCH_PUZZLES.map((p) => ({
-    id: p.id, title: p.title, desc: p.description, badge: "Word Search",
-    locked: isGameLocked(p.id), stars: getStandaloneStars(p.id),
-    route: WORD_SEARCH_ROUTES[p.id], wordsearch: WORD_SEARCH_ROUTES[p.id] ? undefined : p,
-  }));
+  const wordSearchGames = [
+    {
+      id: "cyber_word_search",
+      title: "Cyber Word Search",
+      desc: "Play AI-generated cyber word search missions with different topics, puzzle sizes, and difficulty levels.",
+      badge: "Word Search",
+      locked: false,
+      stars: getStandaloneStars("cyber_word_search"),
+      route: "/games/cyber-word-search",
+    },
+  ];
 
   const crosswordGames = [
     {
