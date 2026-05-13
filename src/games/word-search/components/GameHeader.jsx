@@ -14,6 +14,17 @@ export default function GameHeader({
       }}
     >
       <div>
+        <button
+          onClick={() => { window.location.href = "/missions"; }}
+          style={{
+            display: "flex", alignItems: "center", gap: "6px",
+            background: "none", border: "1px solid rgba(8,182,170,0.35)",
+            color: "#08b6aa", borderRadius: "10px", padding: "5px 12px",
+            fontSize: "12px", fontWeight: "bold", cursor: "pointer", marginBottom: "8px",
+          }}
+        >
+          ← Back to Games
+        </button>
         <h1
           style={{
             margin: 0,

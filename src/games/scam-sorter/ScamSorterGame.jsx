@@ -224,13 +224,25 @@ export default function App() {
 function ModePicker({ onSelect }) {
   return (
     <div style={{
-      minHeight: "100vh",
+      minHeight: "100vh", position: "relative",
       background: "linear-gradient(180deg,#020617 0%,#04142d 100%)",
       color: "white", fontFamily: "Arial, sans-serif",
       display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center",
       padding: "40px 20px",
     }}>
+      <button
+        onClick={() => { window.location.href = "/missions"; }}
+        style={{
+          position: "absolute", top: "18px", left: "18px",
+          display: "flex", alignItems: "center", gap: "6px",
+          background: "none", border: "1px solid rgba(8,182,170,0.35)",
+          color: "#08b6aa", borderRadius: "10px", padding: "6px 14px",
+          fontSize: "13px", fontWeight: "bold", cursor: "pointer",
+        }}
+      >
+        ← Back to Games
+      </button>
       <div style={{ fontSize: "56px", marginBottom: "10px" }}>🕵️</div>
       <h1 style={{ fontSize: "40px", color: "#08b6aa", margin: "0 0 6px", textAlign: "center" }}>Scam Sorter</h1>
       <p style={{ color: "#facc15", fontWeight: "bold", marginBottom: "44px", textAlign: "center" }}>How old are you?</p>
@@ -329,6 +341,17 @@ function KidsGame() {
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
           <div>
+            <button
+              onClick={() => { window.location.href = "/missions"; }}
+              style={{
+                display: "flex", alignItems: "center", gap: "6px",
+                background: "none", border: "1px solid rgba(167,139,250,0.35)",
+                color: "#a78bfa", borderRadius: "10px", padding: "5px 12px",
+                fontSize: "12px", fontWeight: "bold", cursor: "pointer", marginBottom: "6px",
+              }}
+            >
+              ← Back to Games
+            </button>
             <h1 style={{ margin: 0, fontSize: "28px", color: "#a78bfa" }}>🕵️ Scam Sorter</h1>
             <p style={{ color: "#facc15", fontWeight: "bold", fontSize: "13px", margin: "2px 0 0" }}>Is this message OK or NOT OK?</p>
           </div>

@@ -217,6 +217,17 @@ export default function App() {
 
       {/* HUD */}
       <div style={{ width: `${GAME_W}px`, padding: "18px 0 10px" }}>
+        <button
+          onClick={() => { window.location.href = "/missions"; }}
+          style={{
+            display: "flex", alignItems: "center", gap: "6px",
+            background: "none", border: "1px solid rgba(8,182,170,0.35)",
+            color: "#08b6aa", borderRadius: "10px", padding: "6px 14px",
+            fontSize: "13px", fontWeight: "bold", cursor: "pointer", marginBottom: "10px",
+          }}
+        >
+          ← Back to Games
+        </button>
         <h1 style={{ margin: 0, fontSize: "40px", color: "#08b6aa", textAlign: "center", letterSpacing: "-0.5px" }}>
           Phishing Escape
         </h1>

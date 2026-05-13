@@ -529,12 +529,24 @@ function shuffle(arr) {
 function ModePicker() {
   return (
     <div style={{
-      minHeight: "100vh",
+      minHeight: "100vh", position: "relative",
       background: "linear-gradient(180deg,#020617 0%,#04142d 100%)",
       display: "flex", flexDirection: "column", alignItems: "center",
       justifyContent: "center", fontFamily: "Arial", color: "white", gap: "20px",
       padding: "24px"
     }}>
+      <button
+        onClick={() => { window.location.href = "/missions"; }}
+        style={{
+          position: "absolute", top: "18px", left: "18px",
+          display: "flex", alignItems: "center", gap: "6px",
+          background: "none", border: "1px solid rgba(8,182,170,0.35)",
+          color: "#08b6aa", borderRadius: "10px", padding: "6px 14px",
+          fontSize: "13px", fontWeight: "bold", cursor: "pointer",
+        }}
+      >
+        ← Back to Games
+      </button>
       <div style={{ fontSize: "60px" }}>🔍</div>
       <h1 style={{ fontSize: "32px", color: "#08b6aa", margin: 0, textAlign: "center" }}>
         Safe Website Detector
@@ -620,10 +632,22 @@ function KidsGame() {
   if (gameState === "start") {
     return (
       <div style={{
-        minHeight: "100vh", background: "linear-gradient(180deg,#020617 0%,#04142d 100%)",
+        minHeight: "100vh", position: "relative", background: "linear-gradient(180deg,#020617 0%,#04142d 100%)",
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
         fontFamily: "Arial", color: "white", gap: "20px", padding: "24px"
       }}>
+        <button
+          onClick={() => { window.location.href = "/missions"; }}
+          style={{
+            position: "absolute", top: "18px", left: "18px",
+            display: "flex", alignItems: "center", gap: "6px",
+            background: "none", border: "1px solid rgba(167,139,250,0.35)",
+            color: "#a78bfa", borderRadius: "10px", padding: "6px 14px",
+            fontSize: "13px", fontWeight: "bold", cursor: "pointer",
+          }}
+        >
+          ← Back to Games
+        </button>
         <div style={{ fontSize: "64px" }}>🔍</div>
         <h1 style={{ fontSize: "clamp(28px,5vw,42px)", color: "#a78bfa", margin: 0, textAlign: "center" }}>
           Safe Website Detective
@@ -894,10 +918,22 @@ function ProGame() {
   if (gameState === "start") {
     return (
       <div style={{
-        minHeight: "100vh", background: "linear-gradient(180deg,#020617 0%,#04142d 100%)",
+        minHeight: "100vh", position: "relative", background: "linear-gradient(180deg,#020617 0%,#04142d 100%)",
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
         fontFamily: "Arial", color: "white", gap: "18px", padding: "24px"
       }}>
+        <button
+          onClick={() => { window.location.href = "/missions"; }}
+          style={{
+            position: "absolute", top: "18px", left: "18px",
+            display: "flex", alignItems: "center", gap: "6px",
+            background: "none", border: `1px solid ${accentColor}55`,
+            color: accentColor, borderRadius: "10px", padding: "6px 14px",
+            fontSize: "13px", fontWeight: "bold", cursor: "pointer",
+          }}
+        >
+          ← Back to Games
+        </button>
         <div style={{ fontSize: "60px" }}>🔍</div>
         <h1 style={{ fontSize: "clamp(28px,5vw,42px)", color: accentColor, margin: 0, textAlign: "center" }}>
           Safe Website Detector
