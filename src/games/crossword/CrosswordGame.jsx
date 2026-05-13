@@ -151,6 +151,14 @@ function getRandomPuzzle(_tier) {
   return { title: "Cyber Hero Crossword", size: 15, words: [] };
 }
 
+function getInitialTier() {
+  const age = parseInt(new URLSearchParams(window.location.search).get("age") || "0");
+  if (age >= 5 && age <= 8)  return "junior";
+  if (age >= 9 && age <= 12) return "hero";
+  if (age > 12)              return "elite";
+  return "junior";
+}
+
 const cyberTopics = {
   junior: [
     "internet safety",
@@ -178,7 +186,7 @@ const cyberTopics = {
 };
 
 export default function App() {
-  const [currentTier, setCurrentTier] = useState("junior");
+  const [currentTier, setCurrentTier] = useState(getInitialTier);
   const [activeWord, setActiveWord] = useState(null);
   const [topic, setTopic] = useState("internet safety");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -218,6 +226,7 @@ export default function App() {
 
       setCurrentPuzzle(playablePuzzle);
       setActiveWord(null);
+      setGenerationError("");
     } catch (error) {
       console.error("Puzzle generation failed:", error);
 
@@ -233,7 +242,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    loadNewPuzzle("junior");
+    loadNewPuzzle(getInitialTier());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

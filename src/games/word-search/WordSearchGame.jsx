@@ -149,9 +149,20 @@ function cleanWords(words, size) {
     .filter((word, index, array) => array.indexOf(word) === index);
 }
 
+function getInitialTier() {
+  const age = parseInt(new URLSearchParams(window.location.search).get("age") || "0");
+  if (age >= 5 && age <= 8)  return "junior";
+  if (age >= 9 && age <= 12) return "hero";
+  if (age > 12)              return "elite";
+  return "junior";
+}
+
 export default function App() {
-  const [tier, setTier] = useState("junior");
-  const [puzzleSize, setPuzzleSize] = useState("small");
+  const initialTier = getInitialTier();
+  const [tier, setTier] = useState(initialTier);
+  const [puzzleSize, setPuzzleSize] = useState(
+    initialTier === "elite" ? "large" : initialTier === "hero" ? "medium" : "small"
+  );
   const [topic, setTopic] = useState("internet safety");
 
   const [words, setWords] = useState(FALLBACK_WORDS_BY_TIER.junior);
@@ -179,7 +190,9 @@ const [secondsElapsed, setSecondsElapsed] = useState(0);
   }, [words, size, tier]);
 
   useEffect(() => {
-    loadAIMission("junior", "small");
+    const t = getInitialTier();
+    const s = t === "elite" ? "large" : t === "hero" ? "medium" : "small";
+    loadAIMission(t, s);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -224,14 +237,10 @@ const [secondsElapsed, setSecondsElapsed] = useState(0);
     }
 
     saveResult();
-  }, [
-    missionComplete,
-    resultSaved,
-    savingResult,
-    tier,
-    secondsElapsed,
-    bestStreak
-  ]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // secondsElapsed & bestStreak omitted — frozen when missionComplete=true so
+  // closure captures final values. Including them re-runs save every second.
+  }, [missionComplete, resultSaved, savingResult, tier]);
 
   async function loadAIMission(nextTier = tier, nextPuzzleSize = puzzleSize) {
     setIsGenerating(true);
@@ -409,13 +418,13 @@ const [secondsElapsed, setSecondsElapsed] = useState(0);
       );
 
       if (foundWordData) {
-       setFoundCells((prev) => [
-        ...prev,
-        ...foundWordData.positions.map((cell) => ({
-          ...cell,
-          wordIndex: foundWords.length
-        }))
-      ]);
+        setFoundCells((prev) => [
+          ...prev,
+          ...foundWordData.positions.map((cell) => ({
+            ...cell,
+            wordIndex: foundWords.length
+          }))
+        ]);
       }
 
       const newStreak = streak + 1;
@@ -426,68 +435,45 @@ const [secondsElapsed, setSecondsElapsed] = useState(0);
       }
 
       if (tier === "junior") {
+        const juniorPraise = [
+          `✅ Great work! You found ${match}.`,
+          `🌟 Awesome job finding ${match}!`,
+          `🎉 NICE! ${match} was hidden well!`,
+          `🛡️ Cyber Hero move! You found ${match}!`,
+          `🚀 Amazing detective skills!`,
+          `💙 Byte is proud of you!`,
+          `🔥 SUPER FIND: ${match}!`,
+          `🎯 Excellent scanning!`,
+          `✨ You’re becoming a cyber expert!`,
+          `🏆 Great teamwork with Byte!`
+        ];
+        setMessage(juniorPraise[Math.floor(Math.random() * juniorPraise.length)]);
+      } else {
+        if (newStreak >= 5) {
+          setMessage(`🔥 FIREWALL COMBO x${newStreak}!`);
+        } else if (newStreak >= 3) {
+          setMessage(`⚡ CYBER COMBO x${newStreak}!`);
+        } else {
+          setMessage(`✅ Great work! You found ${match}.`);
+        }
+      }
+    } else {
+      if (tier === "junior") {
+        const juniorFails = [
+          "❌ Almost! Try scanning again!",
+          "🕵️ Keep searching, Cyber Hero!",
+          "🔍 That wasn’t the full word yet!",
+          "⚡ Byte says try another path!",
+          "💙 You got this! Try again!"
+        ];
+        setMessage(juniorFails[Math.floor(Math.random() * juniorFails.length)]);
+      } else {
+        setMessage("❌ Byte says that sequence is incorrect.");
+      }
+      setStreak(0);
+    }
 
-          const juniorPraise = [
-            `✅ Great work! You found ${match}.`,
-            `🌟 Awesome job finding ${match}!`,
-            `🎉 NICE! ${match} was hidden well!`,
-            `🛡️ Cyber Hero move! You found ${match}!`,
-            `🚀 Amazing detective skills!`,
-            `💙 Byte is proud of you!`,
-            `🔥 SUPER FIND: ${match}!`,
-            `🎯 Excellent scanning!`,
-            `✨ You’re becoming a cyber expert!`,
-            `🏆 Great teamwork with Byte!`
-          ];
-
-          const randomPraise =
-            juniorPraise[
-              Math.floor(Math.random() * juniorPraise.length)
-            ];
-
-          setMessage(randomPraise);
-
-          } else {
-
-            if (newStreak >= 5) {
-              setMessage(`🔥 FIREWALL COMBO x${newStreak}!`);
-            } else if (newStreak >= 3) {
-              setMessage(`⚡ CYBER COMBO x${newStreak}!`);
-            } else {
-              setMessage(`✅ Great work! You found ${match}.`);
-            }
-
-          }
-
-          } else {
-
-            if (tier === "junior") {
-
-              const juniorFails = [
-                "❌ Almost! Try scanning again!",
-                "🕵️ Keep searching, Cyber Hero!",
-                "🔍 That wasn’t the full word yet!",
-                "⚡ Byte says try another path!",
-                "💙 You got this! Try again!"
-              ];
-
-              const randomFail =
-                juniorFails[
-                  Math.floor(Math.random() * juniorFails.length)
-                ];
-
-              setMessage(randomFail);
-
-            } else {
-
-              setMessage("❌ Byte says that sequence is incorrect.");
-
-            }
-
-            setStreak(0);
-          }
-
-          setSelectedCells([]);
+    setSelectedCells([]);
   }
 
   return (

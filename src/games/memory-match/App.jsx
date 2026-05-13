@@ -167,9 +167,17 @@ function buildCards(pairs) {
   return shuffle(cards);
 }
 
+function getInitialTier() {
+  const age = parseInt(new URLSearchParams(window.location.search).get("age") || "0");
+  if (age >= 5 && age <= 8)  return "junior";
+  if (age >= 9 && age <= 12) return "hero";
+  if (age > 12)              return "elite";
+  return "junior";
+}
+
 export default function App() {
-  const [tier, setTier] = useState("junior");
-  const [cards, setCards] = useState(() => buildCards(PAIRS_BY_TIER.junior));
+  const [tier, setTier] = useState(getInitialTier);
+  const [cards, setCards] = useState(() => buildCards(PAIRS_BY_TIER[getInitialTier()]));
   const [flippedCards, setFlippedCards] = useState([]);
   const [matchedPairIds, setMatchedPairIds] = useState([]);
   const [attempts, setAttempts] = useState(0);
@@ -182,9 +190,9 @@ export default function App() {
   const pairs = cards.length / 2;
 
   useEffect(() => {
-  resetGame("junior");
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+    resetGame(getInitialTier());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (missionComplete) return;
@@ -228,14 +236,11 @@ export default function App() {
     }
 
     saveResult();
-  }, [
-    missionComplete,
-    resultSaved,
-    savingResult,
-    tier,
-    secondsElapsed,
-    attempts
-  ]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // secondsElapsed & attempts are intentionally omitted — they are frozen when
+  // missionComplete=true (timer stops), so the closure always captures the
+  // correct final values. Including them would re-run the save every second.
+  }, [missionComplete, resultSaved, savingResult, tier]);
 
   function formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
@@ -511,12 +516,7 @@ export default function App() {
         <main
           style={{
             display: "grid",
-            gridTemplateColumns:
-              tier === "junior"
-                ? "repeat(4, 1fr)"
-                : tier === "hero"
-                ? "repeat(4, 1fr)"
-                : "repeat(4, 1fr)",
+            gridTemplateColumns: "repeat(4, 1fr)",
             gap: tier === "elite" ? "12px" : "16px"
           }}
         >
