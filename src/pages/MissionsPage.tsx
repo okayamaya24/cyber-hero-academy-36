@@ -1279,10 +1279,8 @@ export default function MissionsPage() {
       id: m.id, title: "Spot the Phish (Quiz)", desc: "Sort real from fake messages!", badge: "Sort",
       locked: isGameLocked(m.id), stars: getStandaloneStars(m.id), mission: m,
     })),
-    ...DRAG_DROP_GAMES.filter((g) => g.subType === "sort").map((g) => ({
-      id: g.id, title: g.title, desc: g.description, badge: "Sort",
-      locked: isGameLocked(g.id), stars: getStandaloneStars(g.id), dragdrop: g,
-    })),
+    // Scam Sorter — route to custom game (not inline drag-drop)
+    { id: "dd_scam_sorter", title: "Safe or Scam Sorter", desc: "Drag messages into safe or scam buckets!", badge: "Sort", route: "/games/safe-or-scam-sorter", locked: isGameLocked("dd_scam_sorter"), isHot: true },
   ];
 
   const speedGames = [
@@ -1321,7 +1319,8 @@ export default function MissionsPage() {
   ];
 
   const dragDropGames = [
-    ...DRAG_DROP_GAMES.map((g) => ({
+    // Exclude dd_scam_sorter — it has its own route card in sortGames
+    ...DRAG_DROP_GAMES.filter((g) => g.id !== "dd_scam_sorter").map((g) => ({
       id: g.id, title: g.title, desc: g.description, badge: "Drag & Drop",
       locked: isGameLocked(g.id), stars: getStandaloneStars(g.id), dragdrop: g,
     })),
