@@ -77,13 +77,12 @@ import CyberBasics from "./pages/games/CyberBasics";
 import StaySafeOnline from "./pages/games/StaySafeOnline";
 import BuildAStrongPassword from "./pages/games/BuildAStrongPassword";
 import SafeOrScamSorter from "./pages/games/SafeOrScamSorter";
+import SafeWebsiteDetector from "./pages/games/SafeWebsiteDetector";
 import LockTheVaultDrag from "./pages/games/LockTheVaultDrag";
-import SpotTheScam from "./pages/games/SpotTheScam";
 import PasswordPower from "./pages/games/PasswordPower";
 import SafeSitesExplorer from "./pages/games/SafeSitesExplorer";
 import SecretKeeper from "./pages/games/SecretKeeper";
 import MalwareMonsters from "./pages/games/MalwareMonsters";
-import PhishyMessages from "./pages/games/PhishyMessages";
 import SmartSharing from "./pages/games/SmartSharing";
 import DeviceDefender from "./pages/games/DeviceDefender";
 import CyberClues from "./pages/games/CyberClues";
@@ -435,12 +434,10 @@ const App = () => (
               <Route path="/games/build-a-strong-password" element={<BuildAStrongPassword />} />
               <Route path="/games/safe-or-scam-sorter" element={<SafeOrScamSorter />} />
               <Route path="/games/lock-the-vault-drag" element={<LockTheVaultDrag />} />
-              <Route path="/games/spot-the-scam" element={<SpotTheScam />} />
               <Route path="/games/password-power" element={<PasswordPower />} />
               <Route path="/games/safe-sites-explorer" element={<SafeSitesExplorer />} />
               <Route path="/games/secret-keeper" element={<SecretKeeper />} />
               <Route path="/games/malware-monsters" element={<MalwareMonsters />} />
-              <Route path="/games/phishy-messages" element={<PhishyMessages />} />
               <Route path="/games/smart-sharing" element={<SmartSharing />} />
               <Route path="/games/device-defender" element={<DeviceDefender />} />
               <Route path="/games/cyber-clues" element={<CyberClues />} />
@@ -449,6 +446,7 @@ const App = () => (
               <Route path="/games/cyber-crossword" element={<CyberCrossword />} />
               <Route path="/games/cyber-crossword-ai" element={<CyberCrosswordAI />} />
               <Route path="/games/cyber-word-search" element={<CyberWordSearch />} />
+              <Route path="/games/safe-website-detector" element={<SafeWebsiteDetector />} />
 
               <Route path="/lesson-preview" element={<LessonPreviewPage />} />
               <Route path="/forgot-password" element={<><Navbar /><ForgotPasswordPage /></>} />
