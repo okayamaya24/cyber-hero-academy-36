@@ -1233,16 +1233,27 @@ export default function MissionsPage() {
     return mp ? getStarsFromProgress(mp) : 0;
   };
 
-  /** A game is locked if admin locked it OR the lesson hasn't been completed yet */
-  const isGameLocked = (gameId: string) =>
-    isGameLockedByAdmin(gameId) || !isGameUnlockedByLessons(gameId, completedMissionIds);
+  /**
+   * Only the 6 custom-built games are unlocked.
+   * Every other game shows as locked (coming soon) until built.
+   */
+  const CUSTOM_BUILT_GAMES = new Set([
+    "cyber-memory",          // Cyber Memory Match
+    "dd_scam_sorter",        // Safe or Scam Sorter
+    "cyber_word_search",     // Cyber Word Search
+    "cyber_crossword_ai",    // Cyber Crossword AI
+    "phishing-detective",    // Phishing Escape Runner
+    "safe-website-detector", // Safe Website Detector
+  ]);
+  const isGameLocked = (gameId: string) => !CUSTOM_BUILT_GAMES.has(gameId);
 
   /* ── Full Game Catalog ── */
   const arcadeGames = [
     { id: "virus-vaporizer",  title: "Virus Vaporizer",  desc: "Zap viruses before they infect your files!",           badge: "Arcade", route: "/games/virus-vaporizer",  locked: isGameLocked("virus-vaporizer"), isHot: true },
     { id: "spot-the-phish",   title: "Spot the Phish",   desc: "Swipe safe or phishing on emails and texts!",          badge: "Arcade", route: "/games/spot-the-phish",   locked: isGameLocked("spot-the-phish") },
     { id: "firewall-blitz",   title: "Firewall Blitz",   desc: "Block threats flying across the screen in lanes!",     badge: "Arcade", route: "/games/firewall-blitz",   locked: isGameLocked("firewall-blitz") },
-    { id: "hacker-chase",     title: "Hacker Chase",     desc: "Chase the hacker through the digital world!",          badge: "Arcade", route: "/games/hacker-chase",     locked: isGameLocked("hacker-chase"),   isNew: true },
+    { id: "hacker-chase",       title: "Hacker Chase",          desc: "Chase the hacker through the digital world!",                             badge: "Arcade", route: "/games/hacker-chase",         locked: isGameLocked("hacker-chase"),       isNew: true },
+    { id: "phishing-detective", title: "Phishing Escape Runner", desc: "Dodge phishing emails and malware — collect safe items for bonus points!", badge: "Arcade", route: "/games/phishing-detective",   locked: isGameLocked("phishing-detective"), isHot: true },
   ];
 
   const keyboardGames = [
@@ -1339,7 +1350,10 @@ export default function MissionsPage() {
     },
     {
       icon: "🔍", title: "Word & Language", badge: "Word Search", color: "#38bdf8",
-      games: [...wordSearchGames, ...crosswordGames, ...dragDropGames],
+      games: [
+        ...wordSearchGames, ...crosswordGames, ...dragDropGames,
+        { id: "safe-website-detector", title: "Safe Website Detector", desc: "Can you spot the fake website before you click? Test all 3 difficulty tiers!", badge: "Sort", route: "/games/safe-website-detector", locked: isGameLocked("safe-website-detector"), isNew: true },
+      ],
     },
   ];
 
