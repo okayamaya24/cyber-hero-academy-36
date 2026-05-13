@@ -78,6 +78,7 @@ import StaySafeOnline from "./pages/games/StaySafeOnline";
 import BuildAStrongPassword from "./pages/games/BuildAStrongPassword";
 import SafeOrScamSorter from "./pages/games/SafeOrScamSorter";
 import SafeWebsiteDetector from "./pages/games/SafeWebsiteDetector";
+import MalwareDefender from "./pages/games/MalwareDefender";
 import LockTheVaultDrag from "./pages/games/LockTheVaultDrag";
 import PasswordPower from "./pages/games/PasswordPower";
 import SafeSitesExplorer from "./pages/games/SafeSitesExplorer";
@@ -447,6 +448,7 @@ const App = () => (
               <Route path="/games/cyber-crossword-ai" element={<CyberCrosswordAI />} />
               <Route path="/games/cyber-word-search" element={<CyberWordSearch />} />
               <Route path="/games/safe-website-detector" element={<SafeWebsiteDetector />} />
+              <Route path="/games/malware-defender" element={<MalwareDefender />} />
 
               <Route path="/lesson-preview" element={<LessonPreviewPage />} />
               <Route path="/forgot-password" element={<><Navbar /><ForgotPasswordPage /></>} />

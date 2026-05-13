@@ -1244,6 +1244,7 @@ export default function MissionsPage() {
     "cyber_crossword_ai",    // Cyber Crossword AI
     "phishing-detective",    // Phishing Escape Runner
     "safe-website-detector", // Safe Website Detector
+    "malware-defender",      // Malware Defender
   ]);
   const isGameLocked = (gameId: string) => !CUSTOM_BUILT_GAMES.has(gameId);
 
@@ -1254,6 +1255,7 @@ export default function MissionsPage() {
     { id: "firewall-blitz",   title: "Firewall Blitz",   desc: "Block threats flying across the screen in lanes!",     badge: "Arcade", route: "/games/firewall-blitz",   locked: isGameLocked("firewall-blitz") },
     { id: "hacker-chase",       title: "Hacker Chase",          desc: "Chase the hacker through the digital world!",                             badge: "Arcade", route: "/games/hacker-chase",         locked: isGameLocked("hacker-chase"),       isNew: true },
     { id: "phishing-detective", title: "Phishing Escape Runner", desc: "Dodge phishing emails and malware — collect safe items for bonus points!", badge: "Arcade", route: "/games/phishing-detective",   locked: isGameLocked("phishing-detective"), isHot: true },
+    { id: "malware-defender",   title: "Malware Defender",       desc: "Click to zap viruses, trojans & ransomware before they infect your computer!", badge: "Arcade", route: "/games/malware-defender", locked: isGameLocked("malware-defender"), isNew: true },
   ];
 
   const keyboardGames = [
