@@ -67,9 +67,9 @@ export const LESSON_CONTENT: LessonContent[] = [
   {
     lessonId: "lesson-hero-1",
     missionId: "password-safety",
-    character: "Captain Cyber",
-    characterEmoji: "🦸",
-    characterColor: "bg-purple-500",
+    character: "Byte",
+    characterEmoji: "🤖",
+    characterColor: "bg-cyan-500",
     slides: [
       {
         type: "intro",
@@ -122,9 +122,9 @@ export const LESSON_CONTENT: LessonContent[] = [
   {
     lessonId: "lesson-hero-2",
     missionId: "cyber-clues",
-    character: "Captain Cyber",
-    characterEmoji: "🦸",
-    characterColor: "bg-purple-500",
+    character: "Byte",
+    characterEmoji: "🤖",
+    characterColor: "bg-cyan-500",
     slides: [
       {
         type: "intro",
@@ -180,9 +180,9 @@ export const LESSON_CONTENT: LessonContent[] = [
   {
     lessonId: "lesson-hero-3",
     missionId: "device-defender",
-    character: "Captain Cyber",
-    characterEmoji: "🦸",
-    characterColor: "bg-purple-500",
+    character: "Byte",
+    characterEmoji: "🤖",
+    characterColor: "bg-cyan-500",
     slides: [
       {
         type: "intro",

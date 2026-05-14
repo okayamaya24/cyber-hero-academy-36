@@ -27,6 +27,28 @@ export interface GuideCharacter {
 
 // ─── GUIDE REGISTRY ──────────────────────────────────────────
 export const GUIDE_REGISTRY: Record<string, GuideCharacter> = {
+  "byte": {
+    id: "byte",
+    name: "Byte",
+    image: "/byte-character.png",
+    role: "Cyber Hero Mascot",
+    specialties: ["passwords", "devices", "mission-intros", "celebrations", "encouragement"],
+    intros: [
+      "Yo! It's Byte! Ready to level up your cyber skills? LET'S GO! 🚀",
+      "Hey hero! Byte here — and today we're going to be UNSTOPPABLE! 💪",
+      "Another mission, another win! You've got this — I believe in you! ⭐",
+    ],
+    encourageCorrect: [
+      "🎉 YES! That's exactly right, hero!",
+      "🌟 WE GOT IT! You're a natural!",
+      "💪 That's the cyber spirit — let's GO!",
+    ],
+    encourageTryAgain: [
+      "💪 Every hero keeps going — try again!",
+      "🌈 You'll nail it next time, I know it!",
+      "📚 We learn, we grow, we WIN!",
+    ],
+  },
   "captain-cyber": {
     id: "captain-cyber",
     name: "Captain Cyber",

@@ -32,13 +32,13 @@ export interface LearningCharacter {
 export const LEARNING_CHARACTERS: LearningCharacter[] = [
   {
     id: "hero",
-    name: "Your Hero",
-    emoji: "🦸",
-    guideId: "captain-cyber",
+    name: "Byte",
+    emoji: "🤖",
+    guideId: "byte",
     topic: "Passwords & Devices",
-    color: "bg-purple-100",
-    borderColor: "border-purple-300",
-    textColor: "text-purple-700",
+    color: "bg-cyan-100",
+    borderColor: "border-cyan-300",
+    textColor: "text-cyan-700",
     unlockedAfterCharacter: null, // always available
     lessons: [
       {
