@@ -1250,12 +1250,9 @@ export default function MissionsPage() {
 
   /* ── Full Game Catalog ── */
   const arcadeGames = [
-    { id: "virus-vaporizer",  title: "Virus Vaporizer",  desc: "Zap viruses before they infect your files!",           badge: "Arcade", route: "/games/virus-vaporizer",  locked: isGameLocked("virus-vaporizer"), isHot: true },
-    { id: "spot-the-phish",   title: "Spot the Phish",   desc: "Swipe safe or phishing on emails and texts!",          badge: "Arcade", route: "/games/spot-the-phish",   locked: isGameLocked("spot-the-phish") },
-    { id: "firewall-blitz",   title: "Firewall Blitz",   desc: "Block threats flying across the screen in lanes!",     badge: "Arcade", route: "/games/firewall-blitz",   locked: isGameLocked("firewall-blitz") },
-    { id: "hacker-chase",       title: "Hacker Chase",          desc: "Chase the hacker through the digital world!",                             badge: "Arcade", route: "/games/hacker-chase",         locked: isGameLocked("hacker-chase"),       isNew: true },
-    { id: "phishing-detective", title: "Phishing Escape Runner", desc: "Dodge phishing emails and malware — collect safe items for bonus points!", badge: "Arcade", route: "/games/phishing-detective",   locked: isGameLocked("phishing-detective"), isHot: true },
-    { id: "malware-defender",   title: "Malware Defender",       desc: "Click to zap viruses, trojans & ransomware before they infect your computer!", badge: "Arcade", route: "/games/malware-defender", locked: isGameLocked("malware-defender"), isNew: true },
+    { id: "malware-defender",   title: "Malware Defender",       desc: "Click to zap viruses, trojans & ransomware before they infect your computer!", badge: "Arcade", route: "/games/malware-defender", locked: isGameLocked("malware-defender"), isHot: true },
+    { id: "spot-the-phish",     title: "Spot the Phish",         desc: "Swipe safe or phishing on emails and texts!",                                  badge: "Arcade", route: "/games/spot-the-phish",   locked: isGameLocked("spot-the-phish") },
+    { id: "phishing-detective", title: "Phishing Escape Runner", desc: "Dodge phishing emails and malware — collect safe items for bonus points!",     badge: "Arcade", route: "/games/phishing-detective", locked: isGameLocked("phishing-detective"), isNew: true },
   ];
 
   const keyboardGames = [
