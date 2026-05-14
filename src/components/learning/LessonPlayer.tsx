@@ -200,7 +200,7 @@ function LearnSlide({ slide, lesson, theme }: {
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", bounce: 0.4 }}
-          className={`w-14 h-14 rounded-2xl ${lesson.characterColor} flex items-center justify-center text-3xl flex-shrink-0 shadow-lg`}
+          className={`${lesson.character === "Byte" ? "w-20 h-20 text-5xl" : "w-14 h-14 text-3xl"} rounded-2xl ${lesson.characterColor} flex items-center justify-center flex-shrink-0 shadow-lg`}
           style={{ boxShadow: `0 0 20px ${theme.accent}44` }}
         >
           {lesson.characterEmoji}
