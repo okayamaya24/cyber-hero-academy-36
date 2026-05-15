@@ -92,6 +92,7 @@ import SafeOrNot from "./pages/games/SafeOrNot";
 import CyberCrossword from "./pages/games/CyberCrossword";
 import CyberCrosswordAI from "./pages/games/CyberCrosswordAI";
 import CyberWordSearch from "./pages/games/CyberWordSearch";
+import PasswordBuilder from "./pages/games/PasswordBuilder";
 import TestCrosswordPage from "./pages/TestCrosswordPage";
 
 const queryClient = new QueryClient();
@@ -449,6 +450,7 @@ const App = () => (
               <Route path="/games/cyber-word-search" element={<CyberWordSearch />} />
               <Route path="/games/safe-website-detector" element={<SafeWebsiteDetector />} />
               <Route path="/games/malware-defender" element={<MalwareDefender />} />
+              <Route path="/games/password-builder" element={<PasswordBuilder />} />
 
               <Route path="/lesson-preview" element={<LessonPreviewPage />} />
               <Route path="/forgot-password" element={<><Navbar /><ForgotPasswordPage /></>} />

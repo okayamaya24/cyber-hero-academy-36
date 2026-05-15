@@ -1245,14 +1245,16 @@ export default function MissionsPage() {
     "phishing-detective",    // Phishing Escape Runner
     "safe-website-detector", // Safe Website Detector
     "malware-defender",      // Malware Defender
+    "password-builder",      // Password Builder
   ]);
   const isGameLocked = (gameId: string) => !CUSTOM_BUILT_GAMES.has(gameId);
 
   /* ── Full Game Catalog ── */
   const arcadeGames = [
-    { id: "malware-defender",   title: "Malware Defender",       desc: "Click to zap viruses, trojans & ransomware before they infect your computer!", badge: "Arcade", route: "/games/malware-defender", locked: isGameLocked("malware-defender"), isHot: true },
-    { id: "spot-the-phish",     title: "Spot the Phish",         desc: "Swipe safe or phishing on emails and texts!",                                  badge: "Arcade", route: "/games/spot-the-phish",   locked: isGameLocked("spot-the-phish") },
-    { id: "phishing-detective", title: "Phishing Escape Runner", desc: "Dodge phishing emails and malware — collect safe items for bonus points!",     badge: "Arcade", route: "/games/phishing-detective", locked: isGameLocked("phishing-detective"), isNew: true },
+    { id: "malware-defender",   title: "Malware Defender",       desc: "Click to zap viruses, trojans & ransomware before they infect your computer!", badge: "Arcade", route: "/games/malware-defender",   locked: isGameLocked("malware-defender"),   isHot: true },
+    { id: "password-builder",   title: "Password Builder",       desc: "Build an uncrackable password — click tiles or type to test your strength!",  badge: "Arcade", route: "/games/password-builder",   locked: isGameLocked("password-builder"),   isNew: true },
+    { id: "spot-the-phish",     title: "Spot the Phish",         desc: "Swipe safe or phishing on emails and texts!",                                  badge: "Arcade", route: "/games/spot-the-phish",     locked: isGameLocked("spot-the-phish") },
+    { id: "phishing-detective", title: "Phishing Escape Runner", desc: "Dodge phishing emails and malware — collect safe items for bonus points!",     badge: "Arcade", route: "/games/phishing-detective", locked: isGameLocked("phishing-detective") },
   ];
 
   const keyboardGames = [

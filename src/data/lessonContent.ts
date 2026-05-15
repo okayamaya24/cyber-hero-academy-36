@@ -15,6 +15,7 @@ export type LessonGameType =
   | "password-attention"
   | "password-strength-tester"
   | "password-fixer"
+  | "password-builder"
   | "login-detective"
   | "popup-or-scam"
   | "phishing-swipe"
@@ -75,11 +76,7 @@ export const LESSON_CONTENT: LessonContent[] = [
     slides: [
       {
         type: "game",
-        gameType: "password-strength-tester",
-      },
-      {
-        type: "game",
-        gameType: "password-fixer",
+        gameType: "password-builder",
       },
       {
         type: "summary",

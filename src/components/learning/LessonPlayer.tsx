@@ -11,6 +11,7 @@ import type { LessonContent, LessonSlide } from "@/data/lessonContent";
 import PasswordAttentionGame from "@/components/learning/games/PasswordAttentionGame";
 import PasswordStrengthTesterGame from "@/components/minigames/PasswordStrengthTesterGame";
 import PasswordFixerGame from "@/components/minigames/PasswordFixerGame";
+import PasswordBuilderGame from "@/games/password-builder/PasswordBuilderGame.jsx";
 import LoginDetectiveGame from "@/components/learning/games/LoginDetectiveGame";
 import PopupOrScamGame from "@/components/learning/games/PopupOrScamGame";
 import PhishingSwipeGame from "@/components/learning/games/PhishingSwipeGame";
@@ -693,6 +694,9 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose }: Props) {
                   guideName={lesson.character}
                   onComplete={() => goNext()}
                 />
+              )}
+              {isGame && slide.gameType === "password-builder" && (
+                <PasswordBuilderGame embedded={true} onComplete={() => goNext()} />
               )}
               {isGame && slide.gameType === "login-detective" && (
                 <LoginDetectiveGame onComplete={() => goNext()} />
