@@ -52,6 +52,11 @@ export interface LessonSlide {
   quizLabel?: string; // CTA button label
 }
 
+export interface LessonQuizQuestion {
+  question: string;
+  choices: { text: string; correct: boolean; feedback: string }[];
+}
+
 export interface LessonContent {
   lessonId: string;
   missionId: string;
@@ -60,6 +65,9 @@ export interface LessonContent {
   characterColor: string; // tailwind bg
   videoUrl?: string; // optional video shown before slides
   slides: LessonSlide[];
+  quiz?: LessonQuizQuestion[]; // inline quiz shown when summary CTA is clicked
+  badgeLabel?: string;         // badge name awarded on quiz completion
+  badgeEmoji?: string;         // badge emoji
 }
 
 export const LESSON_CONTENT: LessonContent[] = [
@@ -73,6 +81,8 @@ export const LESSON_CONTENT: LessonContent[] = [
     characterEmoji: "🤖",
     characterColor: "bg-cyan-500",
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson1.mp4",
+    badgeLabel: "Password Pro",
+    badgeEmoji: "🔐",
     slides: [
       {
         type: "summary",
@@ -84,6 +94,62 @@ export const LESSON_CONTENT: LessonContent[] = [
           "Use a different password for every account 🔐",
         ],
         quizLabel: "Take the Password Quiz!",
+      },
+    ],
+    quiz: [
+      {
+        question: "How long should a strong password be?",
+        choices: [
+          { text: "4 characters",        correct: false, feedback: "Way too short — a hacker can crack that in under a second!" },
+          { text: "6 characters",        correct: false, feedback: "Still too short. Hackers have tools that try millions of combos fast!" },
+          { text: "12 or more characters", correct: true,  feedback: "Yes! The longer it is, the harder it is to crack. 12+ is the sweet spot! 🎯" },
+          { text: "Exactly 8 characters", correct: false, feedback: "8 is okay but not great — go for 12 or more to be really safe!" },
+        ],
+      },
+      {
+        question: "Which of these is the STRONGEST password?",
+        choices: [
+          { text: "password123",      correct: false, feedback: "This is one of the most hacked passwords in the world! 😬" },
+          { text: "Fluffy2010",       correct: false, feedback: "Using a pet's name + birth year is super common — easy to guess!" },
+          { text: "SunFire!Dog99#Zap", correct: true,  feedback: "🔥 A passphrase with mixed characters — that would take centuries to crack!" },
+          { text: "abc12345",         correct: false, feedback: "Simple patterns like abc or 12345 are cracked instantly!" },
+        ],
+      },
+      {
+        question: "What should you NEVER put in a password?",
+        choices: [
+          { text: "Random numbers",    correct: false, feedback: "Numbers are great — they make passwords way stronger!" },
+          { text: "Your birthday",     correct: true,  feedback: "Exactly! Birthdays are public info. A hacker can find that easily 🕵️" },
+          { text: "Capital letters",   correct: false, feedback: "Capital letters are a great addition — keep using them!" },
+          { text: "Special symbols",   correct: false, feedback: "Symbols like ! @ # are your secret weapon — always add them!" },
+        ],
+      },
+      {
+        question: "What is a passphrase?",
+        choices: [
+          { text: "A hint to remember your password",     correct: false, feedback: "That's a password hint — a passphrase is different!" },
+          { text: "A password you share with friends",    correct: false, feedback: "Never share your password — not even with friends!" },
+          { text: "A long password made of random words", correct: true,  feedback: "Exactly! Like 'BluePizza!RocketSock7' — long, random, and hard to crack 🚀" },
+          { text: "A password required by your school",  correct: false, feedback: "Nope — a passphrase is something YOU create for extra strength!" },
+        ],
+      },
+      {
+        question: "You use the same password on every website. Is that…",
+        choices: [
+          { text: "Smart — easy to remember!",          correct: false, feedback: "It seems smart but it's risky — one hack and ALL your accounts are exposed!" },
+          { text: "Dangerous — one hack = all accounts exposed", correct: true, feedback: "100% right! Always use a different password for each account 🔑" },
+          { text: "Fine if the password is really strong", correct: false, feedback: "Even a strong password reused everywhere is dangerous. One site gets hacked — they all do!" },
+          { text: "Required by most apps",              correct: false, feedback: "Nope — apps actually encourage unique passwords!" },
+        ],
+      },
+      {
+        question: "Why do symbols like ! @ # make passwords stronger?",
+        choices: [
+          { text: "They look cool",                                   correct: false, feedback: "Ha! They do look cool — but that's not why 😄" },
+          { text: "They make passwords easier to remember",           correct: false, feedback: "Actually harder to remember, but WAY harder to crack!" },
+          { text: "They massively increase the number of possible combos", correct: true, feedback: "Exactly! More possible characters = billions more combinations to try 💥" },
+          { text: "They are required by law",                         correct: false, feedback: "Not a law — just really smart password design!" },
+        ],
       },
     ],
   },

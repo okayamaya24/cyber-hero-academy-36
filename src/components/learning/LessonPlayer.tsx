@@ -7,7 +7,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronRight, ChevronLeft, Star } from "lucide-react";
-import type { LessonContent, LessonSlide } from "@/data/lessonContent";
+import type { LessonContent, LessonSlide, LessonQuizQuestion } from "@/data/lessonContent";
 import PasswordAttentionGame from "@/components/learning/games/PasswordAttentionGame";
 import PasswordStrengthTesterGame from "@/components/minigames/PasswordStrengthTesterGame";
 import PasswordFixerGame from "@/components/minigames/PasswordFixerGame";
@@ -392,6 +392,139 @@ function CheckSlide({ slide, lesson, theme, onAnswer }: {
   );
 }
 
+/* ── INLINE QUIZ ── */
+function InlineQuiz({
+  questions, theme, badgeEmoji, badgeLabel, onClose,
+}: {
+  questions: LessonQuizQuestion[];
+  theme: typeof CHAR_THEMES[string];
+  badgeEmoji: string;
+  badgeLabel: string;
+  onClose: () => void;
+}) {
+  const [qIdx, setQIdx]           = useState(0);
+  const [selected, setSelected]   = useState<number | null>(null);
+  const [score, setScore]         = useState(0);
+  const [done, setDone]           = useState(false);
+
+  const q = questions[qIdx];
+  const answered = selected !== null;
+  const total = questions.length;
+  const passed = score >= Math.ceil(total * 0.6);
+
+  function pick(i: number) {
+    if (answered) return;
+    setSelected(i);
+    if (q.choices[i].correct) setScore(s => s + 1);
+  }
+
+  function next() {
+    if (qIdx + 1 >= total) { setDone(true); return; }
+    setQIdx(i => i + 1);
+    setSelected(null);
+  }
+
+  if (done) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-6 text-center">
+        <Confetti />
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", bounce: 0.6 }}>
+          <div className="text-6xl mb-2">{passed ? badgeEmoji : "💪"}</div>
+          <div className="text-2xl font-black text-white">{passed ? "Badge Earned!" : "Nice Try!"}</div>
+          {passed && (
+            <div className="mt-1 rounded-2xl px-5 py-2 font-black text-lg"
+              style={{ background: `${theme.accent}22`, color: theme.accent, border: `2px solid ${theme.accent}55` }}>
+              {badgeLabel}
+            </div>
+          )}
+        </motion.div>
+        <p className="text-sm font-bold" style={{ color: theme.accent }}>
+          You got {score} out of {total} correct!
+        </p>
+        {!passed && (
+          <p className="text-xs text-white/50 font-medium">Keep going — try again to earn the badge!</p>
+        )}
+        <div className="flex gap-3 w-full mt-2">
+          {!passed && (
+            <button
+              onClick={() => { setQIdx(0); setSelected(null); setScore(0); setDone(false); }}
+              className="flex-1 rounded-2xl py-3 font-black text-sm text-white/80 border border-white/20 hover:bg-white/10 transition-colors"
+            >
+              Try Again
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="flex-1 rounded-2xl py-3 font-black text-sm text-white"
+            style={{ background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}99)` }}
+          >
+            {passed ? "Awesome! Close →" : "Close"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4 py-2">
+      {/* Progress */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-300"
+            style={{ width: `${((qIdx) / total) * 100}%`, background: theme.accent }} />
+        </div>
+        <span className="text-[11px] font-bold text-white/40">{qIdx + 1}/{total}</span>
+      </div>
+
+      {/* Question */}
+      <motion.div key={qIdx} initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.2 }}>
+        <p className="text-base font-black text-white leading-snug mb-4">{q.question}</p>
+        <div className="flex flex-col gap-2.5">
+          {q.choices.map((c, i) => {
+            const isSelected = selected === i;
+            const isCorrect = c.correct;
+            let bg = "bg-white/5 border-white/15";
+            let textCol = "text-white/80";
+            if (answered) {
+              if (isCorrect)           { bg = "border-green-400 bg-green-400/15"; textCol = "text-green-300"; }
+              else if (isSelected)     { bg = "border-red-400 bg-red-400/15";     textCol = "text-red-300"; }
+              else                     { bg = "bg-white/3 border-white/8 opacity-50"; }
+            }
+            return (
+              <button
+                key={i}
+                onClick={() => pick(i)}
+                disabled={answered}
+                className={`w-full rounded-2xl border-2 px-4 py-3 text-left text-sm font-bold transition-all ${bg} ${textCol} ${!answered ? "hover:border-white/30 active:scale-[0.98]" : ""}`}
+              >
+                <span className="mr-2 opacity-50">{["A","B","C","D"][i]}.</span>{c.text}
+              </button>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      {/* Feedback + Next */}
+      {answered && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+          <p className="text-xs font-semibold rounded-xl px-3 py-2 mb-3"
+            style={{ background: q.choices[selected!].correct ? "#16a34a22" : "#dc262622",
+                     color: q.choices[selected!].correct ? "#4ade80" : "#f87171" }}>
+            {q.choices[selected!].feedback}
+          </p>
+          <button
+            onClick={next}
+            className="w-full rounded-2xl py-3 font-black text-sm text-white"
+            style={{ background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}99)` }}
+          >
+            {qIdx + 1 >= total ? "See Results →" : "Next Question →"}
+          </button>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
 /* ── SLIDE: Trophy / Summary ── */
 function SummarySlide({ slide, lesson, theme, onStartQuiz }: {
   slide: LessonSlide; lesson: LessonContent;
@@ -576,6 +709,7 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge }:
   const [slideIdx, setSlideIdx] = useState(0);
   const [direction, setDirection] = useState(1);
   const [waitForCheck, setWaitForCheck] = useState(false);
+  const [showInlineQuiz, setShowInlineQuiz] = useState(false);
 
   const theme = CHAR_THEMES[lesson.character] ?? CHAR_THEMES["Byte"];
   const slides = lesson.slides;
@@ -679,7 +813,12 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge }:
                 <CheckSlide slide={slide} lesson={lesson} theme={theme} onAnswer={handleCheckAnswer} />
               )}
               {isSummary && (
-                <SummarySlide slide={slide} lesson={lesson} theme={theme} onStartQuiz={onStartQuiz} />
+                <SummarySlide
+                  slide={slide}
+                  lesson={lesson}
+                  theme={theme}
+                  onStartQuiz={lesson.quiz ? () => setShowInlineQuiz(true) : onStartQuiz}
+                />
               )}
               {isGame && slide.gameType === "password-attention" && (
                 <PasswordAttentionGame onComplete={() => goNext()} />
@@ -764,6 +903,45 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge }:
             <p className="text-xs text-white/30 font-medium italic">Tap your answer above ☝️</p>
           </div>
         )}
+
+        {/* Inline quiz overlay — slides up over the summary */}
+        <AnimatePresence>
+          {showInlineQuiz && lesson.quiz && (
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+              className={`absolute inset-0 z-20 overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-gradient-to-b ${theme.bg} px-4 py-5`}
+              style={{ border: `1px solid ${theme.accent}33` }}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className={`w-7 h-7 rounded-xl ${lesson.characterColor} flex items-center justify-center text-sm`}>
+                    {lesson.characterEmoji}
+                  </div>
+                  <span className="text-[11px] font-extrabold" style={{ color: theme.accent }}>
+                    Password Quiz
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowInlineQuiz(false)}
+                  className="rounded-full p-1.5 text-white/30 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <InlineQuiz
+                questions={lesson.quiz}
+                theme={theme}
+                badgeEmoji={lesson.badgeEmoji ?? "🏅"}
+                badgeLabel={lesson.badgeLabel ?? "Quiz Champion"}
+                onClose={() => setShowInlineQuiz(false)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );
