@@ -75,10 +75,6 @@ export const LESSON_CONTENT: LessonContent[] = [
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson1.mp4",
     slides: [
       {
-        type: "game",
-        gameType: "password-builder",
-      },
-      {
         type: "summary",
         takeaways: [
           "Use 12+ characters — longer is stronger 📏",
