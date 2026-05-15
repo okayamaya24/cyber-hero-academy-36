@@ -109,10 +109,10 @@ export const LESSON_CONTENT: LessonContent[] = [
       {
         question: "Which of these is the STRONGEST password?",
         choices: [
-          { text: "password123",      correct: false, feedback: "This is one of the most hacked passwords in the world! 😬" },
-          { text: "Fluffy2010",       correct: false, feedback: "Using a pet's name + birth year is super common — easy to guess!" },
-          { text: "SunFire!Dog99#Zap", correct: true,  feedback: "🔥 A passphrase with mixed characters — that would take centuries to crack!" },
-          { text: "abc12345",         correct: false, feedback: "Simple patterns like abc or 12345 are cracked instantly!" },
+          { text: "password123",    correct: false, feedback: "Hackers guess this one in under a second — Byte warned you! 😬" },
+          { text: "Fluffy2010",     correct: false, feedback: "Your pet's name + a year? Hackers check those first, every time!" },
+          { text: "PurpleTiger$42", correct: true,  feedback: "🔥 Yes! Just like Byte said — mix words, numbers and symbols. That's unbreakable!" },
+          { text: "abc12345",       correct: false, feedback: "Simple patterns like abc or 12345 are cracked instantly!" },
         ],
       },
       {
@@ -125,12 +125,12 @@ export const LESSON_CONTENT: LessonContent[] = [
         ],
       },
       {
-        question: "What is a passphrase?",
+        question: "Byte said to use a passphrase. What is that?",
         choices: [
-          { text: "A hint to remember your password",     correct: false, feedback: "That's a password hint — a passphrase is different!" },
-          { text: "A password you share with friends",    correct: false, feedback: "Never share your password — not even with friends!" },
-          { text: "A long password made of random words", correct: true,  feedback: "Exactly! Like 'BluePizza!RocketSock7' — long, random, and hard to crack 🚀" },
-          { text: "A password required by your school",  correct: false, feedback: "Nope — a passphrase is something YOU create for extra strength!" },
+          { text: "A hint to remember your password",          correct: false, feedback: "That's a hint — a passphrase is the password itself!" },
+          { text: "A password you share with friends",         correct: false, feedback: "Never share your password — not even with friends!" },
+          { text: "Three random words like 'pizza cloud seven rocket'", correct: true, feedback: "Exactly what Byte said! Random words = long, strong, and easy to remember 🚀" },
+          { text: "A password your school gives you",          correct: false, feedback: "Nope — a passphrase is something YOU create. Make it random!" },
         ],
       },
       {
