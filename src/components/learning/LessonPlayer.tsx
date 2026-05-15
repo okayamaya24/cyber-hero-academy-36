@@ -5,9 +5,11 @@
  */
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronRight, ChevronLeft, Star } from "lucide-react";
 import type { LessonContent, LessonSlide, LessonQuizQuestion } from "@/data/lessonContent";
+import { awardBadge } from "@/lib/badges";
 import PasswordAttentionGame from "@/components/learning/games/PasswordAttentionGame";
 import PasswordStrengthTesterGame from "@/components/minigames/PasswordStrengthTesterGame";
 import PasswordFixerGame from "@/components/minigames/PasswordFixerGame";
@@ -27,6 +29,7 @@ interface Props {
   onStartQuiz: () => void;
   onClose: () => void;
   childAge?: number;
+  childId?: string;
 }
 
 /* ── Confetti particle ── */
@@ -394,18 +397,22 @@ function CheckSlide({ slide, lesson, theme, onAnswer }: {
 
 /* ── INLINE QUIZ ── */
 function InlineQuiz({
-  questions, theme, badgeEmoji, badgeLabel, onClose,
+  questions, theme, badgeEmoji, badgeLabel, badgeId, childId, onClose,
 }: {
   questions: LessonQuizQuestion[];
   theme: typeof CHAR_THEMES[string];
   badgeEmoji: string;
   badgeLabel: string;
+  badgeId?: string;
+  childId?: string;
   onClose: () => void;
 }) {
-  const [qIdx, setQIdx]           = useState(0);
-  const [selected, setSelected]   = useState<number | null>(null);
-  const [score, setScore]         = useState(0);
-  const [done, setDone]           = useState(false);
+  const navigate = useNavigate();
+  const [qIdx, setQIdx]         = useState(0);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [score, setScore]       = useState(0);
+  const [done, setDone]         = useState(false);
+  const [awarded, setAwarded]   = useState(false);
 
   const q = questions[qIdx];
   const answered = selected !== null;
@@ -418,50 +425,160 @@ function InlineQuiz({
     if (q.choices[i].correct) setScore(s => s + 1);
   }
 
-  function next() {
-    if (qIdx + 1 >= total) { setDone(true); return; }
+  async function next() {
+    const newScore = selected !== null && q.choices[selected].correct ? score + 1 : score;
+    if (qIdx + 1 >= total) {
+      const didPass = newScore >= Math.ceil(total * 0.6);
+      if (didPass && badgeId && childId && !awarded) {
+        setAwarded(true);
+        await awardBadge(childId, badgeId);
+      }
+      setDone(true);
+      return;
+    }
     setQIdx(i => i + 1);
     setSelected(null);
   }
 
+  function retry() {
+    setQIdx(0);
+    setSelected(null);
+    setScore(0);
+    setDone(false);
+    setAwarded(false);
+  }
+
   if (done) {
     return (
-      <div className="flex flex-col items-center gap-4 py-6 text-center">
-        <Confetti />
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", bounce: 0.6 }}>
-          <div className="text-6xl mb-2">{passed ? badgeEmoji : "💪"}</div>
-          <div className="text-2xl font-black text-white">{passed ? "Badge Earned!" : "Nice Try!"}</div>
-          {passed && (
-            <div className="mt-1 rounded-2xl px-5 py-2 font-black text-lg"
-              style={{ background: `${theme.accent}22`, color: theme.accent, border: `2px solid ${theme.accent}55` }}>
-              {badgeLabel}
-            </div>
-          )}
-        </motion.div>
-        <p className="text-sm font-bold" style={{ color: theme.accent }}>
-          You got {score} out of {total} correct!
-        </p>
-        {!passed && (
-          <p className="text-xs text-white/50 font-medium">Keep going — try again to earn the badge!</p>
-        )}
-        <div className="flex gap-3 w-full mt-2">
-          {!passed && (
-            <button
-              onClick={() => { setQIdx(0); setSelected(null); setScore(0); setDone(false); }}
-              className="flex-1 rounded-2xl py-3 font-black text-sm text-white/80 border border-white/20 hover:bg-white/10 transition-colors"
+      <>
+        {passed && <Confetti />}
+
+        {/* Badge popup card */}
+        <motion.div
+          initial={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", bounce: 0.5, delay: 0.1 }}
+          className="flex flex-col items-center gap-5 py-8 text-center"
+        >
+          {/* Badge visual */}
+          <div className="relative">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", bounce: 0.7, delay: 0.2 }}
+              className="flex h-28 w-28 items-center justify-center rounded-full text-6xl shadow-2xl"
+              style={{
+                background: passed
+                  ? `radial-gradient(circle, ${theme.accent}33, ${theme.accent}11)`
+                  : "rgba(255,255,255,0.05)",
+                border: `3px solid ${passed ? theme.accent : "rgba(255,255,255,0.15)"}`,
+                boxShadow: passed ? `0 0 40px ${theme.accent}44` : "none",
+              }}
             >
-              Try Again
-            </button>
+              {passed ? badgeEmoji : "💪"}
+            </motion.div>
+            {passed && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.5, type: "spring", bounce: 0.6 }}
+                className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full text-base"
+                style={{ background: theme.accent }}
+              >
+                ✓
+              </motion.div>
+            )}
+          </div>
+
+          {/* Title */}
+          <div>
+            <motion.h2
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-2xl font-black text-white"
+            >
+              {passed ? "Badge Earned! 🎉" : "Almost There!"}
+            </motion.h2>
+            {passed ? (
+              <motion.div
+                initial={{ y: 8, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mt-2 inline-block rounded-2xl px-5 py-1.5 font-black text-base"
+                style={{
+                  background: `${theme.accent}20`,
+                  color: theme.accent,
+                  border: `2px solid ${theme.accent}50`,
+                }}
+              >
+                {badgeLabel}
+              </motion.div>
+            ) : (
+              <p className="mt-1 text-sm text-white/50 font-medium">
+                You got {score}/{total} — need {Math.ceil(total * 0.6)} to pass
+              </p>
+            )}
+          </div>
+
+          {passed && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="text-sm font-semibold"
+              style={{ color: theme.accent }}
+            >
+              {score}/{total} correct — you crushed it! 🔥
+            </motion.p>
           )}
-          <button
-            onClick={onClose}
-            className="flex-1 rounded-2xl py-3 font-black text-sm text-white"
-            style={{ background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}99)` }}
+
+          {/* Buttons */}
+          <motion.div
+            initial={{ y: 12, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.55 }}
+            className="flex w-full flex-col gap-3"
           >
-            {passed ? "Awesome! Close →" : "Close"}
-          </button>
-        </div>
-      </div>
+            {passed ? (
+              <>
+                <button
+                  onClick={() => { onClose(); navigate("/dashboard"); }}
+                  className="w-full rounded-2xl py-3.5 font-black text-base text-white shadow-lg"
+                  style={{
+                    background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}bb)`,
+                    boxShadow: `0 6px 20px ${theme.accent}44`,
+                  }}
+                >
+                  🏅 View All Badges
+                </button>
+                <button
+                  onClick={onClose}
+                  className="w-full rounded-2xl border border-white/15 py-3 font-bold text-sm text-white/60 hover:bg-white/8 transition-colors"
+                >
+                  Close
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={retry}
+                  className="w-full rounded-2xl py-3.5 font-black text-base text-white"
+                  style={{ background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}bb)` }}
+                >
+                  Try Again 💪
+                </button>
+                <button
+                  onClick={onClose}
+                  className="w-full rounded-2xl border border-white/15 py-3 font-bold text-sm text-white/60 hover:bg-white/8 transition-colors"
+                >
+                  Close
+                </button>
+              </>
+            )}
+          </motion.div>
+        </motion.div>
+      </>
     );
   }
 
@@ -471,7 +588,7 @@ function InlineQuiz({
       <div className="flex items-center gap-3">
         <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
           <div className="h-full rounded-full transition-all duration-300"
-            style={{ width: `${((qIdx) / total) * 100}%`, background: theme.accent }} />
+            style={{ width: `${(qIdx / total) * 100}%`, background: theme.accent }} />
         </div>
         <span className="text-[11px] font-bold text-white/40">{qIdx + 1}/{total}</span>
       </div>
@@ -482,13 +599,12 @@ function InlineQuiz({
         <div className="flex flex-col gap-2.5">
           {q.choices.map((c, i) => {
             const isSelected = selected === i;
-            const isCorrect = c.correct;
             let bg = "bg-white/5 border-white/15";
             let textCol = "text-white/80";
             if (answered) {
-              if (isCorrect)           { bg = "border-green-400 bg-green-400/15"; textCol = "text-green-300"; }
-              else if (isSelected)     { bg = "border-red-400 bg-red-400/15";     textCol = "text-red-300"; }
-              else                     { bg = "bg-white/3 border-white/8 opacity-50"; }
+              if (c.correct)       { bg = "border-green-400 bg-green-400/15"; textCol = "text-green-300"; }
+              else if (isSelected) { bg = "border-red-400 bg-red-400/15";     textCol = "text-red-300"; }
+              else                 { bg = "bg-white/3 border-white/8 opacity-40"; }
             }
             return (
               <button
@@ -508,8 +624,10 @@ function InlineQuiz({
       {answered && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-xs font-semibold rounded-xl px-3 py-2 mb-3"
-            style={{ background: q.choices[selected!].correct ? "#16a34a22" : "#dc262622",
-                     color: q.choices[selected!].correct ? "#4ade80" : "#f87171" }}>
+            style={{
+              background: q.choices[selected!].correct ? "#16a34a22" : "#dc262622",
+              color:      q.choices[selected!].correct ? "#4ade80"   : "#f87171",
+            }}>
             {q.choices[selected!].feedback}
           </p>
           <button
@@ -702,7 +820,7 @@ function VideoPlayer({ lesson, theme, onDone, onClose }: {
 /* ══════════════════════════════════
    MAIN LESSON PLAYER
 ══════════════════════════════════ */
-export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge }: Props) {
+export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, childId }: Props) {
   const [showVideo, setShowVideo] = useState(
     !!(lesson.videoUrl && lesson.videoUrl !== "PASTE_SUPABASE_URL_HERE" && lesson.videoUrl !== "PASTE_YOUR_VIDEO_URL_HERE")
   );
@@ -937,6 +1055,8 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge }:
                 theme={theme}
                 badgeEmoji={lesson.badgeEmoji ?? "🏅"}
                 badgeLabel={lesson.badgeLabel ?? "Quiz Champion"}
+                badgeId={lesson.lessonId === "lesson-hero-1" ? "password-pro" : undefined}
+                childId={childId}
                 onClose={() => setShowInlineQuiz(false)}
               />
             </motion.div>

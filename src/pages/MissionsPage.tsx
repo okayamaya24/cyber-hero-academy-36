@@ -1478,6 +1478,7 @@ export default function MissionsPage() {
             onStartLesson={handleStartLesson}
             childName={playerName}
             childAge={age}
+            childId={activeChildId ?? undefined}
           />
         )}
 
