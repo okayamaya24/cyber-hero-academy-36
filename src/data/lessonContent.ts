@@ -74,29 +74,6 @@ export const LESSON_CONTENT: LessonContent[] = [
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson1.mp4",
     slides: [
       {
-        type: "intro",
-        headline: "Creating Strong Passwords",
-        subtext: "Your password is the key to your digital life. Let's make it unbreakable!",
-      },
-      {
-        type: "learn",
-        icon: "🔑",
-        title: "What is a password?",
-        body: "A password is a secret code that proves YOU are you. It keeps strangers out of your accounts — like a lock on your diary.",
-      },
-      {
-        type: "learn",
-        icon: "🚫",
-        title: "Weak passwords are dangerous",
-        body: 'Passwords like "123456", "password", or your name are the FIRST ones hackers try. They can crack them in under a second!',
-      },
-      {
-        type: "learn",
-        icon: "💪",
-        title: "What makes a password STRONG?",
-        body: "Mix uppercase letters, lowercase letters, numbers, AND symbols.\n\nLong is better — aim for 12+ characters.\n\nNever use your real name or birthday!",
-      },
-      {
         type: "game",
         gameType: "password-strength-tester",
       },
