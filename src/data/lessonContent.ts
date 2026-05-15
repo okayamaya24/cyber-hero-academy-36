@@ -87,7 +87,6 @@ export const LESSON_CONTENT: LessonContent[] = [
           "A passphrase is your secret weapon 🗡️",
           "Use a different password for every account 🔐",
         ],
-        quizLabel: "Take the Password Quiz!",
       },
     ],
   },

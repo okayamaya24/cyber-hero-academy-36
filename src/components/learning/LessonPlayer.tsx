@@ -26,6 +26,7 @@ interface Props {
   lesson: LessonContent;
   onStartQuiz: () => void;
   onClose: () => void;
+  childAge?: number;
 }
 
 /* ── Confetti particle ── */
@@ -455,24 +456,28 @@ function SummarySlide({ slide, lesson, theme, onStartQuiz }: {
         </div>
       )}
 
-      {/* Quiz CTA */}
-      <motion.button
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-        onClick={onStartQuiz}
-        className="w-full rounded-2xl py-4 font-black text-white text-base shadow-xl"
-        style={{
-          background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}88)`,
-          boxShadow: `0 8px 30px ${theme.accent}55`,
-        }}
-      >
-        {slide.quizLabel ?? "Start the Quiz!"} →
-      </motion.button>
-      <p className="text-center text-[11px] text-white/30 font-medium -mt-1">
-        Complete the quiz to earn your badge 🏅
-      </p>
+      {/* Quiz CTA — only shown when lesson defines a quizLabel */}
+      {slide.quizLabel && (
+        <>
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+            onClick={onStartQuiz}
+            className="w-full rounded-2xl py-4 font-black text-white text-base shadow-xl"
+            style={{
+              background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}88)`,
+              boxShadow: `0 8px 30px ${theme.accent}55`,
+            }}
+          >
+            {slide.quizLabel} →
+          </motion.button>
+          <p className="text-center text-[11px] text-white/30 font-medium -mt-1">
+            Complete the quiz to earn your badge 🏅
+          </p>
+        </>
+      )}
     </div>
   );
 }
@@ -564,7 +569,7 @@ function VideoPlayer({ lesson, theme, onDone, onClose }: {
 /* ══════════════════════════════════
    MAIN LESSON PLAYER
 ══════════════════════════════════ */
-export default function LessonPlayer({ lesson, onStartQuiz, onClose }: Props) {
+export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge }: Props) {
   const [showVideo, setShowVideo] = useState(
     !!(lesson.videoUrl && lesson.videoUrl !== "PASTE_SUPABASE_URL_HERE" && lesson.videoUrl !== "PASTE_YOUR_VIDEO_URL_HERE")
   );
@@ -696,7 +701,7 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose }: Props) {
                 />
               )}
               {isGame && slide.gameType === "password-builder" && (
-                <PasswordBuilderGame embedded={true} onComplete={() => goNext()} />
+                <PasswordBuilderGame embedded={true} age={childAge} onComplete={() => goNext()} />
               )}
               {isGame && slide.gameType === "login-detective" && (
                 <LoginDetectiveGame onComplete={() => goNext()} />

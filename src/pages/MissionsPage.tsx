@@ -1477,6 +1477,7 @@ export default function MissionsPage() {
             missionProgress={missionProgress}
             onStartLesson={handleStartLesson}
             childName={playerName}
+            childAge={age}
           />
         )}
 
