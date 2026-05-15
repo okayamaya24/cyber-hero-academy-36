@@ -565,7 +565,7 @@ function VideoPlayer({ lesson, theme, onDone, onClose }: {
 ══════════════════════════════════ */
 export default function LessonPlayer({ lesson, onStartQuiz, onClose }: Props) {
   const [showVideo, setShowVideo] = useState(
-    !!(lesson.videoUrl && lesson.videoUrl !== "PASTE_YOUR_VIDEO_URL_HERE")
+    !!(lesson.videoUrl && lesson.videoUrl !== "PASTE_SUPABASE_URL_HERE" && lesson.videoUrl !== "PASTE_YOUR_VIDEO_URL_HERE")
   );
   const [slideIdx, setSlideIdx] = useState(0);
   const [direction, setDirection] = useState(1);
