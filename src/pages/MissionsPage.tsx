@@ -678,6 +678,25 @@ export default function MissionsPage() {
     setStandaloneResult({ stars, passed, xpEarned });
   };
 
+  /* ── Inline lesson quiz completion ── */
+  const handleLessonComplete = async (missionId: string) => {
+    if (!activeChildId) return;
+    await supabase.from("mission_progress").upsert(
+      {
+        child_id: activeChildId,
+        mission_id: missionId,
+        status: "completed",
+        score: 1,
+        max_score: 1,
+        current_question: 1,
+        completed_at: new Date().toISOString(),
+      } as any,
+      { onConflict: "child_id,mission_id" },
+    );
+    await queryClient.invalidateQueries({ queryKey: ["mission_progress", activeChildId] });
+    await queryClient.invalidateQueries({ queryKey: ["mission_progress"] });
+  };
+
   /* ═══════════════════════════════════════════
      VIEW: Quiz Mission Intro
      ═══════════════════════════════════════════ */
@@ -1479,6 +1498,7 @@ export default function MissionsPage() {
             childName={playerName}
             childAge={age}
             childId={activeChildId ?? undefined}
+            onLessonComplete={handleLessonComplete}
           />
         )}
 

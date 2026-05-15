@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,6 +34,14 @@ const BYTE_TIPS = [
 export default function KidDashboard() {
   const { user, activeChildId, setActiveChildId } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const badgesRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (location.hash === "#badges" && badgesRef.current) {
+      setTimeout(() => badgesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 400);
+    }
+  }, [location.hash]);
   const { data: platformSettings } = usePlatformSettings();
   const worldMapEnabled = platformSettings?.world_map_enabled ?? false;
 
@@ -285,6 +293,8 @@ export default function KidDashboard() {
 
           {/* Earned Badges */}
           <motion.div
+            ref={badgesRef}
+            id="badges"
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.36 }}
             className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
           >

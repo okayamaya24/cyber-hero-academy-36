@@ -29,6 +29,7 @@ interface Props {
   childName: string;
   childAge?: number;
   childId?: string;
+  onLessonComplete?: (missionId: string) => void;
 }
 
 function getLessonStatus(
@@ -230,7 +231,7 @@ function CharacterCard({
   );
 }
 
-export default function LearningModeTab({ completedMissionIds, missionProgress, onStartLesson, childName, childAge, childId }: Props) {
+export default function LearningModeTab({ completedMissionIds, missionProgress, onStartLesson, childName, childAge, childId, onLessonComplete }: Props) {
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
 
   // When Start is clicked — show lesson player if content exists, else go straight to quiz
@@ -328,6 +329,7 @@ export default function LearningModeTab({ completedMissionIds, missionProgress, 
             lesson={activeLessonContent}
             childAge={childAge}
             childId={childId}
+            onLessonComplete={onLessonComplete}
             onStartQuiz={() => {
               const missionId = activeLessonContent.missionId;
               setActiveLessonId(null);

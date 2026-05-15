@@ -4,7 +4,7 @@
  * Each lesson feels like a game cutscene / comic strip.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronRight, ChevronLeft, Star } from "lucide-react";
@@ -30,6 +30,7 @@ interface Props {
   onClose: () => void;
   childAge?: number;
   childId?: string;
+  onLessonComplete?: (missionId: string) => void;
 }
 
 /* ── Confetti particle ── */
@@ -396,8 +397,17 @@ function CheckSlide({ slide, lesson, theme, onAnswer }: {
 }
 
 /* ── INLINE QUIZ ── */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function InlineQuiz({
-  questions, theme, badgeEmoji, badgeLabel, badgeId, childId, onClose,
+  questions, theme, badgeEmoji, badgeLabel, badgeId, childId, onClose, onLessonComplete, missionId,
 }: {
   questions: LessonQuizQuestion[];
   theme: typeof CHAR_THEMES[string];
@@ -405,7 +415,9 @@ function InlineQuiz({
   badgeLabel: string;
   badgeId?: string;
   childId?: string;
+  missionId?: string;
   onClose: () => void;
+  onLessonComplete?: (missionId: string) => void;
 }) {
   const navigate = useNavigate();
   const [qIdx, setQIdx]         = useState(0);
@@ -414,9 +426,14 @@ function InlineQuiz({
   const [done, setDone]         = useState(false);
   const [awarded, setAwarded]   = useState(false);
 
-  const q = questions[qIdx];
+  // Shuffle choices once per session so the correct answer isn't always in the same position
+  const shuffledQuestions = useMemo(() =>
+    questions.map(q => ({ ...q, choices: shuffle(q.choices) })),
+  [questions]);
+
+  const q = shuffledQuestions[qIdx];
   const answered = selected !== null;
-  const total = questions.length;
+  const total = shuffledQuestions.length;
   const passed = score >= Math.ceil(total * 0.6);
 
   function pick(i: number) {
@@ -429,9 +446,14 @@ function InlineQuiz({
     const newScore = selected !== null && q.choices[selected].correct ? score + 1 : score;
     if (qIdx + 1 >= total) {
       const didPass = newScore >= Math.ceil(total * 0.6);
-      if (didPass && badgeId && childId && !awarded) {
-        setAwarded(true);
-        await awardBadge(childId, badgeId);
+      if (didPass) {
+        if (badgeId && childId && !awarded) {
+          setAwarded(true);
+          await awardBadge(childId, badgeId);
+        }
+        if (missionId && onLessonComplete) {
+          onLessonComplete(missionId);
+        }
       }
       setDone(true);
       return;
@@ -543,7 +565,7 @@ function InlineQuiz({
             {passed ? (
               <>
                 <button
-                  onClick={() => { onClose(); navigate("/dashboard"); }}
+                  onClick={() => { onClose(); navigate("/dashboard#badges"); }}
                   className="w-full rounded-2xl py-3.5 font-black text-base text-white shadow-lg"
                   style={{
                     background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}bb)`,
@@ -820,7 +842,7 @@ function VideoPlayer({ lesson, theme, onDone, onClose }: {
 /* ══════════════════════════════════
    MAIN LESSON PLAYER
 ══════════════════════════════════ */
-export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, childId }: Props) {
+export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, childId, onLessonComplete }: Props) {
   const [showVideo, setShowVideo] = useState(
     !!(lesson.videoUrl && lesson.videoUrl !== "PASTE_SUPABASE_URL_HERE" && lesson.videoUrl !== "PASTE_YOUR_VIDEO_URL_HERE")
   );
@@ -1057,6 +1079,8 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
                 badgeLabel={lesson.badgeLabel ?? "Quiz Champion"}
                 badgeId={lesson.lessonId === "lesson-hero-1" ? "password-pro" : undefined}
                 childId={childId}
+                missionId={lesson.missionId}
+                onLessonComplete={onLessonComplete}
                 onClose={() => setShowInlineQuiz(false)}
               />
             </motion.div>
