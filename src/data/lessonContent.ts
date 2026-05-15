@@ -57,6 +57,7 @@ export interface LessonContent {
   character: string; // guide name for display
   characterEmoji: string;
   characterColor: string; // tailwind bg
+  videoUrl?: string; // optional video shown before slides
   slides: LessonSlide[];
 }
 
@@ -70,6 +71,7 @@ export const LESSON_CONTENT: LessonContent[] = [
     character: "Byte",
     characterEmoji: "🤖",
     characterColor: "bg-cyan-500",
+    videoUrl: "PASTE_YOUR_VIDEO_URL_HERE", // replace with YouTube/Supabase URL
     slides: [
       {
         type: "intro",

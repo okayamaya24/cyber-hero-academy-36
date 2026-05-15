@@ -57,6 +57,14 @@ function Confetti() {
 const CHAR_THEMES: Record<string, {
   bg: string; accent: string; bubble: string; villainName: string; villainEmoji: string; alertText: string;
 }> = {
+  "Byte": {
+    bg: "from-[#001a2d] via-[#002d4d] to-[#001a2d]",
+    accent: "#08b6aa",
+    bubble: "bg-cyan-900/80 border-cyan-400/40",
+    villainName: "The Password Phantom",
+    villainEmoji: "👻",
+    alertText: "SECURITY BREACH DETECTED!",
+  },
   "Captain Cyber": {
     bg: "from-[#1a0533] via-[#2d0a5a] to-[#1a0533]",
     accent: "#a855f7",
@@ -468,15 +476,102 @@ function SummarySlide({ slide, lesson, theme, onStartQuiz }: {
   );
 }
 
+/* ── VIDEO PLAYER ── */
+function VideoPlayer({ lesson, theme, onDone, onClose }: {
+  lesson: LessonContent;
+  theme: typeof CHAR_THEMES[string];
+  onDone: () => void;
+  onClose: () => void;
+}) {
+  const isYouTube = lesson.videoUrl?.includes("youtube.com") || lesson.videoUrl?.includes("youtu.be");
+
+  // Convert YouTube URL to embed URL
+  const getEmbedUrl = (url: string) => {
+    const match = url.match(/(?:v=|youtu\.be\/)([^&?/]+)/);
+    return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1&rel=0` : url;
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.92)", backdropFilter: "blur(6px)" }}>
+      <motion.div
+        initial={{ y: 60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 60, opacity: 0 }}
+        transition={{ type: "spring", bounce: 0.3 }}
+        className={`relative w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col bg-gradient-to-b ${theme.bg}`}
+        style={{ maxHeight: "92vh", border: `1px solid ${theme.accent}33` }}
+      >
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <div className={`w-7 h-7 rounded-xl ${lesson.characterColor} flex items-center justify-center text-sm`}>
+              {lesson.characterEmoji}
+            </div>
+            <span className="text-[11px] font-extrabold" style={{ color: theme.accent }}>
+              {lesson.character} · Lesson Video
+            </span>
+          </div>
+          <button onClick={onClose}
+            className="rounded-full p-1.5 text-white/30 hover:text-white hover:bg-white/10 transition-colors">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Video */}
+        <div className="relative w-full flex-shrink-0" style={{ aspectRatio: "16/9" }}>
+          {isYouTube ? (
+            <iframe
+              src={getEmbedUrl(lesson.videoUrl!)}
+              className="w-full h-full"
+              allowFullScreen
+              allow="autoplay; fullscreen"
+              style={{ border: "none" }}
+            />
+          ) : (
+            <video
+              src={lesson.videoUrl}
+              controls
+              autoPlay
+              className="w-full h-full bg-black"
+              style={{ maxHeight: "55vh" }}
+            />
+          )}
+        </div>
+
+        {/* Bottom actions */}
+        <div className="flex flex-col gap-3 px-4 py-5 flex-shrink-0"
+          style={{ borderTop: `1px solid ${theme.accent}18` }}>
+          <motion.button
+            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+            onClick={onDone}
+            className="w-full rounded-2xl py-3.5 font-black text-white text-sm shadow-xl"
+            style={{ background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}88)` }}
+          >
+            Continue to Lesson →
+          </motion.button>
+          <button onClick={onDone}
+            className="text-center text-xs text-white/30 hover:text-white/60 transition-colors font-medium">
+            Skip video
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 /* ══════════════════════════════════
    MAIN LESSON PLAYER
 ══════════════════════════════════ */
 export default function LessonPlayer({ lesson, onStartQuiz, onClose }: Props) {
+  const [showVideo, setShowVideo] = useState(
+    !!(lesson.videoUrl && lesson.videoUrl !== "PASTE_YOUR_VIDEO_URL_HERE")
+  );
   const [slideIdx, setSlideIdx] = useState(0);
   const [direction, setDirection] = useState(1);
   const [waitForCheck, setWaitForCheck] = useState(false);
 
-  const theme = CHAR_THEMES[lesson.character] ?? CHAR_THEMES["Captain Cyber"];
+  const theme = CHAR_THEMES[lesson.character] ?? CHAR_THEMES["Byte"];
   const slides = lesson.slides;
   const slide = slides[slideIdx];
   const isLast = slideIdx === slides.length - 1;
@@ -502,6 +597,20 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose }: Props) {
   const handleCheckAnswer = (correct: boolean) => {
     setTimeout(goNext, correct ? 800 : 1000);
   };
+
+  // Show video first if lesson has one
+  if (showVideo) {
+    return (
+      <AnimatePresence>
+        <VideoPlayer
+          lesson={lesson}
+          theme={theme}
+          onDone={() => setShowVideo(false)}
+          onClose={onClose}
+        />
+      </AnimatePresence>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
