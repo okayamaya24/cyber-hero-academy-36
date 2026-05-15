@@ -1239,13 +1239,16 @@ export default function MissionsPage() {
   const trainingTierEmoji = getTrainingTierEmoji(tier);
   const playerName = (child as any)?.name ?? "Guardian";
 
-  const completedMissionIds = new Set(
-    MISSIONS.filter((m) => {
+  const completedMissionIds = new Set([
+    // Standard mission completions (max_score must match mode's total games)
+    ...MISSIONS.filter((m) => {
       const totalGames = getTotalGames(learningMode);
       const mp = getModeAwareMissionProgress(missionProgress, m.id, totalGames);
       return mp?.status === "completed";
     }).map((m) => m.id),
-  );
+    // Lesson quiz completions (saved with max_score:1, still count for unlocking)
+    ...missionProgress.filter((p) => p.status === "completed").map((p: any) => p.mission_id),
+  ]);
 
   const getStandaloneStars = (gameId: string) => {
     const mp = missionProgress.find((p) => p.mission_id === gameId);
