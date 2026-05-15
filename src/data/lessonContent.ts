@@ -71,7 +71,7 @@ export const LESSON_CONTENT: LessonContent[] = [
     character: "Byte",
     characterEmoji: "🤖",
     characterColor: "bg-cyan-500",
-    videoUrl: "PASTE_SUPABASE_URL_HERE", // replace with YouTube/Supabase URL
+    videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson1.mp4",
     slides: [
       {
         type: "intro",
