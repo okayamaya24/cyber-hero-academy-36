@@ -1590,6 +1590,7 @@ export default function MissionsPage() {
         )}
 
         {/* ── BYTE'S PICK / SPOTLIGHT ── */}
+        {featuredGame && (
         <motion.div
           className="mb-10 relative overflow-hidden rounded-2xl border border-[#00d4ff]/22"
           style={{ background: "linear-gradient(135deg, #0d1929 0%, #0f2040 65%, #0a1628 100%)" }}
@@ -1634,6 +1635,7 @@ export default function MissionsPage() {
             </div>
           </div>
         </motion.div>
+        )}
 
         {/* ── QUIZ CHALLENGES ── */}
         <SectionHeader icon="🎮" title="Quiz Challenges" count={quizMissions.length} color="#fbbf24" />
