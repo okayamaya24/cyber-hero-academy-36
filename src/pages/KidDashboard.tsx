@@ -292,9 +292,8 @@ export default function KidDashboard() {
           </motion.div>
 
           {/* Earned Badges */}
+          <div ref={badgesRef} id="badges">
           <motion.div
-            ref={badgesRef}
-            id="badges"
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.36 }}
             className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
           >
@@ -327,6 +326,7 @@ export default function KidDashboard() {
               </div>
             )}
           </motion.div>
+          </div>
         </div>
 
         {/* World Map link if enabled */}
