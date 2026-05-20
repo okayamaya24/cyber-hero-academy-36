@@ -1,6 +1,7 @@
 // Register continent configs with the adventure engine
 import "@/engine/configs/northAmerica";
 
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -96,6 +97,37 @@ import PasswordBuilder from "./pages/games/PasswordBuilder";
 import TestCrosswordPage from "./pages/TestCrosswordPage";
 
 const queryClient = new QueryClient();
+
+/* ── Error boundary so MissionsPage crashes show a friendly message ── */
+class MissionsErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { crashed: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { crashed: false };
+  }
+  static getDerivedStateFromError() { return { crashed: true }; }
+  render() {
+    if (this.state.crashed) {
+      return (
+        <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#080c18] text-white p-6 text-center">
+          <div className="text-6xl">🛡️</div>
+          <h2 className="text-2xl font-black">Oops! Something went wrong.</h2>
+          <p className="text-gray-400 text-sm max-w-xs">The Missions page hit an error. Tap below to try again!</p>
+          <button
+            onClick={() => { this.setState({ crashed: false }); window.location.href = "/missions"; }}
+            className="mt-2 rounded-2xl px-8 py-3 font-black text-white text-sm"
+            style={{ background: "linear-gradient(135deg,#00d4ff,#00ff88)", color: "#080c18" }}
+          >
+            Try Again 🚀
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function DashboardRouter() {
   const { user, loading: authLoading, setActiveChildId } = useAuth();
@@ -254,10 +286,10 @@ const App = () => (
               <Route
                 path="/missions"
                 element={
-                  <>
+                  <MissionsErrorBoundary>
                     <Navbar />
                     <MissionsPage />
-                  </>
+                  </MissionsErrorBoundary>
                 }
               />
               <Route

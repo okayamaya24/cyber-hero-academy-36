@@ -798,7 +798,8 @@ export default function MissionsPage() {
      ═══════════════════════════════════════════ */
   if (activeMission && !missionComplete && !showIntro) {
     const games = getGames(activeMission);
-    const q = games[currentQ];
+    const q = games[currentQ] ?? games[0];
+    if (!q) { resetAll(); return null; }
     const isCustom = CUSTOM_GAME_TYPES.includes(q.miniGameType);
     const isJunior = tier === "junior";
     const hasMessageCard = !!q.sender;
