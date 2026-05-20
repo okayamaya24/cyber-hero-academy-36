@@ -80,7 +80,7 @@ export const LEARNING_CHARACTERS: LearningCharacter[] = [
     color: "bg-amber-100",
     borderColor: "border-amber-300",
     textColor: "text-amber-700",
-    unlockedAfterCharacter: "hero",
+    unlockedAfterCharacter: null, // TEMP: always unlocked for testing
     lessons: [
       {
         id: "lesson-whiskers-1",
