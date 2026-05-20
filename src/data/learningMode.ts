@@ -121,7 +121,7 @@ export const LEARNING_CHARACTERS: LearningCharacter[] = [
     color: "bg-teal-100",
     borderColor: "border-teal-300",
     textColor: "text-teal-700",
-    unlockedAfterCharacter: "whiskers",
+    unlockedAfterCharacter: null, // TEMP: always unlocked for testing
     lessons: [
       {
         id: "lesson-hoot-1",
@@ -161,7 +161,7 @@ export const LEARNING_CHARACTERS: LearningCharacter[] = [
     color: "bg-cyan-100",
     borderColor: "border-cyan-300",
     textColor: "text-cyan-700",
-    unlockedAfterCharacter: "hoot",
+    unlockedAfterCharacter: null, // TEMP: always unlocked for testing
     lessons: [
       {
         id: "lesson-robo-1",
