@@ -101,13 +101,18 @@ const queryClient = new QueryClient();
 /* ── Error boundary so MissionsPage crashes show a friendly message ── */
 class MissionsErrorBoundary extends React.Component<
   { children: React.ReactNode },
-  { crashed: boolean }
+  { crashed: boolean; errorMsg: string }
 > {
   constructor(props: { children: React.ReactNode }) {
     super(props);
-    this.state = { crashed: false };
+    this.state = { crashed: false, errorMsg: "" };
   }
-  static getDerivedStateFromError() { return { crashed: true }; }
+  static getDerivedStateFromError(error: Error) {
+    return { crashed: true, errorMsg: error?.message ?? "Unknown error" };
+  }
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error("🚨 MissionsPage crash:", error, info.componentStack);
+  }
   render() {
     if (this.state.crashed) {
       return (
@@ -115,8 +120,9 @@ class MissionsErrorBoundary extends React.Component<
           <div className="text-6xl">🛡️</div>
           <h2 className="text-2xl font-black">Oops! Something went wrong.</h2>
           <p className="text-gray-400 text-sm max-w-xs">The Missions page hit an error. Tap below to try again!</p>
+          <p className="text-red-400 text-xs font-mono max-w-sm break-all">{this.state.errorMsg}</p>
           <button
-            onClick={() => { this.setState({ crashed: false }); window.location.href = "/missions"; }}
+            onClick={() => { this.setState({ crashed: false, errorMsg: "" }); window.location.href = "/missions"; }}
             className="mt-2 rounded-2xl px-8 py-3 font-black text-white text-sm"
             style={{ background: "linear-gradient(135deg,#00d4ff,#00ff88)", color: "#080c18" }}
           >
