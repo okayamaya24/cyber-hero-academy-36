@@ -23,6 +23,7 @@ import InfoShieldSortGame from "@/components/learning/games/InfoShieldSortGame";
 import PostOrPassGame from "@/components/learning/games/PostOrPassGame";
 import FactCheckGame from "@/components/learning/games/FactCheckGame";
 import MalwareMonsterGame from "@/components/learning/games/MalwareMonsterGame";
+import TraceTheHackerGame from "@/components/learning/games/TraceTheHackerGame";
 
 interface Props {
   lesson: LessonContent;
@@ -1009,6 +1010,9 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
               {isGame && slide.gameType === "malware-monster-match" && (
                 <MalwareMonsterGame onComplete={() => goNext()} />
               )}
+              {isGame && slide.gameType === "trace-the-hacker" && (
+                <TraceTheHackerGame onComplete={() => goNext()} />
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -1062,7 +1066,7 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
                     {lesson.characterEmoji}
                   </div>
                   <span className="text-[11px] font-extrabold" style={{ color: theme.accent }}>
-                    Password Quiz
+                    {lesson.badgeLabel ? `${lesson.badgeLabel} Quiz` : "Lesson Quiz"}
                   </span>
                 </div>
                 <button
@@ -1077,7 +1081,11 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
                 theme={theme}
                 badgeEmoji={lesson.badgeEmoji ?? "🏅"}
                 badgeLabel={lesson.badgeLabel ?? "Quiz Champion"}
-                badgeId={lesson.lessonId === "lesson-hero-1" ? "password-pro" : undefined}
+                badgeId={
+                  lesson.lessonId === "lesson-hero-1" ? "password-pro" :
+                  lesson.lessonId === "lesson-hero-2" ? "cyber-detective" :
+                  undefined
+                }
                 childId={childId}
                 missionId={lesson.missionId}
                 onLessonComplete={onLessonComplete}

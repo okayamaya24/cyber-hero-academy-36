@@ -24,7 +24,8 @@ export type LessonGameType =
   | "info-shield-sort"
   | "post-or-pass"
   | "fact-check"
-  | "malware-monster-match";
+  | "malware-monster-match"
+  | "trace-the-hacker";
 
 export interface CheckChoice {
   text: string;
@@ -163,6 +164,8 @@ export const LESSON_CONTENT: LessonContent[] = [
     character: "Byte",
     characterEmoji: "🤖",
     characterColor: "bg-cyan-500",
+    badgeLabel: "Cyber Detective",
+    badgeEmoji: "🕵️",
     slides: [
       {
         type: "intro",
@@ -200,14 +203,91 @@ export const LESSON_CONTENT: LessonContent[] = [
         gameType: "login-detective",
       },
       {
+        type: "learn",
+        icon: "🕵️",
+        title: "Think like a cyber detective",
+        body: "Real hackers leave clues — fake websites, suspicious messages, and strange downloads. Your job is to spot the difference between SAFE and SUSPICIOUS before it's too late!",
+      },
+      {
+        type: "game",
+        gameType: "trace-the-hacker",
+      },
+      {
         type: "summary",
         takeaways: [
           "You have a digital footprint everywhere you go online 👣",
           "Unknown logins from new places = red flag 🚩",
           "Always log out on shared devices 🚪",
+          "Fake URLs use misspellings and missing lock icons 🔒",
+          "Never download .exe files from strangers or plug in found USB drives 💾",
           "Check your account activity regularly 🔍",
         ],
-        quizLabel: "Start Cyber Clues Mission!",
+        quizLabel: "Take the Cyber Clues Quiz!",
+      },
+    ],
+    quiz: [
+      {
+        question: "What is a digital footprint?",
+        choices: [
+          { text: "A shoe print made on a touchscreen", correct: false, feedback: "Ha! That would be muddy! A digital footprint is the trail you leave online. 😄" },
+          { text: "The trail of info you leave online when browsing, posting, or searching", correct: true, feedback: "Exactly! Every click, search, and post adds to your digital footprint. 👣" },
+          { text: "A special password that tracks you", correct: false, feedback: "Not a password — it's all the data trails you leave just by going online!" },
+          { text: "A virus that follows you around the internet", correct: false, feedback: "No viruses here! A digital footprint is just the data trail you naturally create online." },
+        ],
+      },
+      {
+        question: "You get a message: \"You won a FREE iPhone! Click here!\" What should you do?",
+        choices: [
+          { text: "Click it immediately — free phone!", correct: false, feedback: "🚨 STOP! Nobody gives strangers free iPhones. This is a scam to steal your info!" },
+          { text: "Ignore it and tell a trusted adult", correct: true, feedback: "Smart move! Prize scams are one of the most common tricks hackers use. 🧠" },
+          { text: "Share it with friends so they can win too", correct: false, feedback: "That would spread the scam! Never forward suspicious messages." },
+          { text: "Reply asking for more details", correct: false, feedback: "Replying confirms your account is active — that's what scammers want!" },
+        ],
+      },
+      {
+        question: "Which website URL looks suspicious?",
+        choices: [
+          { text: "https://google.com", correct: false, feedback: "Google's real URL with https and a lock — totally safe! ✅" },
+          { text: "https://amazon.com", correct: false, feedback: "Amazon's official URL — nothing suspicious here! ✅" },
+          { text: "http://amaz0n-deals.com", correct: true, feedback: "🚨 Spot it! The '0' instead of 'o' AND no https = fake phishing site!" },
+          { text: "https://myschool.edu", correct: false, feedback: "School domains (.edu) with https are secure — that's your school's real site! ✅" },
+        ],
+      },
+      {
+        question: "You find a USB drive in the school hallway. What should you do?",
+        choices: [
+          { text: "Plug it into your computer to see what's on it", correct: false, feedback: "🚨 Never! Hackers leave infected USB drives in public on purpose to spread viruses." },
+          { text: "Give it to a teacher without plugging it in", correct: true, feedback: "Perfect! Hand it to an adult — never plug in a USB you found on the ground. 🏫" },
+          { text: "Keep it — finders keepers!", correct: false, feedback: "It might be a trap! Hackers bait people with free-looking USB drives." },
+          { text: "Plug it in to find the owner's name and return it", correct: false, feedback: "The virus runs the moment you plug it in — don't do it! Give it to a teacher instead." },
+        ],
+      },
+      {
+        question: "You notice your account shows a login from another country at 3 AM. What does this mean?",
+        choices: [
+          { text: "Your friend is using your account while traveling", correct: false, feedback: "Maybe — but you should still investigate! Never ignore unknown logins." },
+          { text: "It's probably just a glitch", correct: false, feedback: "Don't assume glitch! Unknown logins are a serious red flag that needs action right away." },
+          { text: "Someone may have hacked into your account", correct: true, feedback: "🚨 Yes! Unknown country + 3 AM = major red flag. Change your password immediately!" },
+          { text: "The internet is just slow", correct: false, feedback: "Slow internet doesn't create logins from other countries! This is a real warning sign." },
+        ],
+      },
+      {
+        question: "A pop-up on a FREE kids' game says \"Enter your credit card to verify your age.\" What should you do?",
+        choices: [
+          { text: "Enter the card — it's probably safe", correct: false, feedback: "🚨 Free kids' games never need credit cards! This is a scam to steal payment info." },
+          { text: "Close the pop-up and tell an adult immediately", correct: true, feedback: "Exactly right! Legit free games don't ask for payment info. Tell a trusted adult. 🦸" },
+          { text: "Ask a friend if they've seen this before", correct: false, feedback: "Better to tell an adult right away — they can help you report it properly." },
+          { text: "Enter fake card numbers to trick them", correct: false, feedback: "Don't engage at all — close it and report it to an adult immediately!" },
+        ],
+      },
+      {
+        question: "What should you ALWAYS do on shared computers like at school or the library?",
+        choices: [
+          { text: "Change the computer's wallpaper", correct: false, feedback: "Ha! That's not a security move. Always log out before you leave!" },
+          { text: "Log out of all accounts before you leave", correct: true, feedback: "Yes! If you stay logged in, the next person can access your accounts. Always log out! 🚪" },
+          { text: "Delete your browsing history only", correct: false, feedback: "History deletion isn't enough — you need to fully log out of your accounts!" },
+          { text: "Nothing — shared computers are always safe", correct: false, feedback: "Nope! Shared computers are risky. Always log out when you're done. 🔐" },
+        ],
       },
     ],
   },
