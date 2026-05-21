@@ -164,6 +164,7 @@ export const LESSON_CONTENT: LessonContent[] = [
     character: "Byte",
     characterEmoji: "🤖",
     characterColor: "bg-cyan-500",
+    videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson2.mp4",
     badgeLabel: "Cyber Detective",
     badgeEmoji: "🕵️",
     slides: [
