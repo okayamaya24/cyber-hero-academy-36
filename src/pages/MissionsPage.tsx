@@ -365,7 +365,7 @@ function HScrollSection({ children }: { children: React.ReactNode }) {
    ═══════════════════════════════════════════════════════════ */
 
 export default function MissionsPage() {
-  const { user, activeChildId, setActiveChildId } = useAuth();
+  const { user, activeChildId, setActiveChildId, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
@@ -397,6 +397,7 @@ export default function MissionsPage() {
 
 
   useEffect(() => {
+    if (authLoading) return; // wait for session check before redirecting
     if (!user) {
       navigate("/login");
       return;
@@ -404,7 +405,7 @@ export default function MissionsPage() {
     if (!activeChildId && user) {
       setActiveChildId(user.id);
     }
-  }, [user, activeChildId, navigate]);
+  }, [authLoading, user, activeChildId, navigate]);
 
   const { data: child } = useQuery({
     queryKey: ["child", activeChildId],
@@ -436,6 +437,18 @@ export default function MissionsPage() {
     },
     enabled: !!activeChildId,
   });
+
+  // Show loading screen while auth or profile is not ready yet
+  if (authLoading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#080c18]">
+        <div className="text-center">
+          <div className="text-4xl mb-3 animate-pulse">🛡️</div>
+          <p className="text-gray-400 font-semibold text-sm">Loading Training Center…</p>
+        </div>
+      </div>
+    );
+  }
 
   const age = child?.age ?? 7;
   const tier = getAgeTier(age);
