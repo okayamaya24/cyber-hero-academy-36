@@ -1,20 +1,67 @@
 /**
  * LoginDetectiveGame — Hero Lesson 2: Cyber Clues & Digital Trails
- * Show 5 login records. Tap NORMAL or SUSPICIOUS for each.
+ * Show login records. Tap NORMAL or SUSPICIOUS for each.
+ * Difficulty scales by childAge: junior / defender / guardian.
  */
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface Props { onComplete: () => void; }
+interface Props { onComplete: () => void; childAge?: number; }
 
-const LOGINS = [
+interface Login {
+  location: string;
+  time: string;
+  device: string;
+  suspicious: boolean;
+  clue: string;
+}
+
+const LOGINS_JUNIOR: Login[] = [
+  {
+    location: "📍 Your City",
+    time: "Today at 3:30 PM",
+    device: "Chrome on your tablet",
+    suspicious: false,
+    clue: "Your city, your tablet, after school time — that's YOU logging in! ✅",
+  },
+  {
+    location: "📍 China",
+    time: "Today at 3:31 PM",
+    device: "Unknown device",
+    suspicious: true,
+    clue: "⚠️ A whole other country — at the same time as YOU? That's a hacker! Change your password now!",
+  },
+  {
+    location: "📍 Your City",
+    time: "Yesterday at 7:00 PM",
+    device: "Safari on your phone",
+    suspicious: false,
+    clue: "Your city, your phone, evening time — that's you checking in after dinner. Normal! ✅",
+  },
+  {
+    location: "📍 Unknown Place",
+    time: "Last night at 2:00 AM",
+    device: "Unknown device",
+    suspicious: true,
+    clue: "⚠️ Middle of the night, unknown place, unknown device — you were asleep! That's a hacker!",
+  },
+  {
+    location: "📍 Your City",
+    time: "This morning at 8:15 AM",
+    device: "Chromebook at school",
+    suspicious: false,
+    clue: "Your city, a school device, before classes — that's you logging in at school. Totally fine! ✅",
+  },
+];
+
+const LOGINS_DEFENDER: Login[] = [
   {
     location: "📍 New York, NY",
     time: "Today at 4:15 PM",
     device: "Chrome on your laptop",
     suspicious: false,
-    clue: "This looks like a normal login — your usual city, your usual device, at a normal time. ✅",
+    clue: "Your usual city, your usual device, normal afternoon time. This is you! ✅",
   },
   {
     location: "📍 Moscow, Russia",
@@ -46,7 +93,54 @@ const LOGINS = [
   },
 ];
 
-export default function LoginDetectiveGame({ onComplete }: Props) {
+const LOGINS_GUARDIAN: Login[] = [
+  {
+    location: "📍 New York, NY (Home ISP)",
+    time: "Tuesday at 6:14 PM",
+    device: "Chrome 124 · Windows 11",
+    suspicious: false,
+    clue: "Your home ISP, your usual OS, a normal evening — everything checks out. ✅",
+  },
+  {
+    location: "📍 New York, NY (Home ISP)",
+    time: "Tuesday at 6:16 PM",
+    device: "Chrome 124 · Windows 10",
+    suspicious: true,
+    clue: "⚠️ Same city and browser but a different OS two minutes later — that's a different device. Possible session hijack! Investigate immediately.",
+  },
+  {
+    location: "📍 Mobile Carrier IP",
+    time: "Friday at 2:48 PM",
+    device: "Safari · iOS 17",
+    suspicious: false,
+    clue: "Mobile carrier IPs differ from home IPs — this is just you on your phone using cell data. Normal! ✅",
+  },
+  {
+    location: "📍 Data Center IP (AWS)",
+    time: "Thursday at 11:22 PM",
+    device: "python-requests/2.31.0",
+    suspicious: true,
+    clue: "⚠️ A data center IP with an automated script user-agent at 11 PM — this is a bot or automated attack tool, not a human browser!",
+  },
+  {
+    location: "📍 New York, NY (Home ISP)",
+    time: "Saturday at 1:05 PM",
+    device: "Firefox 126 · Ubuntu Linux",
+    suspicious: false,
+    clue: "Same home IP, different browser and OS — you're trying a new setup. Unusual but from your known location. Normal! ✅",
+  },
+];
+
+function getTier(age?: number): "junior" | "defender" | "guardian" {
+  if (!age || age < 8) return "junior";
+  if (age < 11) return "defender";
+  return "guardian";
+}
+
+export default function LoginDetectiveGame({ onComplete, childAge }: Props) {
+  const tier = getTier(childAge);
+  const LOGINS = tier === "junior" ? LOGINS_JUNIOR : tier === "guardian" ? LOGINS_GUARDIAN : LOGINS_DEFENDER;
+
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
   const [result, setResult] = useState<"correct" | "wrong" | null>(null);
@@ -70,16 +164,18 @@ export default function LoginDetectiveGame({ onComplete }: Props) {
   };
 
   if (done) {
-    const stars = score === 5 ? 3 : score >= 3 ? 2 : 1;
+    const stars = score === LOGINS.length ? 3 : score >= Math.ceil(LOGINS.length * 0.6) ? 2 : 1;
     return (
       <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
         className="text-center py-4 space-y-4">
         <div className="text-5xl">🕵️</div>
         <h2 className="text-xl font-black text-white">{score}/{LOGINS.length} flagged correctly!</h2>
         <p className="text-sm font-bold text-purple-300">
-          {score === 5 ? "Perfect detective work! You'd spot a hacker instantly! 🦸" :
-           score >= 3 ? "Good instincts! Watch for unknown locations and weird times." :
-           "Tricky! Look for: unknown cities, odd hours, and unfamiliar devices."}
+          {score === LOGINS.length
+            ? "Perfect detective work! You'd spot a hacker instantly! 🦸"
+            : score >= Math.ceil(LOGINS.length * 0.6)
+            ? "Good instincts! Watch for unknown locations and weird devices."
+            : "Tricky! Look for: unknown cities, odd hours, and unfamiliar devices."}
         </p>
         <div className="flex justify-center gap-1">
           {[0, 1, 2].map((i) => (
@@ -116,7 +212,7 @@ export default function LoginDetectiveGame({ onComplete }: Props) {
 
           <div className={`rounded-2xl border-2 overflow-hidden mb-3 transition-colors ${
             result === "correct" ? "border-green-400" :
-            result === "wrong" ? "border-red-400" : "border-white/10"
+            result === "wrong"   ? "border-red-400"   : "border-white/10"
           }`}>
             <div className="bg-white/8 border-b border-white/10 px-4 py-2.5">
               <p className="text-[10px] font-extrabold text-purple-400 tracking-wider mb-1">🔐 ACCOUNT LOGIN ACTIVITY</p>

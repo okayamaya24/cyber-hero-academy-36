@@ -99,58 +99,219 @@ export const LESSON_CONTENT: LessonContent[] = [
       },
     ],
     quiz: [
+      /* ── JUNIOR (ages 5–7) — simple and direct ── */
       {
+        tier: "junior",
         question: "How long should a strong password be?",
         choices: [
-          { text: "4 characters",        correct: false, feedback: "Way too short — a hacker can crack that in under a second!" },
-          { text: "6 characters",        correct: false, feedback: "Still too short. Hackers have tools that try millions of combos fast!" },
-          { text: "12 or more characters", correct: true,  feedback: "Yes! The longer it is, the harder it is to crack. 12+ is the sweet spot! 🎯" },
+          { text: "4 letters",           correct: false, feedback: "Way too short! A hacker could guess that super fast! 😬" },
+          { text: "12 or more letters",  correct: true,  feedback: "Yes! The longer, the stronger. 12+ is what Byte recommends! 🎯" },
+          { text: "Just your name",      correct: false, feedback: "Never use your name — hackers try that first!" },
+          { text: "3 letters",           correct: false, feedback: "That's shorter than your name! Go for 12 or more! 💪" },
+        ],
+      },
+      {
+        tier: "junior",
+        question: "Which password is the strongest?",
+        choices: [
+          { text: "password",      correct: false, feedback: "That's the most guessed password ever! Hackers try it first. 😬" },
+          { text: "123456",        correct: false, feedback: "Number order is way too easy to guess! Try mixing letters and symbols." },
+          { text: "Tiger$Jump42!", correct: true,  feedback: "🔥 Yes! Mix letters, numbers AND symbols — that's a super strong password!" },
+          { text: "fluffy",        correct: false, feedback: "Pet names are cute but easy to guess. Mix things up! 🐶" },
+        ],
+      },
+      {
+        tier: "junior",
+        question: "You should NEVER put your ___ in a password.",
+        choices: [
+          { text: "Favorite color",  correct: false, feedback: "Colors can actually be fine — they're not personal info everyone knows!" },
+          { text: "Random numbers",  correct: false, feedback: "Random numbers are great! They make passwords stronger." },
+          { text: "Name or birthday", correct: true, feedback: "Exactly! Your name and birthday are easy to find. Never use them! 🛡️" },
+          { text: "Capital letters", correct: false, feedback: "Capital letters are helpful — always add some!" },
+        ],
+      },
+      {
+        tier: "junior",
+        question: "A passphrase is...",
+        choices: [
+          { text: "A hint to remember your password",     correct: false, feedback: "That's a hint — a passphrase IS the password!" },
+          { text: "A bunch of random words together",     correct: true,  feedback: "Right! Like 'pizza cloud seven rocket' — long, random, and easy to remember! 🚀" },
+          { text: "Your secret nickname",                 correct: false, feedback: "Nicknames are personal info — hackers can find them. Use random words instead!" },
+          { text: "A password your teacher gives you",   correct: false, feedback: "YOU make the passphrase — pick random words that make you smile!" },
+        ],
+      },
+      {
+        tier: "junior",
+        question: "Should you use the same password on every website?",
+        choices: [
+          { text: "Yes — easy to remember!",    correct: false, feedback: "It seems smart but if one site gets hacked, ALL your accounts are in danger! 😱" },
+          { text: "No — use a different one each time", correct: true, feedback: "Exactly! Each account gets its own unique password. 🔑" },
+          { text: "Only if it's really long",   correct: false, feedback: "Even long passwords are risky if reused everywhere!" },
+          { text: "Yes if no one is watching",  correct: false, feedback: "Hackers are always watching! Always use different passwords." },
+        ],
+      },
+      {
+        tier: "junior",
+        question: "What do symbols like ! @ # do to your password?",
+        choices: [
+          { text: "Make it look cool only",      correct: false, feedback: "They do look cool — but their real job is making your password harder to crack! 😄" },
+          { text: "Make it harder to remember",  correct: false, feedback: "They can be tricky to remember, but they make your password WAY stronger!" },
+          { text: "Make it much harder to guess", correct: true, feedback: "Yes! Symbols add tons of possible combos that hackers have to try. 💥" },
+          { text: "Make it shorter",             correct: false, feedback: "Symbols don't make it shorter — they make it stronger!" },
+        ],
+      },
+      {
+        tier: "junior",
+        question: "Your friend asks for your password. What do you do?",
+        choices: [
+          { text: "Share it — they're my best friend!",  correct: false, feedback: "🚨 Never share your password — not even with best friends! Keep it secret." },
+          { text: "Never share it with anyone",          correct: true,  feedback: "Correct! Your password is your secret — keep it only to yourself! 🤫" },
+          { text: "Share just the first part",           correct: false, feedback: "Never share any part of your password! Even partial passwords can cause trouble." },
+          { text: "Write it down and give them the paper", correct: false, feedback: "Written passwords can be found by anyone! Never write it down to share." },
+        ],
+      },
+
+      /* ── DEFENDER (ages 8–10) — apply the knowledge ── */
+      {
+        tier: "defender",
+        question: "How long should a strong password be?",
+        choices: [
+          { text: "4 characters",         correct: false, feedback: "Way too short — a hacker can crack that in under a second!" },
+          { text: "6 characters",         correct: false, feedback: "Still too short. Hackers have tools that try millions of combos fast!" },
+          { text: "12 or more characters", correct: true, feedback: "Yes! The longer it is, the harder it is to crack. 12+ is the sweet spot! 🎯" },
           { text: "Exactly 8 characters", correct: false, feedback: "8 is okay but not great — go for 12 or more to be really safe!" },
         ],
       },
       {
+        tier: "defender",
         question: "Which of these is the STRONGEST password?",
         choices: [
           { text: "password123",    correct: false, feedback: "Hackers guess this one in under a second — Byte warned you! 😬" },
           { text: "Fluffy2010",     correct: false, feedback: "Your pet's name + a year? Hackers check those first, every time!" },
-          { text: "PurpleTiger$42", correct: true,  feedback: "🔥 Yes! Just like Byte said — mix words, numbers and symbols. That's unbreakable!" },
+          { text: "PurpleTiger$42", correct: true,  feedback: "🔥 Yes! Mix words, numbers and symbols. Long + varied = strong!" },
           { text: "abc12345",       correct: false, feedback: "Simple patterns like abc or 12345 are cracked instantly!" },
         ],
       },
       {
+        tier: "defender",
         question: "What should you NEVER put in a password?",
         choices: [
-          { text: "Random numbers",    correct: false, feedback: "Numbers are great — they make passwords way stronger!" },
-          { text: "Your birthday",     correct: true,  feedback: "Exactly! Birthdays are public info. A hacker can find that easily 🕵️" },
-          { text: "Capital letters",   correct: false, feedback: "Capital letters are a great addition — keep using them!" },
-          { text: "Special symbols",   correct: false, feedback: "Symbols like ! @ # are your secret weapon — always add them!" },
+          { text: "Random numbers",  correct: false, feedback: "Numbers are great — they make passwords way stronger!" },
+          { text: "Your birthday",   correct: true,  feedback: "Exactly! Birthdays are public info. A hacker can find that easily 🕵️" },
+          { text: "Capital letters", correct: false, feedback: "Capital letters are a great addition — keep using them!" },
+          { text: "Special symbols", correct: false, feedback: "Symbols like ! @ # are your secret weapon — always add them!" },
         ],
       },
       {
+        tier: "defender",
         question: "Byte said to use a passphrase. What is that?",
         choices: [
-          { text: "A hint to remember your password",          correct: false, feedback: "That's a hint — a passphrase is the password itself!" },
-          { text: "A password you share with friends",         correct: false, feedback: "Never share your password — not even with friends!" },
-          { text: "Three random words like 'pizza cloud seven rocket'", correct: true, feedback: "Exactly what Byte said! Random words = long, strong, and easy to remember 🚀" },
-          { text: "A password your school gives you",          correct: false, feedback: "Nope — a passphrase is something YOU create. Make it random!" },
+          { text: "A hint to remember your password",                    correct: false, feedback: "That's a hint — a passphrase is the password itself!" },
+          { text: "A password you share with friends",                   correct: false, feedback: "Never share your password — not even with friends!" },
+          { text: "Three or more random words like 'pizza cloud rocket'", correct: true, feedback: "Exactly what Byte said! Random words = long, strong, and easy to remember 🚀" },
+          { text: "A password your school gives you",                    correct: false, feedback: "Nope — a passphrase is something YOU create. Make it random!" },
         ],
       },
       {
+        tier: "defender",
         question: "You use the same password on every website. Is that…",
         choices: [
-          { text: "Smart — easy to remember!",          correct: false, feedback: "It seems smart but it's risky — one hack and ALL your accounts are exposed!" },
+          { text: "Smart — easy to remember!",                correct: false, feedback: "It seems smart but it's risky — one hack and ALL your accounts are exposed!" },
           { text: "Dangerous — one hack = all accounts exposed", correct: true, feedback: "100% right! Always use a different password for each account 🔑" },
-          { text: "Fine if the password is really strong", correct: false, feedback: "Even a strong password reused everywhere is dangerous. One site gets hacked — they all do!" },
-          { text: "Required by most apps",              correct: false, feedback: "Nope — apps actually encourage unique passwords!" },
+          { text: "Fine if the password is really strong",    correct: false, feedback: "Even a strong password reused everywhere is dangerous. One site gets hacked — they all do!" },
+          { text: "Required by most apps",                    correct: false, feedback: "Nope — apps actually encourage unique passwords!" },
         ],
       },
       {
+        tier: "defender",
         question: "Why do symbols like ! @ # make passwords stronger?",
         choices: [
-          { text: "They look cool",                                   correct: false, feedback: "Ha! They do look cool — but that's not why 😄" },
-          { text: "They make passwords easier to remember",           correct: false, feedback: "Actually harder to remember, but WAY harder to crack!" },
+          { text: "They look cool",                                    correct: false, feedback: "Ha! They do look cool — but that's not why 😄" },
+          { text: "They make passwords easier to remember",            correct: false, feedback: "Actually harder to remember, but WAY harder to crack!" },
           { text: "They massively increase the number of possible combos", correct: true, feedback: "Exactly! More possible characters = billions more combinations to try 💥" },
-          { text: "They are required by law",                         correct: false, feedback: "Not a law — just really smart password design!" },
+          { text: "They are required by law",                          correct: false, feedback: "Not a law — just really smart password design!" },
+        ],
+      },
+      {
+        tier: "defender",
+        question: "A site gets hacked and your password leaks. Which is the WORST outcome?",
+        choices: [
+          { text: "You need to change one password",                          correct: false, feedback: "Only one? That would be fine — but if you reused that password, every account is at risk!" },
+          { text: "All accounts using that same password are now at risk",    correct: true,  feedback: "Exactly the danger! That's why every account needs its own unique password. 🔑" },
+          { text: "The site has to pay a fine",                               correct: false, feedback: "The site might face consequences, but YOUR risk is all your reused accounts being exposed!" },
+          { text: "Nothing — hackers only care about that one site",          correct: false, feedback: "Hackers immediately try stolen passwords on banking, email, and social accounts!" },
+        ],
+      },
+
+      /* ── GUARDIAN (ages 11+) — technical depth ── */
+      {
+        tier: "guardian",
+        question: "Why is 12+ characters the recommended minimum? What's the technical reason?",
+        choices: [
+          { text: "Because it's easier to remember",                             correct: false, feedback: "Longer is actually harder to remember — the real reason is computational time to crack!" },
+          { text: "It makes brute-force cracking take billions of years with current hardware", correct: true, feedback: "Exactly! Each added character multiplies combinations exponentially. At 12+ chars, brute-forcing becomes computationally infeasible. 🔐" },
+          { text: "Most websites require exactly 12 characters",                 correct: false, feedback: "No universal standard — 12+ is a security best practice based on encryption research." },
+          { text: "12-character passwords are encrypted differently",            correct: false, feedback: "Length doesn't change encryption type — it changes the number of possible combinations." },
+        ],
+      },
+      {
+        tier: "guardian",
+        question: "Why is using your birthday in a password an OSINT vulnerability?",
+        choices: [
+          { text: "Birthdays are too short to use as passwords",                  correct: false, feedback: "Length isn't the issue — it's that birthdays are discoverable through open-source intelligence!" },
+          { text: "Birthdays are publicly discoverable information that attackers can find online", correct: true, feedback: "Correct! OSINT (Open Source Intelligence) means hackers gather your public data — social media, school sites, public records — to guess passwords. 🕵️" },
+          { text: "Birthdays contain only numbers",                               correct: false, feedback: "Numbers alone are weak, but the bigger issue is that birthdays are publicly known info!" },
+          { text: "All websites ban birthday-based passwords",                    correct: false, feedback: "Most websites don't check — it's on YOU to avoid guessable personal info." },
+        ],
+      },
+      {
+        tier: "guardian",
+        question: "A passphrase like 'pizza cloud seven rocket' is strong. What's the technical reason?",
+        choices: [
+          { text: "Food words are unpredictable to hackers",                       correct: false, feedback: "It's not about food — it's about the mathematical combination space the random words create!" },
+          { text: "High entropy — random words combine to create massive combinatorial space", correct: true, feedback: "Exactly! Four random words from a large dictionary create more entropy than a complex 8-char password. Length + randomness = strength. 🔐" },
+          { text: "Passphrases bypass all hacking tools",                          correct: false, feedback: "No password type bypasses all tools — strength comes from entropy, not bypassing." },
+          { text: "It's long enough to trigger special encryption",               correct: false, feedback: "Length doesn't trigger different encryption — it just multiplies the search space attackers face." },
+        ],
+      },
+      {
+        tier: "guardian",
+        question: "One website you use gets breached and your password leaks in plaintext. What attack type do hackers immediately launch using it?",
+        choices: [
+          { text: "Phishing — sending you fake emails",               correct: false, feedback: "Phishing is a separate attack vector. With your actual password, hackers use a faster method!" },
+          { text: "Credential stuffing — testing that password on hundreds of other services", correct: true, feedback: "Yes! Automated tools instantly test stolen credentials across Gmail, banks, social media, etc. This is why unique passwords per site matter. 🚨" },
+          { text: "Brute force — guessing millions of passwords",      correct: false, feedback: "Brute force is used when they DON'T have your password. They already have it — so they test it elsewhere!" },
+          { text: "SQL injection — attacking the database directly",   correct: false, feedback: "SQL injection is how they got the breach. With your leaked password, they move to credential stuffing." },
+        ],
+      },
+      {
+        tier: "guardian",
+        question: "Adding one symbol to an 8-character password — what does it actually change mathematically?",
+        choices: [
+          { text: "Adds 1 possible combination",                                                    correct: false, feedback: "Far more than 1! Every position in every character gains the full symbol set as a possibility." },
+          { text: "Multiplies the possible combinations by the symbol set size at every character position", correct: true, feedback: "Exactly! If you add 30 symbols to the character set, every position has 30 more options — the total combinations multiply exponentially across all positions. 💥" },
+          { text: "Makes it 10× harder to crack",                                                   correct: false, feedback: "The multiplier is much larger than 10×. Adding a full symbol set multiplies exponentially across all positions." },
+          { text: "Only helps if the symbol is at the start",                                       correct: false, feedback: "Position doesn't matter mathematically — any symbol in any spot multiplies the entire combination space!" },
+        ],
+      },
+      {
+        tier: "guardian",
+        question: "What professional tool solves password reuse and weakness at the same time?",
+        choices: [
+          { text: "A notebook where you write all passwords",              correct: false, feedback: "Physical notebooks can be lost, stolen, or found — not a secure solution at scale!" },
+          { text: "A password manager — generates and stores unique strong passwords per site", correct: true, feedback: "Exactly! Password managers generate random 20+ character passwords for every site and remember them for you. This is what security professionals use. 🔐" },
+          { text: "Using the same strong password everywhere",             correct: false, feedback: "Even a strong reused password fails under credential stuffing. Unique passwords per site is non-negotiable!" },
+          { text: "Biometric authentication (fingerprint/face)",          correct: false, feedback: "Biometrics are a great second factor, but most sites still need a password too — and you still need unique ones!" },
+        ],
+      },
+      {
+        tier: "guardian",
+        question: "You create 'P@ssw0rd123' — it has capitals, symbols, numbers, and 12 chars. Is it strong?",
+        choices: [
+          { text: "Yes — it meets all the technical requirements",                 correct: false, feedback: "It meets the surface requirements, but it's a predictable pattern! Hackers use 'leet speak' dictionaries that include p@ssw0rd-style substitutions." },
+          { text: "No — predictable substitution patterns are in hacker dictionaries", correct: true, feedback: "Correct! Security through substitution (a→@, o→0, s→$) is well-known. Dictionary attacks include these variants. True strength requires randomness, not pattern. 🕵️" },
+          { text: "Yes — the @ symbol alone makes it uncrackable",                 correct: false, feedback: "No single character makes a password uncrackable. It's about unpredictability — and p@ssw0rd is very predictable!" },
+          { text: "It depends on which website you use it on",                     correct: false, feedback: "The website doesn't change the password's strength. A predictable pattern is weak everywhere." },
         ],
       },
     ],

@@ -993,7 +993,7 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
                 <PasswordBuilderGame embedded={true} age={childAge} onComplete={() => goNext()} />
               )}
               {isGame && slide.gameType === "login-detective" && (
-                <LoginDetectiveGame onComplete={() => goNext()} />
+                <LoginDetectiveGame onComplete={() => goNext()} childAge={childAge} />
               )}
               {isGame && slide.gameType === "popup-or-scam" && (
                 <PopupOrScamGame onComplete={() => goNext()} />
@@ -1020,7 +1020,7 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
                 <MalwareMonsterGame onComplete={() => goNext()} />
               )}
               {isGame && slide.gameType === "trace-the-hacker" && (
-                <TraceTheHackerGame onComplete={() => goNext()} />
+                <TraceTheHackerGame onComplete={() => goNext()} childAge={childAge} />
               )}
             </motion.div>
           </AnimatePresence>

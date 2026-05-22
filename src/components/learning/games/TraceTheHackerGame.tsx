@@ -1,12 +1,13 @@
 /**
  * TraceTheHackerGame — Hero Lesson 2: Cyber Clues & Digital Trails
  * Players sort digital clues as SAFE or SUSPICIOUS across 4 rounds.
+ * Difficulty scales by childAge: junior / defender / guardian.
  */
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface Props { onComplete: () => void; }
+interface Props { onComplete: () => void; childAge?: number; }
 
 interface Clue {
   emoji: string;
@@ -16,7 +17,131 @@ interface Clue {
   explanation: string;
 }
 
-const ROUNDS: { roundTitle: string; icon: string; description: string; clues: Clue[] }[] = [
+interface Round {
+  roundTitle: string;
+  icon: string;
+  description: string;
+  clues: Clue[];
+}
+
+/* ── JUNIOR (ages 5–7) — very obvious differences ── */
+const ROUNDS_JUNIOR: Round[] = [
+  {
+    roundTitle: "Website Check",
+    icon: "🌐",
+    description: "Is this website safe or not safe?",
+    clues: [
+      {
+        emoji: "🔒",
+        title: "https://google.com",
+        detail: "Has a lock icon and starts with https://",
+        suspicious: false,
+        explanation: "✅ The lock means it's safe! Google is a real website you can trust.",
+      },
+      {
+        emoji: "💀",
+        title: "freerobux4u.xyz",
+        detail: "No lock, strange name, promises free stuff",
+        suspicious: true,
+        explanation: "🚨 No lock + weird name + free promises = NOT safe! This is a fake trick site.",
+      },
+      {
+        emoji: "🔒",
+        title: "https://youtube.com",
+        detail: "Has a lock icon, you've used it before",
+        suspicious: false,
+        explanation: "✅ YouTube's real website with a lock — totally safe to visit! ✅",
+      },
+    ],
+  },
+  {
+    roundTitle: "Message Check",
+    icon: "💬",
+    description: "Is this message safe or a trick?",
+    clues: [
+      {
+        emoji: "📚",
+        title: "\"Quiz tomorrow! Study chapters 4–5\"",
+        detail: "From your teacher's school email",
+        suspicious: false,
+        explanation: "✅ A reminder from your teacher's real school email — totally normal!",
+      },
+      {
+        emoji: "🎁",
+        title: "\"YOU WON A FREE IPAD! Click now!!!\"",
+        detail: "From a stranger you don't know",
+        suspicious: true,
+        explanation: "🚨 Strangers don't give away free iPads! This is a trick to steal your info.",
+      },
+      {
+        emoji: "🙋",
+        title: "\"Can you help me with the math homework?\"",
+        detail: "From your classmate's account",
+        suspicious: false,
+        explanation: "✅ A normal question from a classmate you know — that's fine! 😊",
+      },
+    ],
+  },
+  {
+    roundTitle: "Download Check",
+    icon: "📥",
+    description: "Safe to download or dangerous?",
+    clues: [
+      {
+        emoji: "📄",
+        title: "Spelling worksheet",
+        detail: "Shared by your teacher on the school website",
+        suspicious: false,
+        explanation: "✅ A worksheet from your teacher's school site — safe to download!",
+      },
+      {
+        emoji: "😈",
+        title: "\"FreeRobuxHack.exe\"",
+        detail: "Found on a random website, promises free game coins",
+        suspicious: true,
+        explanation: "🚨 Never download .exe files from strangers — this is a virus! Hackers hide danger in free offers.",
+      },
+      {
+        emoji: "🎵",
+        title: "Song from the official music app",
+        detail: "Downloaded from the app your parents set up",
+        suspicious: false,
+        explanation: "✅ Official apps your parents set up are safe — enjoy your music! 🎶",
+      },
+    ],
+  },
+  {
+    roundTitle: "Account Clues",
+    icon: "🔍",
+    description: "Does this look normal or suspicious?",
+    clues: [
+      {
+        emoji: "🏠",
+        title: "Login from your home, on your tablet",
+        detail: "At 4 PM after school — your usual time",
+        suspicious: false,
+        explanation: "✅ Your home, your device, your usual time — that's just YOU! All normal.",
+      },
+      {
+        emoji: "🌍",
+        title: "Login from another country at 3 AM",
+        detail: "You were asleep at home",
+        suspicious: true,
+        explanation: "🚨 Another country + 3 AM while you're asleep = someone else used your account! Tell a grown-up now!",
+      },
+      {
+        emoji: "❤️",
+        title: "Your friend liked your photo",
+        detail: "Normal notification from a friend you know",
+        suspicious: false,
+        explanation: "✅ A like from a friend you know — that's just social media being normal! 😊",
+      },
+    ],
+  },
+];
+
+/* ── DEFENDER (ages 8–10) — scenarios requiring thought ── */
+const ROUNDS_DEFENDER: Round[] = [
   {
     roundTitle: "Website Detective",
     icon: "🌐",
@@ -131,7 +256,132 @@ const ROUNDS: { roundTitle: string; icon: string; description: string; clues: Cl
   },
 ];
 
-export default function TraceTheHackerGame({ onComplete }: Props) {
+/* ── GUARDIAN (ages 11+) — technical, subtle, multi-step reasoning ── */
+const ROUNDS_GUARDIAN: Round[] = [
+  {
+    roundTitle: "URL Forensics",
+    icon: "🌐",
+    description: "Analyze the URL — safe or an attack?",
+    clues: [
+      {
+        emoji: "🔒",
+        title: "https://secure.mybank.com/login",
+        detail: "Subdomain of the real bank's domain — lock present",
+        suspicious: false,
+        explanation: "✅ A legitimate subdomain (secure.mybank.com) is still the real bank's domain. Subdomains are standard practice for login portals.",
+      },
+      {
+        emoji: "⚠️",
+        title: "https://mybank-secure.com/login",
+        detail: "Hyphenated domain — NOT a subdomain of mybank.com",
+        suspicious: true,
+        explanation: "🚨 'mybank-secure.com' is a completely different domain from 'mybank.com'. Hackers register hyphenated look-alikes — this is typosquatting!",
+      },
+      {
+        emoji: "❌",
+        title: "https://paypa1.com",
+        detail: "The letter 'l' is replaced with the number '1'",
+        suspicious: true,
+        explanation: "🚨 Classic typosquatting — 'paypa1.com' vs 'paypal.com'. The number 1 looks like a lowercase L. Never trust an almost-right URL.",
+      },
+    ],
+  },
+  {
+    roundTitle: "Email Header Analysis",
+    icon: "📧",
+    description: "Read the full context — phishing or real?",
+    clues: [
+      {
+        emoji: "✅",
+        title: "From: support@amazon.com",
+        detail: "Order confirmation matching your recent purchase history",
+        suspicious: false,
+        explanation: "✅ Official @amazon.com domain + info matching your real account = legitimate. Phishers can't match your private order details.",
+      },
+      {
+        emoji: "🎣",
+        title: "From: support@amazon-refunds.net",
+        detail: "\"Urgent: your refund requires immediate action\" — link provided",
+        suspicious: true,
+        explanation: "🚨 'amazon-refunds.net' is NOT Amazon's domain. Urgency + third-party domain + action link = classic phishing attack. Never click.",
+      },
+      {
+        emoji: "🔒",
+        title: "From: noreply@github.com",
+        detail: "Security alert about a pull request you submitted 10 mins ago",
+        suspicious: false,
+        explanation: "✅ Official @github.com domain + matches an action YOU just took = real notification. Timing and context match your own activity.",
+      },
+    ],
+  },
+  {
+    roundTitle: "File Threat Assessment",
+    icon: "📁",
+    description: "Is this file safe to open?",
+    clues: [
+      {
+        emoji: "📄",
+        title: "quarterly_report.pdf",
+        detail: "Sent by your colleague — you've exchanged files with them before",
+        suspicious: false,
+        explanation: "✅ Known sender, established file-sharing history, standard .pdf extension — safe. Context matters in threat assessment.",
+      },
+      {
+        emoji: "💣",
+        title: "invoice.pdf.exe",
+        detail: "Double extension — shows as PDF icon in some file browsers",
+        suspicious: true,
+        explanation: "🚨 Double extension trick! Windows often hides the .exe part so it looks like a PDF icon. Executing this runs malicious code. Always show file extensions!",
+      },
+      {
+        emoji: "🤔",
+        title: "project_update.zip",
+        detail: "From a colleague — but you've NEVER received files from them before",
+        suspicious: true,
+        explanation: "⚠️ Unexpected files from unusual senders are a major red flag. Even from 'known' senders — their account may be compromised. Verify via another channel before opening.",
+      },
+    ],
+  },
+  {
+    roundTitle: "Advanced Login Analysis",
+    icon: "🔍",
+    description: "Apply threat intelligence — normal or attack?",
+    clues: [
+      {
+        emoji: "🛡️",
+        title: "Login from VPN IP — same city as always",
+        detail: "You always route through this VPN provider",
+        suspicious: false,
+        explanation: "✅ If YOU set up and use a consistent VPN, logins from that VPN's IP are expected. Pattern consistency = normal.",
+      },
+      {
+        emoji: "🧅",
+        title: "Login from Tor exit node — correct password used",
+        detail: "Tor Browser detected — login succeeded on first try",
+        suspicious: true,
+        explanation: "🚨 Tor exit nodes are used to anonymize location. A correct-password login through Tor likely means your credentials were stolen and someone is hiding their location.",
+      },
+      {
+        emoji: "📱",
+        title: "New device login — followed by 2FA approval",
+        detail: "You received and approved the authentication code",
+        suspicious: false,
+        explanation: "✅ 2FA (two-factor authentication) is the safety net for new devices. Since YOU approved it, this is legitimate. 2FA working as designed!",
+      },
+    ],
+  },
+];
+
+function getTier(age?: number): "junior" | "defender" | "guardian" {
+  if (!age || age < 8) return "junior";
+  if (age < 11) return "defender";
+  return "guardian";
+}
+
+export default function TraceTheHackerGame({ onComplete, childAge }: Props) {
+  const tier = getTier(childAge);
+  const ROUNDS = tier === "junior" ? ROUNDS_JUNIOR : tier === "guardian" ? ROUNDS_GUARDIAN : ROUNDS_DEFENDER;
+
   const [roundIdx, setRoundIdx] = useState(0);
   const [clueIdx, setClueIdx] = useState(0);
   const [score, setScore] = useState(0);
@@ -211,7 +461,6 @@ export default function TraceTheHackerGame({ onComplete }: Props) {
 
   return (
     <div className="flex flex-col gap-4 py-2">
-      {/* Overall progress */}
       <div className="flex items-center gap-2">
         <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
           <motion.div
@@ -223,7 +472,6 @@ export default function TraceTheHackerGame({ onComplete }: Props) {
         <span className="text-[10px] font-bold text-white/40">{completedClues}/{totalClues}</span>
       </div>
 
-      {/* Round badge */}
       <div className="flex items-center gap-2">
         <span className="text-xl">{round.icon}</span>
         <div>
@@ -234,7 +482,6 @@ export default function TraceTheHackerGame({ onComplete }: Props) {
         </div>
       </div>
 
-      {/* Clue card */}
       <AnimatePresence mode="wait">
         <motion.div
           key={`${roundIdx}-${clueIdx}`}
@@ -258,7 +505,6 @@ export default function TraceTheHackerGame({ onComplete }: Props) {
             </div>
           </div>
 
-          {/* Feedback */}
           <AnimatePresence>
             {result && (
               <motion.div
@@ -277,7 +523,6 @@ export default function TraceTheHackerGame({ onComplete }: Props) {
             )}
           </AnimatePresence>
 
-          {/* Buttons */}
           {result === null && (
             <div className="grid grid-cols-2 gap-2 mt-1">
               <motion.button
@@ -301,15 +546,12 @@ export default function TraceTheHackerGame({ onComplete }: Props) {
         </motion.div>
       </AnimatePresence>
 
-      {/* Score */}
       <div className="flex justify-center gap-1">
         {Array.from({ length: totalClues }, (_, i) => (
           <div
             key={i}
             className={`h-1.5 rounded-full transition-all ${
-              i < completedClues + (result === "correct" ? 1 : 0)
-                ? "bg-cyan-400 w-4"
-                : "bg-white/15 w-2"
+              i < completedClues ? "bg-cyan-400 w-4" : "bg-white/15 w-2"
             }`}
           />
         ))}
