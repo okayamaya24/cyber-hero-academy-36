@@ -438,6 +438,31 @@ export default function MissionsPage() {
     enabled: !!activeChildId,
   });
 
+  // Must live here — before any early return — so React always calls the same number of hooks
+  useEffect(() => {
+    const missionIdFromUrl = searchParams.get("mission");
+    if (!missionIdFromUrl || !child || activeMission) return;
+    const missionToOpen = MISSIONS.find((m) => m.id === missionIdFromUrl);
+    if (!missionToOpen) return;
+    const _age = child?.age ?? 7;
+    const _learningMode = ((child as any)?.learning_mode as LearningMode) || "standard";
+    const expectedTotalGames = getTotalGames(_learningMode);
+    const games = getMissionGames(missionToOpen, _age, _learningMode);
+    const existing = getModeAwareMissionProgress(missionProgress, missionToOpen.id, expectedTotalGames);
+    const startQ = existing?.status === "in_progress" ? Math.min(existing.current_question, games.length - 1) : 0;
+    setActiveMission(missionToOpen);
+    setShowIntro(true);
+    setCurrentQ(startQ);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setScore(existing?.status === "in_progress" ? (existing.score ?? 0) : 0);
+    setMissionComplete(false);
+    setGameKey((k) => k + 1);
+    setStandaloneGame(null);
+    setStandaloneResult(null);
+    setSearchParams({}, { replace: true });
+  }, [child, activeMission, searchParams, setSearchParams, missionProgress]);
+
   // Show loading screen while auth or profile is not ready yet
   if (authLoading || !user) {
     return (
@@ -492,15 +517,6 @@ export default function MissionsPage() {
     setStandaloneGame(null);
     setStandaloneResult(null);
   };
-
-  useEffect(() => {
-    const missionIdFromUrl = searchParams.get("mission");
-    if (!missionIdFromUrl || !child || activeMission) return;
-    const missionToOpen = MISSIONS.find((m) => m.id === missionIdFromUrl);
-    if (!missionToOpen) return;
-    startMission(missionToOpen);
-    setSearchParams({}, { replace: true });
-  }, [child, activeMission, searchParams, setSearchParams]);
 
   const beginPlay = () => setShowIntro(false);
 
