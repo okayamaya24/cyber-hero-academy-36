@@ -433,8 +433,8 @@ function HypeScreen({ lesson, theme, onDone }: {
   lesson: LessonContent; theme: typeof CHAR_THEMES[string]; onDone: () => void;
 }) {
   const messages = [
-    { emoji: "🔥", text: "NICE! You just watched the briefing!", sub: "Now let's see what you picked up…" },
-    { emoji: "🕵️", text: "Time to be a Cyber Detective!", sub: "Can you spot the clues?" },
+    { emoji: "🔥", text: "NICE! You just watched the video!", sub: "Now let's see what you picked up…" },
+    { emoji: "🧠", text: "Time to put it to the test!", sub: "You've got this — let's go!" },
     { emoji: "⚡", text: "Let's GO!", sub: "Tap to start the mission!" },
   ];
   const [step, setStep] = useState(0);

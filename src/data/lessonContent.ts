@@ -86,21 +86,10 @@ export const LESSON_CONTENT: LessonContent[] = [
     characterEmoji: "🤖",
     characterColor: "bg-cyan-500",
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson1.mp4",
+    enhancedMode: true,
     badgeLabel: "Password Pro",
     badgeEmoji: "🔐",
     slides: [
-      {
-        type: "learn",
-        icon: "🔐",
-        title: "What makes a strong password?",
-        body: "• 12+ characters — longer = harder to crack\n• Mix UPPERCASE, lowercase, numbers & symbols\n• Never use your name, birthday, or 'password'\n• A passphrase (e.g. Purple$Cloud42!) is easy to remember AND strong",
-      },
-      {
-        type: "learn",
-        icon: "🚫",
-        title: "What to avoid",
-        body: "❌ Your name or pet's name\n❌ Your birthday or year\n❌ 'password', '123456', or 'qwerty'\n❌ The same password on multiple accounts\n❌ Short passwords under 8 characters",
-      },
       {
         type: "check",
         question: "Which of these is the strongest password?",
@@ -110,10 +99,6 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Blue$Sky!Jump99", correct: true, feedback: "Yes! Long, mixed characters, no personal info — that's a strong passphrase! 🏆" },
           { text: "abc123", correct: false, feedback: "Way too short and predictable. Mix it up with symbols and capitals! 💪" },
         ],
-      },
-      {
-        type: "tip",
-        tipText: "Try a PASSPHRASE — three random words glued together with symbols, like 'Tiger$Rocket!Moon'. Easy to remember, nearly impossible to crack! 🔐",
       },
       {
         type: "game",
@@ -624,30 +609,8 @@ export const LESSON_CONTENT: LessonContent[] = [
     characterEmoji: "🤖",
     characterColor: "bg-cyan-500",
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson3.mp4",
+    enhancedMode: true,
     slides: [
-      {
-        type: "intro",
-        headline: "Defending Your Devices",
-        subtext: "Your phone, tablet, and computer need protection — just like a superhero needs armor!",
-      },
-      {
-        type: "learn",
-        icon: "📱",
-        title: "Your devices store your life",
-        body: "Photos, messages, school work, passwords — your devices hold a LOT. If someone gets in, they could steal or see everything.",
-      },
-      {
-        type: "learn",
-        icon: "🔒",
-        title: "Lock your screen",
-        body: "Always use a PIN, pattern, or fingerprint lock on your phone. Without it, anyone who picks up your device can access everything!",
-      },
-      {
-        type: "learn",
-        icon: "🛡️",
-        title: "Keep software updated",
-        body: "Updates patch security holes that hackers use to break in. When you see 'Update Available' — don't wait, update it!",
-      },
       {
         type: "check",
         question: "What should you do if you see a pop-up saying 'Your device has a virus! Click here to fix it!'?",
@@ -657,10 +620,6 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Close the browser and open the pop-up link again", correct: false, feedback: "Never re-open suspicious links! The pop-up is the scam. ❌" },
           { text: "Share the link with your friends", correct: false, feedback: "That would spread the scam to your friends! 😱" },
         ],
-      },
-      {
-        type: "tip",
-        tipText: "Never plug in a USB drive you found on the ground — hackers leave infected drives in public places on purpose hoping someone will pick them up! 💻",
       },
       {
         type: "game",
@@ -690,24 +649,8 @@ export const LESSON_CONTENT: LessonContent[] = [
     characterEmoji: "🐱",
     characterColor: "bg-amber-500",
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Whiskers1.mp4",
+    enhancedMode: true,
     slides: [
-      {
-        type: "intro",
-        headline: "What Is Phishing?",
-        subtext: "Scammers cast their hooks to steal your info. Detective Whiskers will teach you to spot the bait!",
-      },
-      {
-        type: "learn",
-        icon: "🎣",
-        title: "Phishing explained",
-        body: 'Phishing is when a scammer pretends to be someone you trust — like your bank, a game company, or even a friend — to trick you into giving them your password or personal info.',
-      },
-      {
-        type: "learn",
-        icon: "📧",
-        title: "How phishing works",
-        body: "You get an email or message that looks REAL. It says something scary like 'Your account will be deleted!' or exciting like 'You won a prize!' — then asks you to click a link and enter your info.",
-      },
       {
         type: "check",
         question: "An email says: 'YOUR ROBLOX ACCOUNT WILL BE BANNED! Click here to verify your password NOW!' What do you do?",
@@ -717,10 +660,6 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Forward it to your friends to warn them", correct: false, feedback: "Don't spread it — just delete and report it! ❌" },
           { text: "Reply asking if it's real", correct: false, feedback: "Replying tells them your email is active — don't respond! 🚫" },
         ],
-      },
-      {
-        type: "tip",
-        tipText: "Real companies NEVER ask for your password over email or text. If you're worried, go directly to the website by typing it yourself — never click the link in the message! 🔐",
       },
       {
         type: "game",
@@ -750,24 +689,8 @@ export const LESSON_CONTENT: LessonContent[] = [
     characterEmoji: "🐱",
     characterColor: "bg-amber-500",
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Whiskers2.mp4",
+    enhancedMode: true,
     slides: [
-      {
-        type: "intro",
-        headline: "Fake Websites & Links",
-        subtext: "Not every website is what it looks like. Learn to spot fakes before you click!",
-      },
-      {
-        type: "learn",
-        icon: "🔒",
-        title: "Check for the padlock",
-        body: "Real safe websites show a padlock 🔒 in the browser bar and start with https:// (the 's' means secure). If you see a warning or no padlock — be careful!",
-      },
-      {
-        type: "learn",
-        icon: "🕵️",
-        title: "Spot the fake URL",
-        body: 'Hackers make websites that look EXACTLY like the real ones but with tiny changes in the address:\n\n• paypa1.com (number 1 not letter l)\n• amazon-security.com\n• google.com.fakesite.net',
-      },
       {
         type: "check",
         question: "Which website address looks real and safe?",
@@ -777,10 +700,6 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "www.paypal.com.verify-now.net", correct: false, feedback: "The real domain is what comes before .com — this ends in .net! 🚫" },
           { text: "paypal-login-secure.com", correct: false, feedback: "Scammers add words like 'secure' and 'login' to look trustworthy! ❌" },
         ],
-      },
-      {
-        type: "tip",
-        tipText: "Hover over a link BEFORE clicking it — the real destination shows up at the bottom of your browser. If it looks weird or different from what you expected, don't click! 🖱️",
       },
       {
         type: "game",
@@ -809,24 +728,8 @@ export const LESSON_CONTENT: LessonContent[] = [
     characterEmoji: "🐱",
     characterColor: "bg-amber-500",
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Whiskers3.mp4",
+    enhancedMode: true,
     slides: [
-      {
-        type: "intro",
-        headline: "Suspicious Messages",
-        subtext: "Scammers don't just use email — they text, DM, and even call. Let's learn to spot them all!",
-      },
-      {
-        type: "learn",
-        icon: "📱",
-        title: "Scam texts are everywhere",
-        body: 'Scam texts (called smishing) say things like:\n• "You won a $1,000 gift card! Click here"\n• "Package could not be delivered. Confirm address"\n• "Your account has been locked"',
-      },
-      {
-        type: "learn",
-        icon: "⚠️",
-        title: "Warning signs in ANY message",
-        body: "🚩 Creates urgency ('act NOW or lose access!')\n🚩 Asks for personal info or passwords\n🚩 Offers something too good to be true\n🚩 Has spelling mistakes or weird grammar\n🚩 Comes from a stranger",
-      },
       {
         type: "check",
         question: "You get a text: 'Hi! This is your school. You won an iPad! Reply with your address and parent's credit card to claim.' What do you do?",
@@ -836,10 +739,6 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Call the number in the text to check if it's real", correct: false, feedback: "The scammer might answer! Always verify through official channels. ❌" },
           { text: "Click the link to see the iPad options", correct: false, feedback: "That link likely installs malware or steals info! 🦠" },
         ],
-      },
-      {
-        type: "tip",
-        tipText: "If you're not sure whether a message is real, DON'T reply or click anything. Instead, contact the company directly using their official website or phone number that you find yourself. 📞",
       },
       {
         type: "game",
@@ -869,24 +768,8 @@ export const LESSON_CONTENT: LessonContent[] = [
     characterEmoji: "🦉",
     characterColor: "bg-teal-500",
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Hoot1.mp4",
+    enhancedMode: true,
     slides: [
-      {
-        type: "intro",
-        headline: "Your Personal Info",
-        subtext: "Not everyone online deserves to know who you are. Let's learn what to protect!",
-      },
-      {
-        type: "learn",
-        icon: "🪪",
-        title: "What counts as personal info?",
-        body: "Personal info (PII) is anything that identifies YOU:\n• Full name\n• Address & phone number\n• School name\n• Passwords & PINs\n• Birthday\n• Photos that show your location",
-      },
-      {
-        type: "learn",
-        icon: "🛡️",
-        title: "Why protect it?",
-        body: "With your personal info, strangers can find where you live, pretend to be you, steal from your family, or try to meet you in person. Your info is precious — guard it!",
-      },
       {
         type: "check",
         question: "Which of these is safe to share in an online game chat?",
@@ -896,10 +779,6 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Your home address", correct: false, feedback: "NEVER share your address online — with anyone! 🏠" },
           { text: "Your full name and birthday", correct: false, feedback: "Scammers use this info to impersonate you or guess passwords! 🎂" },
         ],
-      },
-      {
-        type: "tip",
-        tipText: "Use a fun username instead of your real name online. Something like 'StarBlaster42' or 'NinjaOwl' tells people nothing about the real you! 🎭",
       },
       {
         type: "game",
@@ -929,24 +808,8 @@ export const LESSON_CONTENT: LessonContent[] = [
     characterEmoji: "🦉",
     characterColor: "bg-teal-500",
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Hoot2.mp4",
+    enhancedMode: true,
     slides: [
-      {
-        type: "intro",
-        headline: "Smart Sharing Online",
-        subtext: "Sharing online can be great — but smart heroes know what's safe and what's not!",
-      },
-      {
-        type: "learn",
-        icon: "🌐",
-        title: "Once online, always online",
-        body: "Anything you post online can be saved, shared, and seen by people you never intended — even after you delete it. Think before you post!",
-      },
-      {
-        type: "learn",
-        icon: "✅",
-        title: "Safe to share",
-        body: "• Your favourite movies, games, or music\n• Drawings or creative work (without location clues)\n• Opinions on topics (kindly!)\n• Scores and achievements in games",
-      },
       {
         type: "check",
         question: "Your friend asks to post a photo of you both at school on social media. What's the best thing to do?",
@@ -956,10 +819,6 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Post it yourself first on your public account", correct: false, feedback: "A public account means anyone in the world can see it! 🌍" },
           { text: "Refuse all photos forever", correct: false, feedback: "Photos can be fine — just be thoughtful about where they're shared! 😊" },
         ],
-      },
-      {
-        type: "tip",
-        tipText: "Before posting anything, ask yourself: Would I be OK if my teacher, parents, AND a stranger all saw this? If you hesitate, don't post it! 🤔",
       },
       {
         type: "game",
@@ -989,24 +848,8 @@ export const LESSON_CONTENT: LessonContent[] = [
     characterEmoji: "🦉",
     characterColor: "bg-teal-500",
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Hoot3.mp4",
+    enhancedMode: true,
     slides: [
-      {
-        type: "intro",
-        headline: "Searching Safely",
-        subtext: "Not everything online is true — a cyber detective knows how to find real facts!",
-      },
-      {
-        type: "learn",
-        icon: "🤔",
-        title: "Anyone can post anything",
-        body: "The internet has no editor. Anyone — including kids, bots, and scammers — can post made-up facts, fake news, and wrong information.",
-      },
-      {
-        type: "learn",
-        icon: "✔️",
-        title: "How to check if something is true",
-        body: "1. Find 2-3 trusted sources (BBC, National Geographic, NASA)\n2. Check when it was written — old info can be wrong\n3. Look for who wrote it — are they an expert?\n4. Does it seem designed to make you angry or scared? Might be fake.",
-      },
       {
         type: "check",
         question: "You read online: 'Eating carrots gives you superpowers!' What do you do?",
@@ -1016,10 +859,6 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Believe it — if it's online, it must be true", correct: false, feedback: "Anyone can post anything online — doesn't make it true! ❌" },
           { text: "Ask the website for proof by commenting", correct: false, feedback: "Comments on dodgy sites don't help — check a proper trusted source! 📰" },
         ],
-      },
-      {
-        type: "tip",
-        tipText: "Great trusted websites for kids: National Geographic Kids, BBC Newsround, NASA Kids Club, and your school library's online resources. Bookmark them! 📚",
       },
       {
         type: "game",
@@ -1049,30 +888,8 @@ export const LESSON_CONTENT: LessonContent[] = [
     characterEmoji: "🤖",
     characterColor: "bg-cyan-500",
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Robo1.mp4",
+    enhancedMode: true,
     slides: [
-      {
-        type: "intro",
-        headline: "Malware & Viruses",
-        subtext: "There are monsters hiding in downloads and dodgy links. Robo Buddy will help you spot them!",
-      },
-      {
-        type: "learn",
-        icon: "🦠",
-        title: "What is malware?",
-        body: "Malware (malicious software) is a program designed to harm your device or steal your info. It can hide inside downloads, email attachments, or dodgy websites.",
-      },
-      {
-        type: "learn",
-        icon: "👾",
-        title: "Types of malware monsters",
-        body: "🦠 Virus — spreads and breaks things\n🐴 Trojan — pretends to be a normal app\n🔒 Ransomware — locks your files and demands money\n🕵️ Spyware — secretly watches what you do",
-      },
-      {
-        type: "learn",
-        icon: "🛡️",
-        title: "How to stay safe",
-        body: "• Only download apps from official stores (App Store, Google Play)\n• Don't open attachments from strangers\n• Keep your antivirus software on and updated\n• Never click 'free download' pop-ups on random websites",
-      },
       {
         type: "check",
         question: "A website offers a 'FREE full version' of a paid game. What should you do?",
@@ -1082,10 +899,6 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Close the page and don't download it", correct: true, feedback: "Smart! Illegal 'free' games almost always come bundled with malware! 🏆" },
           { text: "Share the link with friends so they get it too", correct: false, feedback: "You'd be spreading malware to your friends! 😱" },
         ],
-      },
-      {
-        type: "tip",
-        tipText: "If your device suddenly gets slow, shows weird ads, or apps appear that you didn't install — tell a trusted adult right away! These are signs of malware. 🤖",
       },
       {
         type: "game",
@@ -1115,22 +928,11 @@ export const LESSON_CONTENT: LessonContent[] = [
     characterEmoji: "🤖",
     characterColor: "bg-cyan-500",
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Robo2.mp4",
+    enhancedMode: true,
     badgeId: "stranger-shield",
     badgeLabel: "Stranger Shield",
     badgeEmoji: "🛡️",
     slides: [
-      {
-        type: "learn",
-        icon: "👤",
-        title: "Who is an online stranger?",
-        body: "An online stranger is anyone you haven't met in real life — even if you've chatted for months. People online can pretend to be anyone: a kid, a gamer, a celebrity. Your real friends are the ones you can see face to face.",
-      },
-      {
-        type: "learn",
-        icon: "🚩",
-        title: "Warning signs from strangers",
-        body: "🚩 Asks where you live, go to school, or your real name\n🚩 Wants to move the chat to a private app\n🚩 Asks you to keep your chats secret from parents\n🚩 Sends gifts or offers rewards\n🚩 Asks for photos or videos of you",
-      },
       {
         type: "check",
         question: "An online gamer you've never met says 'Don't tell your parents we talk — it'll be our secret.' What do you do?",
@@ -1142,18 +944,6 @@ export const LESSON_CONTENT: LessonContent[] = [
         ],
       },
       {
-        type: "learn",
-        icon: "💬",
-        title: "What is cyberbullying?",
-        body: "Cyberbullying is when someone uses technology to repeatedly hurt, embarrass, or threaten another person. It can happen through messages, group chats, social media, or gaming. It's not OK — and it's not your fault.",
-      },
-      {
-        type: "learn",
-        icon: "🛡️",
-        title: "How to handle cyberbullying",
-        body: "✅ Don't reply — responding can make it worse\n✅ Screenshot the evidence (don't delete it!)\n✅ Block the bully on the platform\n✅ Report it to the app or game\n✅ Tell a trusted adult — a parent, teacher, or school counsellor",
-      },
-      {
         type: "check",
         question: "Someone in your school group chat is sending mean messages about your friend. What's the best thing to do?",
         choices: [
@@ -1162,10 +952,6 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Screenshot it, privately support your friend, report it to an adult", correct: true, feedback: "Perfect! Gather evidence, support your friend, and get a trusted adult involved. 🏆" },
           { text: "Ignore it completely", correct: false, feedback: "Ignoring lets it continue. Your friend needs support and an adult needs to know!" },
         ],
-      },
-      {
-        type: "tip",
-        tipText: "If ANYTHING online makes you feel scared, uncomfortable, or confused — trust that feeling and tell a trusted adult straight away. You will NEVER get in trouble for speaking up. 🤖❤️",
       },
       {
         type: "game",
@@ -1379,22 +1165,11 @@ export const LESSON_CONTENT: LessonContent[] = [
     characterEmoji: "🤖",
     characterColor: "bg-cyan-500",
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Robo3.mp4",
+    enhancedMode: true,
     badgeId: "download-detective",
     badgeLabel: "Download Detective",
     badgeEmoji: "📥",
     slides: [
-      {
-        type: "learn",
-        icon: "📥",
-        title: "Why downloads can be dangerous",
-        body: "Every file you download is code that runs on your device. Hackers hide malware inside games, tools, PDFs, and even images. Robo Buddy's Cyber Download Inspection Center checks every file before it gets through!",
-      },
-      {
-        type: "learn",
-        icon: "✅",
-        title: "The golden rule of downloads",
-        body: "Only download from OFFICIAL sources:\n📱 App Store or Google Play for apps\n🌐 The developer's own official website\n🏫 School or parent-approved platforms\n\nIf you're not sure — ask a trusted adult before you click!",
-      },
       {
         type: "check",
         question: "A pop-up appears: 'YOUR DEVICE IS INFECTED! Download our free scanner NOW to fix it!' What do you do?",
@@ -1406,12 +1181,6 @@ export const LESSON_CONTENT: LessonContent[] = [
         ],
       },
       {
-        type: "learn",
-        icon: "🚩",
-        title: "Red flags on download pages",
-        body: "🚩 Multiple 'Download' buttons in different sizes (fake ones!)\n🚩 Countdown timers pressuring you to hurry\n🚩 Asking you to disable your antivirus\n🚩 File names like 'game.exe.pdf' (hiding the real type)\n🚩 No clear file size or version number shown",
-      },
-      {
         type: "check",
         question: "A file is named 'homework_helper.pdf.exe' — what is it really?",
         choices: [
@@ -1420,16 +1189,6 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Both a PDF and a program", correct: false, feedback: "Files can only be one type. The last extension is the real one — .exe is dangerous! ⚠️" },
           { text: "A compressed file", correct: false, feedback: "No — the last extension .exe means it's an executable program. Always check the final extension! ❌" },
         ],
-      },
-      {
-        type: "learn",
-        icon: "🔍",
-        title: "Before you download — inspect it!",
-        body: "✅ Check the website address — is it the real official site?\n✅ Look for HTTPS (the padlock icon)\n✅ Verify the file size looks right\n✅ Scan with antivirus after downloading, before opening\n✅ When in doubt — ask a trusted adult!",
-      },
-      {
-        type: "tip",
-        tipText: "Even files from friends can be dangerous — their accounts might be hacked! Always scan ANY file with antivirus before opening it. Robo Buddy scans everything! 🤖🔍",
       },
       {
         type: "game",
