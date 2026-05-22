@@ -85,7 +85,7 @@ function CharacterCard({
               <img
                 src={guide.image}
                 alt={character.name}
-                className={`object-contain ${character.id === "byte" ? "h-16 w-16 scale-125" : "h-12 w-12"}`}
+                className={`object-contain ${character.id === "hero" ? "h-16 w-16 scale-[1.7]" : "h-12 w-12"}`}
               />
             ) : (
               <span className="text-3xl">{character.emoji}</span>
