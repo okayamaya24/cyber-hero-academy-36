@@ -8,12 +8,11 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, CheckCircle2, ChevronRight, BookOpen, Star } from "lucide-react";
+import { CheckCircle2, ChevronRight, BookOpen, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   LEARNING_CHARACTERS,
   isCharacterUnlocked,
-  isLessonUnlocked,
   type LearningCharacter,
   type LearningLesson,
 } from "@/data/learningMode";
