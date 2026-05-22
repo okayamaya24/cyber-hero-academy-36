@@ -58,9 +58,9 @@ function CharacterCard({
   const guide = GUIDE_REGISTRY[character.guideId];
 
   const completedCount = character.lessons.filter(
-    (l) => !l.comingSoon && l.missionId && completedMissionIds.has(l.missionId),
+    (l) => l.missionId && completedMissionIds.has(l.missionId),
   ).length;
-  const totalLive = character.lessons.filter((l) => !l.comingSoon).length;
+  const totalLive = character.lessons.length;
   const allDone = completedCount === totalLive;
 
   return (
@@ -131,20 +131,18 @@ function CharacterCard({
                 const status = getLessonStatus(character, lesson, idx, completedMissionIds, true);
                 const mission = lesson.missionId ? MISSIONS.find((m) => m.id === lesson.missionId) : null;
 
+                // TEMP: force all lessons active for testing
+                const isDone = status === "done";
                 return (
                   <div
                     key={lesson.id}
-                    className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-                      status === "active" ? "bg-amber-50/50 hover:bg-amber-50" : ""
-                    }`}
+                    className="flex items-center gap-3 px-4 py-3 transition-colors bg-amber-50/50 hover:bg-amber-50"
                   >
                     {/* Status dot */}
                     <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-black ${
-                      status === "done"   ? "bg-green-500 text-white" :
-                                            "bg-amber-400 text-white shadow-md"
+                      isDone ? "bg-green-500 text-white" : "bg-amber-400 text-white shadow-md"
                     }`}>
-                      {status === "done"   ? <CheckCircle2 className="h-4 w-4" /> :
-                                             idx + 1}
+                      {isDone ? <CheckCircle2 className="h-4 w-4" /> : idx + 1}
                     </div>
 
                     {/* Lesson info */}
@@ -155,7 +153,7 @@ function CharacterCard({
                       <p className="text-xs font-medium mt-0.5 text-slate-400">
                         {lesson.description}
                       </p>
-                      {status === "done" && mission && (
+                      {isDone && mission && (
                         <div className="mt-1 flex items-center gap-1">
                           {[1, 2, 3].map((s) => <Star key={s} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
                           <span className="text-[10px] font-bold text-green-600 ml-0.5">Lesson complete!</span>
@@ -168,10 +166,13 @@ function CharacterCard({
                       <Button
                         size="sm"
                         className="flex-shrink-0 rounded-xl px-4 font-black text-sm"
-                        style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)", boxShadow: "0 3px 10px rgba(124,58,237,0.3)" }}
+                        style={isDone
+                          ? { background: "transparent", border: "1px solid #86efac", color: "#16a34a" }
+                          : { background: "linear-gradient(135deg,#7c3aed,#5b21b6)", boxShadow: "0 3px 10px rgba(124,58,237,0.3)" }
+                        }
                         onClick={() => onStartLesson(lesson.id, lesson.missionId!)}
                       >
-                        Start →
+                        {isDone ? "Replay" : "Start →"}
                       </Button>
                     )}
                   </div>
@@ -201,20 +202,13 @@ export default function LearningModeTab({ completedMissionIds, missionProgress, 
   const activeLessonContent = activeLessonId ? getLessonContent(activeLessonId) : null;
 
   const [expandedId, setExpandedId] = useState<string | null>(() => {
-    // Auto-expand the first character that has an active lesson
-    for (const char of LEARNING_CHARACTERS) {
-      if (!isCharacterUnlocked(char, completedMissionIds)) continue;
-      const hasActive = char.lessons.some(
-        (l) => !l.comingSoon && l.missionId && !completedMissionIds.has(l.missionId),
-      );
-      if (hasActive) return char.id;
-    }
+    // TEMP: auto-expand first character for testing
     return LEARNING_CHARACTERS[0].id;
   });
 
-  const totalLessons = LEARNING_CHARACTERS.flatMap((c) => c.lessons).filter((l) => !l.comingSoon).length;
+  const totalLessons = LEARNING_CHARACTERS.flatMap((c) => c.lessons).length;
   const completedLessons = LEARNING_CHARACTERS.flatMap((c) =>
-    c.lessons.filter((l) => !l.comingSoon && l.missionId && completedMissionIds.has(l.missionId)),
+    c.lessons.filter((l) => l.missionId && completedMissionIds.has(l.missionId)),
   ).length;
 
   return (

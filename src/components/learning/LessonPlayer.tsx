@@ -24,6 +24,8 @@ import PostOrPassGame from "@/components/learning/games/PostOrPassGame";
 import FactCheckGame from "@/components/learning/games/FactCheckGame";
 import MalwareMonsterGame from "@/components/learning/games/MalwareMonsterGame";
 import TraceTheHackerGame from "@/components/learning/games/TraceTheHackerGame";
+import StrangerDangerGame from "@/components/learning/games/StrangerDangerGame";
+import DownloadInspectorGame from "@/components/learning/games/DownloadInspectorGame";
 
 interface Props {
   lesson: LessonContent;
@@ -56,6 +58,27 @@ function Confetti() {
           transition={{ duration: 1.6, delay: p.delay, ease: "easeIn" }}
         />
       ))}
+    </div>
+  );
+}
+
+/* ── Character images ── */
+const CHAR_IMAGES: Record<string, string> = {
+  "Byte":             "/byte-character.png",
+  "Detective Whiskers": "/detective-cat.png",
+  "Professor Hoot":   "/wise-owl.png",
+  "Robo Buddy":       "/robot-guide.png",
+};
+
+function CharAvatar({ character, characterColor, size = "sm" }: { character: string; characterColor: string; size?: "sm" | "md" | "lg" }) {
+  const img = CHAR_IMAGES[character];
+  const sizeClass = size === "lg" ? "w-20 h-20 text-5xl" : size === "md" ? "w-14 h-14 text-3xl" : "w-7 h-7 text-sm";
+  return (
+    <div className={`${sizeClass} rounded-2xl ${characterColor} flex items-center justify-center flex-shrink-0 overflow-hidden`}>
+      {img
+        ? <img src={img} alt={character} className="w-full h-full object-contain" />
+        : <span>{character === "Byte" ? "🤖" : character === "Detective Whiskers" ? "🐱" : character === "Professor Hoot" ? "🦉" : "🤖"}</span>
+      }
     </div>
   );
 }
@@ -173,10 +196,12 @@ function IntroSlide({ slide, lesson, theme, onNext }: {
             <motion.div
               animate={{ y: [0, -8, 0] }}
               transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              className={`w-20 h-20 rounded-3xl ${lesson.characterColor} flex items-center justify-center text-5xl shadow-2xl`}
+              className={`w-20 h-20 rounded-3xl ${lesson.characterColor} flex items-center justify-center text-5xl shadow-2xl overflow-hidden`}
               style={{ boxShadow: `0 0 40px ${theme.accent}55` }}
             >
-              {lesson.characterEmoji}
+              {CHAR_IMAGES[lesson.character]
+                ? <img src={CHAR_IMAGES[lesson.character]} alt={lesson.character} className="w-full h-full object-contain" />
+                : lesson.characterEmoji}
             </motion.div>
             <div>
               <p className="text-xs font-extrabold mb-1" style={{ color: theme.accent }}>
@@ -215,10 +240,12 @@ function LearnSlide({ slide, lesson, theme }: {
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", bounce: 0.4 }}
-          className={`${lesson.character === "Byte" ? "w-20 h-20 text-5xl" : "w-14 h-14 text-3xl"} rounded-2xl ${lesson.characterColor} flex items-center justify-center flex-shrink-0 shadow-lg`}
+          className={`${lesson.character === "Byte" ? "w-20 h-20" : "w-14 h-14"} rounded-2xl ${lesson.characterColor} flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden`}
           style={{ boxShadow: `0 0 20px ${theme.accent}44` }}
         >
-          {lesson.characterEmoji}
+          {CHAR_IMAGES[lesson.character]
+            ? <img src={CHAR_IMAGES[lesson.character]} alt={lesson.character} className="w-full h-full object-contain" />
+            : lesson.characterEmoji}
         </motion.div>
         {/* Bubble */}
         <motion.div
@@ -265,10 +292,12 @@ function TipSlide({ slide, lesson, theme }: {
         initial={{ scale: 0, rotate: -10 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: "spring", bounce: 0.6, delay: 0.1 }}
-        className={`w-20 h-20 rounded-3xl ${lesson.characterColor} flex items-center justify-center text-4xl shadow-2xl`}
+        className={`w-20 h-20 rounded-3xl ${lesson.characterColor} flex items-center justify-center text-4xl shadow-2xl overflow-hidden`}
         style={{ boxShadow: `0 0 30px ${theme.accent}55` }}
       >
-        {lesson.characterEmoji}
+        {CHAR_IMAGES[lesson.character]
+          ? <img src={CHAR_IMAGES[lesson.character]} alt={lesson.character} className="w-full h-full object-contain" />
+          : lesson.characterEmoji}
       </motion.div>
 
       {/* Giant speech bubble */}
@@ -319,8 +348,10 @@ function CheckSlide({ slide, lesson, theme, onAnswer }: {
 
       {/* Character prompt */}
       <div className="flex items-center gap-3">
-        <div className={`w-11 h-11 rounded-xl ${lesson.characterColor} flex items-center justify-center text-2xl flex-shrink-0`}>
-          {lesson.characterEmoji}
+        <div className={`w-11 h-11 rounded-xl ${lesson.characterColor} flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden`}>
+          {CHAR_IMAGES[lesson.character]
+            ? <img src={CHAR_IMAGES[lesson.character]} alt={lesson.character} className="w-full h-full object-contain" />
+            : lesson.characterEmoji}
         </div>
         <div className={`flex-1 rounded-xl rounded-tl-sm border p-3 ${theme.bubble}`}>
           <p className="text-[10px] font-extrabold mb-0.5" style={{ color: theme.accent }}>
@@ -764,11 +795,12 @@ function SummarySlide({ slide, lesson, theme, onStartQuiz }: {
 }
 
 /* ── VIDEO PLAYER ── */
-function VideoPlayer({ lesson, theme, onDone, onClose }: {
+function VideoPlayer({ lesson, theme, onDone, onClose, canSkip }: {
   lesson: LessonContent;
   theme: typeof CHAR_THEMES[string];
   onDone: () => void;
   onClose: () => void;
+  canSkip?: boolean;
 }) {
   const isYouTube = lesson.videoUrl?.includes("youtube.com") || lesson.videoUrl?.includes("youtu.be");
 
@@ -792,9 +824,7 @@ function VideoPlayer({ lesson, theme, onDone, onClose }: {
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 pt-4 pb-3 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <div className={`w-7 h-7 rounded-xl ${lesson.characterColor} flex items-center justify-center text-sm`}>
-              {lesson.characterEmoji}
-            </div>
+            <CharAvatar character={lesson.character} characterColor={lesson.characterColor} size="sm" />
             <span className="text-[11px] font-extrabold" style={{ color: theme.accent }}>
               {lesson.character} · Lesson Video
             </span>
@@ -837,10 +867,12 @@ function VideoPlayer({ lesson, theme, onDone, onClose }: {
           >
             Continue to Lesson →
           </motion.button>
-          <button onClick={onDone}
-            className="text-center text-xs text-white/30 hover:text-white/60 transition-colors font-medium">
-            Skip video
-          </button>
+          {canSkip && (
+            <button onClick={onDone}
+              className="text-center text-xs text-white/30 hover:text-white/60 transition-colors font-medium">
+              Skip video
+            </button>
+          )}
         </div>
       </motion.div>
     </div>
@@ -895,6 +927,7 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
           theme={theme}
           onDone={() => setShowVideo(false)}
           onClose={onClose}
+          canSkip={!childAge || childAge >= 8}
         />
       </AnimatePresence>
     );
@@ -919,8 +952,10 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 pt-4 pb-3 flex-shrink-0 relative z-10">
           <div className="flex items-center gap-2">
-            <div className={`w-7 h-7 rounded-xl ${lesson.characterColor} flex items-center justify-center text-sm`}>
-              {lesson.characterEmoji}
+            <div className={`w-7 h-7 rounded-xl ${lesson.characterColor} flex items-center justify-center text-sm overflow-hidden`}>
+              {CHAR_IMAGES[lesson.character]
+                ? <img src={CHAR_IMAGES[lesson.character]} alt={lesson.character} className="w-full h-full object-contain" />
+                : lesson.characterEmoji}
             </div>
             <span className="text-[11px] font-extrabold" style={{ color: theme.accent }}>
               {lesson.character}
@@ -1021,6 +1056,12 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
               )}
               {isGame && slide.gameType === "trace-the-hacker" && (
                 <TraceTheHackerGame onComplete={() => goNext()} childAge={childAge} />
+              )}
+              {isGame && slide.gameType === "stranger-danger" && (
+                <StrangerDangerGame onComplete={() => goNext()} childAge={childAge} />
+              )}
+              {isGame && slide.gameType === "download-inspector" && (
+                <DownloadInspectorGame onComplete={() => goNext()} childAge={childAge} />
               )}
             </motion.div>
           </AnimatePresence>

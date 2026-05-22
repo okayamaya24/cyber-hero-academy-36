@@ -25,7 +25,9 @@ export type LessonGameType =
   | "post-or-pass"
   | "fact-check"
   | "malware-monster-match"
-  | "trace-the-hacker";
+  | "trace-the-hacker"
+  | "stranger-danger"
+  | "download-inspector";
 
 export interface CheckChoice {
   text: string;
@@ -86,6 +88,36 @@ export const LESSON_CONTENT: LessonContent[] = [
     badgeLabel: "Password Pro",
     badgeEmoji: "🔐",
     slides: [
+      {
+        type: "learn",
+        icon: "🔐",
+        title: "What makes a strong password?",
+        body: "• 12+ characters — longer = harder to crack\n• Mix UPPERCASE, lowercase, numbers & symbols\n• Never use your name, birthday, or 'password'\n• A passphrase (e.g. Purple$Cloud42!) is easy to remember AND strong",
+      },
+      {
+        type: "learn",
+        icon: "🚫",
+        title: "What to avoid",
+        body: "❌ Your name or pet's name\n❌ Your birthday or year\n❌ 'password', '123456', or 'qwerty'\n❌ The same password on multiple accounts\n❌ Short passwords under 8 characters",
+      },
+      {
+        type: "check",
+        question: "Which of these is the strongest password?",
+        choices: [
+          { text: "fluffy2010", correct: false, feedback: "Pet name + birth year — two things hackers try first! Too guessable. 😬" },
+          { text: "password", correct: false, feedback: "The most common password in the world! Hackers try this first every time. 🙈" },
+          { text: "Blue$Sky!Jump99", correct: true, feedback: "Yes! Long, mixed characters, no personal info — that's a strong passphrase! 🏆" },
+          { text: "abc123", correct: false, feedback: "Way too short and predictable. Mix it up with symbols and capitals! 💪" },
+        ],
+      },
+      {
+        type: "tip",
+        tipText: "Try a PASSPHRASE — three random words glued together with symbols, like 'Tiger$Rocket!Moon'. Easy to remember, nearly impossible to crack! 🔐",
+      },
+      {
+        type: "game",
+        gameType: "password-builder",
+      },
       {
         type: "summary",
         takeaways: [
@@ -970,6 +1002,7 @@ export const LESSON_CONTENT: LessonContent[] = [
     character: "Professor Hoot",
     characterEmoji: "🦉",
     characterColor: "bg-teal-500",
+    videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Hoot3.mp4",
     slides: [
       {
         type: "intro",
@@ -1029,6 +1062,7 @@ export const LESSON_CONTENT: LessonContent[] = [
     character: "Robo Buddy",
     characterEmoji: "🤖",
     characterColor: "bg-cyan-500",
+    videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Robo1.mp4",
     slides: [
       {
         type: "intro",
@@ -1081,6 +1115,535 @@ export const LESSON_CONTENT: LessonContent[] = [
           "Weird device behaviour = tell an adult immediately 👋",
         ],
         quizLabel: "Fight the Malware Monsters!",
+      },
+    ],
+  },
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     ROBO — Lesson 2: Strangers & Cyberbullying
+     ───────────────────────────────────────── */
+  {
+    lessonId: "lesson-robo-2",
+    missionId: "stranger-safety",
+    character: "Robo Buddy",
+    characterEmoji: "🤖",
+    characterColor: "bg-cyan-500",
+    videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Robo2.mp4",
+    badgeId: "stranger-shield",
+    badgeLabel: "Stranger Shield",
+    badgeEmoji: "🛡️",
+    slides: [
+      {
+        type: "learn",
+        icon: "👤",
+        title: "Who is an online stranger?",
+        body: "An online stranger is anyone you haven't met in real life — even if you've chatted for months. People online can pretend to be anyone: a kid, a gamer, a celebrity. Your real friends are the ones you can see face to face.",
+      },
+      {
+        type: "learn",
+        icon: "🚩",
+        title: "Warning signs from strangers",
+        body: "🚩 Asks where you live, go to school, or your real name\n🚩 Wants to move the chat to a private app\n🚩 Asks you to keep your chats secret from parents\n🚩 Sends gifts or offers rewards\n🚩 Asks for photos or videos of you",
+      },
+      {
+        type: "check",
+        question: "An online gamer you've never met says 'Don't tell your parents we talk — it'll be our secret.' What do you do?",
+        choices: [
+          { text: "Keep the secret — they seem cool", correct: false, feedback: "Anyone asking you to hide things from your parents is a major warning sign! 🚩" },
+          { text: "Tell a trusted adult straight away", correct: true, feedback: "Exactly right! Secrets from parents = danger. Always tell a trusted adult. 🦸" },
+          { text: "Just stop chatting but don't tell anyone", correct: false, feedback: "Good instinct to stop — but telling a trusted adult is also really important here!" },
+          { text: "Ask them why it has to be secret", correct: false, feedback: "Don't engage further. Block and tell a trusted adult immediately! 🛡️" },
+        ],
+      },
+      {
+        type: "learn",
+        icon: "💬",
+        title: "What is cyberbullying?",
+        body: "Cyberbullying is when someone uses technology to repeatedly hurt, embarrass, or threaten another person. It can happen through messages, group chats, social media, or gaming. It's not OK — and it's not your fault.",
+      },
+      {
+        type: "learn",
+        icon: "🛡️",
+        title: "How to handle cyberbullying",
+        body: "✅ Don't reply — responding can make it worse\n✅ Screenshot the evidence (don't delete it!)\n✅ Block the bully on the platform\n✅ Report it to the app or game\n✅ Tell a trusted adult — a parent, teacher, or school counsellor",
+      },
+      {
+        type: "check",
+        question: "Someone in your school group chat is sending mean messages about your friend. What's the best thing to do?",
+        choices: [
+          { text: "Send mean messages back to defend your friend", correct: false, feedback: "This can make the situation worse and get you in trouble too! 😬" },
+          { text: "Laugh along so you don't become the next target", correct: false, feedback: "Joining in — even silently — makes cyberbullying worse. Be an upstander, not a bystander!" },
+          { text: "Screenshot it, privately support your friend, report it to an adult", correct: true, feedback: "Perfect! Gather evidence, support your friend, and get a trusted adult involved. 🏆" },
+          { text: "Ignore it completely", correct: false, feedback: "Ignoring lets it continue. Your friend needs support and an adult needs to know!" },
+        ],
+      },
+      {
+        type: "tip",
+        tipText: "If ANYTHING online makes you feel scared, uncomfortable, or confused — trust that feeling and tell a trusted adult straight away. You will NEVER get in trouble for speaking up. 🤖❤️",
+      },
+      {
+        type: "game",
+        gameType: "stranger-danger",
+      },
+      {
+        type: "summary",
+        takeaways: [
+          "Online strangers can pretend to be anyone — even kids 👤",
+          "Secrets from parents are always a warning sign 🚩",
+          "Never share your location, school, or photos with strangers 📍",
+          "Cyberbullying: screenshot, block, report, tell an adult 🛡️",
+          "Trust your gut — if it feels wrong, tell someone you trust 💛",
+        ],
+        quizLabel: "Stranger Safety Quiz!",
+      },
+    ],
+    quiz: [
+      // Junior tier
+      {
+        tier: "junior",
+        question: "An online stranger asks where you go to school. You should:",
+        options: [
+          "Tell them — it's just info",
+          "Never tell strangers where you go to school",
+          "Ask your friend first",
+          "Tell them if they seem nice",
+        ],
+        correct: 1,
+        explanation: "Your school tells strangers how to find you in real life. Keep it private!",
+      },
+      {
+        tier: "junior",
+        question: "Someone online says 'keep our chats secret from your parents.' This is:",
+        options: [
+          "Fine — just a private friendship",
+          "A warning sign — tell a trusted adult right away",
+          "Normal for online friends",
+          "OK if they're nice",
+        ],
+        correct: 1,
+        explanation: "Anyone who wants secrets from your parents is dangerous. Always tell a trusted adult!",
+      },
+      {
+        tier: "junior",
+        question: "What should you do if someone online is sending you mean messages?",
+        options: [
+          "Send mean messages back",
+          "Block, screenshot, and tell a grown-up",
+          "Ignore it forever",
+          "Share your feelings with the bully",
+        ],
+        correct: 1,
+        explanation: "Block and save evidence, then tell a trusted adult. Never reply to bullies!",
+      },
+      {
+        tier: "junior",
+        question: "An online 'friend' you've never met asks you to send them a photo. You should:",
+        options: [
+          "Send it — they seem friendly",
+          "Never send photos to people you haven't met in real life",
+          "Send a cartoon instead",
+          "Ask for their photo first",
+        ],
+        correct: 1,
+        explanation: "Never send photos to online strangers. Tell a trusted adult if asked!",
+      },
+      {
+        tier: "junior",
+        question: "An online stranger is an online stranger even if you've chatted for:",
+        options: [
+          "1 day",
+          "1 week",
+          "1 month",
+          "All of the above — until you meet in real life with a parent present",
+        ],
+        correct: 3,
+        explanation: "Someone is a stranger until you've met them in person with a trusted adult present!",
+      },
+      // Defender tier
+      {
+        tier: "defender",
+        question: "A gamer you met online asks to move your chat to a private messaging app. This is:",
+        options: [
+          "Normal — better apps exist",
+          "A red flag — groomers move chats away from monitored platforms",
+          "Fine if you trust them",
+          "OK for older kids",
+        ],
+        correct: 1,
+        explanation: "Moving to private platforms is a grooming tactic to avoid detection. Tell a trusted adult!",
+      },
+      {
+        tier: "defender",
+        question: "Your classmate is spreading false rumours about you in a group chat. This is:",
+        options: [
+          "Just drama, ignore it",
+          "Cyberbullying — screenshot and report it",
+          "Only bullying if it happens in person",
+          "Not serious since it's online",
+        ],
+        correct: 1,
+        explanation: "Online rumours are cyberbullying. Screenshot the evidence and report to a trusted adult!",
+      },
+      {
+        tier: "defender",
+        question: "You notice a friend is suddenly quiet, upset, and avoiding their phone. This could mean:",
+        options: [
+          "They're just busy",
+          "They might be experiencing cyberbullying — check in with them",
+          "Their battery is dead",
+          "Nothing — it's normal",
+        ],
+        correct: 1,
+        explanation: "Withdrawal and distress are signs of cyberbullying. Be a supportive friend and encourage them to tell an adult!",
+      },
+      {
+        tier: "defender",
+        question: "The best way to help a friend being cyberbullied is:",
+        options: [
+          "Attack the bully online",
+          "Ignore it to avoid getting involved",
+          "Privately support your friend and help them report it",
+          "Screenshot it and post it publicly",
+        ],
+        correct: 2,
+        explanation: "Private support + helping them report it is the most effective and safest way to help!",
+      },
+      {
+        tier: "defender",
+        question: "An online stranger has been friendly for weeks, then sends you a gift card 'just because.' You should:",
+        options: [
+          "Accept it — that's kind!",
+          "Be suspicious — gift-giving is a grooming tactic",
+          "Thank them and keep chatting",
+          "Share the code with friends",
+        ],
+        correct: 1,
+        explanation: "Offering gifts is a classic grooming tactic. Tell a trusted adult immediately!",
+      },
+      // Guardian tier
+      {
+        tier: "guardian",
+        question: "What is 'catfishing'?",
+        options: [
+          "Phishing via fishing-themed emails",
+          "Creating a fake online identity to deceive someone",
+          "Hacking into fishing games",
+          "A type of malware",
+        ],
+        correct: 1,
+        explanation: "Catfishing = pretending to be someone else online to manipulate or deceive a victim.",
+      },
+      {
+        tier: "guardian",
+        question: "Someone threatens to share embarrassing content of you unless you comply with their demands. This is:",
+        options: [
+          "A negotiation — consider what they want",
+          "Sextortion/blackmail — report it and don't comply",
+          "Normal online conflict",
+          "Only serious if they follow through",
+        ],
+        correct: 1,
+        explanation: "This is blackmail/coercion. Complying makes it worse. Tell a trusted adult and report to the platform and authorities immediately!",
+      },
+      {
+        tier: "guardian",
+        question: "Which organisation should you report child sexual abuse material (CSAM) to in the US?",
+        options: [
+          "The FBI directly",
+          "Your school counsellor only",
+          "NCMEC's CyberTipline (cybertipline.org)",
+          "Just delete and ignore it",
+        ],
+        correct: 2,
+        explanation: "The National Center for Missing & Exploited Children (NCMEC) operates the CyberTipline for reporting CSAM. Never share it — report it!",
+      },
+      {
+        tier: "guardian",
+        question: "Digital evidence of cyberbullying should always be:",
+        options: [
+          "Deleted to protect the victim's privacy",
+          "Shared publicly to expose the bully",
+          "Screenshotted, saved, and reported to an adult",
+          "Responded to so the bully knows it's wrong",
+        ],
+        correct: 2,
+        explanation: "Save screenshots as evidence, report to the platform, and tell a trusted adult. Don't delete or retaliate!",
+      },
+      {
+        tier: "guardian",
+        question: "An online contact says 'I work for your school's IT department and need your login to fix an issue.' This is:",
+        options: [
+          "Legitimate — IT staff sometimes need access",
+          "Social engineering — verify through official channels, never share credentials",
+          "Fine if they can prove they work there",
+          "OK to share since it's school related",
+        ],
+        correct: 1,
+        explanation: "This is social engineering. Real IT staff never ask for passwords. Verify any such request in person with a known adult at your school!",
+      },
+    ],
+  },
+  /* ─────────────────────────────────────────────────────────────────────────
+     ROBO — Lesson 3: Safe Downloads
+     ───────────────────────────────────────── */
+  {
+    lessonId: "lesson-robo-3",
+    missionId: "safe-downloads",
+    character: "Robo Buddy",
+    characterEmoji: "🤖",
+    characterColor: "bg-cyan-500",
+    videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Robo3.mp4",
+    badgeId: "download-detective",
+    badgeLabel: "Download Detective",
+    badgeEmoji: "📥",
+    slides: [
+      {
+        type: "learn",
+        icon: "📥",
+        title: "Why downloads can be dangerous",
+        body: "Every file you download is code that runs on your device. Hackers hide malware inside games, tools, PDFs, and even images. Robo Buddy's Cyber Download Inspection Center checks every file before it gets through!",
+      },
+      {
+        type: "learn",
+        icon: "✅",
+        title: "The golden rule of downloads",
+        body: "Only download from OFFICIAL sources:\n📱 App Store or Google Play for apps\n🌐 The developer's own official website\n🏫 School or parent-approved platforms\n\nIf you're not sure — ask a trusted adult before you click!",
+      },
+      {
+        type: "check",
+        question: "A pop-up appears: 'YOUR DEVICE IS INFECTED! Download our free scanner NOW to fix it!' What do you do?",
+        choices: [
+          { text: "Download it quickly — my device might be infected!", correct: false, feedback: "This is a classic scareware trick! Real antivirus software never appears as website pop-ups. 🚨" },
+          { text: "Close the page — it's a fake scare tactic", correct: true, feedback: "Exactly right! These pop-ups are scams designed to install malware. Close and ignore! 🏆" },
+          { text: "Click it to see what happens", correct: false, feedback: "Even clicking can trigger a download. Close the tab immediately! ❌" },
+          { text: "Ask the pop-up to scan just one file first", correct: false, feedback: "Don't interact with it at all. Close the entire tab! 🛡️" },
+        ],
+      },
+      {
+        type: "learn",
+        icon: "🚩",
+        title: "Red flags on download pages",
+        body: "🚩 Multiple 'Download' buttons in different sizes (fake ones!)\n🚩 Countdown timers pressuring you to hurry\n🚩 Asking you to disable your antivirus\n🚩 File names like 'game.exe.pdf' (hiding the real type)\n🚩 No clear file size or version number shown",
+      },
+      {
+        type: "check",
+        question: "A file is named 'homework_helper.pdf.exe' — what is it really?",
+        choices: [
+          { text: "A safe PDF document", correct: false, feedback: "The real file type is always the LAST extension. This is an .exe program, not a PDF! 🚨" },
+          { text: "An .exe program disguised as a PDF — don't open it!", correct: true, feedback: "Spot on! Double extensions like .pdf.exe are a classic malware trick. Never open these! 🏆" },
+          { text: "Both a PDF and a program", correct: false, feedback: "Files can only be one type. The last extension is the real one — .exe is dangerous! ⚠️" },
+          { text: "A compressed file", correct: false, feedback: "No — the last extension .exe means it's an executable program. Always check the final extension! ❌" },
+        ],
+      },
+      {
+        type: "learn",
+        icon: "🔍",
+        title: "Before you download — inspect it!",
+        body: "✅ Check the website address — is it the real official site?\n✅ Look for HTTPS (the padlock icon)\n✅ Verify the file size looks right\n✅ Scan with antivirus after downloading, before opening\n✅ When in doubt — ask a trusted adult!",
+      },
+      {
+        type: "tip",
+        tipText: "Even files from friends can be dangerous — their accounts might be hacked! Always scan ANY file with antivirus before opening it. Robo Buddy scans everything! 🤖🔍",
+      },
+      {
+        type: "game",
+        gameType: "download-inspector",
+      },
+      {
+        type: "summary",
+        takeaways: [
+          "Only download from official stores and trusted websites 📱",
+          "Fake 'virus warning' pop-ups are scams — close them immediately 🚨",
+          "Double extensions like .pdf.exe hide dangerous files 🚩",
+          "Never disable your antivirus to install software ❌",
+          "When in doubt, ask a trusted adult before downloading 👋",
+        ],
+        quizLabel: "Download Inspection Quiz!",
+      },
+    ],
+    quiz: [
+      // Junior tier
+      {
+        tier: "junior",
+        question: "Where is the safest place to get apps for your tablet or phone?",
+        options: [
+          "Any website that has it",
+          "The official App Store or Google Play",
+          "Links from friends",
+          "Free download sites",
+        ],
+        correct: 1,
+        explanation: "Official app stores check apps for safety. Random websites don't!",
+      },
+      {
+        tier: "junior",
+        question: "A pop-up says 'FREE game — download now!' You should:",
+        options: [
+          "Click it — free games are great!",
+          "Close it and tell a grown-up",
+          "Download and try it",
+          "Share the link with friends",
+        ],
+        correct: 1,
+        explanation: "Free game pop-ups are almost always traps to install malware. Close them!",
+      },
+      {
+        tier: "junior",
+        question: "Before downloading anything, you should always:",
+        options: [
+          "Just click download",
+          "Ask a trusted adult first",
+          "Download and check later",
+          "Ask a friend",
+        ],
+        correct: 1,
+        explanation: "Always check with a trusted adult before downloading anything to stay safe!",
+      },
+      {
+        tier: "junior",
+        question: "A website says 'Your device has a virus! Download this to fix it!' This is:",
+        options: [
+          "Helpful — download it!",
+          "A trick — close the page",
+          "Real — websites can detect viruses",
+          "Probably fine",
+        ],
+        correct: 1,
+        explanation: "Websites cannot scan your device. This is a scam to trick you into installing malware!",
+      },
+      {
+        tier: "junior",
+        question: "The safest way to download a game is from:",
+        options: [
+          "A random Google result",
+          "The official app store",
+          "A link in a YouTube video",
+          "A pop-up ad",
+        ],
+        correct: 1,
+        explanation: "Official app stores verify all apps for safety before listing them!",
+      },
+      // Defender tier
+      {
+        tier: "defender",
+        question: "A file is called 'setup.exe.pdf' — the real file type is:",
+        options: [
+          ".pdf — a safe document",
+          ".exe — a program that runs code",
+          "Both types at once",
+          "A compressed archive",
+        ],
+        correct: 1,
+        explanation: "The real extension is always the last one. .exe means it's a program — a common malware disguise!",
+      },
+      {
+        tier: "defender",
+        question: "A download page asks you to disable your antivirus first. You should:",
+        options: [
+          "Disable it — the software probably needs it",
+          "Never download software that requires disabling antivirus",
+          "Disable it temporarily",
+          "Ask a friend if it's OK",
+        ],
+        correct: 1,
+        explanation: "Legitimate software never needs your antivirus disabled. This is a major malware red flag!",
+      },
+      {
+        tier: "defender",
+        question: "Your friend sends you a file over Discord. Before opening it:",
+        options: [
+          "Open it — you trust your friend",
+          "Scan with antivirus — friends' accounts can be hacked",
+          "Forward it to others first",
+          "Open it if the name looks OK",
+        ],
+        correct: 1,
+        explanation: "Even trusted friends' accounts can be hacked and used to spread malware. Always scan first!",
+      },
+      {
+        tier: "defender",
+        question: "The safest way to download free software is to:",
+        options: [
+          "Click the first Google result",
+          "Go directly to the official developer's website",
+          "Use any site that has it",
+          "Download the one with the most reviews",
+        ],
+        correct: 1,
+        explanation: "Fake download sites copy official ones exactly. Always go directly to the developer's own site!",
+      },
+      {
+        tier: "defender",
+        question: "Which of these is a red flag on a download page?",
+        options: [
+          "Clear file size and version number",
+          "HTTPS padlock in the address bar",
+          "Multiple 'Download' buttons in different sizes",
+          "Developer's name and contact info",
+        ],
+        correct: 2,
+        explanation: "Multiple Download buttons are a trick — the fake ones lead to malware. Only one real button should exist!",
+      },
+      // Guardian tier
+      {
+        tier: "guardian",
+        question: "Checking a file's SHA-256 hash verifies:",
+        options: [
+          "The file's creation date",
+          "The file hasn't been tampered with since release",
+          "The file is virus-free",
+          "The developer's identity",
+        ],
+        correct: 1,
+        explanation: "Hash verification confirms file integrity — that it's exactly what the developer released, not a modified malicious version!",
+      },
+      {
+        tier: "guardian",
+        question: "A supply chain attack means:",
+        options: [
+          "Downloading too many files at once",
+          "Malware injected into legitimate software during development or distribution",
+          "A phishing email with a download link",
+          "A fake website copying an official one",
+        ],
+        correct: 1,
+        explanation: "Supply chain attacks compromise software at the source — meaning even official downloads can sometimes be affected!",
+      },
+      {
+        tier: "guardian",
+        question: "Even after downloading from the official site, you should:",
+        options: [
+          "Open it immediately — it's from the official site",
+          "Scan it with antivirus before opening",
+          "Check the file name only",
+          "It depends on the file size",
+        ],
+        correct: 1,
+        explanation: "Official sites can be temporarily compromised. Scanning before opening is always good practice!",
+      },
+      {
+        tier: "guardian",
+        question: "A .dmg file on Mac is:",
+        options: [
+          "Always safe — Macs don't get viruses",
+          "A disk image installer — can contain malware, only install from trusted sources",
+          "A document file",
+          "A compressed archive only",
+        ],
+        correct: 1,
+        explanation: "Macs can get malware. .dmg files are installers and should only be downloaded from official sources!",
+      },
+      {
+        tier: "guardian",
+        question: "A browser warning says a download is 'dangerous.' You should:",
+        options: [
+          "Proceed — the site is trusted",
+          "Investigate the warning before proceeding",
+          "Disable the warning in settings",
+          "It's fine if the file size is small",
+        ],
+        correct: 1,
+        explanation: "Browser warnings exist for good reason. Even trusted sites can be compromised. Always investigate!",
       },
     ],
   },

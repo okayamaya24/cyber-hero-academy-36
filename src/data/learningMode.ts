@@ -173,15 +173,13 @@ export const LEARNING_CHARACTERS: LearningCharacter[] = [
         id: "lesson-robo-2",
         title: "Strangers & Cyberbullying",
         description: "How to stay safe from strangers and handle mean behavior online.",
-        missionId: null,
-        comingSoon: true,
+        missionId: "stranger-safety",
       },
       {
         id: "lesson-robo-3",
         title: "Safe Downloads",
         description: "Only download files that are safe — here's how to check.",
-        missionId: null,
-        comingSoon: true,
+        missionId: "safe-downloads",
       },
     ],
     unlocksGameIds: [
@@ -216,7 +214,7 @@ export function isLessonUnlocked(
   lessonIndex: number,
   completedMissionIds: Set<string>,
 ): boolean {
-  return true; // All lessons unlocked for testing
+  return true; // TEMP: all lessons unlocked for testing
 }
 
 /** Check if a game route is unlocked based on lesson progress */
