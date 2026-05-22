@@ -369,18 +369,6 @@ export const LESSON_CONTENT: LessonContent[] = [
         gameType: "trace-the-hacker",
       },
       {
-        type: "learn",
-        icon: "👣",
-        title: "You leave digital footprints",
-        body: "Every website you visit, search you make, and photo you post leaves a trail online. This is called your digital footprint.",
-      },
-      {
-        type: "learn",
-        icon: "🔍",
-        title: "Hackers leave clues too",
-        body: "When hackers break into accounts, they leave signs — weird login times, unknown devices, or changed settings. Spotting these clues makes you a cyber detective!",
-      },
-      {
         type: "check",
         question: "Which one is a sign someone may have hacked your account?",
         choices: [
@@ -389,10 +377,6 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Your profile picture loaded slowly", correct: false, feedback: "Slow loading is usually just bad internet! 📶" },
           { text: "Your friend sent you a funny video", correct: false, feedback: "Sounds fun — but that's totally normal! 😄" },
         ],
-      },
-      {
-        type: "tip",
-        tipText: "Always log out of accounts on shared computers — like at school or the library. If you leave yourself logged in, anyone can access your stuff! 🚪",
       },
       {
         type: "game",
