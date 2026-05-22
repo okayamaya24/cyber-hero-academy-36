@@ -216,14 +216,7 @@ export function isLessonUnlocked(
   lessonIndex: number,
   completedMissionIds: Set<string>,
 ): boolean {
-  // Character itself must be unlocked
-  if (!isCharacterUnlocked(character, completedMissionIds)) return false;
-  // First lesson always unlocked if character is unlocked
-  if (lessonIndex === 0) return true;
-  // Subsequent lessons require the previous one to be done
-  const prevLesson = character.lessons[lessonIndex - 1];
-  if (prevLesson.comingSoon || !prevLesson.missionId) return false;
-  return completedMissionIds.has(prevLesson.missionId);
+  return true; // All lessons unlocked for testing
 }
 
 /** Check if a game route is unlocked based on lesson progress */
