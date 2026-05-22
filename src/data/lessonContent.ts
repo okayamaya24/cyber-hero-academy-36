@@ -56,6 +56,7 @@ export interface LessonSlide {
 export interface LessonQuizQuestion {
   question: string;
   choices: { text: string; correct: boolean; feedback: string }[];
+  tier?: "junior" | "defender" | "guardian"; // undefined = shown to all tiers
 }
 
 export interface LessonContent {
@@ -216,67 +217,219 @@ export const LESSON_CONTENT: LessonContent[] = [
       },
     ],
     quiz: [
+      /* ── JUNIOR (ages 5–7) — simple, direct ── */
       {
-        question: "The video says hackers think they're invisible online. Is that true?",
+        tier: "junior",
+        question: "Do hackers leave clues online?",
         choices: [
-          { text: "Yes — hackers leave zero trace behind", correct: false, feedback: "Nope! The video said hackers ALWAYS leave a trace. You just have to know where to look! 🔍" },
-          { text: "No — hackers always leave a trace online", correct: true, feedback: "Exactly what the video said! Hackers think they're invisible, but they always leave clues behind. 🕵️" },
-          { text: "Only if they use a phone", correct: false, feedback: "Device doesn't matter — the video said hackers always leave a trail, no matter what!" },
-          { text: "Only beginner hackers leave traces", correct: false, feedback: "ALL hackers leave traces — that's how cyber detectives catch them!" },
+          { text: "No — they are totally invisible", correct: false, feedback: "Nope! The video said hackers ALWAYS leave a trace. You just have to find it! 🔍" },
+          { text: "Yes — they always leave a trace", correct: true,  feedback: "You got it! Hackers think they're invisible, but they always leave clues behind. 🕵️" },
+          { text: "Only sometimes",                  correct: false, feedback: "The video said ALWAYS — every hacker leaves a trace online!" },
+          { text: "Only on phones",                  correct: false, feedback: "Device doesn't matter — hackers always leave a trail, no matter what!" },
         ],
       },
       {
-        question: "The video warns about websites with weird spelling. Which one looks suspicious?",
+        tier: "junior",
+        question: "Which website name has weird spelling?",
         choices: [
-          { text: "google.com", correct: false, feedback: "That's the real Google — no weird spelling here! ✅" },
-          { text: "youtube.com", correct: false, feedback: "YouTube's real URL — nothing suspicious! ✅" },
-          { text: "gooogle.com (three O's)", correct: true, feedback: "🚨 You spotted it! Three O's — just like the video warned. Names that look 'almost right' are a huge clue it's fake!" },
-          { text: "amazon.com", correct: false, feedback: "Amazon's official URL — no tricky spelling here! ✅" },
+          { text: "google.com",          correct: false, feedback: "That's the real Google — looks perfect! ✅" },
+          { text: "gooogle.com (3 O's)", correct: true,  feedback: "🚨 Yes! Three O's — just like the video showed. Weird spelling = big clue it's fake!" },
+          { text: "youtube.com",         correct: false, feedback: "YouTube's real URL — nothing weird here! ✅" },
+          { text: "amazon.com",          correct: false, feedback: "Amazon's real URL — spelled correctly! ✅" },
         ],
       },
       {
-        question: "You get a message asking for your secret password. What does the video say about that?",
+        tier: "junior",
+        question: "Someone sends you a message asking for your password. What should you do?",
         choices: [
-          { text: "It's probably your school IT team — share it", correct: false, feedback: "🚨 Never! No real person needs your password — the video called this 'a huge clue' something is wrong!" },
-          { text: "That's a huge clue something is wrong", correct: true, feedback: "Word for word from the video! Messages asking for passwords are a massive red flag. 🚩" },
-          { text: "Only share it if the message looks official", correct: false, feedback: "Even official-looking messages can be fakes! The video said messages asking for passwords are ALWAYS suspicious." },
-          { text: "Reply with a fake password to trick them", correct: false, feedback: "Don't engage at all — any response tells them your account is real!" },
+          { text: "Share it if they seem nice", correct: false, feedback: "🚨 Never share your password — not even with nice people online!" },
+          { text: "Give them a hint instead",   correct: false, feedback: "No hints either! The video says messages asking for passwords are always suspicious." },
+          { text: "Never share it — that's a clue something is wrong!", correct: true, feedback: "Perfect! The video called this 'a huge clue' — real people never need your password. 🚩" },
+          { text: "Share it with a parent first", correct: false, feedback: "Tell a parent — but still never share the password! No one online should ever have it." },
         ],
       },
       {
-        question: "The video says never download anything from...?",
+        tier: "junior",
+        question: "The video says never download from someone you ___",
         choices: [
-          { text: "Your teacher's school email", correct: false, feedback: "Downloads from your teacher's real school email are fine — that's a trusted source! ✅" },
-          { text: "The official app store", correct: false, feedback: "Official app stores are trusted — the video was warning about something else!" },
-          { text: "Someone you don't know", correct: true, feedback: "Exactly! 'Never, ever download anything from someone you don't know. Safety first!' — straight from the video! 🛡️" },
-          { text: "Websites with https://", correct: false, feedback: "https:// means the connection is secure — the video warned about unknown people, not secure sites!" },
+          { text: "Like",      correct: false, feedback: "Even if you like them online, you might not really know them. Only download from trusted sources!" },
+          { text: "Don't know", correct: true,  feedback: "Exactly! 'Never, ever download from someone you don't know. Safety first!' — right from the video! 🛡️" },
+          { text: "Trust",     correct: false, feedback: "Online 'trust' can be faked. The video says if you don't KNOW them in real life, don't download!" },
+          { text: "See",       correct: false, feedback: "Not quite — the video's warning is about people you don't know, not about seeing them!" },
         ],
       },
       {
-        question: "Before you click a link or message, what does the video say to do?",
+        tier: "junior",
+        question: "Before you click a link, what should you do first?",
         choices: [
-          { text: "Click fast before it disappears", correct: false, feedback: "The opposite! The video says STOP and investigate before you ever click anything suspicious." },
-          { text: "Share it with a friend first", correct: false, feedback: "That could spread the danger! The video says investigate it yourself first — does it feel right?" },
-          { text: "Investigate — does it feel right and look official?", correct: true, feedback: "Perfect! The video said: stop, investigate, ask yourself if it feels right and looks official. 🔎" },
-          { text: "Always click — it's probably fine", correct: false, feedback: "🚨 Never assume it's fine! The video is very clear: investigate BEFORE you click." },
+          { text: "Click it fast!",               correct: false, feedback: "Slow down! The video says STOP and check before you ever click something suspicious." },
+          { text: "Stop and check if it looks right", correct: true, feedback: "Yes! Stop, investigate, and ask — does this look right and feel right? 🔎" },
+          { text: "Share it with friends",         correct: false, feedback: "That could spread the danger! Always check it yourself first." },
+          { text: "Nothing — it's probably fine", correct: false, feedback: "🚨 Never assume! The video says always investigate before clicking." },
         ],
       },
       {
-        question: "A website name looks 'almost right' but something is slightly off. What is that according to the video?",
+        tier: "junior",
+        question: "A website name looks almost right but has an extra letter. What is that?",
         choices: [
-          { text: "Just a typo by the website owner", correct: false, feedback: "Hackers do this on purpose! The video said weird spelling is a clue the site might be fake." },
-          { text: "A clue the website might be fake", correct: true, feedback: "Yes! The video said to look for names that look 'almost right' — that's one of the biggest hacker clues! 🕵️" },
-          { text: "A sign the site is loading slowly", correct: false, feedback: "Not a loading issue — it's a trap! Hackers spell things almost-right on purpose to trick you." },
-          { text: "A new updated version of the site", correct: false, feedback: "Real websites don't change their spelling! Weird letters = fake site clue." },
+          { text: "A loading problem", correct: false, feedback: "Not a tech glitch — hackers do this on purpose to trick you!" },
+          { text: "A new version",     correct: false, feedback: "Real websites don't misspell their own name. Weird letters = possible fake site!" },
+          { text: "A clue it might be fake", correct: true, feedback: "Right! The video said to look for names that look 'almost right' — that's a hacker clue! 🕵️" },
+          { text: "A cool design",     correct: false, feedback: "Ha! It's not style — it's a trick to fool you into visiting the wrong site." },
         ],
       },
       {
-        question: "What is YOUR mission as a cyber hero, according to the video?",
+        tier: "junior",
+        question: "What is your job as a cyber hero?",
         choices: [
-          { text: "Never go online again", correct: false, feedback: "Ha! The video isn't saying quit the internet — it's teaching you to be safe on it!" },
-          { text: "Follow the trail and uncover the hidden clues", correct: true, feedback: "That's your mission! The video said: follow the trail, uncover the clues, and catch the hacker before they escape! 🦸" },
-          { text: "Tell your parents every time you go online", correct: false, feedback: "Good habit, but the video's message is bigger — YOU are the cyber detective who spots the clues!" },
-          { text: "Report every website to the police", correct: false, feedback: "Not quite — your job is to SPOT the clues and stay safe, just like a real cyber detective!" },
+          { text: "Never use the internet", correct: false, feedback: "The video wants you to use the internet SAFELY — not quit it!" },
+          { text: "Spot the clues and stay safe", correct: true, feedback: "That's your mission! Follow the trail, find the clues, catch the hacker! 🦸" },
+          { text: "Delete everything suspicious", correct: false, feedback: "Tell a trusted adult instead — your job is to SPOT clues, not delete things alone." },
+          { text: "Block all messages",           correct: false, feedback: "Not all messages are bad — your job is to INVESTIGATE and spot the suspicious ones!" },
+        ],
+      },
+
+      /* ── DEFENDER (ages 8–10) — scenario-based ── */
+      {
+        tier: "defender",
+        question: "The video says hackers think they're invisible. What's the truth?",
+        choices: [
+          { text: "They are truly invisible online",         correct: false, feedback: "Nope! The video is clear: hackers ALWAYS leave a trace. That's how they get caught! 🔍" },
+          { text: "They always leave a trace online",        correct: true,  feedback: "Exactly! Hackers think they're invisible, but they always leave digital clues behind. 🕵️" },
+          { text: "Only beginner hackers leave traces",      correct: false, feedback: "ALL hackers leave traces — even experienced ones. That's how investigators find them!" },
+          { text: "They're invisible unless caught quickly", correct: false, feedback: "Time doesn't matter — hackers always leave a trail that cyber detectives can follow!" },
+        ],
+      },
+      {
+        tier: "defender",
+        question: "You visit a site called 'gooogle.com' (three O's). What should you do?",
+        choices: [
+          { text: "Stay — it's probably just a typo",     correct: false, feedback: "Typos in URLs are a major red flag! Hackers register misspelled sites to trick people." },
+          { text: "Leave immediately — it looks fake",    correct: true,  feedback: "Smart! The video warned about weird spelling. Three O's = not the real Google. 🚨" },
+          { text: "It's the same as google.com",          correct: false, feedback: "It's NOT the same — it's a completely different website that could steal your info!" },
+          { text: "Check if it has a lock icon first",    correct: false, feedback: "Even fake sites can have a lock icon. The weird spelling already tells you to leave!" },
+        ],
+      },
+      {
+        tier: "defender",
+        question: "A message from 'your school' asks for your password to 'verify your account'. What is this?",
+        choices: [
+          { text: "Normal — schools do this sometimes",   correct: false, feedback: "🚨 Schools NEVER ask for your password in a message. This is a trick!" },
+          { text: "A huge clue something is wrong — don't share", correct: true, feedback: "Correct! The video said messages asking for passwords are always a red flag, no matter who they seem to be from. 🚩" },
+          { text: "Fine if the school logo is on it",    correct: false, feedback: "Logos can be faked! Any message asking for your password is suspicious — full stop." },
+          { text: "A routine security update",           correct: false, feedback: "Real security updates never need your password. This is social engineering!" },
+        ],
+      },
+      {
+        tier: "defender",
+        question: "A stranger online sends you a free game download. The video says you should...",
+        choices: [
+          { text: "Download it — it's free!",             correct: false, feedback: "🚨 Never download from someone you don't know — the video said this directly!" },
+          { text: "Download it if your friend approves",  correct: false, feedback: "Your friend's approval doesn't make the source safe. You still don't know where it really came from!" },
+          { text: "Never download it — you don't know them", correct: true, feedback: "Exactly what the video said! Never download from someone you don't know. Safety first! 🛡️" },
+          { text: "Download only if it's a small file",  correct: false, feedback: "File size doesn't matter — even tiny files can contain viruses!" },
+        ],
+      },
+      {
+        tier: "defender",
+        question: "You get a message with a link that feels slightly off. The video says to...",
+        choices: [
+          { text: "Click it — your gut is probably wrong",   correct: false, feedback: "Trust your instincts! The video says if something feels off, investigate before you click." },
+          { text: "Forward it to friends to check",         correct: false, feedback: "That spreads the danger! Investigate it yourself first — does it feel right and look official?" },
+          { text: "Investigate — does it feel right and look official?", correct: true, feedback: "Perfect! The video said stop and ask those two questions before you ever click. 🔎" },
+          { text: "Click it once to preview it",            correct: false, feedback: "One click is all it takes for a virus to run! Investigate BEFORE clicking, not after." },
+        ],
+      },
+      {
+        tier: "defender",
+        question: "A site is called 'Faceb00k.com' (zeros instead of O's). What is this?",
+        choices: [
+          { text: "Facebook's mobile site",           correct: false, feedback: "Facebook's mobile site is still facebook.com — this is a fake!" },
+          { text: "A fake site using almost-right spelling", correct: true, feedback: "Exactly! The video warned about names that look 'almost right' — zeros instead of O's is a classic hacker trick. 🕵️" },
+          { text: "A secure version of Facebook",    correct: false, feedback: "Security doesn't change the domain name. This is a lookalike scam site!" },
+          { text: "Just a different style of spelling", correct: false, feedback: "It's not style — hackers register these look-alike URLs on purpose to steal your info!" },
+        ],
+      },
+      {
+        tier: "defender",
+        question: "According to the video, what does 'following the digital trail' mean?",
+        choices: [
+          { text: "Browsing many websites in a row",     correct: false, feedback: "That's just regular browsing! Following a digital trail means tracing the clues hackers leave." },
+          { text: "Tracing the clues hackers leave to catch them", correct: true, feedback: "That's it! The video said: follow the trail, uncover the hidden clues, catch the hacker! 🦸" },
+          { text: "Following someone's social media",    correct: false, feedback: "Not social media — it's about finding the evidence trail hackers leave behind online." },
+          { text: "Deleting your own digital footprint", correct: false, feedback: "Close — digital footprints are real, but 'following the trail' is about tracking hackers, not yourself!" },
+        ],
+      },
+
+      /* ── GUARDIAN (ages 11+) — advanced reasoning ── */
+      {
+        tier: "guardian",
+        question: "The video says hackers think they're invisible. In real cybersecurity, what kind of traces do hackers typically leave?",
+        choices: [
+          { text: "Personalized messages explaining what they did", correct: false, feedback: "Ha — hackers don't leave notes! They leave technical traces like login records and IP addresses." },
+          { text: "IP address logs, unusual login times, and unknown device entries", correct: true, feedback: "Exactly! These are real digital traces — and exactly the kind of clues cyber detectives use to track hackers. 🕵️" },
+          { text: "Traces only visible with special government software", correct: false, feedback: "Not true — many traces are visible in standard account activity logs that anyone can check!" },
+          { text: "Only traces if they make a mistake", correct: false, feedback: "The video is clear: hackers ALWAYS leave traces, not just when they slip up!" },
+        ],
+      },
+      {
+        tier: "guardian",
+        question: "A URL reads 'paypa1.com' (number 1 instead of L). Why would a hacker register this domain?",
+        choices: [
+          { text: "To make PayPal's site load faster",                         correct: false, feedback: "That's not how web hosting works! This is a deception tactic, not a speed trick." },
+          { text: "To trick users who misread it into entering their real login info", correct: true, feedback: "Correct! This is called typosquatting — hackers register look-alike domains to steal credentials from people who don't notice the difference. 🚨" },
+          { text: "Because paypal.com was already taken",                      correct: false, feedback: "paypal.com exists and is owned by PayPal. 'paypa1.com' is a deliberate fake." },
+          { text: "To redirect you to the real PayPal automatically",         correct: false, feedback: "It won't redirect you — it'll show a fake login page to steal your password!" },
+        ],
+      },
+      {
+        tier: "guardian",
+        question: "A message looks completely official — correct logo, real teacher's name, proper grammar — but asks for your password. What should you do and why?",
+        choices: [
+          { text: "Share it — everything checks out",                         correct: false, feedback: "🚨 Looks can be deceiving! Logos, names, and grammar can all be faked. No real system ever needs your password." },
+          { text: "Refuse — no legitimate system ever asks for your password", correct: true, feedback: "Exactly right! Official-looking messages can be spoofed. The video's rule holds regardless of appearance: messages asking for passwords are always suspicious. 🚩" },
+          { text: "Call the teacher first to verify, then share",             correct: false, feedback: "Calling to verify is smart — but you should NEVER share your password, even after verification!" },
+          { text: "Share only the first half of your password",               correct: false, feedback: "Never share any part of your password! And partial passwords can still be used in attacks." },
+        ],
+      },
+      {
+        tier: "guardian",
+        question: "An online contact you've chatted with for months says they're sending you a 'totally safe' game file. The video says never download from people you don't know. Does this apply here?",
+        choices: [
+          { text: "No — months of chatting means you know them",              correct: false, feedback: "Online relationships can be faked over time. You don't actually know who is on the other end — this is a common grooming tactic!" },
+          { text: "Yes — you still don't know the true source of the file or who they really are", correct: true, feedback: "Correct! The video's rule applies. Online contacts can misrepresent themselves, and the file's source is still unknown. 🛡️" },
+          { text: "No — only applies to total strangers, not friends",        correct: false, feedback: "The rule applies to anyone you haven't met in real life. Online 'friends' can be anyone!" },
+          { text: "Depends on whether they've been trustworthy before",       correct: false, feedback: "Past behavior online isn't a guarantee. The source of the file is still unknown regardless of your history with them." },
+        ],
+      },
+      {
+        tier: "guardian",
+        question: "The video says investigate a message before clicking: 'Does it feel right? Does it look official?' What type of cyberattack does this advice help you detect?",
+        choices: [
+          { text: "DDoS attacks — overloading servers with traffic",  correct: false, feedback: "DDoS attacks target servers, not individual users. This advice is about a different threat." },
+          { text: "Phishing — deceptive messages designed to steal info by impersonating trusted sources", correct: true, feedback: "Exactly! Phishing attacks rely on messages that look official. Pausing to investigate is the #1 defense. 🔎" },
+          { text: "Brute force attacks — guessing passwords repeatedly", correct: false, feedback: "Brute force attacks happen on servers, not through messages. Strong passwords defend against those." },
+          { text: "Malware installed through device hardware",         correct: false, feedback: "Hardware attacks are a different threat entirely. Message-based deception is phishing." },
+        ],
+      },
+      {
+        tier: "guardian",
+        question: "Someone online claims to be from 'Cyber Hero Academy Support' and asks you to verify your account details to fix a problem. This is an example of...",
+        choices: [
+          { text: "Normal customer support — respond to fix the issue", correct: false, feedback: "🚨 Real support teams never ask for your account details through a message. This is a trap!" },
+          { text: "Social engineering — manipulating people into giving up information", correct: true, feedback: "Correct! Social engineering exploits trust rather than technology. The video said: always investigate — does it really look and feel official? 🕵️" },
+          { text: "A routine security audit — standard practice",        correct: false, feedback: "Real security audits don't work by messaging individuals asking for account details!" },
+          { text: "End-to-end encryption testing",                      correct: false, feedback: "That's not what encryption testing looks like — this is a classic impersonation scam." },
+        ],
+      },
+      {
+        tier: "guardian",
+        question: "The video ends: 'Follow the trail and uncover the hidden clues. Can you catch the hacker?' In professional cybersecurity, who does this job?",
+        choices: [
+          { text: "Web developers — they build the secure sites", correct: false, feedback: "Developers build and secure systems, but they're not the ones who trace hackers after an attack." },
+          { text: "Digital forensics investigators — they analyze evidence left on systems", correct: true, feedback: "Exactly! Digital forensics experts follow the digital trail — logs, metadata, IP records — to identify and catch hackers. That's the career path of a real cyber detective! 🦸" },
+          { text: "Network engineers — they manage internet traffic", correct: false, feedback: "Network engineers maintain infrastructure, but forensics investigators are the ones who trace hacker evidence." },
+          { text: "System administrators — they manage user accounts",  correct: false, feedback: "Sysadmins manage access, but digital forensics investigators are the cyber detectives who follow the trail." },
         ],
       },
     ],

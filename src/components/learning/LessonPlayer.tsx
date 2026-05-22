@@ -397,6 +397,13 @@ function CheckSlide({ slide, lesson, theme, onAnswer }: {
   );
 }
 
+/* ── Age → quiz tier ── */
+function getQuizTier(age?: number): "junior" | "defender" | "guardian" {
+  if (!age || age < 8) return "junior";
+  if (age < 11) return "defender";
+  return "guardian";
+}
+
 /* ── INLINE QUIZ ── */
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -1052,7 +1059,11 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
 
         {/* Inline quiz overlay — slides up over the summary */}
         <AnimatePresence>
-          {showInlineQuiz && lesson.quiz && (
+          {showInlineQuiz && lesson.quiz && (() => {
+          const quizTier = getQuizTier(childAge);
+          const tieredQuestions = lesson.quiz!.filter(q => !q.tier || q.tier === quizTier);
+          const quizQuestions = tieredQuestions.length >= 3 ? tieredQuestions : lesson.quiz!.filter(q => !q.tier);
+          return (
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
@@ -1079,7 +1090,7 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
                 </button>
               </div>
               <InlineQuiz
-                questions={lesson.quiz}
+                questions={quizQuestions}
                 theme={theme}
                 badgeEmoji={lesson.badgeEmoji ?? "🏅"}
                 badgeLabel={lesson.badgeLabel ?? "Quiz Champion"}
@@ -1094,7 +1105,8 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
                 onClose={() => setShowInlineQuiz(false)}
               />
             </motion.div>
-          )}
+          );
+        })()}
         </AnimatePresence>
       </motion.div>
     </div>
