@@ -207,13 +207,7 @@ export function isCharacterUnlocked(
   character: LearningCharacter,
   completedMissionIds: Set<string>,
 ): boolean {
-  if (!character.unlockedAfterCharacter) return true;
-  const prevChar = LEARNING_CHARACTERS.find((c) => c.id === character.unlockedAfterCharacter);
-  if (!prevChar) return true;
-  // All non-coming-soon lessons of the previous character must be complete
-  return prevChar.lessons
-    .filter((l) => !l.comingSoon && l.missionId)
-    .every((l) => completedMissionIds.has(l.missionId!));
+  return true; // All characters unlocked for testing
 }
 
 /** Check if a specific lesson is unlocked */
