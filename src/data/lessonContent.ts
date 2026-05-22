@@ -68,6 +68,7 @@ export interface LessonContent {
   characterEmoji: string;
   characterColor: string; // tailwind bg
   videoUrl?: string; // optional video shown before slides
+  enhancedMode?: boolean; // enable hype screen + enhanced check slides after video
   slides: LessonSlide[];
   quiz?: LessonQuizQuestion[]; // inline quiz shown when summary CTA is clicked
   badgeLabel?: string;         // badge name awarded on quiz completion
@@ -359,6 +360,7 @@ export const LESSON_CONTENT: LessonContent[] = [
     characterEmoji: "🤖",
     characterColor: "bg-cyan-500",
     videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson2.mp4",
+    enhancedMode: true,
     badgeLabel: "Cyber Detective",
     badgeEmoji: "🕵️",
     slides: [

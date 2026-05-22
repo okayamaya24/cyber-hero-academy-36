@@ -428,6 +428,268 @@ function CheckSlide({ slide, lesson, theme, onAnswer }: {
   );
 }
 
+/* ── ENHANCED: Hype Screen (after video, enhanced mode only) ── */
+function HypeScreen({ lesson, theme, onDone }: {
+  lesson: LessonContent; theme: typeof CHAR_THEMES[string]; onDone: () => void;
+}) {
+  const messages = [
+    { emoji: "🔥", text: "NICE! You just watched the briefing!", sub: "Now let's see what you picked up…" },
+    { emoji: "🕵️", text: "Time to be a Cyber Detective!", sub: "Can you spot the clues?" },
+    { emoji: "⚡", text: "Let's GO!", sub: "Tap to start the mission!" },
+  ];
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (step < 2) {
+      const t = setTimeout(() => setStep(s => s + 1), 900);
+      return () => clearTimeout(t);
+    }
+  }, [step]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.95)", backdropFilter: "blur(8px)" }}>
+      <Confetti />
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className={`relative w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col items-center justify-center bg-gradient-to-b ${theme.bg} px-6 py-10 gap-6`}
+        style={{ minHeight: "55vh", border: `2px solid ${theme.accent}55` }}
+      >
+        {/* Character */}
+        <motion.div
+          animate={{ y: [0, -12, 0], rotate: [0, -5, 5, 0] }}
+          transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
+          className={`w-28 h-28 rounded-3xl ${lesson.characterColor} flex items-center justify-center shadow-2xl overflow-hidden`}
+          style={{ boxShadow: `0 0 50px ${theme.accent}88` }}
+        >
+          {CHAR_IMAGES[lesson.character]
+            ? <img src={CHAR_IMAGES[lesson.character]} alt={lesson.character} className="w-full h-full object-contain" />
+            : lesson.characterEmoji}
+        </motion.div>
+
+        {/* Message sequence */}
+        <div className="text-center space-y-2">
+          <AnimatePresence mode="wait">
+            {messages.slice(0, step + 1).map((msg, i) => i === step && (
+              <motion.div
+                key={i}
+                initial={{ y: 20, opacity: 0, scale: 0.9 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                transition={{ type: "spring", bounce: 0.5 }}
+                className="space-y-1"
+              >
+                <p className="text-5xl">{msg.emoji}</p>
+                <h2 className="text-2xl font-black text-white">{msg.text}</h2>
+                <p className="text-white/60 text-sm font-semibold">{msg.sub}</p>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        {/* CTA */}
+        {step === 2 && (
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", bounce: 0.6, delay: 0.2 }}
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+            onClick={onDone}
+            className="w-full max-w-xs rounded-2xl py-4 font-black text-xl text-[#080c18] shadow-2xl"
+            style={{ background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}bb)` }}
+          >
+            LET'S GO! 🚀
+          </motion.button>
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
+/* ── ENHANCED: Game Launch Card ── */
+function GameLaunchCard({ lesson, theme, onDone }: {
+  lesson: LessonContent; theme: typeof CHAR_THEMES[string]; onDone: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-6 py-6 min-h-[380px] text-center">
+      <motion.div
+        initial={{ scale: 0, rotate: -15 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: "spring", bounce: 0.7 }}
+        className="text-7xl"
+      >
+        🎮
+      </motion.div>
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="space-y-2"
+      >
+        <p className="text-xs font-extrabold tracking-widest" style={{ color: theme.accent }}>
+          ⚡ TIME TO PRACTICE
+        </p>
+        <h2 className="text-2xl font-black text-white">Put it to the test!</h2>
+        <p className="text-white/60 text-sm font-semibold max-w-xs">
+          Use what you just learned to beat the challenge. You've got this! 💪
+        </p>
+      </motion.div>
+      <motion.button
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: "spring", bounce: 0.6, delay: 0.4 }}
+        whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+        onClick={onDone}
+        className="rounded-2xl px-10 py-4 font-black text-lg text-[#080c18] shadow-2xl"
+        style={{ background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}bb)` }}
+      >
+        Start Challenge →
+      </motion.button>
+    </div>
+  );
+}
+
+/* ── ENHANCED: Big Button Check Slide ── */
+function EnhancedCheckSlide({ slide, lesson, theme, onAnswer }: {
+  slide: LessonSlide; lesson: LessonContent;
+  theme: typeof CHAR_THEMES[string];
+  onAnswer: (correct: boolean) => void;
+}) {
+  const [selected, setSelected] = useState<number | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [reaction, setReaction] = useState<"correct" | "wrong" | null>(null);
+  const choices = slide.choices ?? [];
+
+  const handlePick = (idx: number) => {
+    if (selected !== null) return;
+    setSelected(idx);
+    const correct = choices[idx].correct;
+    setReaction(correct ? "correct" : "wrong");
+    if (correct) {
+      setShowConfetti(true);
+      setTimeout(() => onAnswer(true), 2000);
+    } else {
+      setTimeout(() => onAnswer(false), 2500);
+    }
+  };
+
+  const COLORS = [
+    { bg: "bg-violet-500/20", border: "border-violet-400/50", hover: "hover:bg-violet-500/30" },
+    { bg: "bg-cyan-500/20",   border: "border-cyan-400/50",   hover: "hover:bg-cyan-500/30"   },
+    { bg: "bg-amber-500/20",  border: "border-amber-400/50",  hover: "hover:bg-amber-500/30"  },
+    { bg: "bg-pink-500/20",   border: "border-pink-400/50",   hover: "hover:bg-pink-500/30"   },
+  ];
+
+  return (
+    <div className="flex flex-col gap-4 min-h-[380px] relative">
+      {showConfetti && <Confetti />}
+
+      {/* Question header */}
+      <motion.div
+        initial={{ y: -10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="rounded-2xl border-2 p-4 text-center"
+        style={{ borderColor: `${theme.accent}55`, background: `${theme.accent}12` }}
+      >
+        <p className="text-[10px] font-extrabold tracking-widest mb-1" style={{ color: theme.accent }}>
+          🕵️ CYBER CHALLENGE
+        </p>
+        <p className="text-white font-black text-base leading-snug">{slide.question}</p>
+      </motion.div>
+
+      {/* Big tap buttons */}
+      <div className="flex flex-col gap-2.5">
+        {choices.map((choice, idx) => {
+          const isPicked = selected === idx;
+          const isCorrect = isPicked && choice.correct;
+          const isWrong = isPicked && !choice.correct;
+          const revealCorrect = selected !== null && choice.correct && !isPicked;
+          const color = COLORS[idx % COLORS.length];
+
+          return (
+            <motion.button
+              key={idx}
+              initial={{ opacity: 0, x: idx % 2 === 0 ? -20 : 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.08, type: "spring", bounce: 0.4 }}
+              whileHover={selected === null ? { scale: 1.02, x: 4 } : {}}
+              whileTap={selected === null ? { scale: 0.97 } : {}}
+              onClick={() => handlePick(idx)}
+              disabled={selected !== null}
+              className={`w-full rounded-2xl border-2 p-4 text-left transition-all ${
+                isCorrect     ? "border-green-400 bg-green-500/25" :
+                isWrong       ? "border-red-400 bg-red-500/20" :
+                revealCorrect ? "border-green-400/60 bg-green-500/15" :
+                selected !== null ? "opacity-30 border-white/5 bg-white/3" :
+                `${color.border} ${color.bg} ${color.hover}`
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className={`w-9 h-9 rounded-xl border-2 flex items-center justify-center font-black text-sm flex-shrink-0 ${
+                  isCorrect     ? "border-green-400 bg-green-500 text-white" :
+                  isWrong       ? "border-red-400 bg-red-500 text-white" :
+                  revealCorrect ? "border-green-400 text-green-300" :
+                  "border-white/20 text-white/50"
+                }`}>
+                  {isCorrect ? "✓" : isWrong ? "✗" : ["A","B","C","D"][idx]}
+                </span>
+                <div className="flex-1">
+                  <p className={`font-bold text-sm leading-snug ${
+                    isCorrect ? "text-green-200" : isWrong ? "text-red-200" : "text-white"
+                  }`}>
+                    {choice.text}
+                  </p>
+                  {isPicked && (
+                    <motion.p
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className={`text-xs mt-1.5 font-semibold leading-relaxed ${isCorrect ? "text-green-300" : "text-red-300"}`}
+                    >
+                      {isCorrect ? "🎉 " : "💡 "}{choice.feedback}
+                    </motion.p>
+                  )}
+                </div>
+                {isCorrect && (
+                  <motion.span
+                    initial={{ scale: 0, rotate: -20 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", bounce: 0.8 }}
+                    className="text-3xl flex-shrink-0"
+                  >⭐</motion.span>
+                )}
+              </div>
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Character reaction */}
+      {reaction && (
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className={`rounded-2xl border p-3 flex items-center gap-3 ${
+            reaction === "correct"
+              ? "border-green-400/40 bg-green-500/15"
+              : "border-amber-400/40 bg-amber-500/15"
+          }`}
+        >
+          <div className={`w-10 h-10 rounded-xl ${lesson.characterColor} flex-shrink-0 overflow-hidden`}>
+            {CHAR_IMAGES[lesson.character]
+              ? <img src={CHAR_IMAGES[lesson.character]} alt={lesson.character} className="w-full h-full object-contain" />
+              : lesson.characterEmoji}
+          </div>
+          <p className={`text-sm font-bold ${reaction === "correct" ? "text-green-300" : "text-amber-300"}`}>
+            {reaction === "correct"
+              ? "🔥 NICE! You've got sharp detective eyes!"
+              : "💡 Good try! Check the explanation — then keep going!"}
+          </p>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
 /* ── Age → quiz tier ── */
 function getQuizTier(age?: number): "junior" | "defender" | "guardian" {
   if (!age || age < 8) return "junior";
@@ -886,6 +1148,9 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
   const [showVideo, setShowVideo] = useState(
     !!(lesson.videoUrl && lesson.videoUrl !== "PASTE_SUPABASE_URL_HERE" && lesson.videoUrl !== "PASTE_YOUR_VIDEO_URL_HERE")
   );
+  const [showHype, setShowHype] = useState(false);
+  // Tracks which game-slide index has had its launch card dismissed; null = not dismissed yet
+  const [gameLaunchDismissedIdx, setGameLaunchDismissedIdx] = useState<number | null>(null);
   const [slideIdx, setSlideIdx] = useState(0);
   const [direction, setDirection] = useState(1);
   const [waitForCheck, setWaitForCheck] = useState(false);
@@ -925,11 +1190,25 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
         <VideoPlayer
           lesson={lesson}
           theme={theme}
-          onDone={() => setShowVideo(false)}
+          onDone={() => {
+            setShowVideo(false);
+            if (lesson.enhancedMode) setShowHype(true);
+          }}
           onClose={onClose}
           canSkip={!childAge || childAge >= 8}
         />
       </AnimatePresence>
+    );
+  }
+
+  // Enhanced mode: Hype screen after video
+  if (showHype) {
+    return (
+      <HypeScreen
+        lesson={lesson}
+        theme={theme}
+        onDone={() => setShowHype(false)}
+      />
     );
   }
 
@@ -995,7 +1274,9 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
                 <TipSlide slide={slide} lesson={lesson} theme={theme} />
               )}
               {isCheck && (
-                <CheckSlide slide={slide} lesson={lesson} theme={theme} onAnswer={handleCheckAnswer} />
+                lesson.enhancedMode
+                  ? <EnhancedCheckSlide slide={slide} lesson={lesson} theme={theme} onAnswer={handleCheckAnswer} />
+                  : <CheckSlide slide={slide} lesson={lesson} theme={theme} onAnswer={handleCheckAnswer} />
               )}
               {isSummary && (
                 <SummarySlide
@@ -1005,10 +1286,15 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
                   onStartQuiz={lesson.quiz ? () => setShowInlineQuiz(true) : onStartQuiz}
                 />
               )}
-              {isGame && slide.gameType === "password-attention" && (
+              {/* Enhanced mode: show launch card before the game */}
+              {isGame && lesson.enhancedMode && gameLaunchDismissedIdx !== slideIdx && (
+                <GameLaunchCard lesson={lesson} theme={theme} onDone={() => setGameLaunchDismissedIdx(slideIdx)} />
+              )}
+              {/* Games — only shown after launch card is dismissed (or no enhanced mode) */}
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "password-attention" && (
                 <PasswordAttentionGame onComplete={() => goNext()} />
               )}
-              {isGame && slide.gameType === "password-strength-tester" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "password-strength-tester" && (
                 <PasswordStrengthTesterGame
                   ageTier="defender"
                   guideImage={lesson.characterEmoji}
@@ -1016,7 +1302,7 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
                   onComplete={() => goNext()}
                 />
               )}
-              {isGame && slide.gameType === "password-fixer" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "password-fixer" && (
                 <PasswordFixerGame
                   ageTier="defender"
                   guideImage={lesson.characterEmoji}
@@ -1024,43 +1310,43 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
                   onComplete={() => goNext()}
                 />
               )}
-              {isGame && slide.gameType === "password-builder" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "password-builder" && (
                 <PasswordBuilderGame embedded={true} age={childAge} onComplete={() => goNext()} />
               )}
-              {isGame && slide.gameType === "login-detective" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "login-detective" && (
                 <LoginDetectiveGame onComplete={() => goNext()} childAge={childAge} />
               )}
-              {isGame && slide.gameType === "popup-or-scam" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "popup-or-scam" && (
                 <PopupOrScamGame onComplete={() => goNext()} />
               )}
-              {isGame && slide.gameType === "phishing-swipe" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "phishing-swipe" && (
                 <PhishingSwipeGame onComplete={() => goNext()} />
               )}
-              {isGame && slide.gameType === "url-detective" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "url-detective" && (
                 <UrlDetectiveGame onComplete={() => goNext()} />
               )}
-              {isGame && slide.gameType === "suspicious-text" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "suspicious-text" && (
                 <SuspiciousTextGame onComplete={() => goNext()} />
               )}
-              {isGame && slide.gameType === "info-shield-sort" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "info-shield-sort" && (
                 <InfoShieldSortGame onComplete={() => goNext()} />
               )}
-              {isGame && slide.gameType === "post-or-pass" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "post-or-pass" && (
                 <PostOrPassGame onComplete={() => goNext()} />
               )}
-              {isGame && slide.gameType === "fact-check" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "fact-check" && (
                 <FactCheckGame onComplete={() => goNext()} />
               )}
-              {isGame && slide.gameType === "malware-monster-match" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "malware-monster-match" && (
                 <MalwareMonsterGame onComplete={() => goNext()} />
               )}
-              {isGame && slide.gameType === "trace-the-hacker" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "trace-the-hacker" && (
                 <TraceTheHackerGame onComplete={() => goNext()} childAge={childAge} />
               )}
-              {isGame && slide.gameType === "stranger-danger" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "stranger-danger" && (
                 <StrangerDangerGame onComplete={() => goNext()} childAge={childAge} />
               )}
-              {isGame && slide.gameType === "download-inspector" && (
+              {isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx) && slide.gameType === "download-inspector" && (
                 <DownloadInspectorGame onComplete={() => goNext()} childAge={childAge} />
               )}
             </motion.div>
@@ -1090,8 +1376,8 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
           </div>
         )}
 
-        {/* Check / game slide nav hint */}
-        {(isCheck || isGame) && (
+        {/* Check / game slide nav hint — hidden when game launch card is showing */}
+        {(isCheck || (isGame && (!lesson.enhancedMode || gameLaunchDismissedIdx === slideIdx))) && (
           <div className="px-4 py-3 flex-shrink-0 relative z-10 text-center"
             style={{ borderTop: `1px solid ${theme.accent}18` }}>
             <p className="text-xs text-white/30 font-medium italic">Tap your answer above ☝️</p>
