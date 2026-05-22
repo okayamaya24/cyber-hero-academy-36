@@ -169,9 +169,8 @@ export const LESSON_CONTENT: LessonContent[] = [
     badgeEmoji: "🕵️",
     slides: [
       {
-        type: "intro",
-        headline: "Cyber Clues & Digital Trails",
-        subtext: "Every time you go online, you leave footprints. Let's learn to spot the clues!",
+        type: "game",
+        gameType: "trace-the-hacker",
       },
       {
         type: "learn",
@@ -202,16 +201,6 @@ export const LESSON_CONTENT: LessonContent[] = [
       {
         type: "game",
         gameType: "login-detective",
-      },
-      {
-        type: "learn",
-        icon: "🕵️",
-        title: "Think like a cyber detective",
-        body: "Real hackers leave clues — fake websites, suspicious messages, and strange downloads. Your job is to spot the difference between SAFE and SUSPICIOUS before it's too late!",
-      },
-      {
-        type: "game",
-        gameType: "trace-the-hacker",
       },
       {
         type: "summary",
