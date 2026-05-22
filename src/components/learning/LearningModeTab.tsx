@@ -56,7 +56,6 @@ function CharacterCard({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
-  const unlocked = isCharacterUnlocked(character, completedMissionIds);
   const guide = GUIDE_REGISTRY[character.guideId];
 
   const completedCount = character.lessons.filter(
@@ -70,9 +69,7 @@ function CharacterCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       className={`rounded-2xl border-2 overflow-hidden transition-all ${
-        !unlocked
-          ? "border-slate-200 bg-slate-50 opacity-60"
-          : allDone
+        allDone
           ? `${character.borderColor} bg-white`
           : `${character.borderColor} bg-white shadow-sm`
       }`}
@@ -80,63 +77,43 @@ function CharacterCard({
       {/* Character header */}
       <button
         className="w-full text-left"
-        onClick={unlocked ? onToggle : undefined}
-        disabled={!unlocked}
+        onClick={onToggle}
       >
         <div className="flex items-center gap-4 p-4">
           {/* Guide image / emoji */}
-          <div className={`relative flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl ${character.color} ${!unlocked ? "grayscale" : ""}`}>
+          <div className={`relative flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl ${character.color}`}>
             {guide?.image ? (
               <img src={guide.image} alt={character.name} className="h-12 w-12 object-contain" />
             ) : (
               <span className="text-3xl">{character.emoji}</span>
-            )}
-            {!unlocked && (
-              <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-slate-200/60">
-                <Lock className="h-5 w-5 text-slate-500" />
-              </div>
             )}
           </div>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
-              <h3 className={`font-black text-base ${!unlocked ? "text-slate-400" : "text-slate-900"}`}>
+              <h3 className="font-black text-base text-slate-900">
                 {character.name}
               </h3>
               {allDone && <span className="text-[10px] font-black text-green-600 bg-green-100 px-2 py-0.5 rounded-full">✓ Complete!</span>}
-              {!unlocked && (
-                <span className="text-[10px] font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                  🔒 Locked
-                </span>
-              )}
             </div>
-            <p className={`text-xs font-semibold mb-2 ${!unlocked ? "text-slate-400" : "text-slate-500"}`}>
+            <p className="text-xs font-semibold mb-2 text-slate-500">
               {character.topic}
             </p>
-            {unlocked && (
-              <div className="flex items-center gap-2">
-                <div className="h-1.5 flex-1 max-w-[120px] overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className={`h-full rounded-full transition-all ${allDone ? "bg-green-500" : character.textColor.replace("text", "bg")}`}
-                    style={{ width: `${totalLive > 0 ? (completedCount / totalLive) * 100 : 0}%` }}
-                  />
-                </div>
-                <span className={`text-[11px] font-bold ${character.textColor}`}>
-                  {completedCount}/{totalLive} lessons
-                </span>
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 flex-1 max-w-[120px] overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className={`h-full rounded-full transition-all ${allDone ? "bg-green-500" : character.textColor.replace("text", "bg")}`}
+                  style={{ width: `${totalLive > 0 ? (completedCount / totalLive) * 100 : 0}%` }}
+                />
               </div>
-            )}
-            {!unlocked && (
-              <p className="text-[11px] text-slate-400 font-semibold">
-                Finish {LEARNING_CHARACTERS.find(c => c.id === character.unlockedAfterCharacter)?.name}'s lessons to unlock
-              </p>
-            )}
+              <span className={`text-[11px] font-bold ${character.textColor}`}>
+                {completedCount}/{totalLive} lessons
+              </span>
+            </div>
           </div>
 
-          {unlocked && (
-            <ChevronRight className={`h-5 w-5 flex-shrink-0 text-slate-400 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
-          )}
+          <ChevronRight className={`h-5 w-5 flex-shrink-0 text-slate-400 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
         </div>
       </button>
 
