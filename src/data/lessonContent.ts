@@ -910,6 +910,7 @@ export const LESSON_CONTENT: LessonContent[] = [
     character: "Professor Hoot",
     characterEmoji: "🦉",
     characterColor: "bg-teal-500",
+    videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Hoot2.mp4",
     slides: [
       {
         type: "intro",
