@@ -82,62 +82,6 @@ const ROUNDS_JUNIOR: Round[] = [
       },
     ],
   },
-  {
-    roundTitle: "Download Check",
-    icon: "📥",
-    description: "Safe to download or dangerous?",
-    clues: [
-      {
-        emoji: "📄",
-        title: "Colouring sheet from teacher",
-        detail: "Shared by your teacher on the school website",
-        suspicious: false,
-        explanation: "✅ A file from your teacher's school site — safe to download!",
-      },
-      {
-        emoji: "😈",
-        title: "\"FREE_MINECRAFT_HACK.exe\"",
-        detail: "Found on a random website promising free Minecraft",
-        suspicious: true,
-        explanation: "🚨 Never download this! Fake free game files hide viruses. Always ask a grown-up before downloading anything!",
-      },
-      {
-        emoji: "🎵",
-        title: "Spotify app from the App Store",
-        detail: "Your parents helped you download it from the official store",
-        suspicious: false,
-        explanation: "✅ Official apps from the real App Store are safe — enjoy your music! 🎶",
-      },
-    ],
-  },
-  {
-    roundTitle: "Account Clues",
-    icon: "🔍",
-    description: "Does this look normal or suspicious?",
-    clues: [
-      {
-        emoji: "🏠",
-        title: "Login from your home on your tablet",
-        detail: "At 4 PM after school — your normal time",
-        suspicious: false,
-        explanation: "✅ Your home, your tablet, your usual time — that's just YOU! All normal.",
-      },
-      {
-        emoji: "🌍",
-        title: "Login from a faraway country at 3 AM",
-        detail: "You were definitely asleep at home",
-        suspicious: true,
-        explanation: "🚨 A faraway country + 3 AM while you sleep = someone else used your account! Tell a grown-up right away!",
-      },
-      {
-        emoji: "❤️",
-        title: "Your friend liked your drawing",
-        detail: "Normal notification from someone you know",
-        suspicious: false,
-        explanation: "✅ A like from a friend you know — that's just normal and nice! 😊",
-      },
-    ],
-  },
 ];
 
 /* ── DEFENDER (ages 8–10) — scenarios requiring thought ── */
@@ -198,62 +142,6 @@ const ROUNDS_DEFENDER: Round[] = [
       },
     ],
   },
-  {
-    roundTitle: "Download Inspection",
-    icon: "📥",
-    description: "Safe to download or dangerous?",
-    clues: [
-      {
-        emoji: "🎮",
-        title: "\"FREE_FORTNITE_VBUCKS_HACK.exe\"",
-        detail: "Random site promises unlimited V-Bucks for free",
-        suspicious: true,
-        explanation: "🚨 .exe files from random sites = virus. Fortnite V-Bucks are never free from unofficial sites!",
-      },
-      {
-        emoji: "📄",
-        title: "History essay template PDF",
-        detail: "Shared by your teacher on the school portal",
-        suspicious: false,
-        explanation: "✅ A PDF from your school's official portal — safe to download and use!",
-      },
-      {
-        emoji: "💾",
-        title: "USB drive someone left at school",
-        detail: "Found on a desk — curious what games are on it?",
-        suspicious: true,
-        explanation: "🚨 Hackers leave infected USB drives on purpose! Never plug in a found USB drive — tell an adult instead.",
-      },
-    ],
-  },
-  {
-    roundTitle: "Hidden Clue Hunt",
-    icon: "🔍",
-    description: "Spot the sneaky hacker clue!",
-    clues: [
-      {
-        emoji: "🌍",
-        title: "Your Roblox account logged in from Brazil at 2 AM",
-        detail: "You were asleep at home in your own country",
-        suspicious: true,
-        explanation: "🚨 A login from another country while you're asleep = someone hacked your account! Change your password immediately!",
-      },
-      {
-        emoji: "📧",
-        title: "Email from noreply@youtube.com",
-        detail: "Says your channel comment got a reply — links to youtube.com",
-        suspicious: false,
-        explanation: "✅ Official YouTube domain, links to the real site — this is a normal notification email!",
-      },
-      {
-        emoji: "💳",
-        title: "Pop-up: \"Enter your details to unlock premium Roblox\"",
-        detail: "Appears on a random website while you're browsing",
-        suspicious: true,
-        explanation: "🚨 Random pop-ups asking for your details are always scams. Real Roblox Premium is only bought on roblox.com!",
-      },
-    ],
-  },
 ];
 
 /* ── GUARDIAN (ages 11+) — technical, subtle, multi-step reasoning ── */
@@ -311,62 +199,6 @@ const ROUNDS_GUARDIAN: Round[] = [
         detail: "Security alert about a pull request you submitted 10 mins ago",
         suspicious: false,
         explanation: "✅ Official @github.com domain + matches an action YOU just took = real notification. Timing and context match your own activity.",
-      },
-    ],
-  },
-  {
-    roundTitle: "File Threat Assessment",
-    icon: "📁",
-    description: "Is this file safe to open?",
-    clues: [
-      {
-        emoji: "📄",
-        title: "quarterly_report.pdf",
-        detail: "Sent by your colleague — you've exchanged files with them before",
-        suspicious: false,
-        explanation: "✅ Known sender, established file-sharing history, standard .pdf extension — safe. Context matters in threat assessment.",
-      },
-      {
-        emoji: "💣",
-        title: "invoice.pdf.exe",
-        detail: "Double extension — shows as PDF icon in some file browsers",
-        suspicious: true,
-        explanation: "🚨 Double extension trick! Windows often hides the .exe part so it looks like a PDF icon. Executing this runs malicious code. Always show file extensions!",
-      },
-      {
-        emoji: "🤔",
-        title: "project_update.zip",
-        detail: "From a colleague — but you've NEVER received files from them before",
-        suspicious: true,
-        explanation: "⚠️ Unexpected files from unusual senders are a major red flag. Even from 'known' senders — their account may be compromised. Verify via another channel before opening.",
-      },
-    ],
-  },
-  {
-    roundTitle: "Advanced Login Analysis",
-    icon: "🔍",
-    description: "Apply threat intelligence — normal or attack?",
-    clues: [
-      {
-        emoji: "🛡️",
-        title: "Login from VPN IP — same city as always",
-        detail: "You always route through this VPN provider",
-        suspicious: false,
-        explanation: "✅ If YOU set up and use a consistent VPN, logins from that VPN's IP are expected. Pattern consistency = normal.",
-      },
-      {
-        emoji: "🧅",
-        title: "Login from Tor exit node — correct password used",
-        detail: "Tor Browser detected — login succeeded on first try",
-        suspicious: true,
-        explanation: "🚨 Tor exit nodes are used to anonymize location. A correct-password login through Tor likely means your credentials were stolen and someone is hiding their location.",
-      },
-      {
-        emoji: "📱",
-        title: "New device login — followed by 2FA approval",
-        detail: "You received and approved the authentication code",
-        suspicious: false,
-        explanation: "✅ 2FA (two-factor authentication) is the safety net for new devices. Since YOU approved it, this is legitimate. 2FA working as designed!",
       },
     ],
   },
