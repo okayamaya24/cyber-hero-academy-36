@@ -731,6 +731,7 @@ export const LESSON_CONTENT: LessonContent[] = [
     character: "Detective Whiskers",
     characterEmoji: "🐱",
     characterColor: "bg-amber-500",
+    videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson-Whiskers2.mp4",
     slides: [
       {
         type: "intro",
