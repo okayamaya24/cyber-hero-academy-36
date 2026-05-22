@@ -925,10 +925,12 @@ export default function LessonPlayer({ lesson, onStartQuiz, onClose, childAge, c
           </button>
         </div>
 
-        {/* Progress */}
-        <div className="px-4 pb-3 flex-shrink-0 relative z-10">
-          <ProgressBar total={slides.length} current={slideIdx} accent={theme.accent} />
-        </div>
+        {/* Progress — hidden on game slides that have their own progress bar */}
+        {!isGame && (
+          <div className="px-4 pb-3 flex-shrink-0 relative z-10">
+            <ProgressBar total={slides.length} current={slideIdx} accent={theme.accent} />
+          </div>
+        )}
 
         {/* Slide content */}
         <div className="flex-1 overflow-y-auto px-4 pb-2 relative z-10">
