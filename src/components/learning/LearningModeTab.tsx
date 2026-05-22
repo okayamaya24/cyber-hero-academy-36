@@ -166,27 +166,18 @@ function CharacterCard({
                     {/* Status dot */}
                     <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-black ${
                       status === "done"   ? "bg-green-500 text-white" :
-                      status === "active" ? "bg-amber-400 text-white shadow-md" :
-                      status === "soon"   ? "bg-slate-100 text-slate-400" :
-                                            "bg-slate-100 text-slate-400"
+                                            "bg-amber-400 text-white shadow-md"
                     }`}>
                       {status === "done"   ? <CheckCircle2 className="h-4 w-4" /> :
-                       status === "active" ? idx + 1 :
-                       status === "soon"   ? "✦" :
-                                            <Lock className="h-3 w-3" />}
+                                             idx + 1}
                     </div>
 
                     {/* Lesson info */}
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-bold leading-tight ${
-                        status === "locked" || status === "soon" ? "text-slate-400" : "text-slate-800"
-                      }`}>
+                      <p className="text-sm font-bold leading-tight text-slate-800">
                         {lesson.title}
-                        {status === "soon" && <span className="ml-1.5 text-[10px] font-black text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">Coming Soon</span>}
                       </p>
-                      <p className={`text-xs font-medium mt-0.5 ${
-                        status === "locked" || status === "soon" ? "text-slate-300" : "text-slate-400"
-                      }`}>
+                      <p className="text-xs font-medium mt-0.5 text-slate-400">
                         {lesson.description}
                       </p>
                       {status === "done" && mission && (
@@ -198,7 +189,7 @@ function CharacterCard({
                     </div>
 
                     {/* Action */}
-                    {status === "active" && lesson.missionId && (
+                    {lesson.missionId && (
                       <Button
                         size="sm"
                         className="flex-shrink-0 rounded-xl px-4 font-black text-sm"
@@ -206,16 +197,6 @@ function CharacterCard({
                         onClick={() => onStartLesson(lesson.id, lesson.missionId!)}
                       >
                         Start →
-                      </Button>
-                    )}
-                    {status === "done" && lesson.missionId && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-shrink-0 rounded-xl px-3 text-xs font-bold border-green-200 text-green-600 hover:bg-green-50"
-                        onClick={() => onStartLesson(lesson.id, lesson.missionId!)}
-                      >
-                        Replay
                       </Button>
                     )}
                   </div>
