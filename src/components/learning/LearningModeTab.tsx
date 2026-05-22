@@ -119,7 +119,7 @@ function CharacterCard({
 
       {/* Lessons list */}
       <AnimatePresence>
-        {isExpanded && unlocked && (
+        {isExpanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -129,8 +129,7 @@ function CharacterCard({
           >
             <div className="border-t border-slate-100 divide-y divide-slate-50">
               {character.lessons.map((lesson, idx) => {
-                const lessonUnlocked = isLessonUnlocked(character, idx, completedMissionIds);
-                const status = getLessonStatus(character, lesson, idx, completedMissionIds, lessonUnlocked);
+                const status = getLessonStatus(character, lesson, idx, completedMissionIds, true);
                 const mission = lesson.missionId ? MISSIONS.find((m) => m.id === lesson.missionId) : null;
 
                 return (
