@@ -605,6 +605,7 @@ export const LESSON_CONTENT: LessonContent[] = [
     character: "Byte",
     characterEmoji: "🤖",
     characterColor: "bg-cyan-500",
+    videoUrl: "https://tanxhrdihnkmouhdufzy.supabase.co/storage/v1/object/public/lessons/Lesson3.mp4",
     slides: [
       {
         type: "intro",
