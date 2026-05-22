@@ -82,7 +82,11 @@ function CharacterCard({
           {/* Guide image / emoji */}
           <div className={`relative flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl ${character.color}`}>
             {guide?.image ? (
-              <img src={guide.image} alt={character.name} className="h-12 w-12 object-contain" />
+              <img
+                src={guide.image}
+                alt={character.name}
+                className={`object-contain ${character.id === "byte" ? "h-16 w-16 scale-125" : "h-12 w-12"}`}
+              />
             ) : (
               <span className="text-3xl">{character.emoji}</span>
             )}
