@@ -38,9 +38,7 @@ function getLessonStatus(
   lessonIndex: number,
   completedMissionIds: Set<string>,
   unlocked: boolean,
-): "done" | "active" | "locked" | "soon" {
-  if (lesson.comingSoon) return "soon";
-  if (!unlocked) return "locked";
+): "done" | "active" {
   if (lesson.missionId && completedMissionIds.has(lesson.missionId)) return "done";
   return "active";
 }
