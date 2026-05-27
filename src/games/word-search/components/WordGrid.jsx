@@ -67,18 +67,18 @@ export default function WordGrid({
 
   function getCellSize() {
     if (size <= 8) {
-      return `min(70px, calc((100vh - 320px) / ${size}))`;
+      return `min(52px, calc((100vh - 440px) / ${size}))`;
     }
 
     if (size <= 10) {
-      return `min(60px, calc((100vh - 340px) / ${size}))`;
+      return `min(44px, calc((100vh - 460px) / ${size}))`;
     }
 
     if (size <= 12) {
-      return `min(50px, calc((100vh - 350px) / ${size}))`;
+      return `min(38px, calc((100vh - 470px) / ${size}))`;
     }
 
-    return `min(38px, calc((100vh - 360px) / ${size}))`;
+    return `min(30px, calc((100vh - 480px) / ${size}))`;
   }
 
   function getGap() {

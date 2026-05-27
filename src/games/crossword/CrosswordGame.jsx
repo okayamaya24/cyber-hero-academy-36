@@ -265,15 +265,16 @@ export default function App() {
     <div
       style={{
         backgroundColor: "#040218",
-        minHeight: "100vh",
+        height: "100vh",
         width: "100%",
         color: "white",
-        padding: "clamp(12px, 2vw, 28px)",
-        paddingTop: "clamp(56px, 7vw, 72px)",
+        padding: "clamp(8px, 1.5vw, 20px)",
+        paddingTop: "clamp(48px, 6vw, 64px)",
         fontFamily: "Arial",
         boxSizing: "border-box",
-        // dynamic crossword cell size — scales with viewport
-        ["--cw-cell"]: "clamp(22px, min(4.4vw, 4.4vh), 46px)"
+        overflow: "hidden",
+        // dynamic crossword cell size — fits within remaining viewport after header
+        ["--cw-cell"]: "clamp(18px, min(3.2vw, 3.2vh), 36px)"
       }}
     >
       <div
@@ -283,7 +284,9 @@ export default function App() {
           margin: "0 auto",
           display: "flex",
           flexDirection: "column",
-          gap: "16px"
+          gap: "10px",
+          height: "100%",
+          overflow: "hidden"
         }}
       >
         {/* HEADER */}
@@ -395,17 +398,21 @@ export default function App() {
         <div
           style={{
             display: "flex",
-            gap: "32px",
+            gap: "20px",
             alignItems: "flex-start",
-            flexWrap: "wrap",
-            justifyContent: "center"
+            flex: 1,
+            minHeight: 0,
+            overflow: "hidden"
           }}
         >
           <div
             style={{
-              flex: "1 1 640px",
+              flex: "1 1 0",
+              minHeight: 0,
               display: "flex",
-              justifyContent: "center"
+              justifyContent: "center",
+              alignItems: "flex-start",
+              overflow: "hidden"
             }}
           >
             <CrosswordGrid
@@ -425,20 +432,23 @@ export default function App() {
 
           <div
             style={{
-              flex: "1 1 380px",
-              maxWidth: "480px",
-              minWidth: "300px",
+              flex: "0 0 320px",
+              maxWidth: "360px",
+              minWidth: "240px",
               display: "flex",
               flexDirection: "column",
-              gap: "14px"
+              gap: "10px",
+              minHeight: 0,
+              overflow: "hidden"
             }}
           >
             <div
               style={{
-                maxHeight: "60vh",
+                flex: 1,
                 overflowY: "auto",
                 overflowX: "hidden",
-                borderRadius: "16px"
+                borderRadius: "16px",
+                minHeight: 0
               }}
             >
               <ClueList

@@ -483,7 +483,7 @@ const [secondsElapsed, setSecondsElapsed] = useState(0);
         height: "100vh",
         backgroundColor: "#040218",
         color: "white",
-        padding: "24px clamp(16px, 3vw, 40px)",
+        padding: "14px clamp(12px, 2vw, 28px)",
         fontFamily: "Arial",
         userSelect: "none",
         overflow: "hidden"
@@ -551,7 +551,7 @@ const [secondsElapsed, setSecondsElapsed] = useState(0);
           style={{
             display: "grid",
             gridTemplateColumns:
-              window.innerWidth < 1050 ? "1fr" : "minmax(0, 1fr) 380px",
+              window.innerWidth < 680 ? "1fr" : "minmax(0, 1fr) 320px",
             gap: "20px",
             alignItems: "stretch",
             minHeight: 0,
