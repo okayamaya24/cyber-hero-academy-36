@@ -477,27 +477,6 @@ export default function App() {
           }}
         >
           <button
-            onClick={() => resetGame("junior")}
-            style={buttonStyle(tier === "junior")}
-          >
-            🌟 Junior
-          </button>
-
-          <button
-            onClick={() => resetGame("hero")}
-            style={buttonStyle(tier === "hero")}
-          >
-            🛡️ Hero
-          </button>
-
-          <button
-            onClick={() => resetGame("elite")}
-            style={buttonStyle(tier === "elite")}
-          >
-            ⚡ Elite
-          </button>
-
-          <button
             onClick={() => resetGame(tier)}
             style={{
               backgroundColor: "#08b6aa",
@@ -731,14 +710,3 @@ export default function App() {
   );
 }
 
-function buttonStyle(active) {
-  return {
-    backgroundColor: active ? "#08b6aa" : "#111827",
-    color: active ? "#000" : "#fff",
-    border: "1px solid #08b6aa",
-    padding: "10px 16px",
-    borderRadius: "12px",
-    fontWeight: "bold",
-    cursor: "pointer"
-  };
-}

@@ -97,7 +97,7 @@ function getMode(ageProp) {
   const age = parseInt(params.get("age") || "0");
   if (age >= 5 && age <= 8) return "kids";
   if (age > 8)              return "pro";
-  return "picker";
+  return "pro";
 }
 
 // ─── Root component ────────────────────────────────────────────────────────
