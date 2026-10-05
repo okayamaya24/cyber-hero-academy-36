@@ -605,6 +605,7 @@ export default function MyKidsPage() {
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: `${student.username}@cyberhero.app`,
           password: student.password,
+          options: { data: { name: student.name, role: "kid" } },
         });
         await supabase.auth.setSession({ access_token: teacherAccessToken, refresh_token: teacherRefreshToken });
         if (signUpError) {
