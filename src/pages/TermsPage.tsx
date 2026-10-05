@@ -21,7 +21,7 @@ export default function TermsPage() {
 
           <section className="space-y-2">
             <h2 className="text-lg font-bold text-foreground">2. Who Can Use This Service</h2>
-            <p>Cyber Hero Academy is designed for children ages 5–12, used under the supervision of a parent, guardian, or teacher. Accounts must be created by an adult (18+) on behalf of a child.</p>
+            <p>Cyber Hero Academy is designed for children ages 8–12, used under the supervision of a parent, guardian, or teacher. Accounts must be created by an adult (18+) on behalf of a child.</p>
           </section>
 
           <section className="space-y-2">

@@ -47,7 +47,7 @@ export default function ForParentsPage() {
             Teaching Kids Cyber Safety Through Play
           </motion.p>
           <motion.p initial="hidden" animate="visible" variants={fadeUp} custom={3} className="mt-4 max-w-xl mx-auto opacity-80">
-            A colorful, game-based cybersecurity learning platform designed for children ages 5–12. Kids complete missions, earn badges, and build real-world digital safety skills — all while having fun.
+            A colorful, game-based cybersecurity learning platform designed for children ages 8–12. Kids complete missions, earn badges, and build real-world digital safety skills — all while having fun.
           </motion.p>
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={4} className="mt-8 flex flex-wrap justify-center gap-4">
             <Button size="lg" className="bg-white text-primary font-bold hover:bg-white/90 shadow-lg" asChild>

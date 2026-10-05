@@ -71,7 +71,7 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-[#00d4ff]/30 bg-[#00d4ff]/10 px-4 py-2 text-sm font-bold text-[#00d4ff]">
-              ⭐ For Kids Ages 5–12
+              ⭐ For Kids Ages 8–12
             </div>
 
             <h1 className="text-5xl font-black leading-none text-white md:text-7xl">
@@ -236,7 +236,7 @@ export default function HomePage() {
             <div className="relative z-10">
               <div className="mb-4 text-5xl">🚀</div>
               <h2 className="mb-4 text-3xl font-black text-white md:text-4xl">Ready to Start Your Mission?</h2>
-              <p className="mb-8 text-lg text-gray-400">Join kids around the world learning to stay safe online!</p>
+              <p className="mb-8 text-lg text-gray-400">Beat the villains, earn your badges, and become a real Cyber Hero!</p>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
                 <Button
                   size="xl"
