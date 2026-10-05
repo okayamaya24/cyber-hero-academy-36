@@ -73,6 +73,7 @@ export interface LessonContent {
   quiz?: LessonQuizQuestion[]; // inline quiz shown when summary CTA is clicked
   badgeLabel?: string;         // badge name awarded on quiz completion
   badgeEmoji?: string;         // badge emoji
+  badgeId?: string;            // badge id awarded on quiz completion
 }
 
 export const LESSON_CONTENT: LessonContent[] = [
