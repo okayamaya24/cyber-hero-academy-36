@@ -29,6 +29,8 @@ import {
   Plus,
   Trash2,
   KeyRound,
+  Printer,
+  Copy,
   Users,
   CheckCircle2,
   Award,
@@ -44,6 +46,7 @@ import { MISSIONS, ALL_BADGES } from "@/data/missions";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import { motion } from "framer-motion";
 import { generateKidPassword } from "@/lib/kidPassword";
+import { generatePicturePassword, picturesToEmoji, picturesToLabel } from "@/lib/picturePassword";
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
 const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
@@ -51,7 +54,11 @@ const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transi
 interface StudentLogin {
   name: string;
   username: string;
-  password: string;
+  /** Only known right after creating or resetting an account */
+  password?: string;
+  /** Secret pictures for class code login, e.g. "dog,pizza" */
+  pictures?: string;
+  classCode?: string;
 }
 
 function escapeHtml(text: string) {
@@ -64,19 +71,33 @@ function printLoginCards(logins: StudentLogin[]) {
     toast.error("Please allow pop-ups to print login cards");
     return;
   }
+  const origin = escapeHtml(window.location.origin);
   const cards = logins
-    .map(
-      (l) => `<div class="card"><h2>${escapeHtml(l.name)}</h2>
-        <p>Website: <b>${escapeHtml(window.location.origin)}</b></p>
-        <p>Username: <b>${escapeHtml(l.username)}</b></p>
-        <p>Password: <b>${escapeHtml(l.password)}</b></p></div>`,
-    )
+    .map((l) => {
+      const pictureLogin =
+        l.classCode && l.pictures
+          ? `<div class="section"><p class="how">🎒 Log in with your class code</p>
+             <p>Go to <b>${origin}/class-login</b></p>
+             <p>Class code: <b class="code">${escapeHtml(l.classCode)}</b></p>
+             <p>Tap your hero, then your secret pictures:</p>
+             <p class="pics">${escapeHtml(picturesToEmoji(l.pictures))}</p>
+             <p class="small">(${escapeHtml(picturesToLabel(l.pictures))})</p></div>`
+          : "";
+      const passwordLogin = l.password
+        ? `<div class="section"><p class="how">🔑 Or log in with a password</p>
+           <p>Username: <b>${escapeHtml(l.username)}</b></p>
+           <p>Password: <b>${escapeHtml(l.password)}</b></p></div>`
+        : "";
+      return `<div class="card"><h2>${escapeHtml(l.name)}</h2>${pictureLogin}${passwordLogin}</div>`;
+    })
     .join("");
-  win.document.write(`<!doctype html><html><head><title>Student Logins</title><style>
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Student Logins</title><style>
     body{font-family:system-ui,sans-serif;margin:24px}
     .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
     .card{border:2px dashed #999;border-radius:12px;padding:12px 16px;break-inside:avoid}
-    h2{margin:0 0 8px;font-size:18px} p{margin:4px 0;font-size:14px} b{font-family:monospace;font-size:15px}
+    .section+.section{border-top:1px solid #ddd;margin-top:8px;padding-top:8px}
+    h2{margin:0 0 8px;font-size:20px} p{margin:4px 0;font-size:14px} b{font-family:monospace;font-size:15px}
+    .how{font-weight:700} .code{font-size:20px;letter-spacing:3px} .pics{font-size:40px;margin:6px 0} .small{color:#666;font-size:12px}
   </style></head><body><h1>🛡️ Cyber Hero Academy — Student Logins</h1><div class="grid">${cards}</div></body></html>`);
   win.document.close();
   win.focus();
@@ -85,7 +106,16 @@ function printLoginCards(logins: StudentLogin[]) {
 
 function downloadLoginsCsv(logins: StudentLogin[]) {
   const quote = (v: string) => `"${v.replace(/"/g, '""')}"`;
-  const rows = [["name", "username", "password"], ...logins.map((l) => [l.name, l.username, l.password])];
+  const rows = [
+    ["name", "username", "password", "class_code", "secret_pictures"],
+    ...logins.map((l) => [
+      l.name,
+      l.username,
+      l.password ?? "",
+      l.classCode ?? "",
+      l.pictures ? picturesToLabel(l.pictures) : "",
+    ]),
+  ];
   const blob = new Blob([rows.map((r) => r.map(quote).join(",")).join("\n")], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -93,6 +123,18 @@ function downloadLoginsCsv(logins: StudentLogin[]) {
   a.download = "student-logins.csv";
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/** Set (or replace) a student's secret pictures and clear any lockout. */
+async function savePicturePassword(childId: string, pictures: string) {
+  const { error } = await (supabase as any).from("student_picture_passwords").upsert({
+    child_id: childId,
+    pictures,
+    failed_attempts: 0,
+    locked_until: null,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) throw error;
 }
 
 interface KidForm {
@@ -184,7 +226,7 @@ export default function MyKidsPage() {
         .eq("teacher_id", user!.id)
         .order("created_at");
       if (error) throw error;
-      return data as { id: string; name: string; grade: string }[];
+      return data as { id: string; name: string; grade: string; login_code?: string }[];
     },
     enabled: !!user && isSchool,
   });
@@ -407,7 +449,14 @@ export default function MyKidsPage() {
       });
       await supabase.from("parent_kid_links").insert({ parent_id: user.id, kid_id: kidId });
 
-      return { username: u, name, password: pwd };
+      let pictures: string | undefined;
+      if (isSchool) {
+        pictures = generatePicturePassword();
+        await savePicturePassword(kidId, pictures);
+      }
+      const classCode = classes.find((c) => c.id === studentClassId)?.login_code;
+
+      return { username: u, name, password: pwd, pictures, classCode } as StudentLogin;
     },
     onSuccess: (result) => {
       if (isSchool) {
@@ -450,7 +499,14 @@ export default function MyKidsPage() {
         const body = await (error as { context?: Response }).context?.json?.().catch(() => null);
         throw new Error(body?.error ?? "Couldn't reset the password. Please try again.");
       }
-      return { name: student.name, username: data.username as string, password: data.password as string };
+      const login: StudentLogin = { name: student.name, username: data.username, password: data.password };
+      if (isSchool) {
+        login.pictures = generatePicturePassword();
+        await savePicturePassword(student.id, login.pictures);
+        const classId = (children.find((c) => c.id === student.id) as { class_id?: string } | undefined)?.class_id;
+        login.classCode = classes.find((c) => c.id === classId)?.login_code;
+      }
+      return login;
     },
     onSuccess: (login) => {
       setResetStudent(null);
@@ -460,6 +516,36 @@ export default function MyKidsPage() {
       setResetStudent(null);
       toast.error(e.message);
     },
+  });
+
+  // Login cards for a whole class. Students added before picture logins existed get pictures now.
+  const classCardsMutation = useMutation({
+    mutationFn: async (cls: { id: string; login_code?: string }) => {
+      const students = children.filter((c) => (c as { class_id?: string }).class_id === cls.id);
+      if (students.length === 0) throw new Error("There are no students in this class yet.");
+
+      const { data: existing, error } = await (supabase as any)
+        .from("student_picture_passwords")
+        .select("child_id, pictures")
+        .in("child_id", students.map((s) => s.id));
+      if (error) throw error;
+      const picturesById = new Map<string, string>(
+        (existing as { child_id: string; pictures: string }[]).map((r) => [r.child_id, r.pictures]),
+      );
+
+      const logins: StudentLogin[] = [];
+      for (const s of students) {
+        let pictures = picturesById.get(s.id);
+        if (!pictures) {
+          pictures = generatePicturePassword();
+          await savePicturePassword(s.id, pictures);
+        }
+        logins.push({ name: s.name, username: "", pictures, classCode: cls.login_code });
+      }
+      return logins;
+    },
+    onSuccess: (logins) => setNewLogins(logins),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const handleCSVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -479,7 +565,7 @@ export default function MyKidsPage() {
         const g = grade || "3";
         const username = generateUsername(first, last, g);
         const age = GRADE_TO_AGE[g] ?? 8;
-        return { name: `${first} ${last}`, username, age, password: generateKidPassword() };
+        return { name: `${first} ${last}`, username, age, password: generateKidPassword(), pictures: generatePicturePassword() };
       })
       .filter((s) => s.username && s.name.trim());
 
@@ -532,8 +618,15 @@ export default function MyKidsPage() {
             ...(studentClassId ? { class_id: studentClassId } : {}),
           });
           await supabase.from("parent_kid_links").insert({ parent_id: teacherId, kid_id: kidId });
+          await savePicturePassword(kidId, student.pictures);
           created++;
-          createdLogins.push({ name: student.name, username: student.username, password: student.password });
+          createdLogins.push({
+            name: student.name,
+            username: student.username,
+            password: student.password,
+            pictures: student.pictures,
+            classCode: classes.find((c) => c.id === studentClassId)?.login_code,
+          });
         }
       } catch {
         await supabase.auth.setSession({ access_token: teacherAccessToken, refresh_token: teacherRefreshToken });
@@ -596,9 +689,37 @@ export default function MyKidsPage() {
             </button>
           </div>
           {activeClass && (
-            <p className="mt-2 text-sm text-muted-foreground">
-              📚 {activeClass.name} · Grade {activeClass.grade} · {filteredChildren.length} students
-            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <p className="text-sm text-muted-foreground">
+                📚 {activeClass.name} · Grade {activeClass.grade} · {filteredChildren.length} students
+              </p>
+              {activeClass.login_code && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard
+                      ?.writeText(activeClass.login_code!)
+                      .then(() => toast.success("Class code copied!"))
+                      .catch(() => toast.error("Couldn't copy. Select the code and copy it instead."));
+                  }}
+                  className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-1 text-sm hover:bg-primary/10"
+                  title="Copy class code"
+                >
+                  <span className="text-muted-foreground">Class code:</span>
+                  <span className="font-mono text-base font-bold tracking-widest text-foreground">{activeClass.login_code}</span>
+                  <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={classCardsMutation.isPending || !activeClass.login_code}
+                onClick={() => classCardsMutation.mutate(activeClass)}
+              >
+                <Printer className="mr-1.5 h-3.5 w-3.5" />
+                {classCardsMutation.isPending ? "Preparing…" : "Class Login Cards"}
+              </Button>
+            </div>
           )}
         </div>
       )}
@@ -1152,30 +1273,46 @@ export default function MyKidsPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* New or reset student logins — shown once */}
+      {/* Student logins: new, reset, or a class's picture logins */}
       <Dialog open={!!newLogins} onOpenChange={(open) => !open && setNewLogins(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>🔑 Save these logins now</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Passwords can't be shown again after you close this. Print login cards or download the list to hand out.
+            {newLogins?.some((l) => l.password)
+              ? "Passwords can't be shown again after you close this. Print login cards or download the list to hand out."
+              : "Print login cards or download the list to hand out. You can print these again any time."}
           </p>
           <div className="max-h-72 overflow-y-auto rounded-lg border border-border">
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
                 <tr>
                   <th className="px-3 py-2">Student</th>
-                  <th className="px-3 py-2">Username</th>
-                  <th className="px-3 py-2">Password</th>
+                  {newLogins?.some((l) => l.pictures) && <th className="px-3 py-2">Secret pictures</th>}
+                  {newLogins?.some((l) => l.password) && (
+                    <>
+                      <th className="px-3 py-2">Username</th>
+                      <th className="px-3 py-2">Password</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {newLogins?.map((l) => (
-                  <tr key={l.username} className="border-t border-border">
+                  <tr key={`${l.name}-${l.username}`} className="border-t border-border">
                     <td className="px-3 py-2">{l.name}</td>
-                    <td className="px-3 py-2 font-mono font-bold">{l.username}</td>
-                    <td className="px-3 py-2 font-mono font-bold">{l.password}</td>
+                    {newLogins.some((x) => x.pictures) && (
+                      <td className="px-3 py-2 text-xl" title={l.pictures ? picturesToLabel(l.pictures) : ""}>
+                        {l.pictures ? picturesToEmoji(l.pictures) : "—"}
+                      </td>
+                    )}
+                    {newLogins.some((x) => x.password) && (
+                      <>
+                        <td className="px-3 py-2 font-mono font-bold">{l.username}</td>
+                        <td className="px-3 py-2 font-mono font-bold">{l.password}</td>
+                      </>
+                    )}
                   </tr>
                 ))}
               </tbody>

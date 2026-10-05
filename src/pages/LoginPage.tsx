@@ -88,6 +88,17 @@ export default function LoginPage() {
           <p className="mt-2 text-muted-foreground">Log in to continue.</p>
         </div>
 
+        <Link
+          to="/class-login"
+          className="mb-5 flex items-center justify-center gap-3 rounded-2xl border-2 border-primary/30 bg-primary/5 p-4 font-bold text-foreground transition-colors hover:border-primary hover:bg-primary/10"
+        >
+          <span className="text-3xl">🎒</span>
+          <span>
+            I have a class code
+            <span className="block text-xs font-normal text-muted-foreground">Students: tap here to log in with your hero</span>
+          </span>
+        </Link>
+
         <form
           onSubmit={handleLogin}
           className="space-y-5 rounded-2xl border border-border bg-card p-7 shadow-card"

@@ -26,6 +26,7 @@ import CreateChildPage from "./pages/CreateChildPage";
 import CertificatePage from "./pages/CertificatePage";
 import ForParentsPage from "./pages/ForParentsPage";
 import ForSchoolsPage from "./pages/ForSchoolsPage";
+import ClassLoginPage from "./pages/ClassLoginPage";
 import WorldSelectScreen from "./pages/WorldSelectScreen";
 import ContinentMapScreen from "./pages/ContinentMapScreen";
 import ZoneGameScreen from "./pages/ZoneGameScreen";
@@ -271,6 +272,7 @@ const App = () => (
                   </>
                 }
               />
+              <Route path="/class-login" element={<ClassLoginPage />} />
               <Route
                 path="/for-schools"
                 element={
