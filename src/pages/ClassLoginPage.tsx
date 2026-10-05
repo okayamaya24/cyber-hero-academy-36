@@ -106,7 +106,9 @@ export default function ClassLoginPage() {
         studentId: student.id,
         pictures: next,
       });
-      const { error: otpError } = await supabase.auth.verifyOtp({ token_hash, type: "magiclink" });
+      // Current Supabase expects "email" for magic link tokens; older setups used "magiclink"
+      let { error: otpError } = await supabase.auth.verifyOtp({ token_hash, type: "email" });
+      if (otpError) ({ error: otpError } = await supabase.auth.verifyOtp({ token_hash, type: "magiclink" }));
       if (otpError) {
         console.warn("class-login: verify_otp_failed", otpError.message);
         throw new Error("Something went wrong. Try again!");
