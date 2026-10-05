@@ -145,6 +145,10 @@ interface KidForm {
 }
 const emptyForm: KidForm = { name: "", age: "", username: "", password: "" };
 
+// Grades offered when creating classes and students (the game is built for ages 8–12)
+const GRADES = ["3", "4", "5", "6"];
+
+// Covers older grades too, for students created before the list was narrowed
 const GRADE_TO_AGE: Record<string, number> = {
   K: 5,
   "1": 6,
@@ -1096,15 +1100,11 @@ export default function MyKidsPage() {
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               >
                 <option value="">Select grade</option>
-                <option value="K">Kindergarten</option>
-                <option value="1">Grade 1</option>
-                <option value="2">Grade 2</option>
-                <option value="3">Grade 3</option>
-                <option value="4">Grade 4</option>
-                <option value="5">Grade 5</option>
-                <option value="6">Grade 6</option>
-                <option value="7">Grade 7</option>
-                <option value="8">Grade 8+</option>
+                {GRADES.map((g) => (
+                  <option key={g} value={g}>
+                    Grade {g}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -1149,15 +1149,11 @@ export default function MyKidsPage() {
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   >
                     <option value="">Select grade</option>
-                    <option value="K">Kindergarten</option>
-                    <option value="1">Grade 1</option>
-                    <option value="2">Grade 2</option>
-                    <option value="3">Grade 3</option>
-                    <option value="4">Grade 4</option>
-                    <option value="5">Grade 5</option>
-                    <option value="6">Grade 6</option>
-                    <option value="7">Grade 7</option>
-                    <option value="8">Grade 8+</option>
+                    {GRADES.map((g) => (
+                      <option key={g} value={g}>
+                        Grade {g}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
@@ -1314,7 +1310,9 @@ export default function MyKidsPage() {
       <Dialog open={!!newLogins} onOpenChange={(open) => !open && setNewLogins(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>🔑 Save these logins now</DialogTitle>
+            <DialogTitle>
+              {newLogins?.some((l) => l.password) ? "🔑 Save these logins now" : "🎒 Class login cards"}
+            </DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
             {newLogins?.some((l) => l.password)
