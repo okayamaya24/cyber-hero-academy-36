@@ -967,6 +967,8 @@ export const MISSIONS: MissionDef[] = [
 ];
 
 export const ALL_BADGES = [
+  // Story mission trophies
+  { id: "trophy-fake-router", name: "Phisher King's Fake Router", icon: "📡", category: "mission" as const, description: "Shut down the fake hotspots in WiFi Watch" },
   // Mission completion badges
   { id: "scam-spotter", name: "Scam Spotter", icon: "🔍", category: "mission" as const, description: "Complete Spot the Scam with a perfect score" },
   { id: "password-pro", name: "Password Pro", icon: "🔐", category: "mission" as const, description: "Complete Password Power with a perfect score" },

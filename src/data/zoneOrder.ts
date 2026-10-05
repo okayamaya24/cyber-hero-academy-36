@@ -1,6 +1,7 @@
 /** Static zone ordering per continent — used for sequential unlocking */
 
 import { getZoneGames, getBossBattle } from "./zoneGames";
+import { CUSTOM_MISSION_ZONES } from "./customZoneMissions";
 
 export const ZONE_ORDER: Record<string, string[]> = {
   "north-america": ["hq", "password-peak", "pixel-port", "signal-summit", "code-canyon", "encrypt-enclave", "arctic-archive", "shadow-station", "firewall-fortress", "boss-keybreaker"],
@@ -18,7 +19,7 @@ export const ZONE_ORDER: Record<string, string[]> = {
  * or the next continent. They slot back in automatically once games exist.
  */
 export function isZonePlayable(zoneId: string): boolean {
-  if (zoneId === "hq") return true;
+  if (zoneId === "hq" || CUSTOM_MISSION_ZONES.has(zoneId)) return true;
   if (zoneId.startsWith("boss-")) return !!getBossBattle(zoneId);
   return !!getZoneGames(zoneId);
 }

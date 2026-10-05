@@ -37,6 +37,9 @@ import HeroAvatar from "@/components/avatar/HeroAvatar";
 import HQOrientation from "@/components/zone/HQOrientation";
 import { Button } from "@/components/ui/button";
 import ByteBuddy from "@/games/shared/ByteBuddy";
+import WiFiWatchMission from "@/components/zone/missions/WiFiWatchMission";
+import { CUSTOM_MISSION_ZONES, MISSION_TROPHIES } from "@/data/customZoneMissions";
+import { awardBadge } from "@/lib/badges";
 
 import keybreakerImg from "@/assets/villains/keybreaker.png";
 import phisherKingImg from "@/assets/villains/phisher-king.png";
@@ -714,6 +717,33 @@ export default function ZoneGameScreen() {
           onReturnToMap={() => navigate(`/world-map/${continentId}?completed=${zoneId}`)}
         />
       </AnimatePresence>
+    );
+  }
+
+  /* ── Story missions (custom zones like WiFi Watch) ── */
+  if (zoneId && CUSTOM_MISSION_ZONES.has(zoneId)) {
+    const finishMission = async (stars: number) => {
+      await handleZoneComplete(stars);
+      const trophy = MISSION_TROPHIES[zoneId];
+      if (trophy && activeChildId) await awardBadge(activeChildId, trophy);
+      queryClient.invalidateQueries({ queryKey: ["earned_badges"] });
+      const next = getNextZone(continentId || "", zoneId);
+      if (next && continent.zones.find((z) => z.id === next)?.isBoss) setPhase("boss_unlocked");
+      else navigate(`/world-map/${continentId}?completed=${zoneId}`);
+    };
+    return (
+      <div className="min-h-screen pt-16 relative overflow-hidden" style={{ background: "#050a14" }}>
+        <StarfieldBackground />
+        <div className="relative z-[2]">
+          {zoneId === "wifi-watch" && (
+            <WiFiWatchMission
+              playerName={playerName}
+              onFinish={finishMission}
+              onExit={() => navigate(`/world-map/${continentId}`)}
+            />
+          )}
+        </div>
+      </div>
     );
   }
 
