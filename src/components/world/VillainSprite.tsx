@@ -1,4 +1,26 @@
 import { motion } from "framer-motion";
+import keybreakerArt from "@/assets/home/keybreaker.webp";
+import phisherKingArt from "@/assets/home/phisher-king.webp";
+import trollLordArt from "@/assets/home/troll-lord.webp";
+import firewallPhantomArt from "@/assets/home/firewall-phantom.webp";
+import dataThiefArt from "@/assets/home/data-thief.webp";
+import malwareMaxArt from "@/assets/home/malware-max.webp";
+import shadowbyteArt from "@/assets/home/shadowbyte.webp";
+
+/** The real villain artwork (small web versions). Falls back to the simple shape below if a name isn't listed. */
+const VILLAIN_ART: Record<string, string> = {
+  "the keybreaker": keybreakerArt,
+  "the phisher king": phisherKingArt,
+  "the troll lord": trollLordArt,
+  "the firewall phantom": firewallPhantomArt,
+  "the data thief": dataThiefArt,
+  "malware max": malwareMaxArt,
+  shadowbyte: shadowbyteArt,
+};
+
+function getVillainArt(villainName: string): string | undefined {
+  return VILLAIN_ART[villainName.trim().toLowerCase()];
+}
 
 /* Simple CSS/SVG villain sprites — no external images */
 const VILLAIN_STYLES: Record<string, { colors: string[]; shape: string; eyeColor: string }> = {
@@ -20,6 +42,26 @@ interface VillainSpriteProps {
 
 export default function VillainSprite({ villainName, size = 80, className = "", menacing = false }: VillainSpriteProps) {
   const style = VILLAIN_STYLES[villainName] || VILLAIN_STYLES["The Keybreaker"];
+  const art = getVillainArt(villainName);
+
+  if (art) {
+    return (
+      <motion.div
+        className={`relative ${className}`}
+        style={{ width: size, height: size }}
+        animate={menacing ? { y: [0, -4, 0], rotate: [0, -2, 2, 0] } : { y: [0, -3, 0] }}
+        transition={{ repeat: Infinity, duration: menacing ? 1.5 : 3, ease: "easeInOut" }}
+      >
+        <img
+          src={art}
+          alt={villainName}
+          draggable={false}
+          className="h-full w-full object-contain"
+          style={{ filter: `drop-shadow(0 0 ${menacing ? 14 : 8}px ${style.colors[1]}aa)` }}
+        />
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

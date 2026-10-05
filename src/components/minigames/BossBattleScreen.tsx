@@ -7,6 +7,8 @@ import BossDodgeRound from "./BossDodgeRound";
 import BossRapidFireRound from "./BossRapidFireRound";
 import BossMazeRound from "./BossMazeRound";
 import type { BossBattleContent } from "@/data/zoneGames";
+import { bossTaunt, getBossLines, BYTE_ROUND_TIPS } from "@/data/bossLines";
+import ByteBuddy from "@/games/shared/ByteBuddy";
 
 interface Props {
   villainName: string;
@@ -26,13 +28,8 @@ export default function BossBattleScreen({ villainName, bossName, content, onCom
   const [totalDamageDealt, setTotalDamageDealt] = useState(0);
   const isFinal = !!content.isFinalBoss;
 
-  // Villain taunt based on HP
-  const villainTaunt = useMemo(() => {
-    if (villainHP > 75) return "You don't stand a chance!";
-    if (villainHP > 50) return "Lucky shot... but I'm far from done!";
-    if (villainHP > 25) return "No... this can't be happening!";
-    return "I won't... be defeated...!";
-  }, [villainHP]);
+  // Villain taunt based on HP, in this villain's own voice
+  const villainTaunt = useMemo(() => bossTaunt(villainName, villainHP), [villainName, villainHP]);
 
   const calcStars = useCallback(() => {
     if (playerHP >= 70) return 3;
@@ -72,9 +69,9 @@ export default function BossBattleScreen({ villainName, bossName, content, onCom
         setRound(roundNum + 1);
       } else {
         setDone(true);
-        setTimeout(() => onComplete(true, playerHP > 40 ? (playerHP > 70 ? 3 : 2) : 1), isFinal ? 4000 : 1500);
+        setTimeout(() => onComplete(true, playerHP > 40 ? (playerHP > 70 ? 3 : 2) : 1), isFinal ? 6000 : 4500);
       }
-    }, 1500);
+    }, roundNum < totalRounds ? 4500 : 1500);
   }, [villainHP, playerHP, isFinal, onComplete]);
 
   // ─── VICTORY ────────────────────────────────
@@ -99,7 +96,16 @@ export default function BossBattleScreen({ villainName, bossName, content, onCom
             <p className="text-xs text-white/50">7/7 VILLAINS DEFEATED — You are a TRUE Cyber Guardian!</p>
           </motion.div>
         )}
-        <p className="text-sm text-white/60">{villainName} has been vanquished!</p>
+        <div className="relative max-w-sm rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-center text-sm italic text-white/80">
+          "{getBossLines(villainName).defeated}"
+        </div>
+        <div className="w-full max-w-sm">
+          <ByteBuddy mood="happy" title={isFinal ? "WE DID IT, GUARDIAN!! 🎉" : "You beat them! 🎉"} size={56} compact>
+            {isFinal
+              ? "You used everything you learned in all 7 worlds. I'm SO proud to be your sidekick!"
+              : `${villainName} didn't stand a chance against everything you learned here!`}
+          </ByteBuddy>
+        </div>
         <div className="flex gap-1">
           {[1, 2, 3].map((s) => (
             <motion.span key={s} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3 + s * 0.2 }}
@@ -118,11 +124,18 @@ export default function BossBattleScreen({ villainName, bossName, content, onCom
   // ─── Round transition ──────────────────────
   if (transitioning) {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-16 gap-4">
-        <VillainSprite villainName={villainName} size={80} menacing />
-        <motion.p animate={{ opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 1 }}
-          className="text-sm font-bold text-[hsl(0_80%_60%)] italic">"{villainTaunt}"</motion.p>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-10 gap-4 px-4">
+        <VillainSprite villainName={villainName} size={140} menacing />
+        <motion.p animate={{ opacity: [0.6, 1, 0.6] }} transition={{ repeat: Infinity, duration: 1 }}
+          className="max-w-sm rounded-2xl border border-[hsl(0_80%_60%)]/40 bg-[hsl(0_80%_60%)]/10 px-4 py-2 text-center text-sm font-bold text-[hsl(0_80%_70%)] italic">"{villainTaunt}"</motion.p>
         <p className="text-xs text-white/40 font-mono">ROUND {round + 1} INCOMING...</p>
+        {BYTE_ROUND_TIPS[round] && (
+          <div className="w-full max-w-sm">
+            <ByteBuddy mood="think" title={BYTE_ROUND_TIPS[round].title} size={52} compact>
+              {BYTE_ROUND_TIPS[round].text}
+            </ByteBuddy>
+          </div>
+        )}
       </motion.div>
     );
   }
@@ -166,8 +179,8 @@ export default function BossBattleScreen({ villainName, bossName, content, onCom
         </div>
       </div>
 
-      {/* Villain (smaller during gameplay) */}
-      <div className="flex justify-center">
+      {/* The villain, taunting */}
+      <div className="flex items-center justify-center gap-3">
         <motion.div
           animate={{
             y: [0, -5, 0],
@@ -175,9 +188,19 @@ export default function BossBattleScreen({ villainName, bossName, content, onCom
           }}
           transition={{ repeat: Infinity, duration: villainHP < 50 ? 1 : 2 }}
         >
-          <VillainSprite villainName={villainName} size={isFinal ? 72 : 56} menacing />
+          <VillainSprite villainName={villainName} size={isFinal ? 150 : 130} menacing />
         </motion.div>
+        <div className="max-w-[200px] rounded-2xl rounded-bl-sm border border-[hsl(0_80%_60%)]/40 bg-[hsl(0_80%_60%)]/10 px-3 py-2 text-xs font-bold italic text-[hsl(0_80%_75%)]">
+          "{villainTaunt}"
+        </div>
       </div>
+
+      {/* Byte's tip for the first round */}
+      {round === 1 && (
+        <ByteBuddy mood="think" title={BYTE_ROUND_TIPS[0].title} size={44} compact>
+          {BYTE_ROUND_TIPS[0].text}
+        </ByteBuddy>
+      )}
 
       {/* Round Content */}
       {round === 1 && (
