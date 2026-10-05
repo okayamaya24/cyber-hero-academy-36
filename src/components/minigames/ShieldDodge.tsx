@@ -24,7 +24,7 @@ const WAVES: Attack[][] = [
     { id: 4, icon: "📡", text: "FAKE WIFI: Free_Villain_Wifi", subtext: "Unknown network", correctAction: "SHIELD", explanation: "Never connect to unverified WiFi!" },
     { id: 5, icon: "🔒", text: "2FA code active on account", subtext: "Extra security layer", correctAction: "DODGE", explanation: "2FA protects you even if password stolen!" },
     { id: 6, icon: "🎣", text: "PHISHING: Click to claim prize", subtext: "Too good to be true", correctAction: "SHIELD", explanation: "Too good to be true means always a scam!" },
-    { id: 7, icon: "💻", text: "HTTPS website with padlock", subtext: "Secure connection", correctAction: "DODGE", explanation: "HTTPS with padlock means encrypted and safe!" },
+    { id: 7, icon: "💻", text: "HTTPS website with padlock", subtext: "Secure connection", correctAction: "DODGE", explanation: "The padlock means your connection is private. Fake sites can have one too, so check the name!" },
     { id: 8, icon: "🔑", text: "CRACKING: mybirthday2010", subtext: "Personal info password", correctAction: "SHIELD", explanation: "Never use birthdays in passwords!" },
   ],
   [

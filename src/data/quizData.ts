@@ -56,7 +56,7 @@ export const QUIZ_DATA: Record<string, Record<AgeTier, QuizQuestion[]>> = {
   },
   'safe-sites': {
     junior: [
-      { question: 'A safe website address usually starts with...', options: ['http://', 'https://'], correct: 1, explanation: 'The "s" in https means the connection is secure!' },
+      { question: 'Which address has a private (encrypted) connection?', options: ['http://', 'https://'], correct: 1, explanation: 'The "s" in https means the connection is encrypted. But scam sites use https too, so check the name!' },
       { question: 'A website asks for your home address to give you free stickers. You should...', options: ['Fill it in!', 'Ask a parent first'], correct: 1, explanation: 'Always check with a trusted adult before giving personal info online!' },
       { question: 'A website has lots of pop-ups. This is...', options: ['A fun website!', 'Probably unsafe — close it!'], correct: 1, explanation: 'Lots of pop-ups are warning signs of unsafe sites!' },
       { question: 'Which website seems safe?', options: ['amaz0n-deals.net', 'amazon.com'], correct: 1, explanation: 'Look carefully at the domain! Fake sites use misspellings.' },
@@ -128,7 +128,7 @@ export const QUIZ_DATA: Record<string, Record<AgeTier, QuizQuestion[]>> = {
 export const BLITZ_QUESTIONS: Record<AgeTier, QuizQuestion[]> = {
   junior: [
     { question: 'Should you share your password with friends?', options: ['Yes!', 'Never!'], correct: 1, explanation: 'Passwords are secret — never share them!' },
-    { question: 'A safe website starts with...', options: ['http://', 'https://'], correct: 1, explanation: 'The S means secure!' },
+    { question: 'Which one has a private connection?', options: ['http://', 'https://'], correct: 1, explanation: 'The S means the connection is private. Fake sites can have it too!' },
     { question: 'Which password is strongest?', options: ['password123', 'R@nd0m!X9#'], correct: 1, explanation: 'Mix letters, numbers, and symbols!' },
     { question: 'An email says you won $1 million. It is probably...', options: ['Real!', 'A scam!'], correct: 1, explanation: 'Random prize emails are scams!' },
     { question: 'Should you talk to strangers online?', options: ['Yes, its fine!', 'Be very careful!'], correct: 1, explanation: 'Online strangers might not be who they say!' },

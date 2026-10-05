@@ -75,7 +75,7 @@ const SCENARIOS: Scenario[] = [
     isSafe: true,
     correctMessage: 'Correct!',
     wrongMessage: 'HTTPS is actually safer!',
-    tip: '🔒 HTTPS means the connection is encrypted. Always check for the padlock before entering any info.',
+    tip: '🔒 HTTPS means the connection is encrypted. But scam sites can have a padlock too, so always check the website name!',
   },
   {
     id: 's5',

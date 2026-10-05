@@ -23,7 +23,7 @@ const SORT_ITEMS: Record<string, Record<AgeTier, SortItem[]>> = {
       {
         text: "www.coolkidsgames.com 🔒",
         category: "safe",
-        explanation: "This site has a lock icon, which is a good sign.",
+        explanation: "The name is spelled normally with no weird extras. (The lock just means the connection is private. Fake sites can have one too!)",
       },
       {
         text: "FREE-PRIZES-NOW.com",

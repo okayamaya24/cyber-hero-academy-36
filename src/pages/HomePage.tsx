@@ -3,7 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import heroKidsGroup from "@/assets/hero-kids-group.png";
-import heroCharacter from "@/assets/hero-character.png";
+import byteImage from "@/assets/home/byte.webp";
 import robotGuide from "@/assets/robot-guide.png";
 import detectiveCat from "@/assets/detective-cat.png";
 import wiseOwl from "@/assets/wise-owl.png";
@@ -11,7 +11,7 @@ import TrickSpotterDemo from "@/components/home/TrickSpotterDemo";
 import VillainLineup from "@/components/home/VillainLineup";
 
 const guides = [
-  { name: "Captain Cyber", role: "Your Hero Guide", image: heroCharacter },
+  { name: "Byte", role: "Your Robot Fox Sidekick", image: byteImage },
   { name: "Robo Buddy", role: "Tech Expert", image: robotGuide },
   { name: "Detective Whiskers", role: "Scam Spotter", image: detectiveCat },
   { name: "Professor Hoot", role: "Safety Teacher", image: wiseOwl },

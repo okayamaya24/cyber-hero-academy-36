@@ -21,7 +21,7 @@ import DailyChallenge from "@/components/DailyChallenge";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
 const BYTE_TIPS = [
-  "Real sites use https:// — always check the lock icon before clicking! 🔒",
+  "Scam sites can have a lock icon too! Always read the website name letter by letter. 🔍",
   "Never share your password — not even with your best friend! 🙅",
   "A strong password uses letters, numbers AND symbols. Try a passphrase! 💪",
   "If an email seems too good to be true, it probably is — that's phishing! 🎣",

@@ -338,7 +338,7 @@ const ZONE_SCRIPTS: Record<string, ZoneScript> = {
       {
         speaker: "guide",
         emotion: "excited",
-        text: "Learn to spot the padlock, check for HTTPS, and never enter personal info on suspicious sites!",
+        text: "Learn to check website names letter by letter, spot fakes, and never enter personal info on suspicious sites!",
       },
     ],
     completion: [
@@ -623,7 +623,7 @@ const AMBIENT_LINES: AmbientLine[] = [
   { speaker: "guide", text: "Remember — always tell a trusted adult if something online feels wrong! 🛡️" },
   { speaker: "guide", text: "Strong passwords are your first line of defence, Guardian. 🔑" },
   { speaker: "guide", text: "The Keybreaker is getting desperate — that means we're winning! 💪" },
-  { speaker: "guide", text: "Look for the padlock icon before entering any personal info online. 🔒" },
+  { speaker: "guide", text: "Check the website name letter by letter before entering any info. Scam sites can have a padlock too! 🔍" },
   { speaker: "guide", text: "If it seems too good to be true, it's almost certainly a scam! 🎣" },
   { speaker: "guide", text: "Never share personal info in online games — even with 'friends'. 🎮" },
   {

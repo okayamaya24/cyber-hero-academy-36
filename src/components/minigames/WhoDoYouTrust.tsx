@@ -36,7 +36,7 @@ const ROUNDS: Round[] = [
         url: "google.com",
         hasLock: true,
         isReal: true,
-        clue: "✅ Official domain, padlock active. You're safe to log in.",
+        clue: "✅ Official domain, spelled exactly right. You're safe to log in.",
       },
       {
         name: "Goog1e",
@@ -65,7 +65,7 @@ const ROUNDS: Round[] = [
         url: "paypal.com",
         hasLock: true,
         isReal: true,
-        clue: "✅ Official domain, padlock secure. This is the real PayPal.",
+        clue: "✅ Official domain, spelled exactly right. This is the real PayPal.",
       },
     ],
   },
@@ -107,7 +107,7 @@ const ROUNDS: Round[] = [
         url: "youtube.com",
         hasLock: true,
         isReal: true,
-        clue: "✅ Simple, clean URL with padlock — the real YouTube. No tricks here.",
+        clue: "✅ Simple, clean URL — the real YouTube. No tricks here.",
       },
     ],
   },
@@ -230,7 +230,7 @@ export default function WhoDoYouTrust({ onComplete }: Props) {
             ? "Perfect! You'd never fall for the Keybreaker's fake sites! 🛡️"
             : score >= 3
             ? "Great detective work! Almost foolproof!"
-            : "Check for padlocks and URL spelling — that's how you catch fakes!"}
+            : "Check the URL spelling letter by letter — that's how you catch fakes! (Fakes can have padlocks too.)"}
         </p>
       </motion.div>
     );

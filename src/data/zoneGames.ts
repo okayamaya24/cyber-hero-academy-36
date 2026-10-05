@@ -329,7 +329,7 @@ const encryptEnclaveGames: ZoneGameContent = {
     items: [
       { text: "Someone intercepts your message", bucket: "🔐 USE ENCRYPTION" },
       { text: "Hacker tries to read your password", bucket: "🔐 USE ENCRYPTION" },
-      { text: "Website has padlock icon", bucket: "✅ SAFE TO USE" },
+      { text: "Website name is spelled exactly right", bucket: "✅ SAFE TO USE" },
       { text: "Website is HTTP only", bucket: "⚠️ BE CAREFUL" },
       { text: "Your data is scrambled in transit", bucket: "✅ SAFE TO USE" },
       { text: "No padlock on a banking site", bucket: "⚠️ BE CAREFUL" },
@@ -1262,7 +1262,7 @@ const darkWebDenGames: ZoneGameContent = {
         q: "What does a safe website URL usually start with?",
         choices: ["http://", "www.", "https://", "mail://"],
         answer: 2,
-        explanation: "https:// means the website is encrypted and safer to use!",
+        explanation: "https:// means the connection is encrypted. Scam sites can use it too, so always check the name!",
       },
     ],
   },

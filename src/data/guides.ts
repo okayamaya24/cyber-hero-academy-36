@@ -9,7 +9,6 @@
 import detectiveCat from "@/assets/detective-cat.png";
 import wiseOwl from "@/assets/wise-owl.png";
 import robotGuide from "@/assets/robot-guide.png";
-import heroCharacter from "@/assets/hero-character.png";
 
 export interface GuideCharacter {
   id: string;
@@ -50,9 +49,9 @@ export const GUIDE_REGISTRY: Record<string, GuideCharacter> = {
     ],
   },
   "captain-cyber": {
-    id: "captain-cyber",
-    name: "Captain Cyber",
-    image: heroCharacter,
+    id: "captain-cyber", // internal id kept; the guide shown to kids is Byte
+    name: "Byte",
+    image: "/byte-character.png",
     role: "Adventure Guide",
     specialties: ["mission-intros", "boss-battles", "celebrations", "encouragement"],
     intros: [

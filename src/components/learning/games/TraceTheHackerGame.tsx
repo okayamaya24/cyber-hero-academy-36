@@ -36,7 +36,7 @@ const ROUNDS_JUNIOR: Round[] = [
         title: "https://roblox.com",
         detail: "Has a lock icon and it's the real Roblox website",
         suspicious: false,
-        explanation: "✅ The real Roblox website with a lock — safe to visit! Always check for the lock! 🔒",
+        explanation: "✅ The real Roblox website, spelled exactly right. Always check the name, not just the lock! 🔍",
       },
       {
         emoji: "💀",
@@ -96,7 +96,7 @@ const ROUNDS_DEFENDER: Round[] = [
         title: "https://roblox.com",
         detail: "Lock icon, official Roblox domain, no typos",
         suspicious: false,
-        explanation: "✅ Real Roblox URL with a lock and https:// — totally safe to log in!",
+        explanation: "✅ Real Roblox URL, spelled exactly right with nothing extra added. Safe to log in!",
       },
       {
         emoji: "⚠️",
@@ -110,7 +110,7 @@ const ROUNDS_DEFENDER: Round[] = [
         title: "https://youtube.com",
         detail: "Lock icon, exact official domain, no weird spelling",
         suspicious: false,
-        explanation: "✅ Real YouTube URL with https:// — safe to visit!",
+        explanation: "✅ Real YouTube URL, spelled exactly right. Safe to visit!",
       },
     ],
   },

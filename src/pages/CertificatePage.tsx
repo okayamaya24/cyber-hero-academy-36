@@ -161,9 +161,9 @@ export default function CertificatePage() {
               {/* Signature area */}
               <div className="mt-8 flex items-center justify-center gap-8">
                 <div className="text-center">
-                  <div className="text-3xl mb-1">🦸</div>
+                  <div className="text-3xl mb-1">🛡️</div>
                   <div className="h-px w-32 bg-border mb-1" />
-                  <p className="text-xs text-muted-foreground">Captain Cyber</p>
+                  <p className="text-xs text-muted-foreground">Byte, Head Guide</p>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl mb-1">🛡️</div>

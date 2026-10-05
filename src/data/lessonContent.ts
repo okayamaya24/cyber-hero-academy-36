@@ -374,7 +374,7 @@ export const LESSON_CONTENT: LessonContent[] = [
           "You have a digital footprint everywhere you go online 👣",
           "Unknown logins from new places = red flag 🚩",
           "Always log out on shared devices 🚪",
-          "Fake URLs use misspellings and missing lock icons 🔒",
+          "Fake URLs use misspellings and extra words. Fakes can have a lock icon too! 🔍",
           "Never download .exe files from strangers or plug in found USB drives 💾",
           "Check your account activity regularly 🔍",
         ],

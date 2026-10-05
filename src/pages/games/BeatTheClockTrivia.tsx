@@ -19,7 +19,7 @@ const QUESTIONS: Record<AgeTier, TriviaQ[]> = {
     { q: 'What should you do if someone online is mean?', options: ['Tell a trusted adult', 'Be mean back'], correct: 0 },
     { q: 'How often should software be updated?', options: ['Regularly to fix bugs', 'Never'], correct: 0 },
     { q: 'What is malware?', options: ['Good software', 'Software designed to harm'], correct: 1 },
-    { q: 'A padlock icon in your browser means...', options: ['The site has security', 'The site is broken'], correct: 0 },
+    { q: 'A padlock icon in your browser means...', options: ['The connection is private', 'The site is broken'], correct: 0 },
     { q: 'What is two-factor authentication?', options: ['Two passwords', 'Password plus a code sent to you'], correct: 1 },
   ],
   hero: [

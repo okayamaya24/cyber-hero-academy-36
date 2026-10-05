@@ -1168,7 +1168,7 @@ export default function MissionsPage() {
               key={standaloneGame.gameId}
               ageTier={tier}
               guideImage={heroCharacter}
-              guideName="Captain Cyber"
+              guideName="Byte"
               customWords={standaloneGame.data?.words}
               customGridSize={standaloneGame.data?.gridSize}
               onComplete={(passed) => {
@@ -1197,7 +1197,7 @@ export default function MissionsPage() {
               missionId={standaloneGame.data.sortMissionId || "scam-detection"}
               ageTier={tier}
               guideImage={heroCharacter}
-              guideName="Captain Cyber"
+              guideName="Byte"
               onComplete={(passed) => handleStandaloneComplete(passed, passed ? 2 : 1)}
             />
           )}
@@ -1207,7 +1207,7 @@ export default function MissionsPage() {
               key={standaloneGame.gameId}
               ageTier={tier}
               guideImage={heroCharacter}
-              guideName="Captain Cyber"
+              guideName="Byte"
               onComplete={(passed) => handleStandaloneComplete(passed, passed ? 2 : 1)}
             />
           )}

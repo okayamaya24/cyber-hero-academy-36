@@ -2,7 +2,7 @@ import { AlertTriangle, Lock, Eye, Shield } from "lucide-react";
 import detectiveCat from "@/assets/detective-cat.png";
 import wiseOwl from "@/assets/wise-owl.png";
 import robotGuide from "@/assets/robot-guide.png";
-import heroCharacter from "@/assets/hero-character.png";
+const byteCharacter = "/byte-character.png";
 
 export type AgeTier = "junior" | "defender" | "guardian";
 export type LearningMode = "quick" | "standard" | "deep" | "auto";
@@ -72,9 +72,10 @@ export interface MissionDef {
   badgeIcon: string;
 }
 
+// Byte leads missions (kept under the old CAPTAIN_CYBER name so imports don't change)
 export const CAPTAIN_CYBER: GuideCharacter = {
-  name: "Captain Cyber",
-  image: heroCharacter,
+  name: "Byte",
+  image: byteCharacter,
   role: "Adventure Guide",
 };
 
@@ -547,10 +548,10 @@ export const MISSIONS: MissionDef[] = [
         { question: "A website says 'Download this to make your computer faster!' ⚡", miniGameType: "scenario", options: ["Safe", "Scam"], correct: 1, explanation: "Don't download things from websites you don't know!" },
         { question: "Spot the fake: Which app store is real?", miniGameType: "spot-the-difference", options: ["App Store", "Free App Store Downloads", "Google Play"], correct: 1, explanation: "'Free App Store Downloads' is not a real store — stick to official App Store and Google Play!" },
         { question: "A pop-up says your tablet needs an update. Close it?", miniGameType: "quiz", options: ["Close it!", "Click update"], correct: 0, explanation: "Always close pop-ups about updates! Real updates come from your device settings." },
-        { question: "A website has a padlock 🔒 icon next to its name. What does it mean?", miniGameType: "quiz", options: ["It's secure", "It's dangerous"], correct: 0, explanation: "The padlock means the website uses encryption to protect your information!" },
+        { question: "A website has a padlock 🔒 icon next to its name. What does it mean?", miniGameType: "quiz", options: ["The connection is private", "It's dangerous"], correct: 0, explanation: "The padlock means your connection is private. But scam sites can have one too, so always check the website name!" },
       ],
       defender: [
-        { question: "A website URL starts with 'http://' instead of 'https://'. It asks for your email.", miniGameType: "scenario", options: ["Safe", "Scam"], correct: 1, explanation: "The 's' in 'https' means secure. Without it, your info isn't encrypted." },
+        { question: "A website URL starts with 'http://' instead of 'https://'. It asks for your email.", miniGameType: "scenario", options: ["Safe", "Scam"], correct: 1, explanation: "Without the 's' in https, your info isn't encrypted. Never type your email there! (But https alone doesn't prove a site is honest.)" },
         { question: "Spot the fake URL:", miniGameType: "spot-the-difference", options: ["wikipedia.org", "wiki-pedia.org.free", "en.wikipedia.org"], correct: 1, explanation: "'wiki-pedia.org.free' has hyphens and an extra domain — not the real Wikipedia!" },
         { question: "Wikipedia.org for a school project research:", miniGameType: "quiz", options: ["Safe", "Scam"], correct: 0, explanation: "Wikipedia is generally safe. Verify important facts with other sources too!" },
         { question: "'free-minecraft-hacks.xyz' offers free game mods:", miniGameType: "scenario", options: ["Safe", "Scam"], correct: 1, explanation: "'.xyz' domains offering 'free hacks' are often loaded with malware." },
