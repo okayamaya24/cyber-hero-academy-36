@@ -96,9 +96,9 @@ export const LESSON_CONTENT: LessonContent[] = [
         question: "Which of these is the strongest password?",
         choices: [
           { text: "fluffy2010", correct: false, feedback: "Pet name + birth year — two things hackers try first! Too guessable. 😬" },
-          { text: "password", correct: false, feedback: "The most common password in the world! Hackers try this first every time. 🙈" },
+          { text: "MyDogMax2015", correct: false, feedback: "Pet names and years are some of the first things hackers guess! 🐶" },
           { text: "Blue$Sky!Jump99", correct: true, feedback: "Yes! Long, mixed characters, no personal info — that's a strong passphrase! 🏆" },
-          { text: "abc123", correct: false, feedback: "Way too short and predictable. Mix it up with symbols and capitals! 💪" },
+          { text: "P@ssw0rd!", correct: false, feedback: "Swapping letters for symbols is a trick hackers already know. ❌" },
         ],
       },
       {
@@ -125,8 +125,8 @@ export const LESSON_CONTENT: LessonContent[] = [
         choices: [
           { text: "4 letters",           correct: false, feedback: "Way too short! A hacker could guess that super fast! 😬" },
           { text: "12 or more letters",  correct: true,  feedback: "Yes! The longer, the stronger. 12+ is what Byte recommends! 🎯" },
-          { text: "Just your name",      correct: false, feedback: "Never use your name — hackers try that first!" },
-          { text: "3 letters",           correct: false, feedback: "That's shorter than your name! Go for 12 or more! 💪" },
+          { text: "8 letters",      correct: false, feedback: "8 used to be OK, but computers guess those fast now. Go for 12 or more! 🔐" },
+          { text: "6 letters if one is a number",           correct: false, feedback: "Still way too short — a computer can guess it in seconds. Aim for 12+!" },
         ],
       },
       {
@@ -134,9 +134,9 @@ export const LESSON_CONTENT: LessonContent[] = [
         question: "Which password is the strongest?",
         choices: [
           { text: "password",      correct: false, feedback: "That's the most guessed password ever! Hackers try it first. 😬" },
-          { text: "123456",        correct: false, feedback: "Number order is way too easy to guess! Try mixing letters and symbols." },
+          { text: "Pizza2015",        correct: false, feedback: "A food plus a year is easy to guess. Mix random words, numbers and symbols!" },
           { text: "Tiger$Jump42!", correct: true,  feedback: "🔥 Yes! Mix letters, numbers AND symbols — that's a super strong password!" },
-          { text: "fluffy",        correct: false, feedback: "Pet names are cute but easy to guess. Mix things up! 🐶" },
+          { text: "Fluffy!",        correct: false, feedback: "Adding one ! to a pet name doesn't make it strong. Make it long and random!" },
         ],
       },
       {
@@ -166,17 +166,17 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Yes — easy to remember!",    correct: false, feedback: "It seems smart but if one site gets hacked, ALL your accounts are in danger! 😱" },
           { text: "No — use a different one each time", correct: true, feedback: "Exactly! Each account gets its own unique password. 🔑" },
           { text: "Only if it's really long",   correct: false, feedback: "Even long passwords are risky if reused everywhere!" },
-          { text: "Yes if no one is watching",  correct: false, feedback: "Hackers are always watching! Always use different passwords." },
+          { text: "Yes, but change one number for each site",  correct: false, feedback: "Hackers try small changes too! Every account needs a totally different password." },
         ],
       },
       {
         tier: "junior",
         question: "What do symbols like ! @ # do to your password?",
         choices: [
-          { text: "Make it look cool only",      correct: false, feedback: "They do look cool — but their real job is making your password harder to crack! 😄" },
+          { text: "Nothing — hackers skip over symbols",      correct: false, feedback: "Symbols add LOTS of possible guesses, so hackers can't skip them!" },
           { text: "Make it harder to remember",  correct: false, feedback: "They can be tricky to remember, but they make your password WAY stronger!" },
           { text: "Make it much harder to guess", correct: true, feedback: "Yes! Symbols add tons of possible combos that hackers have to try. 💥" },
-          { text: "Make it shorter",             correct: false, feedback: "Symbols don't make it shorter — they make it stronger!" },
+          { text: "Make any password impossible to crack",             correct: false, feedback: "Symbols help, but a short password is still weak. Length matters most!" },
         ],
       },
       {
@@ -186,7 +186,7 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Share it — they're my best friend!",  correct: false, feedback: "🚨 Never share your password — not even with best friends! Keep it secret." },
           { text: "Never share it with anyone",          correct: true,  feedback: "Correct! Your password is your secret — keep it only to yourself! 🤫" },
           { text: "Share just the first part",           correct: false, feedback: "Never share any part of your password! Even partial passwords can cause trouble." },
-          { text: "Write it down and give them the paper", correct: false, feedback: "Written passwords can be found by anyone! Never write it down to share." },
+          { text: "Share it if they promise not to tell", correct: false, feedback: "Even best friends can slip up or fall out. Passwords stay secret — always!" },
         ],
       },
 
@@ -245,10 +245,10 @@ export const LESSON_CONTENT: LessonContent[] = [
         tier: "defender",
         question: "Why do symbols like ! @ # make passwords stronger?",
         choices: [
-          { text: "They look cool",                                    correct: false, feedback: "Ha! They do look cool — but that's not why 😄" },
+          { text: "They hide your password from people looking at your screen",                                    correct: false, feedback: "Your screen shows dots either way! Symbols help because they add more possible combos." },
           { text: "They make passwords easier to remember",            correct: false, feedback: "Actually harder to remember, but WAY harder to crack!" },
           { text: "They massively increase the number of possible combos", correct: true, feedback: "Exactly! More possible characters = billions more combinations to try 💥" },
-          { text: "They are required by law",                          correct: false, feedback: "Not a law — just really smart password design!" },
+          { text: "They stop hackers from seeing your password",                          correct: false, feedback: "Symbols don't hide anything — they make the password much harder to GUESS." },
         ],
       },
       {
@@ -358,10 +358,10 @@ export const LESSON_CONTENT: LessonContent[] = [
         type: "check",
         question: "Which one is a sign someone may have hacked your account?",
         choices: [
-          { text: "You got a new high score in a game", correct: false, feedback: "Great job on the score, but that's not a hack sign! 🎮" },
+          { text: "Your game updated itself overnight", correct: false, feedback: "Updates are normal! A login from somewhere you've never been is the real warning sign." },
           { text: "You see a login from a city you've never been to", correct: true, feedback: "Exactly! Unknown logins are a major red flag! 🚨" },
-          { text: "Your profile picture loaded slowly", correct: false, feedback: "Slow loading is usually just bad internet! 📶" },
-          { text: "Your friend sent you a funny video", correct: false, feedback: "Sounds fun — but that's totally normal! 😄" },
+          { text: "A friend tagged you in a photo", correct: false, feedback: "That's normal social stuff. Watch for logins from places or devices you don't know!" },
+          { text: "You got a 'reset password' email right after you clicked 'Forgot password'", correct: false, feedback: "That's expected — YOU asked for it! An email you DIDN'T ask for would be suspicious." },
         ],
       },
       {
@@ -390,7 +390,7 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "No — they are totally invisible", correct: false, feedback: "Nope! The video said hackers ALWAYS leave a trace. You just have to find it! 🔍" },
           { text: "Yes — they always leave a trace", correct: true,  feedback: "You got it! Hackers think they're invisible, but they always leave clues behind. 🕵️" },
           { text: "Only sometimes",                  correct: false, feedback: "The video said ALWAYS — every hacker leaves a trace online!" },
-          { text: "Only on phones",                  correct: false, feedback: "Device doesn't matter — hackers always leave a trail, no matter what!" },
+          { text: "Only if they're bad at hacking",                  correct: false, feedback: "Even expert hackers leave clues behind. That's how they get caught!" },
         ],
       },
       {
@@ -427,27 +427,27 @@ export const LESSON_CONTENT: LessonContent[] = [
         tier: "junior",
         question: "Before you click a link, what should you do first?",
         choices: [
-          { text: "Click it fast!",               correct: false, feedback: "Slow down! The video says STOP and check before you ever click something suspicious." },
+          { text: "Click it if it's from a friend",               correct: false, feedback: "Friends' accounts can get hacked! Always stop and check the link first." },
           { text: "Stop and check if it looks right", correct: true, feedback: "Yes! Stop, investigate, and ask — does this look right and feel right? 🔎" },
           { text: "Share it with friends",         correct: false, feedback: "That could spread the danger! Always check it yourself first." },
-          { text: "Nothing — it's probably fine", correct: false, feedback: "🚨 Never assume! The video says always investigate before clicking." },
+          { text: "Ask the sender in the same chat if it's real", correct: false, feedback: "If their account was hacked, the HACKER would answer! Ask them in person instead." },
         ],
       },
       {
         tier: "junior",
         question: "A website name looks almost right but has an extra letter. What is that?",
         choices: [
-          { text: "A loading problem", correct: false, feedback: "Not a tech glitch — hackers do this on purpose to trick you!" },
+          { text: "A typo by the website owner", correct: false, feedback: "Real companies don't misspell their own name! An extra letter is a clue it's fake." },
           { text: "A new version",     correct: false, feedback: "Real websites don't misspell their own name. Weird letters = possible fake site!" },
           { text: "A clue it might be fake", correct: true, feedback: "Right! The video said to look for names that look 'almost right' — that's a hacker clue! 🕵️" },
-          { text: "A cool design",     correct: false, feedback: "Ha! It's not style — it's a trick to fool you into visiting the wrong site." },
+          { text: "A shorter link to the same website",     correct: false, feedback: "Short links look different, but an extra letter in the NAME means a different (fake) site." },
         ],
       },
       {
         tier: "junior",
         question: "What is your job as a cyber hero?",
         choices: [
-          { text: "Never use the internet", correct: false, feedback: "The video wants you to use the internet SAFELY — not quit it!" },
+          { text: "Only click links your friends send", correct: false, feedback: "Friends' accounts can be hacked, so even their links need checking!" },
           { text: "Spot the clues and stay safe", correct: true, feedback: "That's your mission! Follow the trail, find the clues, catch the hacker! 🦸" },
           { text: "Delete everything suspicious", correct: false, feedback: "Tell a trusted adult instead — your job is to SPOT clues, not delete things alone." },
           { text: "Block all messages",           correct: false, feedback: "Not all messages are bad — your job is to INVESTIGATE and spot the suspicious ones!" },
@@ -618,8 +618,8 @@ export const LESSON_CONTENT: LessonContent[] = [
         choices: [
           { text: "Click it immediately to fix the virus", correct: false, feedback: "STOP! This is almost always a scam to install real malware! 🛑" },
           { text: "Ignore it and tell a trusted adult", correct: true, feedback: "Perfect! These are fake scare pop-ups — always tell an adult! 🦸" },
-          { text: "Close the browser and open the pop-up link again", correct: false, feedback: "Never re-open suspicious links! The pop-up is the scam. ❌" },
-          { text: "Share the link with your friends", correct: false, feedback: "That would spread the scam to your friends! 😱" },
+          { text: "Click the pop-up's X button to close it", correct: false, feedback: "Careful! Fake pop-ups can hide a trap in the X button. Close the whole tab and tell an adult." },
+          { text: "Click 'Scan Now' just to see if it's real", correct: false, feedback: "Clicking anything on a fake pop-up can download real malware! 🛑" },
         ],
       },
       {
@@ -818,7 +818,7 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Say yes — it's just a photo!", correct: false, feedback: "Photos at school reveal your school name and location! 📸" },
           { text: "Ask a parent first and make sure the account is private", correct: true, feedback: "Smart! Always check with parents and use private accounts! 🏆" },
           { text: "Post it yourself first on your public account", correct: false, feedback: "A public account means anyone in the world can see it! 🌍" },
-          { text: "Refuse all photos forever", correct: false, feedback: "Photos can be fine — just be thoughtful about where they're shared! 😊" },
+          { text: "Say yes if you both look good in it", correct: false, feedback: "How it looks isn't the problem — your school in the background shows where you are. Ask a parent first!" },
         ],
       },
       {
@@ -855,9 +855,9 @@ export const LESSON_CONTENT: LessonContent[] = [
         type: "check",
         question: "You read online: 'Eating carrots gives you superpowers!' What do you do?",
         choices: [
-          { text: "Share it with everyone — sounds amazing!", correct: false, feedback: "Always verify before sharing — you might be spreading misinformation! 🥕" },
+          { text: "Share it so your friends can decide", correct: false, feedback: "Sharing before checking spreads fake info. Check a trusted site first!" },
           { text: "Check a trusted website like a health or science site first", correct: true, feedback: "Great detective work! Always verify with trusted sources! 🔍" },
-          { text: "Believe it — if it's online, it must be true", correct: false, feedback: "Anyone can post anything online — doesn't make it true! ❌" },
+          { text: "Believe it if the post has lots of likes", correct: false, feedback: "Likes don't make something true! Check a trusted website first." },
           { text: "Ask the website for proof by commenting", correct: false, feedback: "Comments on dodgy sites don't help — check a proper trusted source! 📰" },
         ],
       },
@@ -898,7 +898,7 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Download it — free stuff is great!", correct: false, feedback: "Free pirated games are the #1 way kids get malware! 🦠" },
           { text: "Click the download but scan it with antivirus first", correct: false, feedback: "Some malware bypasses antivirus — don't risk it! Just say no. ❌" },
           { text: "Close the page and don't download it", correct: true, feedback: "Smart! Illegal 'free' games almost always come bundled with malware! 🏆" },
-          { text: "Share the link with friends so they get it too", correct: false, feedback: "You'd be spreading malware to your friends! 😱" },
+          { text: "Download it if the website looks professional", correct: false, feedback: "Scam sites can look VERY real. Free versions of paid games often hide malware." },
         ],
       },
       {
@@ -1073,7 +1073,7 @@ export const LESSON_CONTENT: LessonContent[] = [
           { text: "Download it quickly — my device might be infected!", correct: false, feedback: "This is a classic scareware trick! Real antivirus software never appears as website pop-ups. 🚨" },
           { text: "Close the page — it's a fake scare tactic", correct: true, feedback: "Exactly right! These pop-ups are scams designed to install malware. Close and ignore! 🏆" },
           { text: "Click it to see what happens", correct: false, feedback: "Even clicking can trigger a download. Close the tab immediately! ❌" },
-          { text: "Ask the pop-up to scan just one file first", correct: false, feedback: "Don't interact with it at all. Close the entire tab! 🛡️" },
+          { text: "Click 'Cancel' on the pop-up so it goes away", correct: false, feedback: "Even 'Cancel' on a fake pop-up can be a trap! Close the whole tab instead." },
         ],
       },
       {
@@ -1112,17 +1112,17 @@ export const LESSON_CONTENT: LessonContent[] = [
       {
         tier: "junior",
         question: "A pop-up says 'FREE game — download now!' You should:",
-        choices: [{ text: "Click it — free games are great!", correct: false, feedback: "Free game pop-ups are almost always traps to install malware. Close them!" }, { text: "Close it and tell a grown-up", correct: true, feedback: "Free game pop-ups are almost always traps to install malware. Close them!" }, { text: "Download and try it", correct: false, feedback: "Free game pop-ups are almost always traps to install malware. Close them!" }, { text: "Share the link with friends", correct: false, feedback: "Free game pop-ups are almost always traps to install malware. Close them!" }],
+        choices: [{ text: "Click it — free games are great!", correct: false, feedback: "Free game pop-ups are almost always traps to install malware. Close them!" }, { text: "Close it and tell a grown-up", correct: true, feedback: "Free game pop-ups are almost always traps to install malware. Close them!" }, { text: "Download and try it", correct: false, feedback: "Free game pop-ups are almost always traps to install malware. Close them!" }, { text: "Download it now and tell a grown-up later", correct: false, feedback: "Once it's downloaded, the damage may be done. Close it and tell a grown-up FIRST!" }],
       },
       {
         tier: "junior",
         question: "Before downloading anything, you should always:",
-        choices: [{ text: "Just click download", correct: false, feedback: "Always check with a trusted adult before downloading anything to stay safe!" }, { text: "Ask a trusted adult first", correct: true, feedback: "Always check with a trusted adult before downloading anything to stay safe!" }, { text: "Download and check later", correct: false, feedback: "Always check with a trusted adult before downloading anything to stay safe!" }, { text: "Ask a friend", correct: false, feedback: "Always check with a trusted adult before downloading anything to stay safe!" }],
+        choices: [{ text: "Check that it has lots of good reviews", correct: false, feedback: "Reviews can be faked! Ask a trusted adult before downloading anything." }, { text: "Ask a trusted adult first", correct: true, feedback: "Always check with a trusted adult before downloading anything to stay safe!" }, { text: "Download and check later", correct: false, feedback: "Always check with a trusted adult before downloading anything to stay safe!" }, { text: "Ask a friend", correct: false, feedback: "Always check with a trusted adult before downloading anything to stay safe!" }],
       },
       {
         tier: "junior",
         question: "A website says 'Your device has a virus! Download this to fix it!' This is:",
-        choices: [{ text: "Helpful — download it!", correct: false, feedback: "Websites cannot scan your device. This is a scam to trick you into installing malware!" }, { text: "A trick — close the page", correct: true, feedback: "Websites cannot scan your device. This is a scam to trick you into installing malware!" }, { text: "Real — websites can detect viruses", correct: false, feedback: "Websites cannot scan your device. This is a scam to trick you into installing malware!" }, { text: "Probably fine", correct: false, feedback: "Websites cannot scan your device. This is a scam to trick you into installing malware!" }],
+        choices: [{ text: "Real — but only download it if it's free", correct: false, feedback: "Websites can't scan your device! 'Free' fixes from pop-ups are the trick." }, { text: "A trick — close the page", correct: true, feedback: "Websites cannot scan your device. This is a scam to trick you into installing malware!" }, { text: "Real — websites can detect viruses", correct: false, feedback: "Websites cannot scan your device. This is a scam to trick you into installing malware!" }, { text: "Close it by clicking 'OK'", correct: false, feedback: "Buttons on fake pop-ups can start a download! Close the whole tab instead." }],
       },
       {
         tier: "junior",
@@ -1143,7 +1143,7 @@ export const LESSON_CONTENT: LessonContent[] = [
       {
         tier: "defender",
         question: "Your friend sends you a file over Discord. Before opening it:",
-        choices: [{ text: "Open it — you trust your friend", correct: false, feedback: "Even trusted friends' accounts can be hacked and used to spread malware. Always scan first!" }, { text: "Scan with antivirus — friends' accounts can be hacked", correct: true, feedback: "Even trusted friends' accounts can be hacked and used to spread malware. Always scan first!" }, { text: "Forward it to others first", correct: false, feedback: "Even trusted friends' accounts can be hacked and used to spread malware. Always scan first!" }, { text: "Open it if the name looks OK", correct: false, feedback: "Even trusted friends' accounts can be hacked and used to spread malware. Always scan first!" }],
+        choices: [{ text: "Open it — you trust your friend", correct: false, feedback: "Even trusted friends' accounts can be hacked and used to spread malware. Always scan first!" }, { text: "Scan with antivirus — friends' accounts can be hacked", correct: true, feedback: "Even trusted friends' accounts can be hacked and used to spread malware. Always scan first!" }, { text: "Rename it so it ends in .pdf, then open it", correct: false, feedback: "Renaming doesn't change what's inside! Scan it first — friends' accounts can be hacked." }, { text: "Open it if the name looks OK", correct: false, feedback: "Even trusted friends' accounts can be hacked and used to spread malware. Always scan first!" }],
       },
       {
         tier: "defender",

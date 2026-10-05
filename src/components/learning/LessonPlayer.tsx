@@ -4,7 +4,7 @@
  * Each lesson feels like a game cutscene / comic strip.
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronRight, ChevronLeft, Star } from "lucide-react";
@@ -328,7 +328,8 @@ function CheckSlide({ slide, lesson, theme, onAnswer }: {
 }) {
   const [selected, setSelected] = useState<number | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const choices = slide.choices ?? [];
+  // Shuffle so the right answer isn't always in the same spot (most are written second)
+  const choices = useMemo(() => shuffle(slide.choices ?? []), [slide]);
 
   const handlePick = (idx: number) => {
     if (selected !== null) return;
@@ -558,7 +559,8 @@ function EnhancedCheckSlide({ slide, lesson, theme, onAnswer }: {
   const [selected, setSelected] = useState<number | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [reaction, setReaction] = useState<"correct" | "wrong" | null>(null);
-  const choices = slide.choices ?? [];
+  // Shuffle so the right answer isn't always in the same spot (most are written second)
+  const choices = useMemo(() => shuffle(slide.choices ?? []), [slide]);
 
   const handlePick = (idx: number) => {
     if (selected !== null) return;
@@ -1072,6 +1074,24 @@ function VideoPlayer({ lesson, theme, onDone, onClose, canSkip }: {
     return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1&rel=0` : url;
   };
 
+  // Show kids what's happening instead of a blank black box
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [status, setStatus] = useState<"loading" | "playing" | "paused" | "blocked" | "error">("loading");
+  const [slow, setSlow] = useState(false);
+
+  useEffect(() => {
+    if (status !== "loading") return;
+    const t = setTimeout(() => setSlow(true), 10000);
+    return () => clearTimeout(t);
+  }, [status]);
+
+  const tryPlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    // Browsers often block autoplay with sound; then show a big play button instead
+    v.play().then(() => setStatus("playing")).catch(() => setStatus("blocked"));
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
       style={{ backgroundColor: "rgba(0,0,0,0.92)", backdropFilter: "blur(6px)" }}>
@@ -1108,13 +1128,48 @@ function VideoPlayer({ lesson, theme, onDone, onClose, canSkip }: {
               style={{ border: "none" }}
             />
           ) : (
-            <video
-              src={lesson.videoUrl}
-              controls
-              autoPlay
-              className="w-full h-full bg-black"
-              style={{ maxHeight: "55vh" }}
-            />
+            <>
+              <video
+                ref={videoRef}
+                src={lesson.videoUrl}
+                controls={status !== "loading" && status !== "error"}
+                playsInline
+                preload="auto"
+                onCanPlay={() => { if (status === "loading") tryPlay(); }}
+                onPlaying={() => setStatus("playing")}
+                onPause={() => setStatus((s) => (s === "playing" ? "paused" : s))}
+                onError={() => setStatus("error")}
+                className="w-full h-full bg-black"
+                style={{ maxHeight: "55vh" }}
+              />
+              {status === "loading" && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/70 text-center px-6">
+                  <div className="h-10 w-10 rounded-full border-4 border-white/20 animate-spin" style={{ borderTopColor: theme.accent }} />
+                  <p className="text-sm font-bold text-white">Loading {lesson.character}'s video…</p>
+                  {slow && (
+                    <p className="text-xs text-white/60">Slow internet? You can tap "Continue to Lesson" and skip it.</p>
+                  )}
+                </div>
+              )}
+              {status === "blocked" && (
+                <button
+                  onClick={tryPlay}
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50"
+                  aria-label="Play video"
+                >
+                  <span className="flex h-16 w-16 items-center justify-center rounded-full text-3xl text-white shadow-xl"
+                    style={{ background: theme.accent }}>▶</span>
+                  <span className="text-sm font-bold text-white">Tap to play</span>
+                </button>
+              )}
+              {status === "error" && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black text-center px-6">
+                  <span className="text-4xl">📺</span>
+                  <p className="text-sm font-bold text-white">The video didn't load.</p>
+                  <p className="text-xs text-white/60">No problem! You can still do the lesson below.</p>
+                </div>
+              )}
+            </>
           )}
         </div>
 
