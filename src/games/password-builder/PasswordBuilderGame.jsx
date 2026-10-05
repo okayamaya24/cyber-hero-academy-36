@@ -1,6 +1,21 @@
 import { useMemo, useState } from "react";
+import ByteBuddy from "../shared/ByteBuddy";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+// ─── Byte coaches as the password grows ────────────────────────────────────
+function byteCoach(password, words) {
+  if (!password) return { mood: "think", title: "Let's build a super password! 🔐", text: words
+    ? "Tap some words to start. Silly words that don't go together work great!"
+    : "Start typing. Long and random beats short and clever!" };
+  const strongEnough = password.length >= 12 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password);
+  if (strongEnough) return { mood: "happy", title: "WOW, that's a super password! 🎉", text: "A hacker would need centuries to crack that. Remember: never share it, not even with friends!" };
+  if (password.length < 8) return { mood: "think", title: "Keep going! 💪", text: words ? "Add more words. Longer passwords are WAY harder to crack." : "It's too short. Aim for at least 12 characters." };
+  if (!/[0-9]/.test(password)) return { mood: "think", title: "Ooh, getting better!", text: words ? "Now add a number from the Numbers tab!" : "Add a number somewhere in the middle." };
+  if (!/[^A-Za-z0-9]/.test(password)) return { mood: "think", title: "Almost there!", text: words ? "Add a symbol like ! or $ from the Symbols tab." : "Add a symbol like ! @ or $." };
+  if (!/[A-Z]/.test(password)) return { mood: "think", title: "So close!", text: "Mix in a capital letter." };
+  return { mood: "think", title: "Nearly a fortress! 🏰", text: "Make it a little longer. 12 or more characters is the magic number!" };
+}
 
 // ─── Shared strength logic ─────────────────────────────────────────────────
 function calculateStrength(password) {
@@ -293,6 +308,16 @@ function KidsBuilder({ onComplete, embedded }) {
           </div>
         </div>
 
+        {/* Byte coaches */}
+        {(() => {
+          const c = byteCoach(pwString, true);
+          return (
+            <div style={{ marginBottom: "12px" }}>
+              <ByteBuddy mood={c.mood} title={c.title} size={52} compact>{c.text}</ByteBuddy>
+            </div>
+          );
+        })()}
+
         {/* Tabs */}
         <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
           {TABS.map(tab => (
@@ -553,6 +578,16 @@ function ProBuilder({ onComplete, embedded }) {
               {strength.message}
             </div>
           </div>
+
+          {/* Byte coaches */}
+          {(() => {
+            const c = byteCoach(password, false);
+            return (
+              <div style={{ marginBottom: "16px" }}>
+                <ByteBuddy mood={c.mood} title={c.title} size={52} compact>{c.text}</ByteBuddy>
+              </div>
+            );
+          })()}
 
           {/* Hacker status */}
           <div style={{

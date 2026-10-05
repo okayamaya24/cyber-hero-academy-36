@@ -1,3 +1,5 @@
+import ByteBuddy from "../../shared/ByteBuddy";
+
 export default function CompletionModal({
   missionComplete,
   getStars,
@@ -43,6 +45,12 @@ export default function CompletionModal({
         >
           🎉 Mission Complete!
         </h1>
+
+        <div style={{ marginBottom: "16px" }}>
+          <ByteBuddy mood="happy" title="You found them all! 🔍" size={52} compact>
+            Every word you found is a real cyber skill. Spotting details like this is how you catch scams too!
+          </ByteBuddy>
+        </div>
 
         <div
           style={{

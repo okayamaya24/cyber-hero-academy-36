@@ -1,3 +1,4 @@
+import ByteBuddy, { byteOpener } from "../shared/ByteBuddy";
 import { useState } from "react";
 
 // ── Age / mode routing ────────────────────────────────────────────────────
@@ -29,7 +30,7 @@ const KIDS_SCENARIOS = [
     clues: [
       "Real games never give away free things through pop-ups like this.",
       "The web address looks very strange — it's not roblox.com.",
-      "It starts with http:// — safe websites start with https://."
+      "It starts with http://, so it isn't even a private connection. Big warning sign!"
     ]
   },
   {
@@ -41,7 +42,7 @@ const KIDS_SCENARIOS = [
     status: "ok",
     clues: [
       "The address says youtube.com — that's the real YouTube.",
-      "It starts with https:// — that means it's secure.",
+      "It has https:// (a private connection). Scam sites can too, so the name matters most!",
       "No warnings, no prizes, no scary messages."
     ]
   },
@@ -55,7 +56,7 @@ const KIDS_SCENARIOS = [
     clues: [
       "Minecraft costs money — free downloads like this are usually fake.",
       "The address is NOT minecraft.net — it says minecraft-free-download.net.",
-      "It uses http:// instead of https:// — not secure."
+      "It uses http://, so anything you type isn't private."
     ]
   },
   {
@@ -67,7 +68,7 @@ const KIDS_SCENARIOS = [
     status: "ok",
     clues: [
       "pbskids.org is the real PBS Kids website.",
-      "It uses https:// — that means it is safe and secure.",
+      "The name is spelled exactly right, and it uses https:// for privacy.",
       "No promises of free prizes or scary warnings."
     ]
   },
@@ -93,7 +94,7 @@ const KIDS_SCENARIOS = [
     status: "ok",
     clues: [
       "google.com is the real Google — spelled correctly.",
-      "It starts with https:// — secure.",
+      "The name is spelled exactly right, with nothing extra added.",
       "No strange words or offers in the address."
     ]
   },
@@ -119,7 +120,7 @@ const KIDS_SCENARIOS = [
     status: "ok",
     clues: [
       "School websites usually end in .edu — this one does.",
-      "It starts with https:// — safe and secure.",
+      "The name is spelled exactly right, with nothing extra added.",
       "No scary messages or prize offers."
     ]
   },
@@ -146,7 +147,7 @@ const KIDS_SCENARIOS = [
     clues: [
       "nationalgeographic.com is a real, trusted website.",
       "kids. at the start means it's the kids section.",
-      "https:// and a trusted brand — totally safe."
+      "A trusted brand, spelled exactly right."
     ]
   }
 ];
@@ -162,7 +163,7 @@ const PRO_SCENARIOS = {
       clues: [
         "The real Fortnite store is epicgames.com — this domain is completely different.",
         "No game ever gives away free in-game currency through random websites.",
-        "Uses http:// instead of https:// — not secure."
+        "Uses http://, so the connection isn't even private."
       ]
     },
     {
@@ -173,7 +174,7 @@ const PRO_SCENARIOS = {
       status: "safe",
       clues: [
         "google.com is spelled correctly — no number substitutions or extra words.",
-        "https:// means the connection is encrypted and secure.",
+        "https:// means the connection is encrypted, but the correct spelling is what proves it's really Google.",
         "One of the most visited websites in the world — no red flags."
       ]
     },
@@ -197,7 +198,7 @@ const PRO_SCENARIOS = {
       status: "safe",
       clues: [
         "bbc.com is the official BBC website — well-known, trusted news source.",
-        "https:// and a recognisable brand with no tricks in the URL.",
+        "A recognisable brand with no tricks in the URL.",
         "Just reading news — not asking for passwords or personal info."
       ]
     },
@@ -221,7 +222,7 @@ const PRO_SCENARIOS = {
       status: "safe",
       clues: [
         "store.steampowered.com is Steam's official store — correct domain.",
-        "https:// and a domain you'd expect for a major gaming platform.",
+        "A domain you'd expect for a major gaming platform.",
         "Valve's Steam has used this domain for years — no red flags."
       ]
     },
@@ -246,7 +247,7 @@ const PRO_SCENARIOS = {
       clues: [
         ".gov means it's an official US government website — very trustworthy.",
         "nasa.gov is the real NASA — spelled correctly with no tricks.",
-        "https:// and .gov is one of the most secure combinations possible."
+        "Only real government agencies can get a .gov address, so it's very hard to fake."
       ]
     },
     {
@@ -269,7 +270,7 @@ const PRO_SCENARIOS = {
       status: "safe",
       clues: [
         "en.wikipedia.org is Wikipedia's official English site — real and trusted.",
-        "https:// and .org — no commercial interest or suspicious activity.",
+        "A real .org address with nothing suspicious added.",
         "Read-only reference site, not asking for any account or payment info."
       ]
     }
@@ -307,7 +308,7 @@ const PRO_SCENARIOS = {
       status: "safe",
       clues: [
         "support.apple.com is the official Apple support subdomain.",
-        "https:// with a well-known brand — no red flags.",
+        "A well-known brand — no red flags.",
         "Informational page, not asking for passwords or payment."
       ]
     },
@@ -331,7 +332,7 @@ const PRO_SCENARIOS = {
       status: "safe",
       clues: [
         "support.microsoft.com is the official Microsoft help center.",
-        "https:// and a real company subdomain — safe.",
+        "A real company subdomain — safe.",
         "No alarming language, no request for passwords."
       ]
     },
@@ -355,7 +356,7 @@ const PRO_SCENARIOS = {
       status: "safe",
       clues: [
         "docs.google.com is the real Google Docs domain.",
-        "https:// and it's Google — trusted.",
+        "It's Google — trusted.",
         "The URL structure matches a standard Google Docs link."
       ]
     },
@@ -379,7 +380,7 @@ const PRO_SCENARIOS = {
       status: "safe",
       clues: [
         "en.wikipedia.org is Wikipedia's English-language domain.",
-        "https:// and .org — no red flags.",
+        "A real .org address — no red flags.",
         "It's a read-only informational article, not asking for anything."
       ]
     },
@@ -418,7 +419,7 @@ const PRO_SCENARIOS = {
       clues: [
         "github.com is the real GitHub — no substitutions or tricks.",
         "microsoft is the official org name and vscode is a verified repo.",
-        "https:// and a trusted platform — no indicators of compromise."
+        "A trusted platform — no indicators of compromise."
       ]
     },
     {
@@ -454,7 +455,7 @@ const PRO_SCENARIOS = {
       clues: [
         ".gov domains are exclusively reserved for US government agencies — they cannot be purchased by anyone else.",
         "irs.gov is the official Internal Revenue Service website.",
-        "https:// and a .gov TLD — one of the most trustworthy combinations possible."
+        "A real .gov address — only government agencies can get one."
       ]
     },
     {
@@ -490,7 +491,7 @@ const PRO_SCENARIOS = {
       clues: [
         "cdn.shopify.com is Shopify's official content delivery network subdomain.",
         "CDN URLs serving static assets (images, files) from known platforms are normal.",
-        "https:// and the path structure matches Shopify's standard asset delivery format."
+        "The path structure matches Shopify's standard asset delivery format."
       ]
     },
     {
@@ -608,25 +609,19 @@ function KidsGame() {
     setScore(s => s + pts);
     setBreakdown(b => ({ correct: b.correct + (correct ? 1 : 0), wrong: b.wrong + (correct ? 0 : 1) }));
 
-    if (!correct) {
-      const newLives = lives - 1;
-      setLives(newLives);
-      if (newLives <= 0) {
-        setTimeout(() => { setResult(null); setGameState("over"); }, 1400);
-        return;
-      }
-    }
+    if (!correct) setLives(l => l - 1);
+  }
 
-    setTimeout(() => {
-      setResult(null);
-      setLocked(false);
-      if (index + 1 >= total) {
-        setGameState("over");
-      } else {
-        setIndex(i => i + 1);
-        setRevealedClues([]);
-      }
-    }, 1400);
+  // Byte's explanation stays up until the kid taps Next
+  function goNext() {
+    setResult(null);
+    setLocked(false);
+    if (lives <= 0 || index + 1 >= total) {
+      setGameState("over");
+    } else {
+      setIndex(i => i + 1);
+      setRevealedClues([]);
+    }
   }
 
   if (gameState === "start") {
@@ -665,6 +660,11 @@ function KidsGame() {
           <div><span style={{ color: "#ef4444" }}>🚨 DANGER!</span> — if something looks wrong</div>
           <div style={{ color: "#a78bfa", marginTop: "4px" }}>❤️ You have 5 lives — use them wisely!</div>
         </div>
+        <div style={{ width: "100%", maxWidth: "360px" }}>
+          <ByteBuddy mood="think" title="Let's investigate! 🔍" size={56} compact>
+            Read the website name letter by letter. Tap clues if you need help, and I'll explain each answer!
+          </ByteBuddy>
+        </div>
         <button onClick={() => setGameState("playing")} style={{
           background: "linear-gradient(135deg,#a78bfa,#7c3aed)", color: "white",
           border: "none", padding: "14px 36px", borderRadius: "14px",
@@ -692,6 +692,13 @@ function KidsGame() {
         <p style={{ color: "#facc15", fontWeight: "bold", fontSize: "20px", margin: 0 }}>
           Score: {score}
         </p>
+        <div style={{ width: "100%", maxWidth: "360px" }}>
+          <ByteBuddy mood={accuracy >= 60 ? "happy" : "oops"} title={accuracy >= 60 ? "Great detective work! 🎉" : "Good try, Guardian!"} size={56} compact>
+            {accuracy >= 60
+              ? "You're getting really good at spotting fake websites!"
+              : "Fake sites are tricky. Remember: read the name letter by letter. Let's try again!"}
+          </ByteBuddy>
+        </div>
         <div style={{
           display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px",
           background: "rgba(167,139,250,0.08)", border: "1px solid rgba(167,139,250,0.25)",
@@ -813,19 +820,25 @@ function KidsGame() {
           })}
         </div>
 
-        {/* Result feedback */}
+        {/* Byte explains the answer */}
         {result && (
-          <div style={{
-            textAlign: "center", fontWeight: "bold", fontSize: "16px", marginBottom: "12px",
-            color: result === "correct" ? "#22c55e" : "#ef4444"
-          }}>
-            {result === "correct"
-              ? `✅ That's right! ${scenario.status === "ok" ? "This site is safe." : "Good catch — that was dangerous!"}`
-              : `❌ Not quite. That site was ${scenario.status === "ok" ? "actually safe" : "dangerous"}!`}
+          <div style={{ marginBottom: "12px" }}>
+            <ByteBuddy mood={result === "correct" ? "happy" : "oops"} title={byteOpener(result === "correct", scenario.id)}>
+              {scenario.status === "ok" ? "This one was safe. " : "This one was dangerous! "}
+              {scenario.clues[0]}
+            </ByteBuddy>
           </div>
         )}
 
-        {/* Answer buttons */}
+        {/* Answer buttons (swap to Next once answered) */}
+        {result ? (
+          <button onClick={goNext} autoFocus style={{
+            width: "100%", padding: "16px", borderRadius: "14px", border: "2px solid #a78bfa",
+            background: "rgba(167,139,250,0.15)", color: "#c4b5fd", fontWeight: "900", fontSize: "17px", cursor: "pointer"
+          }}>
+            {lives <= 0 || index + 1 >= total ? "See my score 🏁" : "Next website →"}
+          </button>
+        ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
           <button onClick={() => choose("ok")} disabled={locked} style={{
             padding: "16px", borderRadius: "14px",
@@ -844,6 +857,7 @@ function KidsGame() {
             🚨 DANGER!
           </button>
         </div>
+        )}
       </div>
     </div>
   );
@@ -892,24 +906,17 @@ function ProGame() {
     setScore(s => s + pts);
     setBreakdown(b => ({ correct: b.correct + (correct ? 1 : 0), wrong: b.wrong + (correct ? 0 : 1) }));
 
-    if (!correct) {
-      const newLives = lives - 1;
-      setLives(newLives);
-      if (newLives <= 0) {
-        setTimeout(() => { setResult(null); setGameState("over"); }, 1500);
-        return;
-      }
-    }
+    if (!correct) setLives(l => l - 1);
+  }
 
-    setTimeout(() => {
-      setResult(null); setLocked(false);
-      if (index + 1 >= total) {
-        setGameState("over");
-      } else {
-        setIndex(i => i + 1);
-        setRevealedClues([]);
-      }
-    }, 1500);
+  function goNext() {
+    setResult(null); setLocked(false);
+    if (lives <= 0 || index + 1 >= total) {
+      setGameState("over");
+    } else {
+      setIndex(i => i + 1);
+      setRevealedClues([]);
+    }
   }
 
   const accentColor = tier === "elite" ? "#facc15" : tier === "junior" ? "#22d3ee" : "#08b6aa";
@@ -968,6 +975,11 @@ function ProGame() {
           </div>
         </div>
 
+        <div style={{ width: "100%", maxWidth: "400px" }}>
+          <ByteBuddy mood="think" title="Ready, detective?" size={56} compact>
+            Fake sites copy real ones closely. Check the exact spelling and anything added before the real name!
+          </ByteBuddy>
+        </div>
         <button onClick={() => setGameState("playing")} style={{
           background: `linear-gradient(135deg,${accentColor},${tier === "elite" ? "#d97706" : "#059f94"})`,
           color: "#000", border: "none", padding: "13px 36px", borderRadius: "14px",
@@ -995,6 +1007,13 @@ function ProGame() {
         <p style={{ color: "#facc15", fontWeight: "bold", fontSize: "20px", margin: 0 }}>
           Score: {score}
         </p>
+        <div style={{ width: "100%", maxWidth: "400px" }}>
+          <ByteBuddy mood={accuracy >= 60 ? "happy" : "oops"} title={accuracy >= 60 ? "Sharp eyes! 🎉" : "Don't give up!"} size={56} compact>
+            {accuracy >= 60
+              ? "Those fakes didn't fool you. Try a harder level next!"
+              : "The sneakiest fakes add words before the real name. Look closely and try again!"}
+          </ByteBuddy>
+        </div>
         <div style={{
           display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px",
           background: `rgba(8,182,170,0.06)`, border: "1px solid rgba(8,182,170,0.2)",
@@ -1135,20 +1154,23 @@ function ProGame() {
               );
             })}
 
-            {/* Feedback */}
+            {/* Byte explains the answer */}
             {result && (
-              <div style={{
-                textAlign: "center", fontWeight: "bold", fontSize: "13px", padding: "8px",
-                color: result === "correct" ? "#22c55e" : "#ef4444",
-                background: result === "correct" ? "rgba(34,197,94,0.08)" : "rgba(239,68,68,0.08)",
-                borderRadius: "10px", border: `1px solid ${result === "correct" ? "#22c55e" : "#ef4444"}`
-              }}>
-                {result === "correct"
-                  ? `✅ Correct! ${scenario.status === "safe" ? "This site is legitimate." : "Good catch — malicious site!"}`
-                  : `❌ Wrong. That site was ${scenario.status === "safe" ? "actually safe." : "malicious."}`}
-              </div>
+              <ByteBuddy mood={result === "correct" ? "happy" : "oops"} title={byteOpener(result === "correct", scenario.id)} size={48} compact>
+                {scenario.status === "safe" ? "This one was legit. " : "This one was fake! "}
+                {scenario.clues[0]}
+              </ByteBuddy>
             )}
 
+            {result ? (
+              <button onClick={goNext} autoFocus style={{
+                marginTop: "auto", width: "100%", padding: "14px 8px", borderRadius: "12px",
+                border: `2px solid ${accentColor}`, background: "rgba(8,182,170,0.12)", color: accentColor,
+                fontWeight: "900", fontSize: "15px", cursor: "pointer"
+              }}>
+                {lives <= 0 || index + 1 >= total ? "See my score 🏁" : "Next website →"}
+              </button>
+            ) : (
             <div style={{ marginTop: "auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
               <button onClick={() => choose("safe")} disabled={locked} style={{
                 padding: "14px 8px", borderRadius: "12px",
@@ -1167,6 +1189,7 @@ function ProGame() {
                 🚨 FAKE
               </button>
             </div>
+            )}
           </div>
         </div>
       </div>

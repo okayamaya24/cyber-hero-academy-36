@@ -1,3 +1,5 @@
+import ByteBuddy from "../../shared/ByteBuddy";
+
 export default function MissionPanel({
   words,
   foundWords,
@@ -76,23 +78,13 @@ export default function MissionPanel({
       </div>
 
       {message && (
-        <div
-          key={message}
-          style={{
-            marginTop: "18px",
-            backgroundColor: "#081225",
-            border: "1px solid rgba(255,255,255,0.12)",
-            borderRadius: "18px",
-            padding: "16px",
-            fontSize: "clamp(18px, 1.4vw, 30px)",
-            fontWeight: "900",
-            color: "#ffd21f",
-            textAlign: "center",
-            boxShadow: "0 0 20px rgba(255,210,31,0.15)",
-            animation: "popFeedback 0.35s ease"
-          }}
-        >
-          {message}
+        <div key={message} style={{ marginTop: "18px", animation: "popFeedback 0.35s ease" }}>
+          <ByteBuddy
+            mood={/❌|try|keep searching|wasn’t|wasn't/i.test(message) ? "oops" : /scanning/i.test(message) ? "think" : "happy"}
+            title={message.replace(/^(❌|✅)\s*/, "")}
+            size={52}
+            compact
+          />
         </div>
       )}
 

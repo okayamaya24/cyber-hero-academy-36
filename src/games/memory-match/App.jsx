@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import ByteBuddy from "../shared/ByteBuddy";
 import { saveMemoryMatchResult } from "./lib/saveMemoryMatchResult";
 import { generateMemoryMatchPairs } from "./lib/generateMemoryMatchPairs";
 
@@ -183,6 +184,7 @@ export default function App() {
   const [attempts, setAttempts] = useState(0);
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [message, setMessage] = useState("Flip cards to match cyber terms!");
+  const [byteMood, setByteMood] = useState("think");
   const [missionComplete, setMissionComplete] = useState(false);
   const [resultSaved, setResultSaved] = useState(false);
   const [savingResult, setSavingResult] = useState(false);
@@ -207,7 +209,8 @@ export default function App() {
   useEffect(() => {
     if (matchedPairIds.length === pairs) {
       setMissionComplete(true);
-      setMessage("Mission complete!");
+      setByteMood("happy");
+      setMessage("Mission complete! You matched every cyber word!");
     }
   }, [matchedPairIds, pairs]);
 
@@ -295,6 +298,7 @@ export default function App() {
   setMissionComplete(false);
   setResultSaved(false);
   setSavingResult(false);
+  setByteMood("think");
   setMessage("Byte is building your memory mission...");
 
   const fallbackPairs = PAIRS_BY_TIER[nextTier];
@@ -313,10 +317,12 @@ export default function App() {
     }
 
     setCards(buildCards(cleanedPairs));
+    setByteMood("think");
     setMessage("Flip cards to match cyber terms!");
   } catch (error) {
     console.error("AI memory mission failed. Using fallback pairs:", error);
     setCards(buildCards(fallbackPairs));
+    setByteMood("think");
     setMessage("Backup mission loaded. Flip cards to match cyber terms!");
   }
 }
@@ -349,17 +355,18 @@ export default function App() {
       if (isMatch) {
         setMatchedPairIds((prev) => [...prev, first.pairId]);
 
-        setMessage(
-          `✅ Match found: ${
-            first.type === "term" ? first.text : second.text
-          }!`
-        );
+        const term = first.type === "term" ? first : second;
+        const meaning = first.type === "term" ? second : first;
+        setByteMood("happy");
+        const def = meaning.text.trim().replace(/[.!?]+$/, "");
+        setMessage(`${term.text}: ${def.charAt(0).toLowerCase()}${def.slice(1)}! 🎉`);
 
         setTimeout(() => {
           setFlippedCards([]);
         }, 700);
       } else {
-        setMessage("❌ Not a match. Try again!");
+        setByteMood("oops");
+        setMessage("Not a match. Remember where those were and try again! 🧠");
 
         setTimeout(() => {
           setFlippedCards([]);
@@ -441,14 +448,9 @@ export default function App() {
               Match cybersecurity words with their meanings.
             </p>
 
-            <p
-              style={{
-                color: "#facc15",
-                fontWeight: "bold"
-              }}
-            >
-              {message}
-            </p>
+            <div style={{ maxWidth: "520px", margin: "12px auto 0" }}>
+              <ByteBuddy mood={byteMood} title={message} size={52} compact />
+            </div>
           </div>
 
           <div
@@ -633,6 +635,12 @@ export default function App() {
               >
                 🎉 Mission Complete!
               </h1>
+
+              <div style={{ marginBottom: "16px" }}>
+                <ByteBuddy mood="happy" title="You've got a great memory! 🧠" size={52} compact>
+                  Knowing these words helps you spot tricks faster in real life. Try a harder level next!
+                </ByteBuddy>
+              </div>
 
               <div
                 style={{

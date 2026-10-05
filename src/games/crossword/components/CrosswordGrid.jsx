@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import ByteBuddy from "../../shared/ByteBuddy";
 import { saveCrosswordResult } from "../lib/saveCrosswordResult";
 
 function getCellNumber(words, row, col) {
@@ -470,6 +471,28 @@ export default function CrosswordGrid({
         💡 Hints Used: {hintsUsed}
       </div>
 
+      {/* Byte reacts to Check */}
+      {!completed && (() => {
+        let right = 0, wrong = 0, empty = 0;
+        grid.forEach((row, r) => row.forEach((cell, c) => {
+          if (!cell) return;
+          const typed = userGrid[r]?.[c];
+          if (!typed) empty++;
+          else if (typed === getCorrectLetter(grid, r, c)) right++;
+          else wrong++;
+        }));
+        const b = !showFeedback
+          ? { mood: "think", title: "Pick a clue and type your answer!", text: "Stuck? Tap Hint and I'll fill in a letter for you." }
+          : wrong === 0
+          ? { mood: "happy", title: "Every letter so far is right! 🎉", text: empty > 0 ? `Just ${empty} square${empty === 1 ? "" : "s"} left to fill.` : "" }
+          : { mood: "oops", title: `${wrong} letter${wrong === 1 ? " needs" : "s need"} fixing`, text: "The red squares are wrong. Read the clue again, or tap Hint!" };
+        return (
+          <div style={{ margin: "10px 0 14px" }}>
+            <ByteBuddy mood={b.mood} title={b.title} size={48} compact>{b.text || null}</ByteBuddy>
+          </div>
+        );
+      })()}
+
       {completed && (
         <div
           style={{
@@ -504,6 +527,12 @@ export default function CrosswordGrid({
             >
               🎉 Mission Complete!
             </h1>
+
+            <div style={{ marginBottom: "14px" }}>
+              <ByteBuddy mood="happy" title="Crossword champion! 🏆" size={52} compact>
+                {hintsUsed === 0 ? "No hints at all? You really know your cyber words!" : "Great job! Try it next time with fewer hints."}
+              </ByteBuddy>
+            </div>
 
             <div
               style={{

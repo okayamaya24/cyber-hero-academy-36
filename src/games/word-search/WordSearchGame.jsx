@@ -441,11 +441,11 @@ const [secondsElapsed, setSecondsElapsed] = useState(0);
           `🎉 NICE! ${match} was hidden well!`,
           `🛡️ Cyber Hero move! You found ${match}!`,
           `🚀 Amazing detective skills!`,
-          `💙 Byte is proud of you!`,
+          `💙 I'm so proud of you!`,
           `🔥 SUPER FIND: ${match}!`,
           `🎯 Excellent scanning!`,
           `✨ You’re becoming a cyber expert!`,
-          `🏆 Great teamwork with Byte!`
+          `🏆 Great teamwork, partner!`
         ];
         setMessage(juniorPraise[Math.floor(Math.random() * juniorPraise.length)]);
       } else {
@@ -463,12 +463,12 @@ const [secondsElapsed, setSecondsElapsed] = useState(0);
           "❌ Almost! Try scanning again!",
           "🕵️ Keep searching, Cyber Hero!",
           "🔍 That wasn’t the full word yet!",
-          "⚡ Byte says try another path!",
+          "⚡ Try another path!",
           "💙 You got this! Try again!"
         ];
         setMessage(juniorFails[Math.floor(Math.random() * juniorFails.length)]);
       } else {
-        setMessage("❌ Byte says that sequence is incorrect.");
+        setMessage("❌ That sequence isn't a word. Try again!");
       }
       setStreak(0);
     }
