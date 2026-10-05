@@ -225,7 +225,7 @@ export default function LearningModeTab({ completedMissionIds, missionProgress, 
               <BookOpen className="h-5 w-5 text-purple-400" /> Learning Path
             </h2>
             <p className="text-sm text-gray-400 mt-0.5">
-              Complete lessons to unlock games — learn first, then play! 🎯
+              Quick lessons with your guides. Finish one to earn its badge! 🏅
             </p>
           </div>
           <div className="text-right">
@@ -267,9 +267,9 @@ export default function LearningModeTab({ completedMissionIds, missionProgress, 
       >
         <span className="text-2xl flex-shrink-0">💡</span>
         <div>
-          <p className="text-sm font-black text-amber-300">Complete lessons → unlock games!</p>
+          <p className="text-sm font-black text-amber-300">Bonus training!</p>
           <p className="text-xs text-gray-400 mt-0.5 font-medium">
-            Each lesson you finish unlocks a whole category of games in the Games tab. The more you learn, the more games you get to play!
+            You can play any game in the Games tab right now. Lessons are extra training that help you beat the villains and earn badges.
           </p>
         </div>
       </motion.div>

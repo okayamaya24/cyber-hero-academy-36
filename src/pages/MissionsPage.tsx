@@ -371,7 +371,7 @@ export default function MissionsPage() {
   const queryClient = useQueryClient();
 
   // Tab state — must be before any early returns (React hooks rules)
-  const [activeTab, setActiveTab] = useState<"learn" | "games">("learn");
+  const [activeTab, setActiveTab] = useState<"learn" | "games">("games");
 
   // Quiz gameplay state
   const [activeMission, setActiveMission] = useState<MissionDef | null>(null);
@@ -1409,6 +1409,13 @@ export default function MissionsPage() {
     },
   ];
 
+  // Only show games kids can actually play. Unbuilt games stay in the catalog
+  // above and appear automatically once their id is added to CUSTOM_BUILT_GAMES.
+  const playableQuizMissions = quizMissions.filter((g) => !g.locked);
+  const playableSections = sections
+    .map((section) => ({ ...section, games: section.games.filter((g: { locked?: boolean }) => !g.locked) }))
+    .filter((section) => section.games.length > 0);
+
   // Featured game (Byte's Pick — rotates daily)
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
   const featuredGame = WORD_SEARCH_PUZZLES[dayOfYear % WORD_SEARCH_PUZZLES.length];
@@ -1492,17 +1499,6 @@ export default function MissionsPage() {
         <div className="container mx-auto max-w-5xl">
           <div className="flex gap-2">
             <button
-              onClick={() => setActiveTab("learn")}
-              className={`flex items-center gap-2 rounded-t-xl px-6 py-3 text-sm font-extrabold transition-all ${
-                activeTab === "learn"
-                  ? "bg-white text-purple-700 shadow-lg"
-                  : "bg-white/10 text-gray-400 hover:bg-white/15 hover:text-white"
-              }`}
-            >
-              <BookOpen className="h-4 w-4" />
-              📚 Learn
-            </button>
-            <button
               onClick={() => setActiveTab("games")}
               className={`flex items-center gap-2 rounded-t-xl px-6 py-3 text-sm font-extrabold transition-all ${
                 activeTab === "games"
@@ -1512,6 +1508,17 @@ export default function MissionsPage() {
             >
               <Gamepad2 className="h-4 w-4" />
               🎮 Games
+            </button>
+            <button
+              onClick={() => setActiveTab("learn")}
+              className={`flex items-center gap-2 rounded-t-xl px-6 py-3 text-sm font-extrabold transition-all ${
+                activeTab === "learn"
+                  ? "bg-white text-purple-700 shadow-lg"
+                  : "bg-white/10 text-gray-400 hover:bg-white/15 hover:text-white"
+              }`}
+            >
+              <BookOpen className="h-4 w-4" />
+              📚 Learn
             </button>
           </div>
         </div>
@@ -1537,21 +1544,6 @@ export default function MissionsPage() {
 
         {/* ── GAMES TAB ── */}
         {activeTab === "games" && (<>
-
-        {/* ── LEARN FIRST BANNER ── */}
-        {completedMissionIds.size === 0 && (
-          <motion.div
-            className="mb-8 flex items-start gap-3 rounded-2xl border border-purple-500/25 bg-purple-500/8 p-4"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <span className="text-2xl flex-shrink-0">🔒</span>
-            <div className="flex-1">
-              <p className="text-sm font-extrabold text-purple-300">Complete a lesson to unlock games!</p>
-              <p className="text-xs text-gray-400 mt-0.5">Head to the <button onClick={() => setActiveTab("learn")} className="text-purple-400 underline font-bold">Learn tab</button> first — finishing lessons unlocks games here.</p>
-            </div>
-          </motion.div>
-        )}
 
         {/* ── CONTINUE PLAYING ── (only shown when there are in-progress missions) */}
         {inProgressMissions.length > 0 && (
@@ -1668,9 +1660,10 @@ export default function MissionsPage() {
         )}
 
         {/* ── QUIZ CHALLENGES ── */}
-        <SectionHeader icon="🎮" title="Quiz Challenges" count={quizMissions.length} color="#fbbf24" />
+        {playableQuizMissions.length > 0 && (<>
+        <SectionHeader icon="🎮" title="Quiz Challenges" count={playableQuizMissions.length} color="#fbbf24" />
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {quizMissions.map((g) => (
+          {playableQuizMissions.map((g) => (
             <NeonGameCard
               key={g.id}
               title={g.title}
@@ -1682,9 +1675,10 @@ export default function MissionsPage() {
             />
           ))}
         </div>
+        </>)}
 
         {/* ── ALL GAME SECTIONS ── */}
-        {sections.map((section) => {
+        {playableSections.map((section) => {
           const sectionTheme = CATEGORY_THEMES[section.badge] ?? CATEGORY_THEMES["Quiz"];
           return (
             <div key={section.title}>
