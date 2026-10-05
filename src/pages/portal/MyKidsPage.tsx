@@ -475,6 +475,20 @@ export default function MyKidsPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const moveToClassMutation = useMutation({
+    mutationFn: async ({ childId, classId }: { childId: string; classId: string | null }) => {
+      const { error } = await supabase.from("child_profiles").update({ class_id: classId }).eq("id", childId);
+      if (error) throw error;
+      return classId;
+    },
+    onSuccess: (classId) => {
+      queryClient.invalidateQueries({ queryKey: ["children"] });
+      const cls = classes.find((c) => c.id === classId);
+      toast.success(cls ? `Moved to ${cls.name}` : "Removed from class");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("child_profiles").delete().eq("id", id);
@@ -792,10 +806,33 @@ export default function MyKidsPage() {
                           <Badge variant="secondary" className="border-0 text-xs">
                             Level {child.level}
                           </Badge>
-                          {childClass && (
-                            <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-                              {childClass.name}
-                            </Badge>
+                          {isSchool && classes.length > 0 ? (
+                            <select
+                              aria-label={`Class for ${child.name}`}
+                              value={childClass?.id ?? ""}
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) =>
+                                moveToClassMutation.mutate({ childId: child.id, classId: e.target.value || null })
+                              }
+                              className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${
+                                childClass
+                                  ? "border-primary/30 bg-primary/5 text-primary"
+                                  : "border-dashed border-amber-400 bg-amber-50 text-amber-700"
+                              }`}
+                            >
+                              <option value="">No class</option>
+                              {classes.map((cls) => (
+                                <option key={cls.id} value={cls.id}>
+                                  {cls.name}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            childClass && (
+                              <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+                                {childClass.name}
+                              </Badge>
+                            )
                           )}
                         </div>
                         <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
