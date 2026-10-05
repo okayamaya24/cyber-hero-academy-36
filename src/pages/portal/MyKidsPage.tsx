@@ -42,9 +42,57 @@ import {
 import { MISSIONS, ALL_BADGES } from "@/data/missions";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import { motion } from "framer-motion";
+import { generateKidPassword } from "@/lib/kidPassword";
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
 const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
+
+interface StudentLogin {
+  name: string;
+  username: string;
+  password: string;
+}
+
+function escapeHtml(text: string) {
+  return text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+}
+
+function printLoginCards(logins: StudentLogin[]) {
+  const win = window.open("", "_blank");
+  if (!win) {
+    toast.error("Please allow pop-ups to print login cards");
+    return;
+  }
+  const cards = logins
+    .map(
+      (l) => `<div class="card"><h2>${escapeHtml(l.name)}</h2>
+        <p>Website: <b>${escapeHtml(window.location.origin)}</b></p>
+        <p>Username: <b>${escapeHtml(l.username)}</b></p>
+        <p>Password: <b>${escapeHtml(l.password)}</b></p></div>`,
+    )
+    .join("");
+  win.document.write(`<!doctype html><html><head><title>Student Logins</title><style>
+    body{font-family:system-ui,sans-serif;margin:24px}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .card{border:2px dashed #999;border-radius:12px;padding:12px 16px;break-inside:avoid}
+    h2{margin:0 0 8px;font-size:18px} p{margin:4px 0;font-size:14px} b{font-family:monospace;font-size:15px}
+  </style></head><body><h1>🛡️ Cyber Hero Academy — Student Logins</h1><div class="grid">${cards}</div></body></html>`);
+  win.document.close();
+  win.focus();
+  win.print();
+}
+
+function downloadLoginsCsv(logins: StudentLogin[]) {
+  const quote = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const rows = [["name", "username", "password"], ...logins.map((l) => [l.name, l.username, l.password])];
+  const blob = new Blob([rows.map((r) => r.map(quote).join(",")).join("\n")], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "student-logins.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 interface KidForm {
   name: string;
@@ -121,6 +169,8 @@ export default function MyKidsPage() {
   const [newClassName, setNewClassName] = useState("");
   const [newClassGrade, setNewClassGrade] = useState("");
   const [studentClassId, setStudentClassId] = useState("");
+  const [studentPassword, setStudentPassword] = useState(generateKidPassword);
+  const [newLogins, setNewLogins] = useState<StudentLogin[] | null>(null);
 
   // Classes query (teacher only)
   const { data: classes = [] } = useQuery({
@@ -303,7 +353,7 @@ export default function MyKidsPage() {
   }, [isSchool, filteredChildren, totalMissionsDone]);
 
   const autoUsername = isSchool ? generateUsername(firstName, lastName, grade) : form.username;
-  const autoPassword = isSchool ? `CyberHero${autoUsername}!` : form.password;
+  const autoPassword = isSchool ? studentPassword : form.password;
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -355,9 +405,13 @@ export default function MyKidsPage() {
       });
       await supabase.from("parent_kid_links").insert({ parent_id: user.id, kid_id: kidId });
 
-      return { username: u, name };
+      return { username: u, name, password: pwd };
     },
     onSuccess: (result) => {
+      if (isSchool) {
+        setNewLogins([result]);
+        setStudentPassword(generateKidPassword());
+      }
       queryClient.invalidateQueries({ queryKey: ["children"] });
       setDrawerOpen(false);
       setForm(emptyForm);
@@ -401,7 +455,7 @@ export default function MyKidsPage() {
         const g = grade || "3";
         const username = generateUsername(first, last, g);
         const age = GRADE_TO_AGE[g] ?? 8;
-        return { name: `${first} ${last}`, username, age, password: `CyberHero${username}!` };
+        return { name: `${first} ${last}`, username, age, password: generateKidPassword() };
       })
       .filter((s) => s.username && s.name.trim());
 
@@ -416,6 +470,7 @@ export default function MyKidsPage() {
     }
 
     let created = 0;
+    const createdLogins: StudentLogin[] = [];
     for (const student of students) {
       toast.info(`Creating ${student.name}... (${created + 1}/${students.length})`);
       try {
@@ -454,6 +509,7 @@ export default function MyKidsPage() {
           });
           await supabase.from("parent_kid_links").insert({ parent_id: teacherId, kid_id: kidId });
           created++;
+          createdLogins.push({ name: student.name, username: student.username, password: student.password });
         }
       } catch {
         await supabase.auth.setSession({ access_token: teacherAccessToken, refresh_token: teacherRefreshToken });
@@ -462,6 +518,7 @@ export default function MyKidsPage() {
     }
     queryClient.invalidateQueries({ queryKey: ["children"] });
     toast.success(`✅ ${created}/${students.length} students imported!`);
+    if (createdLogins.length > 0) setNewLogins(createdLogins);
     (e.target as HTMLInputElement).value = "";
   };
 
@@ -479,6 +536,7 @@ export default function MyKidsPage() {
             setLastName("");
             setGrade("");
             setStudentClassId("");
+            setStudentPassword(generateKidPassword());
             setDrawerOpen(true);
           }}
           className="bg-primary hover:bg-primary/90"
@@ -1037,6 +1095,46 @@ export default function MyKidsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* New student logins — shown once, right after accounts are created */}
+      <Dialog open={!!newLogins} onOpenChange={(open) => !open && setNewLogins(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>🔑 Save these logins now</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Passwords can't be shown again after you close this. Print login cards or download the list to hand out.
+          </p>
+          <div className="max-h-72 overflow-y-auto rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2">Student</th>
+                  <th className="px-3 py-2">Username</th>
+                  <th className="px-3 py-2">Password</th>
+                </tr>
+              </thead>
+              <tbody>
+                {newLogins?.map((l) => (
+                  <tr key={l.username} className="border-t border-border">
+                    <td className="px-3 py-2">{l.name}</td>
+                    <td className="px-3 py-2 font-mono font-bold">{l.username}</td>
+                    <td className="px-3 py-2 font-mono font-bold">{l.password}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => newLogins && downloadLoginsCsv(newLogins)}>
+              Download CSV
+            </Button>
+            <Button variant="outline" onClick={() => newLogins && printLoginCards(newLogins)}>
+              Print Login Cards
+            </Button>
+            <Button onClick={() => setNewLogins(null)}>Done</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
