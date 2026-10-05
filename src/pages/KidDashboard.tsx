@@ -179,7 +179,7 @@ export default function KidDashboard() {
           {/* Name + XP */}
           <motion.div className="flex-1" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
             <p className="mb-0.5 text-[11px] font-black uppercase tracking-widest text-purple-300/70">Welcome back, Guardian</p>
-            <h1 className="text-3xl font-black text-white">Hey, {child.name}! 👋</h1>
+            <h1 className="text-3xl font-black text-white">Hey, {child.name.trim().split(/\s+/)[0]}! 👋</h1>
             <div className="mt-1.5 mb-3 inline-flex items-center gap-1.5 rounded-full border border-purple-500/40 bg-purple-500/20 px-3 py-1 text-xs font-bold text-purple-200">
               ⚡ {rank.title} · Level {child.level}
             </div>

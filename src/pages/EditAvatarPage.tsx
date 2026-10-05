@@ -43,7 +43,10 @@ export default function EditAvatarPage() {
       return;
     }
 
-    await queryClient.invalidateQueries({ queryKey: ["child", activeChildId] });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["child", activeChildId] }),
+      queryClient.invalidateQueries({ queryKey: ["dashboard_role", activeChildId] }),
+    ]);
     toast.success("Hero updated! 🎉");
     navigate("/dashboard");
   };

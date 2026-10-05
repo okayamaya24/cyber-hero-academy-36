@@ -125,6 +125,12 @@ export default function CreateChildPage() {
 
       if (error) throw error;
 
+      // Refresh cached copies from before the hero existed, or the dashboard shows the
+      // old placeholder (and the router would send them back here)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["child", user.id] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard_role", user.id] }),
+      ]);
       setActiveChildId(user.id);
       toast.success("Your Cyber Hero is ready! 🦸");
       navigate("/kid-dashboard", { replace: true });
