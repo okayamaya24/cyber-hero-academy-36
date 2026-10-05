@@ -1,4 +1,6 @@
 import { useState } from "react";
+import MessageCard from "./MessageCard";
+import { STARTER_CARDS, PRO_CARDS } from "./cards";
 
 // ── Age detection ─────────────────────────────────────────────────────────────
 function getMode() {
@@ -8,205 +10,6 @@ function getMode() {
   if (age > 8)              return "pro";
   return "picker";
 }
-
-// ── Kids cards (ages 5-8) ─────────────────────────────────────────────────────
-const KIDS_CARDS = [
-  {
-    id: "k1",
-    emoji: "🎮",
-    text: "A message says: \"Give us your Roblox password to get FREE Robux!\"",
-    type: "danger",
-    clue: "Never share your password — not even for free stuff! Real games never ask for it."
-  },
-  {
-    id: "k2",
-    emoji: "🧸",
-    text: "Your mum texts: \"I'm at the shops, want me to pick up a snack?\"",
-    type: "ok",
-    clue: "It's from your mum! A message from someone you know and trust is fine."
-  },
-  {
-    id: "k3",
-    emoji: "🍬",
-    text: "A stranger online says: \"Come meet me at the park, I have free candy!\"",
-    type: "danger",
-    clue: "Never meet a stranger from the internet! Always tell a grown-up."
-  },
-  {
-    id: "k4",
-    emoji: "🏫",
-    text: "Your teacher posts: \"Remember to bring your library book tomorrow!\"",
-    type: "ok",
-    clue: "A reminder from your teacher is totally safe and expected."
-  },
-  {
-    id: "k5",
-    emoji: "🎁",
-    text: "A pop-up says: \"You WON a free toy! Send your home address to claim it!\"",
-    type: "danger",
-    clue: "Never give your home address to strangers online — this is a trap!"
-  },
-  {
-    id: "k6",
-    emoji: "👾",
-    text: "Your friend says in the game chat: \"Want to join my server? Here's the invite!\"",
-    type: "ok",
-    clue: "An invite from a real friend you already know is fine to accept."
-  },
-  {
-    id: "k7",
-    emoji: "📱",
-    text: "A message says: \"Your account will be DELETED in 1 hour unless you click here!\"",
-    type: "danger",
-    clue: "Scary countdown messages are tricks to make you panic and click! Ignore them."
-  },
-  {
-    id: "k8",
-    emoji: "📚",
-    text: "The school library app says: \"Your book is due back in 2 days.\"",
-    type: "ok",
-    clue: "A reminder from your school app is normal and safe."
-  },
-  {
-    id: "k9",
-    emoji: "🤑",
-    text: "A website says: \"Answer 1 question and win $1,000! Enter your name and address!\"",
-    type: "danger",
-    clue: "Real contests don't work this way. Never give personal info to random websites."
-  },
-  {
-    id: "k10",
-    emoji: "⚽",
-    text: "Your football coach messages the group: \"Training moved to 4pm this Saturday.\"",
-    type: "ok",
-    clue: "A message from your coach about training is completely normal and safe."
-  },
-];
-
-const ALL_CARDS = [
-  // ── SCAMS ──
-  {
-    id: 1,
-    text: "You won a FREE iPhone! Click now to claim your prize!",
-    type: "scam",
-    clue: "\"Too good to be true\" — real companies don't randomly give away free phones."
-  },
-  {
-    id: 2,
-    text: "Verify your password immediately at amaz0n-login.net",
-    type: "scam",
-    clue: "Fake URL — notice the zero (0) swapped for the letter O. Always check the domain."
-  },
-  {
-    id: 3,
-    text: "Click this link or your game account will be deleted in 24 hours!",
-    type: "scam",
-    clue: "Scare tactic — real companies never threaten to delete accounts via random links."
-  },
-  {
-    id: 4,
-    text: "URGENT: Your Netflix is suspended. Login at netflix-verify.com now.",
-    type: "scam",
-    clue: "Fake domain — official Netflix emails only link to netflix.com, nothing else."
-  },
-  {
-    id: 5,
-    text: "Congrats! You've been selected for a $1,000 gift card. Claim in 10 minutes!",
-    type: "scam",
-    clue: "Fake prize + fake urgency — scammers use time pressure to stop you from thinking."
-  },
-  {
-    id: 6,
-    text: "Your PayPal is limited. Fix it now at paypal-secure-login.com",
-    type: "scam",
-    clue: "Fake domain — all legitimate PayPal links go through paypal.com only."
-  },
-  {
-    id: 7,
-    text: "Hey it's me, lost my phone — can you send $50 on Cash App real quick?",
-    type: "scam",
-    clue: "Impersonation scam — always call the person directly to verify before sending money."
-  },
-  {
-    id: 8,
-    text: "WARNING: 3 viruses detected on your device! Call 1-800-555-0199 immediately!",
-    type: "scam",
-    clue: "Fake tech support — your browser cannot detect viruses. This is a scare tactic."
-  },
-  {
-    id: 9,
-    text: "IRS Notice: Reply with your Social Security Number to receive your refund.",
-    type: "scam",
-    clue: "Government agencies never ask for sensitive info over text or email."
-  },
-  {
-    id: 10,
-    text: "You are our 1,000,000th visitor! Send us your home address to claim your prize.",
-    type: "scam",
-    clue: "Classic prize scam — no legitimate company awards prizes this way."
-  },
-  // ── SAFE ──
-  {
-    id: 11,
-    text: "Your teacher shared the homework assignment in Google Classroom.",
-    type: "safe",
-    clue: "Expected message from a trusted, familiar source with no suspicious links."
-  },
-  {
-    id: 12,
-    text: "Reminder from your bank: We will NEVER ask for your password by email or text.",
-    type: "safe",
-    clue: "A safety reminder — it's not asking you for anything, just informing you."
-  },
-  {
-    id: 13,
-    text: "Your Amazon order has shipped! Track your package in the Amazon app.",
-    type: "safe",
-    clue: "Expected order update that directs you to the official app, not an unknown link."
-  },
-  {
-    id: 14,
-    text: "Google Alert: New sign-in to your account. Wasn't you? Secure it at google.com",
-    type: "safe",
-    clue: "Legitimate security alert pointing to the real google.com domain."
-  },
-  {
-    id: 15,
-    text: "Doctor's office: Your appointment is confirmed for Tuesday at 2:00 PM.",
-    type: "safe",
-    clue: "Expected reminder from a known source — not asking for personal info."
-  },
-  {
-    id: 16,
-    text: "Spotify: Your subscription renews on the 15th. Manage it at spotify.com/account.",
-    type: "safe",
-    clue: "Legitimate notification using the correct official spotify.com domain."
-  },
-  {
-    id: 17,
-    text: "School newsletter: Picture day is this Friday — dress code reminder.",
-    type: "safe",
-    clue: "Expected communication from a known institution with no suspicious requests."
-  },
-  {
-    id: 18,
-    text: "Library reminder: Your borrowed book is due back in 3 days.",
-    type: "safe",
-    clue: "Routine reminder with no links and no requests for personal information."
-  },
-  {
-    id: 19,
-    text: "Instagram: Your friend commented on your photo.",
-    type: "safe",
-    clue: "Normal social notification — not asking you to do anything sensitive."
-  },
-  {
-    id: 20,
-    text: "Password reset requested for your account. Ignore this email if it wasn't you.",
-    type: "safe",
-    clue: "Standard security email — it tells you to ignore it if you didn't request it."
-  },
-];
 
 function shuffle(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
@@ -292,7 +95,7 @@ function KidsGame() {
   const [result, setResult]   = useState(null);
 
   function startGame() {
-    setCards(shuffle(KIDS_CARDS));
+    setCards(shuffle(STARTER_CARDS));
     setIndex(0); setScore(0); setStreak(0); setLives(5);
     setCorrect(0); setWrong(0); setLocked(false); setResult(null);
     setScreen("playing");
@@ -311,13 +114,14 @@ function KidsGame() {
     setResult(isCorrect ? "correct" : "wrong");
     setScore(newScore); setStreak(newStreak); setLives(newLives);
     if (isCorrect) setCorrect(c => c + 1); else setWrong(w => w + 1);
+  }
 
-    setTimeout(() => {
-      setResult(null); setLocked(false);
-      const next = index + 1;
-      if (newLives <= 0 || next >= cards.length) setScreen("over");
-      else setIndex(next);
-    }, 1800);
+  // The explanation stays up until the kid taps Next — that's where the learning happens
+  function goNext() {
+    setResult(null); setLocked(false);
+    const next = index + 1;
+    if (lives <= 0 || next >= cards.length) setScreen("over");
+    else setIndex(next);
   }
 
   if (screen === "start") return <KidsStart onStart={startGame} />;
@@ -397,10 +201,7 @@ function KidsGame() {
           textAlign: "center", marginBottom: "20px",
           transition: "background 0.2s, border-color 0.2s, box-shadow 0.2s",
         }}>
-          <div style={{ fontSize: "52px", marginBottom: "14px" }}>{card.emoji}</div>
-          <div style={{ fontSize: "clamp(16px,2.8vw,22px)", fontWeight: "bold", lineHeight: 1.4, color: "#f1f5f9" }}>
-            {card.text}
-          </div>
+          <MessageCard card={card} />
 
           {result && (
             <div style={{
@@ -420,9 +221,12 @@ function KidsGame() {
           )}
         </div>
 
-        {/* Big kid-friendly buttons */}
+        {/* Big kid-friendly buttons (swap to a Next button once answered) */}
+        {result ? (
+          <NextButton onClick={goNext} color="#a78bfa" last={lives <= 0 || index + 1 >= cards.length} />
+        ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-          <button onClick={() => answer("ok")} disabled={locked} style={{
+          <button onClick={() => answer("safe")} disabled={locked} style={{
             padding: "26px 16px", borderRadius: "22px",
             border: "3px solid #22c55e",
             background: locked ? "rgba(5,46,26,0.5)" : "#052e1a",
@@ -435,7 +239,7 @@ function KidsGame() {
             <span style={{ fontSize: "22px", fontWeight: "900" }}>LOOKS OK</span>
           </button>
 
-          <button onClick={() => answer("danger")} disabled={locked} style={{
+          <button onClick={() => answer("scam")} disabled={locked} style={{
             padding: "26px 16px", borderRadius: "22px",
             border: "3px solid #ef4444",
             background: locked ? "rgba(59,10,10,0.5)" : "#3b0a0a",
@@ -448,6 +252,7 @@ function KidsGame() {
             <span style={{ fontSize: "22px", fontWeight: "900" }}>DANGER!</span>
           </button>
         </div>
+        )}
       </div>
     </div>
   );
@@ -562,7 +367,7 @@ function ProGame() {
   );
 
   function startGame() {
-    setCards(shuffle(ALL_CARDS));
+    setCards(shuffle(PRO_CARDS));
     setIndex(0);
     setScore(0);
     setStreak(0);
@@ -592,21 +397,22 @@ function ProGame() {
     setLives(newLives);
     setCorrect(newCorrect);
     setWrong(newWrong);
+  }
 
-    setTimeout(() => {
-      setResult(null);
-      setLocked(false);
-      const next = index + 1;
-      if (newLives <= 0 || next >= cards.length) {
-        if (newScore > highScore) {
-          setHighScore(newScore);
-          localStorage.setItem("scam-hs", String(newScore));
-        }
-        setScreen("over");
-      } else {
-        setIndex(next);
+  // The explanation stays up until the player taps Next
+  function goNext() {
+    setResult(null);
+    setLocked(false);
+    const next = index + 1;
+    if (lives <= 0 || next >= cards.length) {
+      if (score > highScore) {
+        setHighScore(score);
+        try { localStorage.setItem("scam-hs", String(score)); } catch { /* storage blocked */ }
       }
-    }, 1600);
+      setScreen("over");
+    } else {
+      setIndex(next);
+    }
   }
 
   if (screen === "start") {
@@ -719,20 +525,7 @@ function ProGame() {
           marginBottom: "18px",
           transition: "background 0.2s, border-color 0.2s, box-shadow 0.2s",
         }}>
-          <div style={{
-            color: "#475569",
-            fontWeight: "bold",
-            textTransform: "uppercase",
-            letterSpacing: "1.5px",
-            fontSize: "11px",
-            marginBottom: "18px",
-          }}>
-            📨 Incoming Message
-          </div>
-
-          <div style={{ fontSize: "clamp(17px,2.8vw,26px)", fontWeight: "900", lineHeight: 1.35 }}>
-            {card.text}
-          </div>
+          <MessageCard card={card} />
 
           {/* Inline feedback — shown on the card itself */}
           {result && (
@@ -753,7 +546,10 @@ function ProGame() {
           )}
         </div>
 
-        {/* SAFE / SCAM buttons */}
+        {/* SAFE / SCAM buttons (swap to a Next button once answered) */}
+        {result ? (
+          <NextButton onClick={goNext} color="#08b6aa" last={lives <= 0 || index + 1 >= cards.length} />
+        ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
           <button
             onClick={() => answer("safe")}
@@ -793,6 +589,7 @@ function ProGame() {
             🚨 SCAM
           </button>
         </div>
+        )}
       </div>
     </div>
   );
@@ -946,6 +743,22 @@ function GameOver({ score, correct, wrong, total, highScore, onPlay }) {
         </button>
       </div>
     </div>
+  );
+}
+
+function NextButton({ onClick, color, last }) {
+  return (
+    <button
+      onClick={onClick}
+      autoFocus
+      style={{
+        width: "100%", padding: "22px", borderRadius: "20px",
+        border: `3px solid ${color}`, background: `${color}22`, color,
+        fontSize: "clamp(18px,2.5vw,24px)", fontWeight: 900, cursor: "pointer",
+      }}
+    >
+      {last ? "See my score 🏁" : "Next message →"}
+    </button>
   );
 }
 
