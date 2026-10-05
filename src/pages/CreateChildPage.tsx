@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import CyberHeroCreator, { type CyberHeroConfig } from "@/components/avatar/CyberHeroCreator";
 import { ArrowLeft, Copy, CheckCircle } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
@@ -43,6 +43,21 @@ export default function CreateChildPage() {
     password?: string;
     confirmPassword?: string;
   }>({});
+
+  // Kid-mode: the kid's own child_profiles row (same id as their login) has their real name.
+  // profile.display_name can be their placeholder login email, which kids should never see.
+  const { data: kidRecord, isLoading: kidRecordLoading } = useQuery({
+    queryKey: ["own_child_profile", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("child_profiles").select("name").eq("id", user!.id).maybeSingle();
+      return data;
+    },
+    enabled: isKidMode && !!user,
+  });
+  const kidFirstName =
+    kidRecord?.name?.trim().split(/\s+/)[0] ||
+    (profile?.display_name && !profile.display_name.includes("@") ? profile.display_name : "") ||
+    "Hero";
 
   // In kid-mode, skip straight to hero builder
   useEffect(() => {
@@ -272,11 +287,13 @@ export default function CreateChildPage() {
   }
 
   if (step === "hero") {
+    // The creator reads childName once on mount, so wait for the kid's name to load
+    if (isKidMode && kidRecordLoading) return null;
     return (
       <CyberHeroCreator
         onSave={handleSaveHero}
         saving={saving}
-        childName={isKidMode ? (profile?.display_name || "Hero") : childName.trim()}
+        childName={isKidMode ? kidFirstName : childName.trim()}
       />
     );
   }
