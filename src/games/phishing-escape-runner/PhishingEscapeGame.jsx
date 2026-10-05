@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+import ByteBuddy, { byteOpener } from "../shared/ByteBuddy";
 
 // Inject lane-dash animation styles once — self-contained so no global CSS needed
 const LANE_STYLE = `
@@ -208,13 +209,13 @@ export default function App() {
       if (bonus > 0) {
         scoreRef.current += bonus;
         setScore(s => s + bonus);
-        showToast(true, "✅ Safe message! +10");
+        showToast(true, "Safe message! +10 ✅");
       }
 
       if (hitBy) {
         collisionLockedRef.current = true;
         setInvulnerable(true);
-        showToast(false, `🚫 "${hitBy.text}" was a trick! ${hitBy.why}`);
+        showToast(false, `"${hitBy.text}" was a trick! ${hitBy.why}`);
         setFooledBy(list => (list.some(t => t.text === hitBy.text) ? list : [...list, hitBy]));
 
         const newLives = livesRef.current - 1;
@@ -388,15 +389,15 @@ export default function App() {
 
         {/* What just happened, and why */}
         {gameState === "playing" && toast && (
-          <div style={{
-            position: "absolute", top: "10px", left: "8px", right: "8px", zIndex: 50,
-            background: toast.good ? "rgba(5,46,26,0.95)" : "rgba(59,10,10,0.96)",
-            border: `2px solid ${toast.good ? "#22c55e" : "#ef4444"}`,
-            borderRadius: "12px", padding: "10px 12px",
-            fontSize: "14px", fontWeight: "bold", lineHeight: 1.35, textAlign: "center",
-            pointerEvents: "none",
-          }}>
-            {toast.text}
+          <div style={{ position: "absolute", top: "8px", left: "8px", right: "8px", zIndex: 50, pointerEvents: "none" }}>
+            <ByteBuddy
+              mood={toast.good ? "happy" : "oops"}
+              title={toast.good ? toast.text : byteOpener(false, toast.text)}
+              size={48}
+              compact
+            >
+              {toast.good ? null : toast.text}
+            </ByteBuddy>
           </div>
         )}
 
@@ -407,8 +408,12 @@ export default function App() {
             display: "flex", flexDirection: "column", alignItems: "center",
             justifyContent: "center", gap: "14px", zIndex: 100, padding: "16px",
           }}>
-            <div style={{ fontSize: "52px" }}>🛡️</div>
             <h2 style={{ color: "#08b6aa", fontSize: "24px", margin: 0 }}>Read fast, Guardian!</h2>
+            <div style={{ width: "100%", maxWidth: "340px" }}>
+              <ByteBuddy mood="think" title="I'll watch your back! 🦊" size={56} compact>
+                If a trick gets through, I'll tell you what gave it away.
+              </ByteBuddy>
+            </div>
             <div style={{
               background: "rgba(8,182,170,0.08)", border: "1px solid rgba(8,182,170,0.25)",
               borderRadius: "14px", padding: "14px 18px", fontSize: "14px",
@@ -456,9 +461,11 @@ export default function App() {
               }
               {fooledBy.length > 0 && (
                 <div style={{ textAlign: "left", marginBottom: "14px" }}>
-                  <p style={{ color: "#facc15", fontWeight: "bold", fontSize: "14px", margin: "0 0 8px" }}>
-                    🔍 Tricks that got you:
-                  </p>
+                  <div style={{ marginBottom: "10px" }}>
+                    <ByteBuddy mood="oops" title="Let's learn from these! 🔍" size={48} compact>
+                      Here are the tricks that got past you. Spot them next time!
+                    </ByteBuddy>
+                  </div>
                   {fooledBy.map(t => (
                     <div key={t.text} style={{
                       background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.3)",

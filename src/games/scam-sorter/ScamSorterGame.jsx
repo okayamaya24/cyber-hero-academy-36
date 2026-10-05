@@ -1,5 +1,6 @@
 import { useState } from "react";
 import MessageCard from "./MessageCard";
+import ByteBuddy, { byteOpener } from "../shared/ByteBuddy";
 import { STARTER_CARDS, PRO_CARDS } from "./cards";
 
 // ── Age detection ─────────────────────────────────────────────────────────────
@@ -204,19 +205,10 @@ function KidsGame() {
           <MessageCard card={card} />
 
           {result && (
-            <div style={{
-              marginTop: "20px", padding: "14px 18px",
-              background: result === "correct" ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
-              border: `1px solid ${result === "correct" ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`,
-              borderRadius: "14px", fontSize: "15px", lineHeight: 1.5, width: "100%",
-            }}>
-              <div style={{ fontSize: "28px", marginBottom: "6px" }}>
-                {result === "correct" ? "🎉" : "😬"}
-              </div>
-              <span style={{ fontWeight: "bold", color: result === "correct" ? "#22c55e" : "#ef4444" }}>
-                {result === "correct" ? "That's right! " : "Not quite! "}
-              </span>
-              <span style={{ color: "#cbd5e1" }}>{card.clue}</span>
+            <div style={{ marginTop: "20px", width: "100%" }}>
+              <ByteBuddy mood={result === "correct" ? "happy" : "oops"} title={byteOpener(result === "correct", card.id)}>
+                {card.clue}
+              </ByteBuddy>
             </div>
           )}
         </div>
@@ -270,9 +262,14 @@ function KidsStart({ onStart }) {
       <div style={{ maxWidth: "520px", width: "100%", textAlign: "center" }}>
         <div style={{ fontSize: "64px", marginBottom: "10px" }}>🕵️</div>
         <h1 style={{ fontSize: "38px", color: "#a78bfa", margin: "0 0 6px" }}>Scam Sorter</h1>
-        <p style={{ color: "#facc15", fontWeight: "bold", fontSize: "17px", margin: "0 0 28px" }}>
+        <p style={{ color: "#facc15", fontWeight: "bold", fontSize: "17px", margin: "0 0 20px" }}>
           Can YOU spot the sneaky messages?
         </p>
+        <div style={{ marginBottom: "22px" }}>
+          <ByteBuddy mood="think" title="Hi, Guardian! 👋">
+            Scammers are sending sneaky messages. Read each one carefully and I'll tell you the trick after you answer!
+          </ByteBuddy>
+        </div>
 
         <div style={{
           background: "#0b1120", border: "1px solid rgba(167,139,250,0.25)",
@@ -311,7 +308,7 @@ function KidsOver({ score, correct, wrong, onPlay }) {
   const total    = correct + wrong;
   const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
   const badge    = accuracy >= 80 ? "🏆" : accuracy >= 60 ? "⭐" : "💪";
-  const msg      = accuracy >= 80 ? "Wow! You're a scam-spotting superstar!" : accuracy >= 60 ? "Great job! Keep practising!" : "Good try! You'll get them next time!";
+  const msg      = accuracy >= 80 ? "Wow! You're a scam-spotting superstar!" : accuracy >= 60 ? "Great job! Keep practising!" : "Scammers are sneaky, but now you know their tricks. Play again and beat them!";
 
   return (
     <div style={{
@@ -324,7 +321,9 @@ function KidsOver({ score, correct, wrong, onPlay }) {
       <div style={{ maxWidth: "480px", width: "100%", textAlign: "center" }}>
         <div style={{ fontSize: "64px", marginBottom: "8px" }}>{badge}</div>
         <h1 style={{ fontSize: "36px", color: "#a78bfa", margin: "0 0 6px" }}>Well done!</h1>
-        <p style={{ color: "#94a3b8", fontSize: "16px", margin: "0 0 24px" }}>{msg}</p>
+        <div style={{ margin: "0 0 24px" }}>
+          <ByteBuddy mood={accuracy >= 60 ? "happy" : "oops"} title={accuracy >= 60 ? "You did it! 🎉" : "Good try, Guardian!"}>{msg}</ByteBuddy>
+        </div>
 
         <div style={{
           background: "#0b1120", border: "2px solid rgba(167,139,250,0.35)",
@@ -527,21 +526,12 @@ function ProGame() {
         }}>
           <MessageCard card={card} />
 
-          {/* Inline feedback — shown on the card itself */}
+          {/* Byte explains the answer — shown on the card itself */}
           {result && (
-            <div style={{
-              marginTop: "22px",
-              padding: "14px 18px",
-              background: result === "correct" ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
-              border: `1px solid ${result === "correct" ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`,
-              borderRadius: "14px",
-              fontSize: "14px",
-              lineHeight: 1.5,
-            }}>
-              <span style={{ fontWeight: "bold", color: result === "correct" ? "#22c55e" : "#ef4444" }}>
-                {result === "correct" ? "✅ Correct! " : "❌ Not quite. "}
-              </span>
-              <span style={{ color: "#cbd5e1" }}>{card.clue}</span>
+            <div style={{ marginTop: "22px", width: "100%" }}>
+              <ByteBuddy mood={result === "correct" ? "happy" : "oops"} title={byteOpener(result === "correct", card.id)}>
+                {card.clue}
+              </ByteBuddy>
             </div>
           )}
         </div>
@@ -611,6 +601,11 @@ function StartScreen({ onStart, highScore }) {
       <div style={{ maxWidth: "580px", width: "100%", textAlign: "center" }}>
         <div style={{ fontSize: "60px", marginBottom: "10px" }}>🕵️</div>
         <h1 style={{ fontSize: "48px", color: "#08b6aa", margin: "0 0 8px" }}>Scam Sorter</h1>
+        <div style={{ margin: "0 0 18px" }}>
+          <ByteBuddy mood="think" title="Ready, Guardian?">
+            These scams are sneakier. Check who sent it, read the link, and watch for rush and secrets!
+          </ByteBuddy>
+        </div>
         <p style={{ color: "#facc15", fontWeight: "bold", fontSize: "17px", margin: "0 0 30px" }}>
           Sort messages into SAFE or SCAM before hackers trick you.
         </p>
@@ -672,7 +667,7 @@ function GameOver({ score, correct, wrong, total, highScore, onPlay }) {
     ? "Outstanding! You're a scam-spotting expert."
     : accuracy >= 60
     ? "Good work — keep practising to sharpen your skills."
-    : "Scammers got you this time. Try again!";
+    : "Scammers got you this time, but now you know their tricks. Let's try again!";
 
   return (
     <div style={{
@@ -688,7 +683,9 @@ function GameOver({ score, correct, wrong, total, highScore, onPlay }) {
       <div style={{ maxWidth: "520px", width: "100%", textAlign: "center" }}>
         <div style={{ fontSize: "56px", marginBottom: "8px" }}>{badge}</div>
         <h1 style={{ fontSize: "38px", color: "#08b6aa", margin: "0 0 6px" }}>Mission Complete!</h1>
-        <p style={{ color: "#94a3b8", fontSize: "15px", margin: "0 0 24px" }}>{msg}</p>
+        <div style={{ margin: "0 0 24px" }}>
+          <ByteBuddy mood={accuracy >= 60 ? "happy" : "oops"} title={accuracy >= 60 ? "Great work! 🎉" : "Don't give up!"}>{msg}</ByteBuddy>
+        </div>
 
         {isNewHigh && (
           <div style={{
