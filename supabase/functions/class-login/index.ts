@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
  * Class code + picture password login for students (no typing passwords).
  *
  * POST { action: "roster", code }
- *   → { className, students: [{ id, name, heroSrc, avatar }] }
+ *   → { className, students: [{ id, name, avatar, avatarConfig }] }
  * POST { action: "login", code, studentId, pictures: ["dog", "pizza"] }
  *   → { token_hash }  (client finishes with supabase.auth.verifyOtp)
  */
@@ -73,12 +73,24 @@ Deno.serve(async (req) => {
 
     return json({
       className: cls.name,
-      students: (kids ?? []).map((k) => ({
-        id: k.id,
-        name: displayName(k.name),
-        avatar: k.avatar,
-        heroSrc: (k.avatar_config as Record<string, unknown> | null)?.heroSrc ?? null,
-      })),
+      students: (kids ?? []).map((k) => {
+        const cfg = (k.avatar_config ?? {}) as Record<string, unknown>;
+        const heroSrc = typeof cfg.heroSrc === "string" ? cfg.heroSrc : null;
+        return {
+          id: k.id,
+          name: displayName(k.name),
+          avatar: k.avatar,
+          // Just the choices; the page turns them into a hero image URL. Older
+          // profiles stored the whole picture as base64 text, so never send that.
+          avatarConfig: {
+            gender: cfg.gender ?? null,
+            skin: cfg.skin ?? null,
+            suitKey: cfg.suitKey ?? null,
+            accessory: cfg.accessory ?? null,
+            heroSrc: heroSrc && !heroSrc.startsWith("data:") ? heroSrc : null,
+          },
+        };
+      }),
     });
   }
 

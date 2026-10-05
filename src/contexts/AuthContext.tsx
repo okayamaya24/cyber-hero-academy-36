@@ -34,41 +34,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    const checkKidRole = async (session: Session | null) => {
-      if (session?.user) {
-        // Check profiles table first
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .maybeSingle();
+    let checkedUserId: string | null = null;
 
-        if (profile?.role === "kid") {
-          handleSetActiveChildId(session.user.id);
-        } else if (!profile) {
-          // Fallback: check if they exist in child_profiles
-          const { data: childProfile } = await supabase
-            .from("child_profiles")
-            .select("id")
-            .eq("id", session.user.id)
-            .maybeSingle();
-          if (childProfile) {
-            handleSetActiveChildId(session.user.id);
-          }
-        }
+    // If the logged-in user is a kid, their child profile id is their user id
+    const checkKidRole = async (userId: string) => {
+      const { data: profile } = await supabase.from("profiles").select("role").eq("user_id", userId).maybeSingle();
+      if (profile?.role === "kid") {
+        handleSetActiveChildId(userId);
+      } else if (!profile) {
+        const { data: childProfile } = await supabase.from("child_profiles").select("id").eq("id", userId).maybeSingle();
+        if (childProfile) handleSetActiveChildId(userId);
       }
-      setSession(session);
-      setLoading(false);
     };
 
+    // Publish the session right away so pages can start loading. Supabase warns
+    // against awaiting other Supabase calls inside onAuthStateChange (it can stall
+    // every request), so the kid check runs afterwards, once per user.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      checkKidRole(session);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      checkKidRole(session);
+      setSession(session);
+      setLoading(false);
+      const userId = session?.user?.id ?? null;
+      if (userId && userId !== checkedUserId) {
+        checkedUserId = userId;
+        setTimeout(() => checkKidRole(userId), 0);
+      }
+      if (!userId) checkedUserId = null;
     });
 
     return () => subscription.unsubscribe();

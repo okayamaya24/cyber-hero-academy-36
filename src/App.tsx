@@ -1,104 +1,115 @@
 // Register continent configs with the adventure engine
 import "@/engine/configs/northAmerica";
 
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import MaintenanceGate from "@/components/MaintenanceGate";
 import { Navbar } from "@/components/Navbar";
 import ProtectedAdminRoute from "@/components/ProtectedAdminRoute";
-import LessonPreviewPage from "./pages/LessonPreviewPage";
-import { useEffect, useState } from "react";
+const LessonPreviewPage = lazy(() => import("./pages/LessonPreviewPage"));
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import HomePage from "./pages/HomePage";
-import KidDashboard from "./pages/KidDashboard";
-import MissionsPage from "./pages/MissionsPage";
-import ParentDashboard from "./pages/ParentDashboard";
-import SignupPage from "./pages/SignupPage";
+const KidDashboard = lazy(() => import("./pages/KidDashboard"));
+const MissionsPage = lazy(() => import("./pages/MissionsPage"));
+const ParentDashboard = lazy(() => import("./pages/ParentDashboard"));
+const SignupPage = lazy(() => import("./pages/SignupPage"));
 import LoginPage from "./pages/LoginPage";
-import ChildSelectPage from "./pages/ChildSelectPage";
-import CreateChildPage from "./pages/CreateChildPage";
-import CertificatePage from "./pages/CertificatePage";
-import ForParentsPage from "./pages/ForParentsPage";
-import ForSchoolsPage from "./pages/ForSchoolsPage";
-import ClassLoginPage from "./pages/ClassLoginPage";
-import WorldSelectScreen from "./pages/WorldSelectScreen";
-import ContinentMapScreen from "./pages/ContinentMapScreen";
-import ZoneGameScreen from "./pages/ZoneGameScreen";
-import EditAvatarPage from "./pages/EditAvatarPage";
+const ChildSelectPage = lazy(() => import("./pages/ChildSelectPage"));
+const CreateChildPage = lazy(() => import("./pages/CreateChildPage"));
+const CertificatePage = lazy(() => import("./pages/CertificatePage"));
+const ForParentsPage = lazy(() => import("./pages/ForParentsPage"));
+const ForSchoolsPage = lazy(() => import("./pages/ForSchoolsPage"));
+const ClassLoginPage = lazy(() => import("./pages/ClassLoginPage"));
+const WorldSelectScreen = lazy(() => import("./pages/WorldSelectScreen"));
+const ContinentMapScreen = lazy(() => import("./pages/ContinentMapScreen"));
+const ZoneGameScreen = lazy(() => import("./pages/ZoneGameScreen"));
+const EditAvatarPage = lazy(() => import("./pages/EditAvatarPage"));
 import ProtectedParentRoute from "./components/ProtectedParentRoute";
-import NotFound from "./pages/NotFound";
-import TermsPage from "./pages/TermsPage";
-import PrivacyPage from "./pages/PrivacyPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import AdminGamesPage from "./pages/admin/AdminGamesPage";
-import AdminEventsPage from "./pages/admin/AdminEventsPage";
-import AdminBadgesPage from "./pages/admin/AdminBadgesPage";
-import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
-import AdminUsersPage from "./pages/admin/AdminUsersPage";
-import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
-import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
-import AdminLevelManagerPage from "./pages/admin/AdminLevelManagerPage";
-import AdminAnnouncementsPage from "./pages/admin/AdminAnnouncementsPage";
-import AdminEmailCenterPage from "./pages/admin/AdminEmailCenterPage";
-import MyKidsPage from "./pages/portal/MyKidsPage";
-import KidProfilePage from "./pages/portal/KidProfilePage";
-import AccountPage from "./pages/portal/AccountPage";
-import ChangePasswordPage from "./pages/portal/ChangePasswordPage";
+const NotFound = lazy(() => import("./pages/NotFound"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const AdminGamesPage = lazy(() => import("./pages/admin/AdminGamesPage"));
+const AdminEventsPage = lazy(() => import("./pages/admin/AdminEventsPage"));
+const AdminBadgesPage = lazy(() => import("./pages/admin/AdminBadgesPage"));
+const AdminCategoriesPage = lazy(() => import("./pages/admin/AdminCategoriesPage"));
+const AdminUsersPage = lazy(() => import("./pages/admin/AdminUsersPage"));
+const AdminAnalyticsPage = lazy(() => import("./pages/admin/AdminAnalyticsPage"));
+const AdminSettingsPage = lazy(() => import("./pages/admin/AdminSettingsPage"));
+const AdminLevelManagerPage = lazy(() => import("./pages/admin/AdminLevelManagerPage"));
+const AdminAnnouncementsPage = lazy(() => import("./pages/admin/AdminAnnouncementsPage"));
+const AdminEmailCenterPage = lazy(() => import("./pages/admin/AdminEmailCenterPage"));
+const MyKidsPage = lazy(() => import("./pages/portal/MyKidsPage"));
+const KidProfilePage = lazy(() => import("./pages/portal/KidProfilePage"));
+const AccountPage = lazy(() => import("./pages/portal/AccountPage"));
+const ChangePasswordPage = lazy(() => import("./pages/portal/ChangePasswordPage"));
 
 // Training Center Games
-import VirusVaporizer from "./pages/games/VirusVaporizer";
-import SpotThePhish from "./pages/games/SpotThePhish";
-import FirewallBlitz from "./pages/games/FirewallBlitz";
-import HackerChase from "./pages/games/HackerChase";
-import TypeToDefend from "./pages/games/TypeToDefend";
-import PasswordCrackerRace from "./pages/games/PasswordCrackerRace";
-import CodeTyper from "./pages/games/CodeTyper";
-import DecryptTheMessage from "./pages/games/DecryptTheMessage";
-import FirewallTyper from "./pages/games/FirewallTyper";
-import CyberEscapeRoom from "./pages/games/CyberEscapeRoom";
-import CodeBreaker from "./pages/games/CodeBreaker";
-import PasswordTower from "./pages/games/PasswordTower";
-import LockTheVault from "./pages/games/LockTheVault";
-import SafeOrDangerSort from "./pages/games/SafeOrDangerSort";
-import RealOrFakeWebsite from "./pages/games/RealOrFakeWebsite";
-import TrustOrTrash from "./pages/games/TrustOrTrash";
-import BytesQuizBlitz from "./pages/games/BytesQuizBlitz";
-import TrueOrFalseLightning from "./pages/games/TrueOrFalseLightning";
-import BeatTheClockTrivia from "./pages/games/BeatTheClockTrivia";
-import CyberMemoryMatch from "./pages/games/CyberMemoryMatch";
-import SequenceShield from "./pages/games/SequenceShield";
-import PasswordHunt from "./pages/games/PasswordHunt";
-import PhishingDetective from "./pages/games/PhishingDetective";
-import PrivacyPatrol from "./pages/games/PrivacyPatrol";
-import CyberBasics from "./pages/games/CyberBasics";
-import StaySafeOnline from "./pages/games/StaySafeOnline";
-import BuildAStrongPassword from "./pages/games/BuildAStrongPassword";
-import SafeOrScamSorter from "./pages/games/SafeOrScamSorter";
-import SafeWebsiteDetector from "./pages/games/SafeWebsiteDetector";
-import MalwareDefender from "./pages/games/MalwareDefender";
-import LockTheVaultDrag from "./pages/games/LockTheVaultDrag";
-import PasswordPower from "./pages/games/PasswordPower";
-import SafeSitesExplorer from "./pages/games/SafeSitesExplorer";
-import SecretKeeper from "./pages/games/SecretKeeper";
-import MalwareMonsters from "./pages/games/MalwareMonsters";
-import SmartSharing from "./pages/games/SmartSharing";
-import DeviceDefender from "./pages/games/DeviceDefender";
-import CyberClues from "./pages/games/CyberClues";
-import InternetDetective from "./pages/games/InternetDetective";
-import SafeOrNot from "./pages/games/SafeOrNot";
-import CyberCrossword from "./pages/games/CyberCrossword";
-import CyberCrosswordAI from "./pages/games/CyberCrosswordAI";
-import CyberWordSearch from "./pages/games/CyberWordSearch";
-import PasswordBuilder from "./pages/games/PasswordBuilder";
-import TestCrosswordPage from "./pages/TestCrosswordPage";
+const VirusVaporizer = lazy(() => import("./pages/games/VirusVaporizer"));
+const SpotThePhish = lazy(() => import("./pages/games/SpotThePhish"));
+const FirewallBlitz = lazy(() => import("./pages/games/FirewallBlitz"));
+const HackerChase = lazy(() => import("./pages/games/HackerChase"));
+const TypeToDefend = lazy(() => import("./pages/games/TypeToDefend"));
+const PasswordCrackerRace = lazy(() => import("./pages/games/PasswordCrackerRace"));
+const CodeTyper = lazy(() => import("./pages/games/CodeTyper"));
+const DecryptTheMessage = lazy(() => import("./pages/games/DecryptTheMessage"));
+const FirewallTyper = lazy(() => import("./pages/games/FirewallTyper"));
+const CyberEscapeRoom = lazy(() => import("./pages/games/CyberEscapeRoom"));
+const CodeBreaker = lazy(() => import("./pages/games/CodeBreaker"));
+const PasswordTower = lazy(() => import("./pages/games/PasswordTower"));
+const LockTheVault = lazy(() => import("./pages/games/LockTheVault"));
+const SafeOrDangerSort = lazy(() => import("./pages/games/SafeOrDangerSort"));
+const RealOrFakeWebsite = lazy(() => import("./pages/games/RealOrFakeWebsite"));
+const TrustOrTrash = lazy(() => import("./pages/games/TrustOrTrash"));
+const BytesQuizBlitz = lazy(() => import("./pages/games/BytesQuizBlitz"));
+const TrueOrFalseLightning = lazy(() => import("./pages/games/TrueOrFalseLightning"));
+const BeatTheClockTrivia = lazy(() => import("./pages/games/BeatTheClockTrivia"));
+const CyberMemoryMatch = lazy(() => import("./pages/games/CyberMemoryMatch"));
+const SequenceShield = lazy(() => import("./pages/games/SequenceShield"));
+const PasswordHunt = lazy(() => import("./pages/games/PasswordHunt"));
+const PhishingDetective = lazy(() => import("./pages/games/PhishingDetective"));
+const PrivacyPatrol = lazy(() => import("./pages/games/PrivacyPatrol"));
+const CyberBasics = lazy(() => import("./pages/games/CyberBasics"));
+const StaySafeOnline = lazy(() => import("./pages/games/StaySafeOnline"));
+const BuildAStrongPassword = lazy(() => import("./pages/games/BuildAStrongPassword"));
+const SafeOrScamSorter = lazy(() => import("./pages/games/SafeOrScamSorter"));
+const SafeWebsiteDetector = lazy(() => import("./pages/games/SafeWebsiteDetector"));
+const MalwareDefender = lazy(() => import("./pages/games/MalwareDefender"));
+const LockTheVaultDrag = lazy(() => import("./pages/games/LockTheVaultDrag"));
+const PasswordPower = lazy(() => import("./pages/games/PasswordPower"));
+const SafeSitesExplorer = lazy(() => import("./pages/games/SafeSitesExplorer"));
+const SecretKeeper = lazy(() => import("./pages/games/SecretKeeper"));
+const MalwareMonsters = lazy(() => import("./pages/games/MalwareMonsters"));
+const SmartSharing = lazy(() => import("./pages/games/SmartSharing"));
+const DeviceDefender = lazy(() => import("./pages/games/DeviceDefender"));
+const CyberClues = lazy(() => import("./pages/games/CyberClues"));
+const InternetDetective = lazy(() => import("./pages/games/InternetDetective"));
+const SafeOrNot = lazy(() => import("./pages/games/SafeOrNot"));
+const CyberCrossword = lazy(() => import("./pages/games/CyberCrossword"));
+const CyberCrosswordAI = lazy(() => import("./pages/games/CyberCrosswordAI"));
+const CyberWordSearch = lazy(() => import("./pages/games/CyberWordSearch"));
+const PasswordBuilder = lazy(() => import("./pages/games/PasswordBuilder"));
+const TestCrosswordPage = lazy(() => import("./pages/TestCrosswordPage"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Retry a failed request once (the default 3 retries with backoff kept
+      // pages on "Loading..." for ~7 seconds before showing anything)
+      retry: 1,
+      // Reuse data for 30s when moving between pages instead of refetching everything
+      staleTime: 30 * 1000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 /* ── Error boundary so MissionsPage crashes show a friendly message ── */
 class MissionsErrorBoundary extends React.Component<
@@ -137,64 +148,49 @@ class MissionsErrorBoundary extends React.Component<
   }
 }
 
+// Shown for a moment while a page's code downloads (pages load on demand)
+function PageLoading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <img src="/byte-character.png" alt="" className="h-20 w-auto animate-pulse" />
+    </div>
+  );
+}
+
 function DashboardRouter() {
   const { user, loading: authLoading, setActiveChildId } = useAuth();
-  const [role, setRole] = useState<string | null>(null);
-  const [hasAvatar, setHasAvatar] = useState<boolean | null>(null);
-  const [checking, setChecking] = useState(true);
+  const qc = useQueryClient();
+
+  // One round trip: look up the role and the kid profile at the same time, then
+  // hand the kid profile to KidDashboard's cache so it doesn't fetch it again.
+  const { data: roleInfo, isLoading: checking } = useQuery({
+    queryKey: ["dashboard_role", user?.id],
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const [{ data: profile }, { data: childProfile }] = await Promise.all([
+        supabase.from("profiles").select("role").eq("user_id", user!.id).maybeSingle(),
+        supabase.from("child_profiles").select("*").eq("id", user!.id).maybeSingle(),
+      ]);
+
+      if (profile?.role === "creator") return { role: "creator", hasAvatar: true };
+      if (profile?.role === "family" || profile?.role === "school") return { role: profile.role, hasAvatar: true };
+      if (childProfile || profile?.role === "kid") {
+        if (childProfile) qc.setQueryData(["child", user!.id], childProfile);
+        const avatarConfig = childProfile?.avatar_config as Record<string, unknown> | null;
+        const avatarKeys = avatarConfig && typeof avatarConfig === "object" ? Object.keys(avatarConfig) : [];
+        const hasAvatar = avatarKeys.some((k) => ["gender", "suitKey", "heroName", "heroSrc"].includes(k));
+        return { role: "kid", hasAvatar };
+      }
+      return { role: "family", hasAvatar: true };
+    },
+  });
+  const role = roleInfo?.role ?? (checking ? null : "family");
+  const hasAvatar = roleInfo?.hasAvatar ?? true;
 
   useEffect(() => {
-    if (!user) return;
-
-    const timeout = setTimeout(() => {
-      setRole((prev) => prev ?? "kid");
-      setHasAvatar((prev) => prev ?? true);
-      setActiveChildId(user.id);
-      setChecking(false);
-    }, 5000);
-
-    const checkRole = async () => {
-      try {
-        const { data: profile } = await supabase.from("profiles").select("role").eq("user_id", user.id).maybeSingle();
-
-        if (profile?.role === "creator") {
-          setRole("creator");
-          setHasAvatar(true);
-        } else if (profile?.role === "family" || profile?.role === "school") {
-          setRole(profile.role);
-          setHasAvatar(true);
-        } else {
-          // role is kid or no profile — check child_profiles
-          const { data: childProfile } = await supabase
-            .from("child_profiles")
-            .select("id, avatar_config")
-            .eq("id", user.id)
-            .maybeSingle();
-
-          if (childProfile || profile?.role === "kid") {
-            setRole("kid");
-            setActiveChildId(user.id);
-            const avatarConfig = childProfile?.avatar_config as Record<string, any> | null;
-            const avatarKeys = avatarConfig && typeof avatarConfig === "object" ? Object.keys(avatarConfig) : [];
-            const hasValidAvatar =
-              avatarKeys.length > 0 && avatarKeys.some((k) => ["gender", "suitKey", "heroName", "heroSrc"].includes(k));
-            setHasAvatar(hasValidAvatar);
-          } else {
-            setRole("family");
-            setHasAvatar(true);
-          }
-        }
-      } catch {
-        setRole("family");
-        setHasAvatar(true);
-      }
-      clearTimeout(timeout);
-      setChecking(false);
-    };
-
-    checkRole();
-    return () => clearTimeout(timeout);
-  }, [user]);
+    if (role === "kid" && user) setActiveChildId(user.id);
+  }, [role, user]);
 
   if (authLoading)
     return (
@@ -235,6 +231,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <MaintenanceGate>
+            <Suspense fallback={<PageLoading />}>
             <Routes>
               <Route
                 path="/"
@@ -508,6 +505,7 @@ const App = () => (
               <Route path="/privacy" element={<><Navbar /><PrivacyPage /></>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </Suspense>
           </MaintenanceGate>
         </AuthProvider>
       </BrowserRouter>

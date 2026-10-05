@@ -13,7 +13,7 @@ interface Student {
   id: string;
   name: string;
   avatar: string;
-  heroSrc: string | null;
+  avatarConfig: Record<string, unknown> | null;
 }
 
 class ClassLoginError extends Error {
@@ -223,7 +223,7 @@ export default function ClassLoginPage() {
                       }}
                       className="flex flex-col items-center rounded-2xl border border-white/10 bg-[#0d1323] p-4 transition-colors hover:border-[#00d4ff]/50"
                     >
-                      <HeroAvatar avatarConfig={s.heroSrc ? { heroSrc: s.heroSrc } : null} fallbackEmoji={s.avatar} size={88} />
+                      <HeroAvatar avatarConfig={s.avatarConfig} fallbackEmoji={s.avatar} size={88} />
                       <span className="mt-2 font-bold">{s.name}</span>
                     </motion.button>
                   ))}
@@ -248,7 +248,7 @@ export default function ClassLoginPage() {
               exit={{ opacity: 0, y: -20 }}
             >
               <HeroAvatar
-                avatarConfig={student.heroSrc ? { heroSrc: student.heroSrc } : null}
+                avatarConfig={student.avatarConfig}
                 fallbackEmoji={student.avatar}
                 size={96}
                 className="mx-auto"

@@ -53,44 +53,57 @@ export default function KidDashboard() {
     if (!activeChildId && user) setActiveChildId(user.id);
   }, [user, activeChildId, navigate]);
 
-  const { data: child } = useQuery({
-    queryKey: ["child", activeChildId],
+  // A kid's child profile id is their user id; parents previewing a kid use activeChildId
+  const childId = activeChildId ?? user?.id ?? null;
+
+  const { data: child, isError: childError, isLoading: childLoading, refetch: refetchChild } = useQuery({
+    queryKey: ["child", childId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("child_profiles").select("*").eq("id", activeChildId!).single();
+      const { data, error } = await supabase.from("child_profiles").select("*").eq("id", childId!).maybeSingle();
       if (error) throw error;
       return data;
     },
-    enabled: !!activeChildId,
+    enabled: !!childId,
   });
 
   const { data: missionProgress = [] } = useQuery({
-    queryKey: ["mission_progress", activeChildId],
+    queryKey: ["mission_progress", childId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("mission_progress").select("*").eq("child_id", activeChildId!);
+      const { data, error } = await supabase.from("mission_progress").select("*").eq("child_id", childId!);
       if (error) throw error;
       return data;
     },
-    enabled: !!activeChildId,
+    enabled: !!childId,
   });
 
   const { data: earnedBadges = [] } = useQuery({
-    queryKey: ["earned_badges", activeChildId],
+    queryKey: ["earned_badges", childId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("earned_badges").select("*").eq("child_id", activeChildId!);
+      const { data, error } = await supabase.from("earned_badges").select("*").eq("child_id", childId!);
       if (error) throw error;
       return data;
     },
-    enabled: !!activeChildId,
+    enabled: !!childId,
   });
 
   if (!child) {
+    // Couldn't load (network error, or no hero profile for this account): say so instead of spinning forever
+    const failed = childError || (!childLoading && !!childId);
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
         <div className="text-center">
-          <div className="mb-4 text-slate-500">Loading your dashboard...</div>
-          <Button variant="outline" size="sm" onClick={() => (window.location.href = "/kid-dashboard")}>
-            Click here if this takes too long
-          </Button>
+          <img src={byteCharacter} alt="" className={`mx-auto mb-4 h-24 w-auto ${failed ? "" : "animate-pulse"}`} />
+          {failed ? (
+            <>
+              <p className="mb-1 font-bold text-slate-700">Byte couldn't load your dashboard.</p>
+              <p className="mb-4 text-sm text-slate-500">Check your internet connection and try again.</p>
+              <Button variant="outline" size="sm" onClick={() => refetchChild()}>
+                Try again
+              </Button>
+            </>
+          ) : (
+            <p className="text-slate-500">Getting your hero ready...</p>
+          )}
         </div>
       </div>
     );
