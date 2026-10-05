@@ -154,11 +154,11 @@ function ModePicker({ onSelect }) {
         Password Builder
       </h1>
       <p style={{ color: "#facc15", fontWeight: "bold", marginBottom: "48px", textAlign: "center" }}>
-        How old are you?
+        Pick your level!
       </p>
       <div style={{ display: "flex", gap: "24px", flexWrap: "wrap", justifyContent: "center" }}>
-        <ModeCard emoji="🎮" title="Ages 5 – 8" desc="Click to build your secret password!" color="#a78bfa" onClick={() => onSelect("kids")} />
-        <ModeCard emoji="💻" title="Ages 9 +"   desc="Type and test your password strength."  color="#08b6aa" onClick={() => onSelect("pro")} />
+        <ModeCard emoji="🎮" title="Starter" desc="Click to build your secret password!" color="#a78bfa" onClick={() => onSelect("kids")} />
+        <ModeCard emoji="💻" title="Pro" desc="Type and test your password strength."  color="#08b6aa" onClick={() => onSelect("pro")} />
       </div>
     </div>
   );

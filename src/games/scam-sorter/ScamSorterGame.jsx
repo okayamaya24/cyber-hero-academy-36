@@ -245,11 +245,11 @@ function ModePicker({ onSelect }) {
       </button>
       <div style={{ fontSize: "56px", marginBottom: "10px" }}>🕵️</div>
       <h1 style={{ fontSize: "40px", color: "#08b6aa", margin: "0 0 6px", textAlign: "center" }}>Scam Sorter</h1>
-      <p style={{ color: "#facc15", fontWeight: "bold", marginBottom: "44px", textAlign: "center" }}>How old are you?</p>
+      <p style={{ color: "#facc15", fontWeight: "bold", marginBottom: "44px", textAlign: "center" }}>Pick your level!</p>
       <div style={{ display: "flex", gap: "24px", flexWrap: "wrap", justifyContent: "center" }}>
         {[
-          { mode: "kids", emoji: "🎮", title: "Ages 5 – 8", desc: "Spot sneaky messages in kid-friendly situations!", color: "#f472b6" },
-          { mode: "pro",  emoji: "💻", title: "Ages 9 +",   desc: "Sort real-world scams and cyber threats.",          color: "#08b6aa" },
+          { mode: "kids", emoji: "🎮", title: "Starter", desc: "Spot sneaky messages in kid-friendly situations!", color: "#f472b6" },
+          { mode: "pro",  emoji: "💻", title: "Pro", desc: "Sort real-world scams and cyber threats.",          color: "#08b6aa" },
         ].map(opt => (
           <ModeCard key={opt.mode} {...opt} onClick={() => onSelect(opt.mode)} />
         ))}

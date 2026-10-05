@@ -552,14 +552,14 @@ function ModePicker() {
         Safe Website Detector
       </h1>
       <p style={{ color: "#94a3b8", textAlign: "center", margin: 0 }}>
-        Select your age to begin
+        Pick your level to begin
       </p>
       <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", justifyContent: "center" }}>
         {[
-          { label: "Ages 5–8",   emoji: "⭐", age: 6  },
-          { label: "Ages 9–11",  emoji: "🌟", age: 10 },
-          { label: "Ages 12–14", emoji: "🛡️", age: 13 },
-          { label: "Ages 15+",   emoji: "⚡", age: 15 }
+          { label: "Starter",  emoji: "⭐", age: 6  },
+          { label: "Explorer", emoji: "🌟", age: 10 },
+          { label: "Defender", emoji: "🛡️", age: 13 },
+          { label: "Expert",   emoji: "⚡", age: 15 }
         ].map(({ label, emoji, age }) => (
           <button key={age} onClick={() => {
             window.location.href = `?age=${age}`;

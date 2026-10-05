@@ -333,7 +333,7 @@ export default function CreateChildPage() {
             </div>
 
             <div>
-              <Label htmlFor="child-age">Age (5–17)</Label>
+              <Label htmlFor="child-age">Age</Label>
               <Input
                 id="child-age"
                 type="number"
