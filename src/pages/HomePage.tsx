@@ -7,6 +7,8 @@ import heroCharacter from "@/assets/hero-character.png";
 import robotGuide from "@/assets/robot-guide.png";
 import detectiveCat from "@/assets/detective-cat.png";
 import wiseOwl from "@/assets/wise-owl.png";
+import TrickSpotterDemo from "@/components/home/TrickSpotterDemo";
+import VillainLineup from "@/components/home/VillainLineup";
 
 const guides = [
   { name: "Captain Cyber", role: "Your Hero Guide", image: heroCharacter },
@@ -96,7 +98,7 @@ export default function HomePage() {
                   style={{ background: "linear-gradient(90deg, #00d4ff, #00ff88)" }}
                   asChild
                 >
-                  <Link to="/signup">🚀 Start Your Adventure</Link>
+                  <a href="#try-it">🎮 Play a Free Mission</a>
                 </Button>
               </motion.div>
               <Link
@@ -107,6 +109,12 @@ export default function HomePage() {
               </Link>
             </div>
 
+            <p className="text-sm text-gray-500">
+              Parent or teacher?{" "}
+              <Link to="/signup" className="font-semibold text-[#00d4ff] hover:underline">
+                Create an account →
+              </Link>
+            </p>
 
 
           </motion.div>
@@ -132,50 +140,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── WHAT YOU'LL LEARN ── */}
-      <section className="border-y border-white/[0.04] bg-[#0a0e1a] py-20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            className="mb-12 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl font-black text-white md:text-4xl">What You'll Learn 🧠</h2>
-            <p className="mt-3 text-gray-500">Super cool skills to keep you safe in the digital world!</p>
-          </motion.div>
+      <TrickSpotterDemo />
 
-          <motion.div
-            className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-          >
-            {[
-              { icon: "🎮", title: "Fun Missions", desc: "Complete exciting cybersecurity missions and level up your skills!", color: "#00d4ff" },
-              { icon: "🛡️", title: "Stay Safe Online", desc: "Discover how to protect yourself from scams and online dangers.", color: "#00ff88" },
-              { icon: "🏅", title: "Earn Badges", desc: "Collect awesome badges and rewards as you master each skill!", color: "#ffd700" },
-              { icon: "👨‍👩‍👧", title: "Parent Dashboard", desc: "Parents can track progress and celebrate every win together.", color: "#a78bfa" },
-            ].map((f, i) => (
-              <motion.div
-                key={f.title}
-                variants={fadeUp}
-                className="group rounded-2xl p-6 transition-all hover:-translate-y-1"
-                style={{
-                  background: `linear-gradient(135deg, ${f.color}12, transparent)`,
-                  border: `1px solid ${f.color}22`,
-                }}
-                whileHover={{ boxShadow: `0 0 28px ${f.color}22` }}
-              >
-                <div className="mb-4 text-4xl">{f.icon}</div>
-                <h3 className="mb-2 text-lg font-bold text-white">{f.title}</h3>
-                <p className="text-sm text-gray-400">{f.desc}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+      <VillainLineup />
 
       {/* ── MEET YOUR GUIDES ── */}
       <section className="bg-[#080c18] py-20">
@@ -244,7 +211,7 @@ export default function HomePage() {
                   style={{ background: "linear-gradient(90deg, #00d4ff, #00ff88)" }}
                   asChild
                 >
-                  <Link to="/signup">Begin Your Journey 🚀</Link>
+                  <Link to="/signup">Sign Up with a Grown-Up 🚀</Link>
                 </Button>
               </motion.div>
             </div>
