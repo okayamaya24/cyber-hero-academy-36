@@ -177,6 +177,7 @@ export type Database = {
           created_at: string | null
           grade: string
           id: string
+          login_code: string
           name: string
           teacher_id: string
         }
@@ -184,6 +185,7 @@ export type Database = {
           created_at?: string | null
           grade: string
           id?: string
+          login_code?: string
           name: string
           teacher_id: string
         }
@@ -191,6 +193,7 @@ export type Database = {
           created_at?: string | null
           grade?: string
           id?: string
+          login_code?: string
           name?: string
           teacher_id?: string
         }
@@ -776,6 +779,38 @@ export type Database = {
         }
         Relationships: []
       }
+      student_picture_passwords: {
+        Row: {
+          child_id: string
+          failed_attempts: number
+          locked_until: string | null
+          pictures: string
+          updated_at: string
+        }
+        Insert: {
+          child_id: string
+          failed_attempts?: number
+          locked_until?: string | null
+          pictures: string
+          updated_at?: string
+        }
+        Update: {
+          child_id?: string
+          failed_attempts?: number
+          locked_until?: string | null
+          pictures?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_picture_passwords_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: true
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_game_settings: {
         Row: {
           id: string
@@ -909,6 +944,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_class_code: { Args: never; Returns: string }
       is_creator: { Args: never; Returns: boolean }
     }
     Enums: {
