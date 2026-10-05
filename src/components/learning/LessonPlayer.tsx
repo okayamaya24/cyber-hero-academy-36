@@ -1074,6 +1074,12 @@ function VideoPlayer({ lesson, theme, onDone, onClose, canSkip }: {
     return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1&rel=0` : url;
   };
 
+  // Smaller 720p copies live in a "web" folder next to the originals
+  // (.../lessons/web/Lesson1.mp4). Try those first; fall back to the original.
+  const originalSrc = lesson.videoUrl ?? "";
+  const webSrc = originalSrc.replace(/\/lessons\/([^/]+\.mp4)$/, "/lessons/web/$1");
+  const [videoSrc, setVideoSrc] = useState(webSrc);
+
   // Show kids what's happening instead of a blank black box
   const videoRef = useRef<HTMLVideoElement>(null);
   const [status, setStatus] = useState<"loading" | "playing" | "paused" | "blocked" | "error">("loading");
@@ -1131,14 +1137,17 @@ function VideoPlayer({ lesson, theme, onDone, onClose, canSkip }: {
             <>
               <video
                 ref={videoRef}
-                src={lesson.videoUrl}
+                src={videoSrc}
                 controls={status !== "loading" && status !== "error"}
                 playsInline
                 preload="auto"
                 onCanPlay={() => { if (status === "loading") tryPlay(); }}
                 onPlaying={() => setStatus("playing")}
                 onPause={() => setStatus((s) => (s === "playing" ? "paused" : s))}
-                onError={() => setStatus("error")}
+                onError={() => {
+                  if (videoSrc !== originalSrc) setVideoSrc(originalSrc);
+                  else setStatus("error");
+                }}
                 className="w-full h-full bg-black"
                 style={{ maxHeight: "55vh" }}
               />
