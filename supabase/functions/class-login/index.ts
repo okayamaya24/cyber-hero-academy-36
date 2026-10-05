@@ -20,6 +20,13 @@ const PICTURE_PASSWORD_LENGTH = 2;
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCK_MINUTES = 10;
 
+// Logs the real reason server-side (Supabase → Edge Functions → class-login → Logs)
+// while kids only see a friendly message.
+function fail(reason: string, message: string, status: number, detail?: unknown) {
+  console.error(`class-login failed: ${reason}`, detail ?? "");
+  return json({ error: message, reason }, status);
+}
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -62,7 +69,7 @@ Deno.serve(async (req) => {
       .select("id, name, avatar, avatar_config")
       .eq("class_id", cls.id)
       .order("name");
-    if (error) return json({ error: "Something went wrong. Try again!" }, 500);
+    if (error) return fail("roster_query", "Something went wrong. Try again!", 500, error);
 
     return json({
       className: cls.name,
@@ -93,10 +100,12 @@ Deno.serve(async (req) => {
       .eq("id", studentId)
       .eq("class_id", cls.id)
       .maybeSingle();
-    if (!kid) return json({ error: "Something went wrong. Try again!" }, 404);
+    if (!kid) return fail("student_not_in_class", "Something went wrong. Try again!", 404, { studentId });
 
     const { data: profile } = await admin.from("profiles").select("role").eq("user_id", studentId).maybeSingle();
-    if (profile?.role !== "kid") return json({ error: "Something went wrong. Try again!" }, 403);
+    if (profile?.role !== "kid") {
+      return fail("not_a_kid_profile", "Something went wrong. Try again!", 403, { studentId, role: profile?.role ?? null });
+    }
 
     const { data: secret } = await admin
       .from("student_picture_passwords")
@@ -134,12 +143,14 @@ Deno.serve(async (req) => {
       .eq("child_id", studentId);
 
     // Create a one-time sign-in token for this student (no email is sent)
-    const { data: target } = await admin.auth.admin.getUserById(studentId);
+    const { data: target, error: targetError } = await admin.auth.admin.getUserById(studentId);
     const email = target?.user?.email;
-    if (!email) return json({ error: "Something went wrong. Try again!" }, 500);
+    if (!email) return fail("no_auth_account", "Something went wrong. Try again!", 500, { studentId, targetError });
 
     const { data: link, error: linkError } = await admin.auth.admin.generateLink({ type: "magiclink", email });
-    if (linkError || !link?.properties?.hashed_token) return json({ error: "Something went wrong. Try again!" }, 500);
+    if (linkError || !link?.properties?.hashed_token) {
+      return fail("magic_link_failed", "Something went wrong. Try again!", 500, linkError);
+    }
 
     return json({ token_hash: link.properties.hashed_token });
   }

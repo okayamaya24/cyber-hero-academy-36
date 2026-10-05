@@ -24,6 +24,7 @@ async function callClassLogin<T>(body: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.functions.invoke("class-login", { body });
   if (error) {
     const details = await (error as { context?: Response }).context?.json?.().catch(() => null);
+    if (details?.reason) console.warn(`class-login: ${details.reason}`);
     const err = new ClassLoginError(details?.error ?? "Something went wrong. Try again!");
     err.locked = !!details?.locked;
     throw err;
@@ -106,7 +107,10 @@ export default function ClassLoginPage() {
         pictures: next,
       });
       const { error: otpError } = await supabase.auth.verifyOtp({ token_hash, type: "magiclink" });
-      if (otpError) throw new Error("Something went wrong. Try again!");
+      if (otpError) {
+        console.warn("class-login: verify_otp_failed", otpError.message);
+        throw new Error("Something went wrong. Try again!");
+      }
       navigate("/dashboard", { replace: true });
     } catch (e) {
       setError((e as Error).message);
