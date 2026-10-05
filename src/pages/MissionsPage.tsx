@@ -1439,7 +1439,11 @@ export default function MissionsPage() {
 
   const handleGameClick = (game: any) => {
     if (game.locked) return;
-    if (game.route) { navigate(game.route); return; }
+    if (game.route) {
+      // Pass the kid's profile age so games pick the right level instead of asking "How old are you?"
+      navigate(child?.age ? `${game.route}?age=${child.age}` : game.route);
+      return;
+    }
     if (game.mission) { startMission(game.mission); return; }
     if (game.wordsearch) {
       const p = game.wordsearch;
