@@ -4,7 +4,7 @@
  */
 
 import type { ZoneDef } from "@/data/continents";
-import { ZONE_ORDER } from "@/data/zoneOrder";
+import { ZONE_ORDER, getPlayableOrder, isZonePlayable } from "@/data/zoneOrder";
 
 /**
  * Compute zone status: completed | available | locked
@@ -19,7 +19,10 @@ export function computeZoneStatus(
   const progress = zoneProgress.find((p) => p.zone_id === zone.id);
   if (progress?.status === "completed") return "completed";
 
-  const order = ZONE_ORDER[continentId];
+  // Zones without games yet stay locked ("coming soon") and are skipped below
+  if (!isZonePlayable(zone.id)) return "locked";
+
+  const order = ZONE_ORDER[continentId] ? getPlayableOrder(continentId) : null;
   if (order) {
     const idx = order.indexOf(zone.id);
     if (idx === 0) return "available";

@@ -10,6 +10,7 @@ import { getContinentById, type ContinentDef, type ZoneDef } from "@/data/contin
 import { useChildProfile } from "@/engine";
 import { getZoneGames, getBossBattle } from "@/data/zoneGames";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
+import { isZonePlayable } from "@/data/zoneOrder";
 import VillainSprite from "@/components/world/VillainSprite";
 import StarfieldBackground from "@/components/world/StarfieldBackground";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,8 @@ function getZoneStatus(
 ): "completed" | "available" | "locked" {
   const progress = zoneProgress.find((p) => p.zone_id === zone.id);
   if (progress?.status === "completed") return "completed";
+  // Zones without games yet are "coming soon": shown locked, never block the boss
+  if (!isZonePlayable(zone.id)) return "locked";
   if (progress?.status === "available") return "available";
 
   if (continentId === "north-america") {
@@ -62,14 +65,15 @@ function getZoneStatus(
     return prevDone ? "available" : "locked";
   }
 
+  const playable = allZones.filter((z) => isZonePlayable(z.id));
   if (zone.isBoss) {
-    const nonBoss = allZones.filter((z) => !z.isBoss);
+    const nonBoss = playable.filter((z) => !z.isBoss);
     const allDone = nonBoss.every((z) => zoneProgress.find((p) => p.zone_id === z.id && p.status === "completed"));
     return allDone ? "available" : "locked";
   }
-  const i = allZones.indexOf(zone);
+  const i = playable.indexOf(zone);
   if (i === 0) return "available";
-  const prev = allZones[i - 1];
+  const prev = playable[i - 1];
   const prevDone = zoneProgress.find((p) => p.zone_id === prev.id && p.status === "completed");
   return prevDone ? "available" : "locked";
 }
@@ -2285,15 +2289,20 @@ export default function ContinentMapScreen() {
                 const isAvailable = status === "available";
                 const isCompleted = status === "completed";
                 const r = zone.isHQ ? 20 : zone.isBoss ? 18 : 14;
-                const lockedZones = zoneStatuses.filter((s, idx) => s === "locked" && !continent.zones[idx]?.isBoss);
-                const isLastLocked = isLocked && lockedZones.length === 1;
+                const comingSoon = !isZonePlayable(zone.id);
+                const lockedZones = zoneStatuses.filter(
+                  (s, idx) => s === "locked" && !continent.zones[idx]?.isBoss && isZonePlayable(continent.zones[idx]?.id ?? ""),
+                );
+                const isLastLocked = isLocked && !comingSoon && lockedZones.length === 1;
 
                 return (
                   <Marker
                     key={zone.id}
                     coordinates={[coord.lng, coord.lat]}
                     onClick={() => handleZoneClick(zone, i)}
+                    opacity={comingSoon ? 0.5 : 1}
                     onMouseEnter={() => {
+                      if (comingSoon) return; // nothing to unlock yet, so no villain taunt
                       const isFirst = i === 0 && status !== "completed";
                       if (isFirst) setHoveredNodeStatus("first");
                       else if (isLastLocked) setHoveredNodeStatus("lastLocked");
@@ -2330,7 +2339,7 @@ export default function ContinentMapScreen() {
                       fontSize={zone.isHQ || zone.isBoss ? 18 : 14}
                       style={{ pointerEvents: "none", userSelect: "none" }}
                     >
-                      {isLocked ? "🔒" : isCompleted && !zone.isHQ ? "✅" : zone.icon}
+                      {comingSoon ? "🚧" : isLocked ? "🔒" : isCompleted && !zone.isHQ ? "✅" : zone.icon}
                     </text>
                     <text
                       textAnchor="middle"
@@ -2346,10 +2355,11 @@ export default function ContinentMapScreen() {
                       textAnchor="middle"
                       y={r + 30}
                       fontSize={8}
-                      fill={isLocked ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.7)"}
+                      fill={comingSoon ? "#facc15" : isLocked ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.7)"}
+                      fontWeight={comingSoon ? "bold" : undefined}
                       style={{ pointerEvents: "none", userSelect: "none" }}
                     >
-                      {zone.city}
+                      {comingSoon ? "Coming soon" : zone.city}
                     </text>
                     {(isAvailable || (isCompleted && zone.isHQ)) && (
                       <text

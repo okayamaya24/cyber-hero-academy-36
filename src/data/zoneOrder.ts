@@ -1,5 +1,7 @@
 /** Static zone ordering per continent — used for sequential unlocking */
 
+import { getZoneGames, getBossBattle } from "./zoneGames";
+
 export const ZONE_ORDER: Record<string, string[]> = {
   "north-america": ["hq", "password-peak", "pixel-port", "signal-summit", "code-canyon", "encrypt-enclave", "arctic-archive", "shadow-station", "firewall-fortress", "boss-keybreaker"],
   "europe": ["phish-lagoon", "download-dungeon", "code-castle", "wifi-watch", "data-fortress", "cyber-citadel", "boss-phisher"],
@@ -10,17 +12,33 @@ export const ZONE_ORDER: Record<string, string[]> = {
   "antarctica": ["crypto-cavern", "algorithm-abyss", "code-citadel", "ice-intelligence", "boss-shadowbyte"],
 };
 
+/**
+ * A zone is playable once it has content. Zones without games yet show as
+ * "coming soon" and are skipped when unlocking, so they never block the boss
+ * or the next continent. They slot back in automatically once games exist.
+ */
+export function isZonePlayable(zoneId: string): boolean {
+  if (zoneId === "hq") return true;
+  if (zoneId.startsWith("boss-")) return !!getBossBattle(zoneId);
+  return !!getZoneGames(zoneId);
+}
+
+/** The unlock order with not-yet-built zones removed */
+export function getPlayableOrder(continentId: string): string[] {
+  return (ZONE_ORDER[continentId] ?? []).filter(isZonePlayable);
+}
+
 export function getNextZone(continentId: string, currentZoneId: string): string | null {
-  const order = ZONE_ORDER[continentId];
-  if (!order) return null;
+  const order = getPlayableOrder(continentId);
+  if (order.length === 0) return null;
   const currentIndex = order.indexOf(currentZoneId);
   if (currentIndex === -1 || currentIndex >= order.length - 1) return null;
   return order[currentIndex + 1];
 }
 
 export function isLastRegularZone(continentId: string, currentZoneId: string): boolean {
-  const order = ZONE_ORDER[continentId];
-  if (!order) return false;
+  const order = getPlayableOrder(continentId);
+  if (order.length === 0) return false;
   const currentIndex = order.indexOf(currentZoneId);
   // Last regular zone is the one right before the boss
   return currentIndex === order.length - 2;

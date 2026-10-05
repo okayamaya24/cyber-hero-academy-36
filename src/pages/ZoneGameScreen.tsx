@@ -36,6 +36,7 @@ import BossUnlockedCutscene from "@/components/zone/BossUnlockedCutscene";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import HQOrientation from "@/components/zone/HQOrientation";
 import { Button } from "@/components/ui/button";
+import ByteBuddy from "@/games/shared/ByteBuddy";
 
 import keybreakerImg from "@/assets/villains/keybreaker.png";
 import phisherKingImg from "@/assets/villains/phisher-king.png";
@@ -745,9 +746,11 @@ export default function ZoneGameScreen() {
   if (!gameContent) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#050a14" }}>
-        <div className="text-center">
+        <div className="text-center max-w-sm px-4">
           <span className="text-4xl block mb-3">🚧</span>
-          <p className="text-white/60 text-sm">Games coming soon for this zone!</p>
+          <ByteBuddy mood="think" title="This zone is still being built!" size={56} compact>
+            I'm working on new missions here. Head back to the map: the boss is ready whenever you've finished the open zones!
+          </ByteBuddy>
           <Button onClick={() => navigate(`/world-map/${continentId}`)} className="mt-4" variant="ghost">
             ◄ Back to Map
           </Button>
