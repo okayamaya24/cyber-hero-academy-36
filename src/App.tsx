@@ -25,6 +25,7 @@ import ChildSelectPage from "./pages/ChildSelectPage";
 import CreateChildPage from "./pages/CreateChildPage";
 import CertificatePage from "./pages/CertificatePage";
 import ForParentsPage from "./pages/ForParentsPage";
+import ForSchoolsPage from "./pages/ForSchoolsPage";
 import WorldSelectScreen from "./pages/WorldSelectScreen";
 import ContinentMapScreen from "./pages/ContinentMapScreen";
 import ZoneGameScreen from "./pages/ZoneGameScreen";
@@ -267,6 +268,15 @@ const App = () => (
                   <>
                     <Navbar />
                     <ForParentsPage />
+                  </>
+                }
+              />
+              <Route
+                path="/for-schools"
+                element={
+                  <>
+                    <Navbar />
+                    <ForSchoolsPage />
                   </>
                 }
               />

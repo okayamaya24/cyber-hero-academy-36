@@ -222,6 +222,10 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-white/5 bg-[#080c18] py-8 text-center text-sm text-gray-600">
         <p>© 2026 Cyber Hero Academy · Making the internet safer for kids! 🛡️</p>
+        <p className="mt-2 space-x-4">
+          <Link to="/for-parents" className="hover:text-gray-400">For Parents</Link>
+          <Link to="/for-schools" className="hover:text-gray-400">For Schools</Link>
+        </p>
       </footer>
     </div>
   );

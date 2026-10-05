@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
 export default function SignupPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { data: settings } = usePlatformSettings();
   const schoolEnabled = settings?.school_accounts_enabled ?? true;
 
@@ -21,8 +22,13 @@ export default function SignupPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    accountType: "family" as "family" | "school",
+    accountType: (searchParams.get("type") === "school" ? "school" : "family") as "family" | "school",
   });
+
+  // Fall back to a family account if school sign-ups are turned off
+  useEffect(() => {
+    if (!schoolEnabled && form.accountType === "school") setForm((f) => ({ ...f, accountType: "family" }));
+  }, [schoolEnabled, form.accountType]);
   const [agreeTerms, setAgreeTerms] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
