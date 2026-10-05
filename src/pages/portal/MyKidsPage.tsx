@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import {
   Plus,
   Trash2,
+  KeyRound,
   Users,
   CheckCircle2,
   Award,
@@ -161,6 +162,7 @@ export default function MyKidsPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [form, setForm] = useState<KidForm>(emptyForm);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [resetStudent, setResetStudent] = useState<{ id: string; name: string } | null>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [grade, setGrade] = useState("");
@@ -438,6 +440,28 @@ export default function MyKidsPage() {
     },
   });
 
+  const resetPasswordMutation = useMutation({
+    mutationFn: async (student: { id: string; name: string }) => {
+      const { data, error } = await supabase.functions.invoke("reset-student-password", {
+        body: { studentId: student.id },
+      });
+      if (error) {
+        // Surface the function's own message (e.g. "Please log in again") when there is one
+        const body = await (error as { context?: Response }).context?.json?.().catch(() => null);
+        throw new Error(body?.error ?? "Couldn't reset the password. Please try again.");
+      }
+      return { name: student.name, username: data.username as string, password: data.password as string };
+    },
+    onSuccess: (login) => {
+      setResetStudent(null);
+      setNewLogins([login]);
+    },
+    onError: (e: Error) => {
+      setResetStudent(null);
+      toast.error(e.message);
+    },
+  });
+
   const handleCSVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
@@ -663,6 +687,16 @@ export default function MyKidsPage() {
                         className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={(e) => e.stopPropagation()}
                       >
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0"
+                          title="Reset password"
+                          aria-label={`Reset ${child.name}'s password`}
+                          onClick={() => setResetStudent({ id: child.id, name: child.name })}
+                        >
+                          <KeyRound className="h-3.5 w-3.5" />
+                        </Button>
                         <Button
                           size="sm"
                           variant="ghost"
@@ -1095,7 +1129,30 @@ export default function MyKidsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      {/* New student logins — shown once, right after accounts are created */}
+      <AlertDialog open={!!resetStudent} onOpenChange={(open) => !open && setResetStudent(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset {resetStudent?.name}'s password?</AlertDialogTitle>
+            <AlertDialogDescription>
+              They'll get a new password and their old one will stop working. Their progress and badges stay the same.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={resetPasswordMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={resetPasswordMutation.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                if (resetStudent) resetPasswordMutation.mutate(resetStudent);
+              }}
+            >
+              {resetPasswordMutation.isPending ? "Resetting…" : "Reset Password"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* New or reset student logins — shown once */}
       <Dialog open={!!newLogins} onOpenChange={(open) => !open && setNewLogins(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
