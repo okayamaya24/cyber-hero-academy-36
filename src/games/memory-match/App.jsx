@@ -146,20 +146,26 @@ function shuffle(array) {
   return [...array].sort(() => Math.random() - 0.5);
 }
 
+// Every round gets its own ids, so a card flipped in one round can never
+// "match" a card from the next round (that caused wrong pairs like
+// PERMISSION + "A link you can trust" when an AI round loaded mid-game).
+let roundCounter = 0;
+
 function buildCards(pairs) {
   const cards = [];
+  const round = ++roundCounter;
 
   pairs.forEach((pair, index) => {
     cards.push({
-      id: `${index}-term`,
-      pairId: index,
+      id: `${round}-${index}-term`,
+      pairId: `${round}-${index}`,
       type: "term",
       text: pair.term
     });
 
     cards.push({
-      id: `${index}-definition`,
-      pairId: index,
+      id: `${round}-${index}-definition`,
+      pairId: `${round}-${index}`,
       type: "definition",
       text: pair.definition
     });
@@ -188,13 +194,12 @@ export default function App() {
   const [missionComplete, setMissionComplete] = useState(false);
   const [resultSaved, setResultSaved] = useState(false);
   const [savingResult, setSavingResult] = useState(false);
+  const [loadingRound, setLoadingRound] = useState(false);
 
   const pairs = cards.length / 2;
 
-  useEffect(() => {
-    resetGame(getInitialTier());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // The first round uses the built-in word list (instant, always correct, no AI cost).
+  // AI rounds load only when the kid asks for a new mission.
 
   useEffect(() => {
     if (missionComplete) return;
@@ -290,6 +295,7 @@ export default function App() {
 }
 
   async function resetGame(nextTier = tier) {
+  setLoadingRound(true);
   setTier(nextTier);
   setFlippedCards([]);
   setMatchedPairIds([]);
@@ -319,16 +325,18 @@ export default function App() {
     setCards(buildCards(cleanedPairs));
     setByteMood("think");
     setMessage("Flip cards to match cyber terms!");
+    setLoadingRound(false);
   } catch (error) {
     console.error("AI memory mission failed. Using fallback pairs:", error);
     setCards(buildCards(fallbackPairs));
     setByteMood("think");
     setMessage("Backup mission loaded. Flip cards to match cyber terms!");
+    setLoadingRound(false);
   }
 }
 
   function handleCardClick(card) {
-    if (missionComplete) return;
+    if (missionComplete || loadingRound) return;
 
     const alreadyMatched = matchedPairIds.includes(card.pairId);
     const alreadyFlipped = flippedCards.some(

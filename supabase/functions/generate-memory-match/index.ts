@@ -8,12 +8,12 @@ const TIER_CONFIG: Record<string, { count: number; guidance: string }> = {
   junior: {
     count: 4,
     guidance:
-      "Very simple, kid-friendly cybersecurity terms (ages 5-7). Use short, common words a young child can grasp. Definitions should be one short sentence using simple language.",
+      "Very simple, kid-friendly cybersecurity terms (ages 8-9). Use short, common words a young child can grasp. Definitions should be one short sentence using simple language.",
   },
   hero: {
     count: 6,
     guidance:
-      "Medium difficulty cybersecurity terms (ages 8-10). Definitions should be clear and concise, one short sentence, age-appropriate.",
+      "Medium difficulty cybersecurity terms (ages 9-11). Definitions should be clear and concise, one short sentence, age-appropriate.",
   },
   elite: {
     count: 8,
@@ -69,9 +69,13 @@ function sanitizePairs(
     if (seen.has(term)) continue;
     seen.add(term);
     out.push({ term, definition });
-    if (out.length >= count) break;
   }
-  return out;
+  // Drop pairs whose definition names a different term: confusing for kids and a sign of a mix-up
+  const clean = out.filter((p) =>
+    !out.some((o) => o.term !== p.term && o.term.length >= 4 &&
+      p.definition.toUpperCase().replace(/[^A-Z]/g, " ").split(/\s+/).includes(o.term))
+  );
+  return clean.slice(0, count);
 }
 
 Deno.serve(async (req) => {
@@ -102,7 +106,8 @@ Requirements for every pair:
 - Must be clearly cybersecurity / online safety related (from the allowed topics above)
 - Age-appropriate for the tier
 - Term in UPPERCASE letters only (A-Z, no spaces, no digits, no punctuation)
-- Definition: one short, clear sentence
+- Definition: one short, clear sentence that describes THAT term (not a different one)
+- A definition must never mention any other term in the list
 - No duplicate terms
 
 Return exactly ${count} pairs.`;
