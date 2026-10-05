@@ -45,8 +45,11 @@ const HERO_KEYS = [
   "girl-brown-tablet-green", "girl-brown-tablet-pink", "girl-brown-tablet-purple", "girl-brown-tablet-teal",
 ];
 
+// Bump when the images change so browsers don't keep showing cached old versions
+const HERO_IMAGE_VERSION = 2;
+
 export const HEROES: Record<string, string> = Object.fromEntries(
-  HERO_KEYS.map((key) => [key, `/heroes/${key}.webp`]),
+  HERO_KEYS.map((key) => [key, `/heroes/${key}.webp?v=${HERO_IMAGE_VERSION}`]),
 );
 
 // Which character art each skin tone + gender uses (mirrors SKINS in CyberHeroCreator)
