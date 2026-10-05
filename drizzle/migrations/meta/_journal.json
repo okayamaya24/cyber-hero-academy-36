@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791165346798,
+      "tag": "0000_class_code_picture_login",
+      "breakpoints": true
+    }
+  ]
+}
