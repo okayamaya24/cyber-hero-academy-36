@@ -9,16 +9,18 @@ interface HQOrientationProps {
   onComplete: (choiceId: string) => void;
 }
 
+// Each one looks strong at a glance, so kids have to think (2 strong, 2 weak)
 const PASSWORDS = [
-  { text: "fluffy", strength: "weak" as const, hint: "Too short — no numbers or symbols" },
-  { text: "T!ger92$", strength: "strong" as const, hint: "Long, mixed symbols and numbers!" },
-  { text: "password123", strength: "weak" as const, hint: "Too common — hackers try this first" },
+  { text: "Fluffy2015!", strength: "weak" as const, hint: "Looks tricky, but a pet name + a year is one of the first things hackers guess!" },
+  { text: "Purple$Taco$Jumps42", strength: "strong" as const, hint: "Long random words plus symbols and numbers. Super hard to crack!" },
+  { text: "P@ssw0rd!", strength: "weak" as const, hint: "Swapping letters for symbols is a trick hackers already know." },
+  { text: "Moon!Pickle7Rocket", strength: "strong" as const, hint: "Random words that don't go together, 18 characters long. Strong!" },
 ];
 
 const CHOICES = [
-  { id: "A", text: "So no one can steal our stuff online", emoji: "🔐", correct: true },
-  { id: "B", text: "Because computers need them to work", emoji: "💻", correct: false },
-  { id: "C", text: "To make the internet faster", emoji: "⚡", correct: false },
+  { id: "A", text: "So websites can remember our name", emoji: "🪪", correct: false },
+  { id: "B", text: "So nobody else can get into our accounts", emoji: "🔐", correct: true },
+  { id: "C", text: "So grown-ups can see what we do online", emoji: "👀", correct: false },
 ];
 
 export default function HQOrientation({ playerName, avatarConfig, onComplete }: HQOrientationProps) {
