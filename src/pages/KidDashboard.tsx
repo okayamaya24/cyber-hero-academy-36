@@ -18,6 +18,7 @@ import robotGuide from "@/assets/robot-guide.png";
 const byteCharacter = "/byte-character.png";
 import HeroAvatar from "@/components/avatar/HeroAvatar";
 import DailyChallenge from "@/components/DailyChallenge";
+import AdventureCard from "@/components/world/AdventureCard";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
 const BYTE_TIPS = [
@@ -220,6 +221,9 @@ export default function KidDashboard() {
       {/* ── BODY ── */}
       <div className="container mx-auto px-4 pb-24 pt-6 max-w-5xl">
 
+        {/* Adventure Mode: the heart of the game, so it goes first */}
+        {worldMapEnabled && childId && <AdventureCard childId={childId} />}
+
         {/* TOP ROW: Active Mission + Daily Quest + Streak */}
         <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-[1fr_260px_176px]">
 
@@ -342,17 +346,7 @@ export default function KidDashboard() {
           </div>
         </div>
 
-        {/* World Map link if enabled */}
-        {worldMapEnabled && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.42 }}
-            className="mb-5"
-          >
-            <Button variant="outline" className="w-full rounded-xl py-5 text-sm font-bold" asChild>
-              <Link to="/world-map">🗺️ Adventure Mode — Explore the World Map</Link>
-            </Button>
-          </motion.div>
-        )}
+
 
       </div>
 

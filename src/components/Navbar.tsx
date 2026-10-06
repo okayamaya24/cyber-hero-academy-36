@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, Gamepad2, BarChart3, Home, LogIn, UserPlus, LogOut, Heart, School } from "lucide-react";
+import { Shield, Gamepad2, BarChart3, Home, LogIn, UserPlus, LogOut, Heart, School, Map } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
 const publicItems = [
   { label: "Home", to: "/", icon: Home },
@@ -29,8 +30,15 @@ export function Navbar() {
   const isKid = profile?.role === "kid";
   const isParent = profile?.role === "family" || profile?.role === "school";
 
+  const { data: platformSettings } = usePlatformSettings();
+  const worldMapEnabled = platformSettings?.world_map_enabled ?? false;
+
   let navItems = publicItems;
-  if (user && isKid) navItems = kidItems;
+  if (user && isKid) {
+    navItems = worldMapEnabled
+      ? [kidItems[0], { label: "Adventure", to: "/world-map", icon: Map }, ...kidItems.slice(1)]
+      : kidItems;
+  }
   else if (user && isParent) navItems = parentItems;
   else if (user) navItems = parentItems; // fallback for unknown roles
 
@@ -44,7 +52,7 @@ export function Navbar() {
 
         <div className="flex items-center gap-1">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.to;
+            const isActive = location.pathname === item.to || (item.to === "/world-map" && location.pathname.startsWith("/world-map/"));
             return (
               <Link
                 key={item.to}
